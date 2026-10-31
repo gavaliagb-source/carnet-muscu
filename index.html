@@ -215,6 +215,11 @@ button.chip{cursor:pointer}
 .chartw{display:flex;align-items:stretch}.chartw .yax{flex:none}.chs{flex:1;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin}.chs svg{display:block}
 .chtip{min-height:20px;font-size:13px;margin:6px 4px 0;color:var(--muted)}.chtip b{color:var(--text)}
 .goal{height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin-top:8px}.goal>div{height:100%;background:var(--accent);border-radius:6px}
+.stag{display:block;width:100%;text-align:left;background:color-mix(in srgb,var(--warm) 14%,transparent);border:1px solid var(--warm);color:var(--text);border-radius:10px;padding:8px 10px;margin:8px 0 2px;font-size:13px;cursor:pointer}
+.check.pr{background:var(--accent);color:#000;font-size:18px}
+.mxt td{padding:6px 4px;text-align:center}.medal{text-align:center;opacity:.45;margin:0}.medal.ok{opacity:1;border-color:var(--accent)}.mic2{font-size:30px;line-height:1.2}
+.ybig{text-align:center;margin:0;display:flex;flex-direction:column;gap:2px}.ybig b{font-size:26px}
+.ymonths{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;height:90px;margin-top:10px;align-items:end}.ymonths div{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}.ymonths span{width:70%;background:var(--accent);border-radius:3px;min-height:2px}.ymonths i{font-style:normal;font-size:10px;color:var(--muted);margin-top:3px}
 .chrono{font-variant-numeric:tabular-nums;font-weight:700;color:var(--accent);font-size:15px}
 .cday .dl{font-size:10px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
 </style>
@@ -249,7 +254,7 @@ const dkey = d => { d = new Date(d); return d.getFullYear() + '-' + pad2(d.getMo
 const isEN = () => !!(typeof S !== 'undefined' && S && S.settings && S.settings.lang === 'en');
 const LOC = () => isEN() ? 'en-CA' : 'fr-CA';
 const T = (fr, en) => isEN() ? en : fr;
-const UI_EN = {"Entraînement":"Workout","Profil":"Profile","Séance":"Workout","Routine":"Routine","Modifier la routine":"Edit routine","Statistiques":"Statistics","Séries par muscle":"Sets per muscle","Répartition musculaire":"Muscle distribution","Carte des muscles":"Muscle map","Principaux exercices":"Main exercises","Records personnels":"Personal records","Rapport mensuel":"Monthly report","Exercices":"Exercises","Exercice":"Exercise","Mesures":"Measures","Calendrier":"Calendar","Séances":"Workouts","Réglages":"Settings","Historique":"History","Retour":"Back","Options":"Options","Enregistrer":"Save","Terminer":"Finish","Annuler":"Cancel","Appliquer":"Apply","OK":"OK","Continuer":"Continue","Passer":"Skip","Plus tard":"Later","Supprimer":"Delete","Abandonner":"Discard","Arrêter":"Stop","Connecter":"Connect","Déconnecter":"Disconnect","Terminé":"Done","Nouveau":"New","Tout":"All","Aucun":"None","Date":"Date","Date et heure":"Date and time","Nom":"Name","Dossier":"Folder","Durée":"Duration","Durée (min)":"Duration (min)","Durée totale":"Total duration","Volume":"Volume","Réps":"Reps","Reps":"Reps","Repos":"Rest","Série":"Set","Séries":"Sets","Série #":"Set #","Muscles":"Muscles","Routines":"Routines","Récents":"Recent","Précédent":"Previous","Dernière":"Last","Instructions":"Instructions","Bibliothèque":"Library","Mes exercices":"My exercises","Mes routines":"My routines","📁 Mes routines":"📁 My routines","Mon profil":"My profile","Tableau de bord":"Dashboard","Séances récentes":"Recent workouts","Entraînements":"Workouts","Ce mois":"This month","🔥 # sem.":"🔥 # wk","Cette sem.":"This wk","Sem. passée":"Last wk","cette semaine":"this week","semaines":"weeks","# jours":"# days","# mois":"# months","# an":"# year","# derniers mois":"Last # months","# derniers jours":"Last # days","# jours précédents":"Previous # days","# heure":"# hour","# heures":"# hours","# réps":"# reps","réps":"reps","séries":"sets","séances":"workouts","séance":"workout","Mois précédent":"Previous month","Mois suivant":"Next month","Afficher les mois précédents":"Show previous months","Voir toutes les séances (#)":"See all workouts (#)","# séances · # séries":"# workouts · # sets","# séances sur # jours":"# workouts in # days","Jours actifs":"Active days","Moy. # jours":"# day avg.","Moy. # sem.":"# wk avg.","Vs précédent":"Vs previous","Lundi":"Monday","Mardi":"Tuesday","Mercredi":"Wednesday","Jeudi":"Thursday","Vendredi":"Friday","Samedi":"Saturday","Dimanche":"Sunday","＋ Démarrer un entraînement vide":"＋ Start an empty workout","📋 Nouv. routine":"📋 New routine","🤖 Programme IA":"🤖 AI program","📁＋":"📁＋","Nouveau dossier":"New folder","▸ Mes routines (#)":"▸ My routines (#)","▾ Mes routines (#)":"▾ My routines (#)","▶ Démarrer la routine":"▶ Start routine","Démarrer la routine":"Start routine","▶ Démarrer":"▶ Start","🪶 Semaine de récupération (deload)":"🪶 Recovery week (deload)","🪶 Semaine de récupération":"🪶 Recovery week","🪶 Semaine de récupération activée":"🪶 Recovery week on","Séance en cours":"Workout in progress","📅 Planifier ma semaine":"📅 Plan my week","(lundi : Upper, mardi : repos…)":"(Monday: Upper, Tuesday: rest…)","📅 Modifier mon horaire":"📅 Edit my schedule","📅 Mon horaire":"📅 My schedule","😴 Jour de repos":"😴 Rest day","😴 Repos":"😴 Rest","Rien de prévu":"Nothing planned","Récupère bien.":"Recover well.","— Rien":"— Nothing","▶ Lancer la séance d'aujourd'hui":"▶ Start today's workout","✅ Séance faite aujourd'hui":"✅ Workout done today","Choisis la routine de chaque jour. L'onglet Entraînement te proposera la séance du jour.":"Pick a routine for each day. The Workout tab will suggest today's session.","Dossier vide. Déplace une routine ici avec son menu ⋯.":"Empty folder. Move a routine here with its ⋯ menu.","Options du dossier":"Folder options","✏️ Renommer":"✏️ Rename","Supprimer le dossier":"Delete folder","Supprimer un dossier déplace ses routines dans « Mes routines ».":"Deleting a folder moves its routines to “My routines”.","Le dossier principal ne peut pas être supprimé":"The main folder can't be deleted","Ce dossier existe déjà":"This folder already exists","Nom du nouveau dossier :":"New folder name:","Nouveau nom du dossier :":"New folder name:","＋ Nouveau dossier…":"＋ New folder…","Nom de la nouvelle routine :":"New routine name:","Nouvelle routine":"New routine","Nom de la routine":"Routine name","Charges −# % jusqu'au":"Weights −# % until","−# %":"−# %","Activer (# min)":"Turn on (# min)","Désactivé":"Off","Le plus courant : −# % de charge en gardant les mêmes exercices.":"Most common: −# % weight while keeping the same exercises.","Pendant # jours, les charges proposées en séance sont réduites automatiquement. Tes routines ne changent pas, et les suggestions de charge sont mises en pause.":"For # days, the weights suggested during workouts are reduced automatically. Your routines don't change, and weight suggestions are paused.","Léger":"Light","Normale":"Normal","Standard":"Standard","Peu":"Little","Beaucoup":"A lot","Complet":"Full","☁️ Protège tes données":"☁️ Protect your data","Active la sauvegarde automatique pour ne rien perdre si tu changes de téléphone.":"Turn on automatic backup so you lose nothing if you change phones.","🌙 # jours de repos":"🌙 # rest days","🌙 # jour de repos":"🌙 # rest day","✏️ Modifier la routine":"✏️ Edit routine","📝 Modifier en texte":"📝 Edit as text","📝 Mode texte / IA":"📝 Text / AI mode","Mode texte / IA":"Text / AI mode","⧉ Dupliquer":"⧉ Duplicate","Supprimer la routine":"Delete routine","↗ Partager":"↗ Share","🤖 Copier pour l'IA":"🤖 Copy for AI","🤖 Envoyer à l'IA":"🤖 Send to AI","📥 Coller la version de l'IA":"📥 Paste the AI version","Coller la version de l'IA":"Paste the AI version","＋ Ajouter un exercice":"＋ Add exercise","Ajouter un exercice":"Add exercise","＋ Ajouter une série":"＋ Add set","＋ Série":"＋ Set","− Série":"− Set","＋ Échauf.":"＋ Warm-up","Supprimer la série":"Delete set","SÉRIE":"SET","PLAGE DE RÉPS":"REP RANGE","DURÉE (SEC)":"DURATION (SEC)","DURÉE":"TIMED","LB":"LB","KG":"KG","⏱ Minuteur de repos":"⏱ Rest timer","⏱ Minuteur de repos : # min":"⏱ Rest timer: # min","⏱ Minuteur de repos : # min # s":"⏱ Rest timer: # min # s","⏱ Minuteur de repos : # s":"⏱ Rest timer: # s","⏱ Minuteur de repos : désactivé":"⏱ Rest timer: off","⏱ Minuteur de repos : par défaut (# min # s)":"⏱ Rest timer: default (# min # s)","⏱ Minuteur de repos : par défaut (# min)":"⏱ Rest timer: default (# min)","⏱ Exercice en durée : non":"⏱ Timed exercise: no","⏱ Exercice en durée : oui":"⏱ Timed exercise: yes","Défaut (# min # s)":"Default (# min # s)","Défaut (# min)":"Default (# min)","Par défaut":"Default","Repos après chaque série de cet exercice":"Rest after each set of this exercise","Repos après chaque série — le minuteur démarre quand tu coches ✓":"Rest after each set — the timer starts when you tick ✓","⛓ Superset avec…":"⛓ Superset with…","⛓ Retirer du superset":"⛓ Remove from superset","Retirer du superset":"Remove from superset","Les exercices d'un même superset ont la même couleur. L'exercice choisi est placé juste à côté pour que tu les enchaînes.":"Exercises in the same superset share a color. The chosen exercise is placed right next to it so you can do them back to back.","— alterne, repos après le dernier":"— alternate, rest after the last one","🔄 Remplacer":"🔄 Replace","🔄 Remplacer l'exercice":"🔄 Replace exercise","Supprimer l'exercice":"Delete exercise","Retirer l'exercice":"Remove exercise","Options de l'exercice":"Exercise options","↕ Réorganiser":"↕ Reorder","Glisse ≡ pour changer l'ordre. Touche − pour retirer un exercice.":"Drag ≡ to change the order. Tap − to remove an exercise.","Touche le numéro d'une série pour la changer en échauffement (É) ou dropset (D). Laisse lb vide pour le poids du corps.":"Tap a set number to make it a warm-up (W) or drop set (D). Leave lb empty for bodyweight.","Touche le numéro d'une série pour la changer en échauffement (É) ou dropset (D). Laisse kg vide pour le poids du corps.":"Tap a set number to make it a warm-up (W) or drop set (D). Leave kg empty for bodyweight.","Ex. : réglage banc cran #, prise large…":"E.g.: bench at notch #, wide grip…","Ex. : douleur à l'épaule, tempo lent…":"E.g.: shoulder pain, slow tempo…","Aucun exercice. Touche « Modifier la routine ».":"No exercises. Tap “Edit routine”.","Commence par ajouter un exercice.":"Start by adding an exercise.","Le graphique apparaîtra après ta première séance de cette routine.":"The chart will appear after your first workout with this routine.","💾 Routine enregistrée":"💾 Routine saved","Quitter sans enregistrer les modifications?":"Leave without saving changes?","Première fois":"First time","Dernier poids":"Last weight","Charge max":"Max weight","Réps max":"Max reps","Top série":"Top set","#RM estimé":"Estimated #RM","#RM estimé par séance (meilleure série de travail)":"Estimated #RM per workout (best working set)","Reps max par séance":"Max reps per workout","Charge totale (lb)":"Total load (lb)","Charge totale (kg)":"Total load (kg)","📁 Mes routines · # exercices · dernière fois le":"📁 My routines · # exercises · last time","dernière fois le":"last time","# exos ▾":"# exercises ▾","✔ Terminer la séance":"✔ Finish workout","Valider la série":"Complete set","Reprendre la performance précédente":"Use previous performance","Type de série":"Set type","Type, RIR et note de la série":"Set type, RIR and note","Échauffement":"Warm-up","À l'échec":"To failure","Dropset":"Drop set","É":"W","RIR : reps encore possibles en réserve":"RIR: reps left in the tank","Note sur cette série":"Note on this set","Note sur l'exercice (cette séance)":"Exercise note (this workout)","Ajouter une note pour cet exercice…":"Add a note for this exercise…","🎞 Voir l'exercice":"🎞 View exercise","🔗 Changer l'exercice lié":"🔗 Change linked exercise","Retirer l'animation":"Remove animation","🧮 Disques":"🧮 Plates","🧮 Calculateur de disques":"🧮 Plate calculator","🔥 Échauffement ajouté":"🔥 Warm-up added","🔥 Auto":"🔥 Auto","＋ Exercice ajouté":"＋ Exercise added","🔄 Exercice remplacé":"🔄 Exercise replaced","Séance vide. Ajoute ton premier exercice.":"Empty workout. Add your first exercise.","Entraînement libre":"Free workout","Nouvelle séance":"New workout","Séance enregistrée 💪":"Workout saved 💪","Super":"Great","💾 Enregistrer comme routine":"💾 Save as routine","📤 Partager ma séance":"📤 Share my workout","📤 Partager":"📤 Share","Nouveau record":"New record","🏆 Nouveau record!":"🏆 New record!","# nouveaux records":"# new records","Par rapport au":"Compared to","Aucune série remplie. Abandonner la séance?":"No sets filled. Discard the workout?","Abandonner cette séance sans l'enregistrer?":"Discard this workout without saving it?","Une séance est déjà en cours. La remplacer?":"A workout is already in progress. Replace it?","Retirer cet exercice de la séance?":"Remove this exercise from the workout?","Supprimer cette séance?":"Delete this workout?","⏱️ Repos terminé!":"⏱️ Rest over!","Tu n'as pas encore fait cet exercice.":"You haven't done this exercise yet.","Dernière note :":"Last note:","💡 Haut de la fourchette atteint (":"💡 Top of the range reached (","Calculé à partir de ta charge de travail :":"Calculated from your working weight:","Charge de la barre":"Bar weight","De chaque côté :":"Each side:","avec les disques standards.":"with standard plates.","Entre une charge.":"Enter a weight.","C'est moins que la barre (":"That's less than the bar (","Barre":"Bar","Barre (lb)":"Bar (lb)","Barre (kg)":"Bar (kg)","Charge visée":"Target weight","Charge visée (lb)":"Target weight (lb)","Charge visée (kg)":"Target weight (kg)","Modifier la séance":"Edit workout","＋ Séance oubliée":"＋ Missed workout","＋ Ajouter une séance oubliée":"＋ Add a missed workout","Ajouter une séance oubliée":"Add a missed workout","✏️ Modifier":"✏️ Edit","(échec)":"(failure)","(# = échec)":"(# = failure)","(# série)":"(# set)","(# séries)":"(# sets)","séries (avant : #)":"sets (before: #)","Choisir un exercice":"Choose an exercise","Rechercher un exercice…":"Search an exercise…","Chercher (français ou anglais)…":"Search (French or English)…","Tape un nom ou choisis un muscle.":"Type a name or pick a muscle.","Aucun exercice trouvé.":"No exercise found.","Tape un nom ou choisis un muscle pour chercher dans la bibliothèque (# # exercices avec animation).":"Type a name or pick a muscle to search the library (#,# exercises with animations).","📚 Parcourir la bibliothèque (# # exercices)":"📚 Browse the library (#,# exercises)","＋ Ajouter un exercice de la bibliothèque":"＋ Add an exercise from the library","Aucune animation liée à cet exercice. Choisis-en une dans la bibliothèque.":"No animation linked to this exercise. Pick one from the library.","Connecte-toi à Internet une fois pour la télécharger.":"Connect to the Internet once to download it.","Muscle principal":"Main muscle","/ secondaires":"/ secondary","Animation ©":"Animation ©","· base":"· dataset","Animations © Gym visual · base exercises-dataset":"Animations © Gym visual · exercises-dataset","A-Z":"A-Z","Touche un nom puis « Choisir l'exercice lié » pour qu'il soit compté.":"Tap a name then “Choose linked exercise” so it gets counted.","Choisir l'exercice lié":"Choose linked exercise","Aucune (machine)":"None (machine)","Abdos":"Abs","Dos":"Back","Pectoraux":"Chest","Épaules":"Shoulders","Bras":"Arms","Biceps":"Biceps","Triceps":"Triceps","Avant-bras":"Forearms","Jambes":"Legs","Quadriceps":"Quads","Ischios":"Hamstrings","Fessiers":"Glutes","Mollets":"Calves","Mollet":"Calf","Trapèzes":"Traps","Haut du dos":"Upper back","Dentelé":"Serratus","Hanches":"Hips","Poitrine":"Chest","Cuisse":"Thigh","Taille":"Waist","Bras / Épaules":"Arms / Shoulders","Avant":"Front","Arrière":"Back","Bras (po)":"Arm (in)","Cuisse (po)":"Thigh (in)","Mollet (po)":"Calf (in)","Taille (po)":"Waist (in)","Hanches (po)":"Hips (in)","Poitrine (po)":"Chest (in)","Épaules (po)":"Shoulders (in)","Bras (cm)":"Arm (cm)","Cuisse (cm)":"Thigh (cm)","Mollet (cm)":"Calf (cm)","Taille (cm)":"Waist (cm)","Hanches (cm)":"Hips (cm)","Poitrine (cm)":"Chest (cm)","Épaules (cm)":"Shoulders (cm)","Séries par groupe musculaire":"Sets per muscle group","Nombre de séries pour chaque groupe musculaire.":"Number of sets for each muscle group.","Répartition musculaire (graphique)":"Muscle distribution (chart)","Compare ta répartition actuelle à la période précédente.":"Compare your current distribution with the previous period.","Répartition musculaire (corps)":"Muscle distribution (body)","Carte thermique des muscles travaillés.":"Heat map of the muscles you trained.","Carte des muscles travaillés":"Map of trained muscles","Les exercices que tu fais le plus souvent.":"The exercises you do most often.","Tes meilleures performances par exercice.":"Your best performances per exercise.","Récap de tes entraînements et statistiques du mois.":"Recap of your workouts and stats for the month.","Exercices les plus travaillés":"Most trained exercises","Les flèches comparent avec le mois précédent.":"Arrows compare with the previous month.","Muscle principal = # série, muscle secondaire = #. Les séries d'échauffement ne comptent pas.":"Main muscle = # set, secondary muscle = #. Warm-up sets don't count.","Muscle principal = # série, secondaire = #. Échauffements exclus.":"Main muscle = # set, secondary = #. Warm-ups excluded.","Aucune donnée pour cette période.":"No data for this period.","Aucune séance sur cette période.":"No workouts in this period.","Aucune séance ce mois-ci.":"No workouts this month.","Aucun record ce mois-ci.":"No records this month.","🏆 Records du mois (#)":"🏆 Records this month (#)","Pas encore de données pour ce graphique.":"No data for this chart yet.","Tes graphiques apparaîtront après ta première séance.":"Your charts will appear after your first workout.","Tes records apparaîtront après ta première séance.":"Your records will appear after your first workout.","# exercices · # records ces # derniers jours":"# exercises · # records in the last # days","Pas encore fait":"Not done yet","Nouvelle mesure":"New measurement","Poids (lb)":"Weight (lb)","Poids (kg)":"Weight (kg)","Poids":"Weight","Mensurations (po), facultatif :":"Measurements (in), optional:","Mensurations (cm), facultatif :":"Measurements (cm), optional:","Nutrition et activité du jour, facultatif :":"Today's nutrition and activity, optional:","Calories (kcal)":"Calories (kcal)","Protéines (g)":"Protein (g)","Protéines":"Protein","Pas (pas)":"Steps","Pas":"Steps","Calories":"Calories","Supprimer cette mesure?":"Delete this measurement?","Aucune donnée pour cette mesure.":"No data for this measurement.","Entre au moins une valeur":"Enter at least one value","✅ Mesure enregistrée":"✅ Measurement saved","Liste":"List","Aucune séance encore.":"No workouts yet.","Lance une routine pour commencer!":"Start a routine to get going!","Aucune séance le":"No workout on","🔥 Série de":"🔥 Streak of","Préférences":"Preferences","Nom affiché sur le profil":"Name shown on profile","Ton nom":"Your name","Unité":"Unit","lb (mensurations en po)":"lb (measurements in in)","kg (mensurations en cm)":"kg (measurements in cm)","Repos par défaut (secondes)":"Default rest (seconds)","Augmentation de charge suggérée (lb)":"Suggested weight increase (lb)","Augmentation de charge suggérée (kg)":"Suggested weight increase (kg)","Séries à l'échec par défaut":"Sets to failure by default","🔔 Bip à la fin du repos (#-#-# puis bip final)":"🔔 Beep at the end of rest (#-#-# then final beep)","📱 Garder l'écran allumé pendant la séance":"📱 Keep the screen on during workouts","Consomme de la batterie, pas nécessaire pour le bip.":"Uses battery, not needed for the beep.","(consomme de la batterie, pas nécessaire pour le bip)":"(uses battery, not needed for the beep)","🔊 Tester le son":"🔊 Test sound","🔒 Test écran éteint (# s)":"🔒 Screen-off test (# s)","🔒 Éteins l'écran maintenant : bip dans # s":"🔒 Turn off the screen now: beep in # s","Objectif de séances par semaine":"Workouts per week goal","Langue / Language":"Langue / Language","Thème":"Theme","Thèmes prêts à utiliser :":"Ready-made themes:","Couleur des boutons (personnalisée)":"Button color (custom)","Couleur du thème":"Theme color","Remettre celle du thème":"Use the theme's color","Choisir une couleur":"Pick a color","Noir & lime":"Black & lime","Noir OLED":"OLED black","Clair":"Light","Bleu Hevy":"Hevy blue","Bleu glace":"Ice blue","Forêt":"Forest","Menthe":"Mint","Or":"Gold","Orange":"Orange","Rose":"Pink","Rouge":"Red","Violet":"Purple","Auto (système)":"Auto (system)","📤 Partager l'appli":"📤 Share the app","📤 Envoyer l'appli à un ami":"📤 Send the app to a friend","Envoie le lien et les instructions à un ami. Chacun garde ses propres données sur son téléphone.":"Send the link and instructions to a friend. Everyone keeps their own data on their phone.","Sauvegarde manuelle (fichier)":"Manual backup (file)","Tes données restent sur ce téléphone. Exporte un fichier de temps en temps (et avant de changer de cell), puis importe-le sur le nouveau.":"Your data stays on this phone. Export a file now and then (and before changing phones), then import it on the new one.","⬇ Exporter":"⬇ Export","⬆ Importer":"⬆ Import","Importer accepte aussi l'export CSV de Hevy.":"Import also accepts Hevy's CSV export.","✅ Fichier exporté":"✅ File exported","Tout effacer":"Erase everything","Effacer TOUTES tes données? Exporte d'abord si tu veux les garder.":"Erase ALL your data? Export first if you want to keep it.","Carnet Muscu · # séances · # routines":"Carnet Muscu · # workouts · # routines","Bilan pour l'IA":"Summary for AI","Copie tes # derniers jours de séances pour demander une analyse ou des ajustements.":"Copy your last # days of workouts to ask for an analysis or adjustments.","🤖 Envoyer mon historique à l'IA":"🤖 Send my history to AI","📊 Envoyer mon historique (# jours)":"📊 Send my history (# days)","☁️ Sauvegarde automatique":"☁️ Automatic backup","☁️ Sauvegarde automatique activée":"☁️ Automatic backup on","Tes données sont copiées toutes seules dans ton compte GitHub (gratuit, privé) après chaque modification. Sur un nouveau téléphone, tu remets la même clé et tout revient. À faire une seule fois :":"Your data is copied automatically to your GitHub account (free, private) after every change. On a new phone, enter the same key and everything comes back. Do this once:","Pas de compte GitHub?":"No GitHub account?","Crée-en un gratuitement":"Create one for free","(courriel + mot de passe), puis reviens ici.":"(email + password), then come back here.","Ouvre":"Open","ce lien GitHub":"this GitHub link","(connecté à ton compte).":"(signed in to your account).","Expiration":"Expiration",": choisis « No expiration ». La case":": choose “No expiration”. The","gist":"gist","est déjà cochée, ne touche à rien d'autre.":"box is already checked, don't touch anything else.","Touche":"Tap","Generate token":"Generate token",", copie la clé (elle commence par ghp_) et colle-la ici.":", copy the key (it starts with ghp_) and paste it here.","Ton prénom (un fichier de sauvegarde par personne)":"Your first name (one backup file per person)","Ex. : Alissa":"E.g.: Alissa","Clé GitHub":"GitHub key","Écris ton prénom":"Write your first name","Colle ta clé GitHub":"Paste your GitHub key","Vous pouvez être plusieurs avec la même clé (ex. toi et ta femme) : chacun écrit son prénom et a son propre profil.":"Several people can share the same key (e.g. you and your partner): each writes their first name and gets their own profile.","🔒 Ta clé donne accès à toutes les sauvegardes de ton compte : partage-la seulement avec une personne de confiance (ex. ta conjointe), qui écrit son prénom pour avoir son propre profil. Tes amis doivent créer":"🔒 Your key gives access to all the backups in your account: share it only with someone you trust (e.g. your partner), who writes their first name to get their own profile. Your friends must create","leur propre clé":"their own key","📖 Instructions et lien":"📖 Instructions and link","⏳ Connexion à GitHub…":"⏳ Connecting to GitHub…","⏳ Première sauvegarde en cours…":"⏳ First backup in progress…","Clé GitHub invalide ou expirée":"Invalid or expired GitHub key","Accès refusé par GitHub (vérifie la case « gist »)":"Access denied by GitHub (check the “gist” box)","Fichier de sauvegarde introuvable":"Backup file not found","Hors ligne — envoi au retour du réseau":"Offline — will send when back online","☁️ Qui utilise ce téléphone?":"☁️ Who uses this phone?","(ton prénom)":"(your first name)","Chaque profil a son propre fichier : les données ne se mélangent jamais.":"Each profile has its own file: data never gets mixed.","⬇ Restaurer ce profil sur ce téléphone":"⬇ Restore this profile on this phone","Garder ce téléphone (remplace la sauvegarde de ce profil)":"Keep this phone (replaces this profile's backup)","Sur ce téléphone :":"On this phone:","Sauvegarde :":"Backup:","Sauvegarde sans prénom":"Backup without a name","Envoi automatique après chaque modification":"Sent automatically after every change","Profil :":"Profile:","· compte GitHub":"· GitHub account","☁️ Sauvegarder maintenant":"☁️ Back up now","⬇ Restaurer depuis GitHub":"⬇ Restore from GitHub","Arrêter la sauvegarde auto":"Stop auto backup","☁️ Sauvegardé":"☁️ Backed up","✅ Sauvegardé":"✅ Saved","Dernier envoi :":"Last sent:","à l'instant":"just now","Remplacer les données de ce téléphone par la sauvegarde GitHub?":"Replace this phone's data with the GitHub backup?","Arrêter la sauvegarde automatique sur ce téléphone? (la sauvegarde reste sur GitHub)":"Stop automatic backup on this phone? (the backup stays on GitHub)","Envoie ton programme à n'importe quelle IA, puis colle sa réponse ici. Les routines du même nom sont mises à jour, les nouvelles sont créées.":"Send your program to any AI, then paste its answer here. Routines with the same name are updated, new ones are created.","📤 Envoyer tout mon programme à l'IA":"📤 Send my whole program to AI","📥 Coller un programme de l'IA":"📥 Paste a program from AI","🤖 Tout envoyer à l'IA":"🤖 Send everything to AI","Tout le programme":"Whole program","Envoie toutes tes routines d'un coup, ou colle une réponse qui en contient plusieurs. Touche un nom d'exercice pour voir l'animation.":"Send all your routines at once, or paste an answer that contains several. Tap an exercise name to see the animation.","Format :":"Format:","- Exercice | séries x reps | charge | note | R:# | SS:A":"- Exercise | sets x reps | weight | note | R:# | SS:A",". Copie pour l'IA, puis colle sa réponse ici et touche Appliquer.":". Copy for the AI, then paste its answer here and tap Apply.","Aucun exercice reconnu":"No exercise recognized","Aucun exercice reconnu pour l'instant.":"No exercise recognized yet.","✅ Copié! Colle-le dans ton IA":"✅ Copied! Paste it into your AI","Copie impossible":"Copy failed","✅ Texte appliqué (pas encore enregistré)":"✅ Text applied (not saved yet)","mise à jour":"updated","nouvelle":"new","J'ai trouvé":"Found","routines restaurées":"routines restored","séances importées de Hevy":"workouts imported from Hevy","🛠️ Dates de séances à réparer":"🛠️ Workout dates to fix","Supprimer et réimporter le CSV":"Delete and re-import the CSV","Pour les récupérer avec les bonnes dates : supprime-les, puis réimporte ton fichier CSV de Hevy (Hevy → Profil → Réglages → Exporter les données). Les séances déjà correctes ne seront pas dupliquées.":"To get them back with the right dates: delete them, then re-import your Hevy CSV file (Hevy → Profile → Settings → Export data). Workouts that are already correct won't be duplicated.","Touche une barre pour voir le détail · glisse pour voir avant":"Tap a bar for details · swipe to see earlier weeks","3 derniers mois":"Last 3 months","6 mois":"6 months","1 an":"1 year","Graphique hebdomadaire":"Weekly chart","# séries":"# sets","⬆ Sauvegarder maintenant":"⬆ Back up now","⬇ Restaurer":"⬇ Restore","🏆 # nouveaux records!":"🏆 # new records!","🏋️ Exercices":"🏋️ Exercises","📅 Calendrier":"📅 Calendar","📈 Statistiques":"📈 Statistics","🧍 Mesures":"🧍 Measures","semaine":"week","Colle la réponse de l'IA au complet; l'appli trouve les lignes toute seule. Une réponse avec plusieurs ROUTINE: les met toutes à jour.":"Paste the AI's full answer; the app finds the lines by itself. An answer with several ROUTINE: updates them all.","📋 Coller":"📋 Paste","à":"at","🌙 Aucune séance":"🌙 No workouts","Français":"Français","# séance":"# workout","cette semaine · # séance":"this week · # workout","cette semaine · # séances":"this week · # workouts"};
+const UI_EN = {"Entraînement":"Workout","Profil":"Profile","Séance":"Workout","Routine":"Routine","Modifier la routine":"Edit routine","Statistiques":"Statistics","Séries par muscle":"Sets per muscle","Répartition musculaire":"Muscle distribution","Carte des muscles":"Muscle map","Principaux exercices":"Main exercises","Records personnels":"Personal records","Rapport mensuel":"Monthly report","Exercices":"Exercises","Exercice":"Exercise","Mesures":"Measures","Calendrier":"Calendar","Séances":"Workouts","Réglages":"Settings","Historique":"History","Retour":"Back","Options":"Options","Enregistrer":"Save","Terminer":"Finish","Annuler":"Cancel","Appliquer":"Apply","OK":"OK","Continuer":"Continue","Passer":"Skip","Plus tard":"Later","Supprimer":"Delete","Abandonner":"Discard","Arrêter":"Stop","Connecter":"Connect","Déconnecter":"Disconnect","Terminé":"Done","Nouveau":"New","Tout":"All","Aucun":"None","Date":"Date","Date et heure":"Date and time","Nom":"Name","Dossier":"Folder","Durée":"Duration","Durée (min)":"Duration (min)","Durée totale":"Total duration","Volume":"Volume","Réps":"Reps","Reps":"Reps","Repos":"Rest","Série":"Set","Séries":"Sets","Série #":"Set #","Muscles":"Muscles","Routines":"Routines","Récents":"Recent","Précédent":"Previous","Dernière":"Last","Instructions":"Instructions","Bibliothèque":"Library","Mes exercices":"My exercises","Mes routines":"My routines","📁 Mes routines":"📁 My routines","Mon profil":"My profile","Tableau de bord":"Dashboard","Séances récentes":"Recent workouts","Entraînements":"Workouts","Ce mois":"This month","🔥 # sem.":"🔥 # wk","Cette sem.":"This wk","Sem. passée":"Last wk","cette semaine":"this week","semaines":"weeks","# jours":"# days","# mois":"# months","# an":"# year","# derniers mois":"Last # months","# derniers jours":"Last # days","# jours précédents":"Previous # days","# heure":"# hour","# heures":"# hours","# réps":"# reps","réps":"reps","séries":"sets","séances":"workouts","séance":"workout","Mois précédent":"Previous month","Mois suivant":"Next month","Afficher les mois précédents":"Show previous months","Voir toutes les séances (#)":"See all workouts (#)","# séances · # séries":"# workouts · # sets","# séances sur # jours":"# workouts in # days","Jours actifs":"Active days","Moy. # jours":"# day avg.","Moy. # sem.":"# wk avg.","Vs précédent":"Vs previous","Lundi":"Monday","Mardi":"Tuesday","Mercredi":"Wednesday","Jeudi":"Thursday","Vendredi":"Friday","Samedi":"Saturday","Dimanche":"Sunday","＋ Démarrer un entraînement vide":"＋ Start an empty workout","📋 Nouv. routine":"📋 New routine","🤖 Programme IA":"🤖 AI program","📁＋":"📁＋","Nouveau dossier":"New folder","▸ Mes routines (#)":"▸ My routines (#)","▾ Mes routines (#)":"▾ My routines (#)","▶ Démarrer la routine":"▶ Start routine","Démarrer la routine":"Start routine","▶ Démarrer":"▶ Start","🪶 Semaine de récupération (deload)":"🪶 Recovery week (deload)","🪶 Semaine de récupération":"🪶 Recovery week","🪶 Semaine de récupération activée":"🪶 Recovery week on","Séance en cours":"Workout in progress","📅 Planifier ma semaine":"📅 Plan my week","(lundi : Upper, mardi : repos…)":"(Monday: Upper, Tuesday: rest…)","📅 Modifier mon horaire":"📅 Edit my schedule","📅 Mon horaire":"📅 My schedule","😴 Jour de repos":"😴 Rest day","😴 Repos":"😴 Rest","Rien de prévu":"Nothing planned","Récupère bien.":"Recover well.","— Rien":"— Nothing","▶ Lancer la séance d'aujourd'hui":"▶ Start today's workout","✅ Séance faite aujourd'hui":"✅ Workout done today","Choisis la routine de chaque jour. L'onglet Entraînement te proposera la séance du jour.":"Pick a routine for each day. The Workout tab will suggest today's session.","Dossier vide. Déplace une routine ici avec son menu ⋯.":"Empty folder. Move a routine here with its ⋯ menu.","Options du dossier":"Folder options","✏️ Renommer":"✏️ Rename","Supprimer le dossier":"Delete folder","Supprimer un dossier déplace ses routines dans « Mes routines ».":"Deleting a folder moves its routines to “My routines”.","Le dossier principal ne peut pas être supprimé":"The main folder can't be deleted","Ce dossier existe déjà":"This folder already exists","Nom du nouveau dossier :":"New folder name:","Nouveau nom du dossier :":"New folder name:","＋ Nouveau dossier…":"＋ New folder…","Nom de la nouvelle routine :":"New routine name:","Nouvelle routine":"New routine","Nom de la routine":"Routine name","Charges −# % jusqu'au":"Weights −# % until","−# %":"−# %","Activer (# min)":"Turn on (# min)","Désactivé":"Off","Le plus courant : −# % de charge en gardant les mêmes exercices.":"Most common: −# % weight while keeping the same exercises.","Pendant # jours, les charges proposées en séance sont réduites automatiquement. Tes routines ne changent pas, et les suggestions de charge sont mises en pause.":"For # days, the weights suggested during workouts are reduced automatically. Your routines don't change, and weight suggestions are paused.","Léger":"Light","Normale":"Normal","Standard":"Standard","Peu":"Little","Beaucoup":"A lot","Complet":"Full","☁️ Protège tes données":"☁️ Protect your data","Active la sauvegarde automatique pour ne rien perdre si tu changes de téléphone.":"Turn on automatic backup so you lose nothing if you change phones.","🌙 # jours de repos":"🌙 # rest days","🌙 # jour de repos":"🌙 # rest day","✏️ Modifier la routine":"✏️ Edit routine","📝 Modifier en texte":"📝 Edit as text","📝 Mode texte / IA":"📝 Text / AI mode","Mode texte / IA":"Text / AI mode","⧉ Dupliquer":"⧉ Duplicate","Supprimer la routine":"Delete routine","↗ Partager":"↗ Share","🤖 Copier pour l'IA":"🤖 Copy for AI","🤖 Envoyer à l'IA":"🤖 Send to AI","📥 Coller la version de l'IA":"📥 Paste the AI version","Coller la version de l'IA":"Paste the AI version","＋ Ajouter un exercice":"＋ Add exercise","Ajouter un exercice":"Add exercise","＋ Ajouter une série":"＋ Add set","＋ Série":"＋ Set","− Série":"− Set","＋ Échauf.":"＋ Warm-up","Supprimer la série":"Delete set","SÉRIE":"SET","PLAGE DE RÉPS":"REP RANGE","DURÉE (SEC)":"DURATION (SEC)","DURÉE":"TIMED","LB":"LB","KG":"KG","⏱ Minuteur de repos":"⏱ Rest timer","⏱ Minuteur de repos : # min":"⏱ Rest timer: # min","⏱ Minuteur de repos : # min # s":"⏱ Rest timer: # min # s","⏱ Minuteur de repos : # s":"⏱ Rest timer: # s","⏱ Minuteur de repos : désactivé":"⏱ Rest timer: off","⏱ Minuteur de repos : par défaut (# min # s)":"⏱ Rest timer: default (# min # s)","⏱ Minuteur de repos : par défaut (# min)":"⏱ Rest timer: default (# min)","⏱ Exercice en durée : non":"⏱ Timed exercise: no","⏱ Exercice en durée : oui":"⏱ Timed exercise: yes","Défaut (# min # s)":"Default (# min # s)","Défaut (# min)":"Default (# min)","Par défaut":"Default","Repos après chaque série de cet exercice":"Rest after each set of this exercise","Repos après chaque série — le minuteur démarre quand tu coches ✓":"Rest after each set — the timer starts when you tick ✓","⛓ Superset avec…":"⛓ Superset with…","⛓ Retirer du superset":"⛓ Remove from superset","Retirer du superset":"Remove from superset","Les exercices d'un même superset ont la même couleur. L'exercice choisi est placé juste à côté pour que tu les enchaînes.":"Exercises in the same superset share a color. The chosen exercise is placed right next to it so you can do them back to back.","— alterne, repos après le dernier":"— alternate, rest after the last one","🔄 Remplacer":"🔄 Replace","🔄 Remplacer l'exercice":"🔄 Replace exercise","Supprimer l'exercice":"Delete exercise","Retirer l'exercice":"Remove exercise","Options de l'exercice":"Exercise options","↕ Réorganiser":"↕ Reorder","Glisse ≡ pour changer l'ordre. Touche − pour retirer un exercice.":"Drag ≡ to change the order. Tap − to remove an exercise.","Touche le numéro d'une série pour la changer en échauffement (É) ou dropset (D). Laisse lb vide pour le poids du corps.":"Tap a set number to make it a warm-up (W) or drop set (D). Leave lb empty for bodyweight.","Touche le numéro d'une série pour la changer en échauffement (É) ou dropset (D). Laisse kg vide pour le poids du corps.":"Tap a set number to make it a warm-up (W) or drop set (D). Leave kg empty for bodyweight.","Ex. : réglage banc cran #, prise large…":"E.g.: bench at notch #, wide grip…","Ex. : douleur à l'épaule, tempo lent…":"E.g.: shoulder pain, slow tempo…","Aucun exercice. Touche « Modifier la routine ».":"No exercises. Tap “Edit routine”.","Commence par ajouter un exercice.":"Start by adding an exercise.","Le graphique apparaîtra après ta première séance de cette routine.":"The chart will appear after your first workout with this routine.","💾 Routine enregistrée":"💾 Routine saved","Quitter sans enregistrer les modifications?":"Leave without saving changes?","Première fois":"First time","Dernier poids":"Last weight","Charge max":"Max weight","Réps max":"Max reps","Top série":"Top set","#RM estimé":"Estimated #RM","#RM estimé par séance (meilleure série de travail)":"Estimated #RM per workout (best working set)","Reps max par séance":"Max reps per workout","Charge totale (lb)":"Total load (lb)","Charge totale (kg)":"Total load (kg)","📁 Mes routines · # exercices · dernière fois le":"📁 My routines · # exercises · last time","dernière fois le":"last time","# exos ▾":"# exercises ▾","✔ Terminer la séance":"✔ Finish workout","Valider la série":"Complete set","Reprendre la performance précédente":"Use previous performance","Type de série":"Set type","Type, RIR et note de la série":"Set type, RIR and note","Échauffement":"Warm-up","À l'échec":"To failure","Dropset":"Drop set","É":"W","RIR : reps encore possibles en réserve":"RIR: reps left in the tank","Note sur cette série":"Note on this set","Note sur l'exercice (cette séance)":"Exercise note (this workout)","Ajouter une note pour cet exercice…":"Add a note for this exercise…","🎞 Voir l'exercice":"🎞 View exercise","🔗 Changer l'exercice lié":"🔗 Change linked exercise","Retirer l'animation":"Remove animation","🧮 Disques":"🧮 Plates","🧮 Calculateur de disques":"🧮 Plate calculator","🔥 Échauffement ajouté":"🔥 Warm-up added","🔥 Auto":"🔥 Auto","＋ Exercice ajouté":"＋ Exercise added","🔄 Exercice remplacé":"🔄 Exercise replaced","Séance vide. Ajoute ton premier exercice.":"Empty workout. Add your first exercise.","Entraînement libre":"Free workout","Nouvelle séance":"New workout","Séance enregistrée 💪":"Workout saved 💪","Super":"Great","💾 Enregistrer comme routine":"💾 Save as routine","📤 Partager ma séance":"📤 Share my workout","📤 Partager":"📤 Share","Nouveau record":"New record","🏆 Nouveau record!":"🏆 New record!","# nouveaux records":"# new records","Par rapport au":"Compared to","Aucune série remplie. Abandonner la séance?":"No sets filled. Discard the workout?","Abandonner cette séance sans l'enregistrer?":"Discard this workout without saving it?","Une séance est déjà en cours. La remplacer?":"A workout is already in progress. Replace it?","Retirer cet exercice de la séance?":"Remove this exercise from the workout?","Supprimer cette séance?":"Delete this workout?","⏱️ Repos terminé!":"⏱️ Rest over!","Tu n'as pas encore fait cet exercice.":"You haven't done this exercise yet.","Dernière note :":"Last note:","💡 Haut de la fourchette atteint (":"💡 Top of the range reached (","Calculé à partir de ta charge de travail :":"Calculated from your working weight:","Charge de la barre":"Bar weight","De chaque côté :":"Each side:","avec les disques standards.":"with standard plates.","Entre une charge.":"Enter a weight.","C'est moins que la barre (":"That's less than the bar (","Barre":"Bar","Barre (lb)":"Bar (lb)","Barre (kg)":"Bar (kg)","Charge visée":"Target weight","Charge visée (lb)":"Target weight (lb)","Charge visée (kg)":"Target weight (kg)","Modifier la séance":"Edit workout","＋ Séance oubliée":"＋ Missed workout","＋ Ajouter une séance oubliée":"＋ Add a missed workout","Ajouter une séance oubliée":"Add a missed workout","✏️ Modifier":"✏️ Edit","(échec)":"(failure)","(# = échec)":"(# = failure)","(# série)":"(# set)","(# séries)":"(# sets)","séries (avant : #)":"sets (before: #)","Choisir un exercice":"Choose an exercise","Rechercher un exercice…":"Search an exercise…","Chercher (français ou anglais)…":"Search (French or English)…","Tape un nom ou choisis un muscle.":"Type a name or pick a muscle.","Aucun exercice trouvé.":"No exercise found.","Tape un nom ou choisis un muscle pour chercher dans la bibliothèque (# # exercices avec animation).":"Type a name or pick a muscle to search the library (#,# exercises with animations).","📚 Parcourir la bibliothèque (# # exercices)":"📚 Browse the library (#,# exercises)","＋ Ajouter un exercice de la bibliothèque":"＋ Add an exercise from the library","Aucune animation liée à cet exercice. Choisis-en une dans la bibliothèque.":"No animation linked to this exercise. Pick one from the library.","Connecte-toi à Internet une fois pour la télécharger.":"Connect to the Internet once to download it.","Muscle principal":"Main muscle","/ secondaires":"/ secondary","Animation ©":"Animation ©","· base":"· dataset","Animations © Gym visual · base exercises-dataset":"Animations © Gym visual · exercises-dataset","A-Z":"A-Z","Touche un nom puis « Choisir l'exercice lié » pour qu'il soit compté.":"Tap a name then “Choose linked exercise” so it gets counted.","Choisir l'exercice lié":"Choose linked exercise","Aucune (machine)":"None (machine)","Abdos":"Abs","Dos":"Back","Pectoraux":"Chest","Épaules":"Shoulders","Bras":"Arms","Biceps":"Biceps","Triceps":"Triceps","Avant-bras":"Forearms","Jambes":"Legs","Quadriceps":"Quads","Ischios":"Hamstrings","Fessiers":"Glutes","Mollets":"Calves","Mollet":"Calf","Trapèzes":"Traps","Haut du dos":"Upper back","Dentelé":"Serratus","Hanches":"Hips","Poitrine":"Chest","Cuisse":"Thigh","Taille":"Waist","Bras / Épaules":"Arms / Shoulders","Avant":"Front","Arrière":"Back","Bras (po)":"Arm (in)","Cuisse (po)":"Thigh (in)","Mollet (po)":"Calf (in)","Taille (po)":"Waist (in)","Hanches (po)":"Hips (in)","Poitrine (po)":"Chest (in)","Épaules (po)":"Shoulders (in)","Bras (cm)":"Arm (cm)","Cuisse (cm)":"Thigh (cm)","Mollet (cm)":"Calf (cm)","Taille (cm)":"Waist (cm)","Hanches (cm)":"Hips (cm)","Poitrine (cm)":"Chest (cm)","Épaules (cm)":"Shoulders (cm)","Séries par groupe musculaire":"Sets per muscle group","Nombre de séries pour chaque groupe musculaire.":"Number of sets for each muscle group.","Répartition musculaire (graphique)":"Muscle distribution (chart)","Compare ta répartition actuelle à la période précédente.":"Compare your current distribution with the previous period.","Répartition musculaire (corps)":"Muscle distribution (body)","Carte thermique des muscles travaillés.":"Heat map of the muscles you trained.","Carte des muscles travaillés":"Map of trained muscles","Les exercices que tu fais le plus souvent.":"The exercises you do most often.","Tes meilleures performances par exercice.":"Your best performances per exercise.","Récap de tes entraînements et statistiques du mois.":"Recap of your workouts and stats for the month.","Exercices les plus travaillés":"Most trained exercises","Les flèches comparent avec le mois précédent.":"Arrows compare with the previous month.","Muscle principal = # série, muscle secondaire = #. Les séries d'échauffement ne comptent pas.":"Main muscle = # set, secondary muscle = #. Warm-up sets don't count.","Muscle principal = # série, secondaire = #. Échauffements exclus.":"Main muscle = # set, secondary = #. Warm-ups excluded.","Aucune donnée pour cette période.":"No data for this period.","Aucune séance sur cette période.":"No workouts in this period.","Aucune séance ce mois-ci.":"No workouts this month.","Aucun record ce mois-ci.":"No records this month.","🏆 Records du mois (#)":"🏆 Records this month (#)","Pas encore de données pour ce graphique.":"No data for this chart yet.","Tes graphiques apparaîtront après ta première séance.":"Your charts will appear after your first workout.","Tes records apparaîtront après ta première séance.":"Your records will appear after your first workout.","# exercices · # records ces # derniers jours":"# exercises · # records in the last # days","Pas encore fait":"Not done yet","Nouvelle mesure":"New measurement","Poids (lb)":"Weight (lb)","Poids (kg)":"Weight (kg)","Poids":"Weight","Mensurations (po), facultatif :":"Measurements (in), optional:","Mensurations (cm), facultatif :":"Measurements (cm), optional:","Nutrition et activité du jour, facultatif :":"Today's nutrition and activity, optional:","Calories (kcal)":"Calories (kcal)","Protéines (g)":"Protein (g)","Protéines":"Protein","Pas (pas)":"Steps","Pas":"Steps","Calories":"Calories","Supprimer cette mesure?":"Delete this measurement?","Aucune donnée pour cette mesure.":"No data for this measurement.","Entre au moins une valeur":"Enter at least one value","✅ Mesure enregistrée":"✅ Measurement saved","Liste":"List","Aucune séance encore.":"No workouts yet.","Lance une routine pour commencer!":"Start a routine to get going!","Aucune séance le":"No workout on","🔥 Série de":"🔥 Streak of","Préférences":"Preferences","Nom affiché sur le profil":"Name shown on profile","Ton nom":"Your name","Unité":"Unit","lb (mensurations en po)":"lb (measurements in in)","kg (mensurations en cm)":"kg (measurements in cm)","Repos par défaut (secondes)":"Default rest (seconds)","Augmentation de charge suggérée (lb)":"Suggested weight increase (lb)","Augmentation de charge suggérée (kg)":"Suggested weight increase (kg)","Séries à l'échec par défaut":"Sets to failure by default","🔔 Bip à la fin du repos (#-#-# puis bip final)":"🔔 Beep at the end of rest (#-#-# then final beep)","📱 Garder l'écran allumé pendant la séance":"📱 Keep the screen on during workouts","Consomme de la batterie, pas nécessaire pour le bip.":"Uses battery, not needed for the beep.","(consomme de la batterie, pas nécessaire pour le bip)":"(uses battery, not needed for the beep)","🔊 Tester le son":"🔊 Test sound","🔒 Test écran éteint (# s)":"🔒 Screen-off test (# s)","🔒 Éteins l'écran maintenant : bip dans # s":"🔒 Turn off the screen now: beep in # s","Objectif de séances par semaine":"Workouts per week goal","Langue / Language":"Langue / Language","Thème":"Theme","Thèmes prêts à utiliser :":"Ready-made themes:","Couleur des boutons (personnalisée)":"Button color (custom)","Couleur du thème":"Theme color","Remettre celle du thème":"Use the theme's color","Choisir une couleur":"Pick a color","Noir & lime":"Black & lime","Noir OLED":"OLED black","Clair":"Light","Bleu Hevy":"Hevy blue","Bleu glace":"Ice blue","Forêt":"Forest","Menthe":"Mint","Or":"Gold","Orange":"Orange","Rose":"Pink","Rouge":"Red","Violet":"Purple","Auto (système)":"Auto (system)","📤 Partager l'appli":"📤 Share the app","📤 Envoyer l'appli à un ami":"📤 Send the app to a friend","Envoie le lien et les instructions à un ami. Chacun garde ses propres données sur son téléphone.":"Send the link and instructions to a friend. Everyone keeps their own data on their phone.","Sauvegarde manuelle (fichier)":"Manual backup (file)","Tes données restent sur ce téléphone. Exporte un fichier de temps en temps (et avant de changer de cell), puis importe-le sur le nouveau.":"Your data stays on this phone. Export a file now and then (and before changing phones), then import it on the new one.","⬇ Exporter":"⬇ Export","⬆ Importer":"⬆ Import","Importer accepte aussi l'export CSV de Hevy.":"Import also accepts Hevy's CSV export.","✅ Fichier exporté":"✅ File exported","Tout effacer":"Erase everything","Effacer TOUTES tes données? Exporte d'abord si tu veux les garder.":"Erase ALL your data? Export first if you want to keep it.","Carnet Muscu · # séances · # routines":"Carnet Muscu · # workouts · # routines","Bilan pour l'IA":"Summary for AI","Copie tes # derniers jours de séances pour demander une analyse ou des ajustements.":"Copy your last # days of workouts to ask for an analysis or adjustments.","🤖 Envoyer mon historique à l'IA":"🤖 Send my history to AI","📊 Envoyer mon historique (# jours)":"📊 Send my history (# days)","☁️ Sauvegarde automatique":"☁️ Automatic backup","☁️ Sauvegarde automatique activée":"☁️ Automatic backup on","Tes données sont copiées toutes seules dans ton compte GitHub (gratuit, privé) après chaque modification. Sur un nouveau téléphone, tu remets la même clé et tout revient. À faire une seule fois :":"Your data is copied automatically to your GitHub account (free, private) after every change. On a new phone, enter the same key and everything comes back. Do this once:","Pas de compte GitHub?":"No GitHub account?","Crée-en un gratuitement":"Create one for free","(courriel + mot de passe), puis reviens ici.":"(email + password), then come back here.","Ouvre":"Open","ce lien GitHub":"this GitHub link","(connecté à ton compte).":"(signed in to your account).","Expiration":"Expiration",": choisis « No expiration ». La case":": choose “No expiration”. The","gist":"gist","est déjà cochée, ne touche à rien d'autre.":"box is already checked, don't touch anything else.","Touche":"Tap","Generate token":"Generate token",", copie la clé (elle commence par ghp_) et colle-la ici.":", copy the key (it starts with ghp_) and paste it here.","Ton prénom (un fichier de sauvegarde par personne)":"Your first name (one backup file per person)","Ex. : Alissa":"E.g.: Alissa","Clé GitHub":"GitHub key","Écris ton prénom":"Write your first name","Colle ta clé GitHub":"Paste your GitHub key","Vous pouvez être plusieurs avec la même clé (ex. toi et ta femme) : chacun écrit son prénom et a son propre profil.":"Several people can share the same key (e.g. you and your partner): each writes their first name and gets their own profile.","🔒 Ta clé donne accès à toutes les sauvegardes de ton compte : partage-la seulement avec une personne de confiance (ex. ta conjointe), qui écrit son prénom pour avoir son propre profil. Tes amis doivent créer":"🔒 Your key gives access to all the backups in your account: share it only with someone you trust (e.g. your partner), who writes their first name to get their own profile. Your friends must create","leur propre clé":"their own key","📖 Instructions et lien":"📖 Instructions and link","⏳ Connexion à GitHub…":"⏳ Connecting to GitHub…","⏳ Première sauvegarde en cours…":"⏳ First backup in progress…","Clé GitHub invalide ou expirée":"Invalid or expired GitHub key","Accès refusé par GitHub (vérifie la case « gist »)":"Access denied by GitHub (check the “gist” box)","Fichier de sauvegarde introuvable":"Backup file not found","Hors ligne — envoi au retour du réseau":"Offline — will send when back online","☁️ Qui utilise ce téléphone?":"☁️ Who uses this phone?","(ton prénom)":"(your first name)","Chaque profil a son propre fichier : les données ne se mélangent jamais.":"Each profile has its own file: data never gets mixed.","⬇ Restaurer ce profil sur ce téléphone":"⬇ Restore this profile on this phone","Garder ce téléphone (remplace la sauvegarde de ce profil)":"Keep this phone (replaces this profile's backup)","Sur ce téléphone :":"On this phone:","Sauvegarde :":"Backup:","Sauvegarde sans prénom":"Backup without a name","Envoi automatique après chaque modification":"Sent automatically after every change","Profil :":"Profile:","· compte GitHub":"· GitHub account","☁️ Sauvegarder maintenant":"☁️ Back up now","⬇ Restaurer depuis GitHub":"⬇ Restore from GitHub","Arrêter la sauvegarde auto":"Stop auto backup","☁️ Sauvegardé":"☁️ Backed up","✅ Sauvegardé":"✅ Saved","Dernier envoi :":"Last sent:","à l'instant":"just now","Remplacer les données de ce téléphone par la sauvegarde GitHub?":"Replace this phone's data with the GitHub backup?","Arrêter la sauvegarde automatique sur ce téléphone? (la sauvegarde reste sur GitHub)":"Stop automatic backup on this phone? (the backup stays on GitHub)","Envoie ton programme à n'importe quelle IA, puis colle sa réponse ici. Les routines du même nom sont mises à jour, les nouvelles sont créées.":"Send your program to any AI, then paste its answer here. Routines with the same name are updated, new ones are created.","📤 Envoyer tout mon programme à l'IA":"📤 Send my whole program to AI","📥 Coller un programme de l'IA":"📥 Paste a program from AI","🤖 Tout envoyer à l'IA":"🤖 Send everything to AI","Tout le programme":"Whole program","Envoie toutes tes routines d'un coup, ou colle une réponse qui en contient plusieurs. Touche un nom d'exercice pour voir l'animation.":"Send all your routines at once, or paste an answer that contains several. Tap an exercise name to see the animation.","Format :":"Format:","- Exercice | séries x reps | charge | note | R:# | SS:A":"- Exercise | sets x reps | weight | note | R:# | SS:A",". Copie pour l'IA, puis colle sa réponse ici et touche Appliquer.":". Copy for the AI, then paste its answer here and tap Apply.","Aucun exercice reconnu":"No exercise recognized","Aucun exercice reconnu pour l'instant.":"No exercise recognized yet.","✅ Copié! Colle-le dans ton IA":"✅ Copied! Paste it into your AI","Copie impossible":"Copy failed","✅ Texte appliqué (pas encore enregistré)":"✅ Text applied (not saved yet)","mise à jour":"updated","nouvelle":"new","J'ai trouvé":"Found","routines restaurées":"routines restored","séances importées de Hevy":"workouts imported from Hevy","🛠️ Dates de séances à réparer":"🛠️ Workout dates to fix","Supprimer et réimporter le CSV":"Delete and re-import the CSV","Pour les récupérer avec les bonnes dates : supprime-les, puis réimporte ton fichier CSV de Hevy (Hevy → Profil → Réglages → Exporter les données). Les séances déjà correctes ne seront pas dupliquées.":"To get them back with the right dates: delete them, then re-import your Hevy CSV file (Hevy → Profile → Settings → Export data). Workouts that are already correct won't be duplicated.","Touche une barre pour voir le détail · glisse pour voir avant":"Tap a bar for details · swipe to see earlier weeks","3 derniers mois":"Last 3 months","6 mois":"6 months","1 an":"1 year","Graphique hebdomadaire":"Weekly chart","# séries":"# sets","⬆ Sauvegarder maintenant":"⬆ Back up now","⬇ Restaurer":"⬇ Restore","🏆 # nouveaux records!":"🏆 # new records!","🏋️ Exercices":"🏋️ Exercises","📅 Calendrier":"📅 Calendar","📈 Statistiques":"📈 Statistics","🧍 Mesures":"🧍 Measures","semaine":"week","Récupération":"Recovery","Médailles":"Medals","Bilan de l'année":"Year in review","Récupération des muscles":"Muscle recovery","Quels muscles sont reposés ou encore fatigués.":"Which muscles are rested or still tired.","Tes chiffres de l'année, ton exercice préféré, tes plus gros progrès.":"Your numbers for the year, favorite exercise, biggest progress.","✨ Nouveau programme à partir de zéro":"✨ New program from scratch","Colle la réponse de l'IA au complet; l'appli trouve les lignes toute seule. Une réponse avec plusieurs ROUTINE: les met toutes à jour.":"Paste the AI's full answer; the app finds the lines by itself. An answer with several ROUTINE: updates them all.","📋 Coller":"📋 Paste","à":"at","🌙 Aucune séance":"🌙 No workouts","Français":"Français","# séance":"# workout","cette semaine · # séance":"this week · # workout","cette semaine · # séances":"this week · # workouts"};
 const RX_EN = [
   [/^Supprimer « (.+) »\?$/, 'Delete “$1”?'],
   [/^Retirer « (.+) » de cette séance\?$/, 'Remove “$1” from this workout?'],
@@ -663,7 +668,7 @@ const routineEx = (rid, name) => { const r = S.routines.find(x => x.id === rid);
 /* ---------- Format texte (partage IA) ---------- */
 function routineToText(r) {
   return 'ROUTINE: ' + r.name + '\n' + r.exercises.map(e => {
-    const f = [e.name, `${e.sets} x ${e.reps}`, fmtW(e.weight)];
+    const f = [e.name, `${e.sets} x ${e.reps}`, e.nw && (e.weight === '' || e.weight == null) ? '? ' + U() : fmtW(e.weight)];
     if (e.note) f.push(e.note);
     if (e.timed) f.push(T('DURÉE', 'TIMED'));
     if (e.rest) f.push('R:' + (e.rest < 0 ? 0 : e.rest));
@@ -698,6 +703,7 @@ function parseText(txt, defaultName) {
       else if (f) notes.push(f);
     });
     const o = {name: p[0], sets, reps, weight: wm ? +wm[0] : '', note: notes.join(' | ')};
+    if (!wm && /\?/.test(p[2] || '')) o.nw = true;
     if (rest === 0) o.rest = -1; else if (rest >= 5 && rest <= 900) o.rest = rest;
     if (ss) o.ss = ss;
     if (timed || TIMED_RE.test(p[0])) o.timed = true;
@@ -717,13 +723,34 @@ function aiPrompt(routines) {
   if (isEN()) return `Here is my workout ${routines.length > 1 ? 'program' : 'routine'} (weights in ${U()}${S.settings.failDefault ? ', all my sets are taken to failure' : ''}).\n\n${blocks}${routines.length > 1 ? schedTxt() : ''}\n\n` +
     `Reply with the modified version in EXACTLY this format, one exercise per line:\n` +
     `ROUTINE: Routine name\n- Exercise | sets x reps | weight ${U()} | note (optional) | R:90 (rest in seconds, optional) | SS:A (optional) | TIMED (optional, if reps are seconds)\n` +
-    `Write BW for bodyweight. Keep my R:… (rest in seconds) values, or adjust them if relevant. For a superset, put the same SS:A (or SS:B…) on consecutive exercises done together. ` +
+    `Write BW for bodyweight (“?” = weight to be determined: suggest a starting weight). Keep my R:… (rest in seconds) values, or adjust them if relevant. For a superset, put the same SS:A (or SS:B…) on consecutive exercises done together. ` +
     `Keep the same routine name so my app replaces it.\n\nMy request: `;
   return `Voici ${routines.length > 1 ? 'mon programme' : 'ma routine'} d'entraînement (charges en ${U()}${S.settings.failDefault ? ", toutes mes séries sont faites à l'échec" : ''}).\n\n${blocks}${routines.length > 1 ? schedTxt() : ''}\n\n` +
     `Réponds avec la version modifiée dans EXACTEMENT ce format, un exercice par ligne :\n` +
     `ROUTINE: Nom de la routine\n- Exercice | séries x reps | charge ${U()} | note (optionnelle) | R:90 (repos en secondes, optionnel) | SS:A (optionnel) | DURÉE (optionnel, si les reps sont des secondes)\n` +
-    `Écris PDC pour le poids du corps. Garde les R:… (repos en secondes) de mes exercices, ou ajuste-les si c'est pertinent. Pour un superset, mets le même SS:A (ou SS:B…) sur les exercices consécutifs faits ensemble. ` +
+    `Écris PDC pour le poids du corps (« ? » = charge à déterminer : propose une charge de départ). Garde les R:… (repos en secondes) de mes exercices, ou ajuste-les si c'est pertinent. Pour un superset, mets le même SS:A (ou SS:B…) sur les exercices consécutifs faits ensemble. ` +
     `Garde le même nom de routine pour que mon appli la remplace.\n\nMa demande : `;
+}
+function freshPrompt() {
+  const since = Date.now() - 90 * 864e5, best = {}, cnt = {};
+  S.history.filter(x => new Date(x.date) >= since).forEach(x => x.exercises.forEach(e => {
+    const k = e.name; cnt[k] = (cnt[k] || 0) + 1;
+    work(e.sets).filter(s => s.u !== 's').forEach(s => { const v = e1rm(s.w, s.r); if (!best[k] || v > best[k].v || (!v && +s.r > +best[k].r)) best[k] = {v, w: s.w, r: s.r}; });
+  }));
+  const ks = Object.keys(best).sort((a, b) => cnt[b] - cnt[a]).slice(0, 30);
+  const perf = ks.map(k => `${k} : ${best[k].w === '' || best[k].w == null ? BWL() : best[k].w}×${best[k].r}`).join('\n');
+  if (isEN()) return `Create a NEW workout program for me from scratch (weights in ${U()}${S.settings.failDefault ? ', I take my sets to failure' : ''}). ` +
+    `Choose the exercises and structure freely: do NOT base it on my old routines, new exercises are welcome. ` +
+    (perf ? `To help you estimate starting weights, here are my best recent sets (last 90 days):\n${perf}\n\n` : '\n') +
+    `Reply in EXACTLY this format, one ROUTINE: line per workout day, one exercise per line:\n` +
+    `ROUTINE: Routine name\n- Exercise | sets x reps | weight ${U()} | note (optional) | R:90 (rest in seconds) | SS:A (optional, superset) | TIMED (optional, if reps are seconds)\n` +
+    `Write BW for bodyweight. Give each routine a new, clear name (e.g. Push A, Pull A, Legs A).\n\nMy request (number of days per week, split, goals…): `;
+  return `Crée-moi un NOUVEAU programme d'entraînement à partir de zéro (charges en ${U()}${S.settings.failDefault ? ", je fais mes séries à l'échec" : ''}). ` +
+    `Choisis librement les exercices et la structure : ne te base PAS sur mes anciennes routines, tu peux proposer de nouveaux exercices. ` +
+    (perf ? `Pour t'aider à estimer mes charges de départ, voici mes meilleures séries récentes (90 derniers jours) :\n${perf}\n\n` : '\n') +
+    `Réponds dans EXACTEMENT ce format, une ligne ROUTINE: par séance, un exercice par ligne :\n` +
+    `ROUTINE: Nom de la routine\n- Exercice | séries x reps | charge ${U()} | note (optionnelle) | R:90 (repos en secondes) | SS:A (optionnel, superset) | DURÉE (optionnel, si les reps sont des secondes)\n` +
+    `Écris PDC pour le poids du corps. Donne à chaque routine un nouveau nom clair (ex. Push A, Pull A, Jambes A).\n\nMa demande (nombre de jours par semaine, split, objectifs…) : `;
 }
 async function copy(t) {
   try { await navigator.clipboard.writeText(t); toast('✅ Copié! Colle-le dans ton IA'); return; } catch (e) {}
@@ -757,7 +784,7 @@ function previewPaste(rid) {
   const r = S.routines.find(x => x.id === rid);
   const res = parseText($('#pasteTa').value, r && r.name);
   $('#pv').innerHTML = res.length ? res.map(x => {
-    const exists = S.routines.some(y => norm(y.name) === norm(x.name)) || (r && res.length === 1);
+    const exists = S.routines.some(y => (!pasteFolder || (y.folder || DEF_FOLDER) === pasteFolder) && norm(y.name) === norm(x.name)) || (r && res.length === 1);
     return `<div class="preview"><b>${esc(x.name)}</b> <span class="tag">${exists ? 'mise à jour' : 'nouvelle'}</span><br>${x.exercises.map(e => `${e.ss ? '⛓' + esc(e.ss) + ' ' : ''}${esc(e.name)} — ${e.sets}×${esc(e.reps)} · ${esc(fmtW(e.weight))}${e.rest ? ' · ⏱' + fmtRest(e.rest) : ''}`).join('<br>')}</div>`;
   }).join('') : '<p class="muted small">Aucun exercice reconnu pour l\'instant.</p>';
 }
@@ -765,8 +792,9 @@ function applyPaste(rid) {
   const r = S.routines.find(x => x.id === rid);
   const res = parseText($('#pasteTa').value, r && r.name);
   if (!res.length) { toast('Aucun exercice reconnu'); return; }
+  const inF = y => !pasteFolder || (y.folder || DEF_FOLDER) === pasteFolder;
   res.forEach(x => {
-    let t = S.routines.find(y => norm(y.name) === norm(x.name));
+    let t = S.routines.find(y => inF(y) && norm(y.name) === norm(x.name));
     if (!t && r && res.length === 1) t = r;
     if (t) {
       x.exercises.forEach(ne => { const old = t.exercises.find(o => norm(o.name) === norm(ne.name)); if (old && old.rest && !ne.rest) ne.rest = old.rest; if (old && old.sl && +old.sets === +ne.sets && String(old.reps) === String(ne.reps) && String(old.weight ?? '') === String(ne.weight ?? '')) ne.sl = old.sl; });
@@ -996,8 +1024,10 @@ function finishWorkout() {
     if (nv > 0 && pv > 0 && nv > pv) prs.push({name: e.name, from: `${pb.w}×${pb.r}`, to: `${nb.w}×${nb.r}`});
     else if (nv === 0 && pv === 0) { const nr = Math.max(...ws.map(s => +s.r)), pr = Math.max(...prevSets.map(s => +s.r)); if (nr > pr) prs.push({name: e.name, from: pr + ' reps', to: nr + ' reps'}); }
   });
+  const medBefore = medalsEarned().got;
   S.history.push({id, routineId: a.routineId, routineName: a.routineName, date: a.start, duration: Math.round((Date.now() - new Date(a.start)) / 60000), exercises});
   const wasFree = !a.routineId;
+  const medDefs = medalDefs(), medNew = Object.keys(medalsEarned().got).filter(k => !medBefore[k]).map(k => medDefs.find(d => d.id === k)).filter(Boolean);
   setTimeout(() => queueCloud(1500), 0);
   S.active = null; save(); stopTimer(); setRoot('profile'); render();
   modal(`<h2>Séance enregistrée 💪</h2>
@@ -1006,8 +1036,9 @@ function finishWorkout() {
     ${(() => { if (!prevH) return ''; const nh = S.history[S.history.length - 1];
       const row = (l, nv, pv, f) => { const pc = pv ? Math.round((nv - pv) / pv * 100) : null; return `<div class="row between" style="padding:5px 0"><span class="muted">${l}</span><span><b>${f(nv)}</b> ${pc == null ? '' : `<span class="small" style="color:${pc >= 0 ? 'var(--ok)' : 'var(--danger)'}">${pc >= 0 ? '▲' : '▼'} ${Math.abs(pc)} %</span>`}</span></div>`; };
       return `<div class="card" style="margin:8px 0"><b>Par rapport au ${dateFr(prevH.date)}</b>${row('Volume', sessVol(nh), sessVol(prevH), v => Math.round(v).toLocaleString(LOC()) + ' ' + U())}${row('Réps', sessReps(nh), sessReps(prevH), v => v)}${prevH.duration ? row('Durée', nh.duration, prevH.duration, v => v + ' min') : ''}</div>`; })()}
+    ${medNew.length ? `<div class="card" style="border-color:var(--accent);margin:8px 0"><b>🏅 ${T(medNew.length > 1 ? 'Nouvelles médailles!' : 'Nouvelle médaille!', medNew.length > 1 ? 'New medals!' : 'New medal!')}</b>${medNew.map(d => `<div style="margin-top:4px">${d.ic} ${esc(d.t)}</div>`).join('')}</div>` : ''}
     ${wasFree ? `<button class="btn block" data-act="save-as-routine" data-hid="${id}" style="margin-bottom:8px">💾 Enregistrer comme routine</button>` : ''}
-    <button class="btn block" data-act="hist-share" data-hid="${id}" style="margin-bottom:8px">📤 Partager ma séance</button>
+    <div class="grid2" style="margin-bottom:8px"><button class="btn" data-act="hist-img" data-hid="${id}">🖼️ ${T('Image', 'Image')}</button><button class="btn" data-act="hist-share" data-hid="${id}">📤 ${T('Texte', 'Text')}</button></div>
     <button class="btn primary block" data-act="close">Super</button>`);
 }
 function replaceExercise(ei, pick) {
@@ -1116,6 +1147,7 @@ function vWorkout() {
       ${e.target.note ? `<div class="last">📋 ${esc(e.target.note)}</div>` : ''}
       ${e.note ? `<div class="last">📝 ${esc(e.note)}</div>` : ''}
       ${!last ? '<div class="last">Première fois</div>' : last.note ? `<div class="last">Dernière note : ${esc(last.note)}</div>` : ''}
+      ${stagBtn(e.name, ei)}
       ${(() => { const sg = suggestFor(e); return sg ? `<div class="sug"><span>💡 Haut de la fourchette atteint (${esc(sg.from)}). Essaie <b>${sg.top} ${U()}${sg.bw ? ' de lest' : ''}</b>.</span><button class="btn primary sm" data-act="apply-sug" data-e="${ei}">Appliquer</button></div>` : ''; })()}
       <div class="colhead w5"><span>#</span><span>Précédent</span><span>${U()}</span><span>${tm ? 'Sec' : 'Reps'}</span><span></span></div>
       ${e.sets.map((s, si) => {
@@ -1127,7 +1159,7 @@ function vWorkout() {
           <button class="prev" data-act="use-prev" data-e="${ei}" data-s="${si}" aria-label="Reprendre la performance précédente">${prevCell(prev, s, k)}</button>
           <input inputmode="decimal" value="${esc(s.w)}" placeholder="—" data-in="w" data-e="${ei}" data-s="${si}">
           <input inputmode="numeric" value="${esc(s.r)}" placeholder="${esc(s.ph)}" data-in="r" data-e="${ei}" data-s="${si}">
-          <button class="check ${running ? 'run' : ''}" data-act="done" data-e="${ei}" data-s="${si}" aria-label="${tm ? 'Chrono / valider' : 'Valider la série'}">${chk}</button>
+          <button class="check ${running ? 'run' : ''} ${s.done && s.pr ? 'pr' : ''}" data-act="done" data-e="${ei}" data-s="${si}" aria-label="${tm ? 'Chrono / valider' : 'Valider la série'}">${s.done && s.pr ? '🏆' : chk}</button>
         </div>${s.n || (s.rir != null && s.rir !== '') ? `<div class="last">${s.rir != null && s.rir !== '' ? 'RIR ' + esc(s.rir) + ' ' : ''}${s.n ? '📝 ' + esc(s.n) : ''}</div>` : ''}`;
       }).join('')}
       <div class="row wrap" style="margin-top:8px">
@@ -1153,6 +1185,7 @@ function histCard(h, open) {
     <ul class="exlist">${h.exercises.map(e => `<li><span class="row" style="gap:8px;align-items:flex-start">${thumb(e.name, 28)}<span>${exl(e.name)}${e.ss ? ` <span class="tag">⛓${esc(e.ss)}</span>` : ''}${e.note ? `<br><span class="small muted">📝 ${esc(e.note)}</span>` : ''}${e.sets.map((s, i) => s.n ? `<br><span class="small muted">Série ${i + 1} : ${esc(s.n)}</span>` : '').join('')}</span></span><span class="tag">${e.sets.map(s => fmtSet(s, true)).join(', ')}</span></li>`).join('')}</ul>
     <div class="row"><button class="btn sm" data-act="hist-edit" data-hid="${h.id}">✏️ Modifier</button>
     <button class="btn sm" data-act="hist-share" data-hid="${h.id}">📤 Partager</button>
+    <button class="btn sm" data-act="hist-img" data-hid="${h.id}">🖼️ Image</button>
     <button class="btn danger sm" data-act="del-hist" data-hid="${h.id}">Supprimer</button></div>
     </details>`;
 }
@@ -1667,8 +1700,10 @@ function folders() {
 function openFolderMenu(f) {
   const n = S.routines.filter(r => (r.folder || DEF_FOLDER) === f).length;
   modal(`<h2>📁 ${esc(f)}</h2><div class="menu" style="margin-top:10px">
-    ${n ? `<button class="btn block" data-act="ai-folder" data-f="${esc(f)}">🤖 ${T(`Envoyer le dossier à l'IA (${n} routine${n > 1 ? 's' : ''})`, `Send the folder to AI (${n} routine${n > 1 ? 's' : ''})`)}</button>
-    <button class="btn block" data-act="paste-folder" data-f="${esc(f)}">📥 ${T("Coller la réponse de l'IA", "Paste the AI's answer")}</button>` : ''}
+    ${n ? `<button class="btn block" data-act="ai-folder" data-f="${esc(f)}">🤖 ${T(`Modifier ce dossier avec l'IA (${n} routine${n > 1 ? 's' : ''})`, `Edit this folder with AI (${n} routine${n > 1 ? 's' : ''})`)}</button>` : ''}
+    <button class="btn block" data-act="ai-fresh">✨ ${T("Nouveau programme à partir de zéro (IA)", 'New program from scratch (AI)')}</button>
+    <button class="btn block" data-act="paste-folder" data-f="${esc(f)}">📥 ${T("Coller la réponse de l'IA dans ce dossier", "Paste the AI's answer into this folder")}</button>
+    <p class="muted small" style="margin:2px 0 6px">${T("Le collage touche seulement les routines de ce dossier : les autres dossiers ne changent pas.", 'Pasting only touches the routines in this folder: other folders stay unchanged.')}</p>
     <button class="btn block" data-act="rename-folder" data-f="${esc(f)}">✏️ Renommer</button>
     <button class="btn danger block" data-act="del-folder" data-f="${esc(f)}">Supprimer le dossier</button>
     <button class="btn block" data-act="close">Annuler</button></div>
@@ -2010,6 +2045,7 @@ function vTrain() {
   h += `<button class="btn block big" data-act="start-empty">＋ Démarrer un entraînement vide</button>
     <div class="row between" style="margin:18px 0 8px"><h2 style="margin:0">Routines</h2><button class="btn sm" data-act="new-folder" aria-label="Nouveau dossier">📁＋</button></div>
     <div class="grid2" style="margin-bottom:8px"><button class="btn" data-act="new-routine">📋 Nouv. routine</button><button class="btn" data-act="ai-menu">🤖 Programme IA</button></div>
+    <button class="linkbtn small" data-act="programs" style="margin-bottom:6px;display:block">📚 ${T('Programmes connus prêts à importer', 'Popular programs ready to import')}</button>
     ${deloadOn() ? '' : '<button class="linkbtn small" data-act="deload-menu" style="margin-bottom:6px">🪶 Semaine de récupération (deload)</button>'}`;
   folders().forEach(f => {
     const rs = S.routines.filter(r => (r.folder || DEF_FOLDER) === f);
@@ -2043,8 +2079,11 @@ function openRoutineMenu(rid) {
 function openAiMenu() {
   modal(`<div class="row between"><h2>🤖 Programme IA</h2><button class="btn sm" data-act="close">✕</button></div>
     <p class="muted small">Envoie ton programme à n'importe quelle IA, puis colle sa réponse ici. Les routines du même nom sont mises à jour, les nouvelles sont créées.</p>
+    <p class="muted small">✨ ${T("« À partir de zéro » : l'IA choisit de nouveaux exercices sans se baser sur tes routines, mais elle reçoit tes meilleures charges pour bien estimer les poids. Astuce : crée un dossier vide, puis colle sa réponse avec le menu ⋯ du dossier.", '“From scratch”: the AI picks new exercises without basing them on your routines, but it gets your best weights to estimate loads. Tip: create an empty folder, then paste its answer with the folder’s ⋯ menu.')}</p>
     <div class="menu">
       <button class="btn block" data-act="ai-all">📤 Envoyer tout mon programme à l'IA</button>
+      <button class="btn block" data-act="ai-fresh">✨ Nouveau programme à partir de zéro</button>
+      <button class="btn block" data-act="programs">📚 ${T('Programmes connus (PPL, Upper/Lower, PHUL…)', 'Popular programs (PPL, Upper/Lower, PHUL…)')}</button>
       <button class="btn block" data-act="paste" data-rid="">📥 Coller un programme de l'IA</button>
       <button class="btn block" data-act="ai-history">📊 Envoyer mon historique (30 jours)</button>
     </div>`);
@@ -2088,6 +2127,7 @@ function vRoutineDetail() {
     ${r.exercises.map(e => `<div class="rex ${e.ss ? 'ssl' : ''}" ${ssSty(e)}>
       <div class="row" style="gap:12px">${thumb(e.name, 48)}<span class="exlink acc" data-act="go" data-v="exdetail" data-n="${esc(e.name)}">${esc(e.name)}</span>${e.ss ? `<span class="tag" style="color:var(--ss)">⛓ ${esc(e.ss)}</span>` : ''}</div>
       ${e.note ? `<div class="last">📋 ${esc(e.note)}</div>` : ''}
+      ${stagBtn(e.name)}
       <div class="last" style="margin:8px 0">⏱ Minuteur de repos : ${e.rest ? fmtRest(e.rest) : 'par défaut (' + fmtRest(+S.settings.rest || 150) + ')'}</div>
       ${setTable(e)}</div>`).join('')}
     ${r.exercises.length ? '' : '<div class="empty">Aucun exercice. Touche « Modifier la routine ».</div>'}`;
@@ -2264,7 +2304,7 @@ function vProfile() {
   return `<div class="row" style="gap:14px;margin-bottom:16px"><div class="avatar">${esc((nm.trim()[0] || '?').toUpperCase())}</div>
       <div style="flex:1;min-width:0"><h2 style="font-size:20px">${esc(nm)}</h2>
       <div class="row" style="gap:18px;flex-wrap:wrap"><div><span class="muted small">Entraînements</span><br><b>${S.history.length}</b></div><div><span class="muted small">${T('Série', 'Streak')}</span><br><b>🔥 ${streakWeeks()} sem.</b></div><div><span class="muted small">Ce mois</span><br><b>${month}</b></div></div></div></div>
-    ${weekGoal()}
+    ${yearBanner()}${weekGoal()}${stagCard()}
     <div class="row between"><span>${headline}</span><select style="width:auto" data-pf="range"><option value="12" ${pfWeeks === 12 ? 'selected' : ''}>3 derniers mois</option><option value="26" ${pfWeeks === 26 ? 'selected' : ''}>6 mois</option><option value="52" ${pfWeeks === 52 ? 'selected' : ''}>1 an</option><option value="0" ${pfWeeks === 0 ? 'selected' : ''}>Tout</option></select></div>
     <div class="card" style="padding:10px 6px 4px;margin-top:8px">${barsSVG(vals, labels, fmtV, window._chtips, pfSel)}<div class="chtip" id="chtip">${pfSel != null ? window._chtips[pfSel] : T('Touche une barre pour voir le détail · glisse pour voir avant', 'Tap a bar for details · swipe to see earlier weeks')}</div></div>
     <div class="chips">${[['dur', 'Durée'], ['vol', 'Volume'], ['reps', 'Réps']].map(([k, l]) => `<button class="chip ${pfMetric === k ? 'on' : ''}" data-act="pf-metric" data-m="${k}">${l}</button>`).join('')}</div>
@@ -2274,6 +2314,8 @@ function vProfile() {
       <button class="btn tile" data-act="go" data-v="exercises">🏋️ Exercices</button>
       <button class="btn tile" data-act="go" data-v="measures">🧍 Mesures</button>
       <button class="btn tile" data-act="go" data-v="calendar">📅 Calendrier</button>
+      <button class="btn tile" data-act="go" data-v="medals">🏅 ${T('Médailles', 'Medals')}</button>
+      <button class="btn tile" data-act="go" data-v="recov">💪 ${T('Récupération', 'Recovery')}</button>
     </div>
     <div class="row between" style="margin:20px 0 8px"><p class="muted" style="margin:0">Séances récentes</p><button class="btn sm" data-act="hist-new">＋ Séance oubliée</button></div>
     ${recent.length ? recent.map(h => histCard(h)).join('') + (S.history.length > 8 ? `<button class="btn block" data-act="go" data-v="history">Voir toutes les séances (${S.history.length})</button>` : '') : '<div class="empty">Aucune séance encore.</div>'}`;
@@ -2289,7 +2331,9 @@ const STATS = [['st-vol', '📊', 'Séries par groupe musculaire', 'Nombre de s�
   ['st-body', '🧍', 'Répartition musculaire (corps)', 'Carte thermique des muscles travaillés.'],
   ['st-top', '🏋️', 'Principaux exercices', 'Les exercices que tu fais le plus souvent.'],
   ['st-rec', '🏆', 'Records personnels', 'Tes meilleures performances par exercice.'],
-  ['st-month', '🗓️', 'Rapport mensuel', 'Récap de tes entraînements et statistiques du mois.']];
+  ['st-month', '🗓️', 'Rapport mensuel', 'Récap de tes entraînements et statistiques du mois.'],
+  ['recov', '💪', 'Récupération des muscles', 'Quels muscles sont reposés ou encore fatigués.'],
+  ['year', '🎉', 'Bilan de l\'année', 'Tes chiffres de l\'année, ton exercice préféré, tes plus gros progrès.']];
 function vStats() {
   return STATS.map(([v, ic, t, d]) => `<button class="mrow" data-act="go" data-v="${v}"><span class="mic">${ic}</span><span style="flex:1"><b>${t}</b><br><span class="muted small">${d}</span></span><span class="muted">›</span></button>`).join('');
 }
@@ -2440,10 +2484,433 @@ function vExDetail() {
       ${L ? `<div class="chips" style="justify-content:center">${L.p.map(m => `<span class="chip main">${esc(musN(m))}</span>`).join('')}${L.s.map(m => `<span class="chip">${esc(musN(m))}</span>`).join('')}</div>` : ''}
       <button class="btn sm" data-act="exo" data-n="${esc(name)}">📖 Instructions et lien</button></div>
     ${rec ? `<div class="row" style="align-items:stretch;margin-bottom:12px">${rec.best ? `<div class="stat"><span class="muted small">Top série</span><b class="pr">${rec.best.w}×${rec.best.r}</b></div><div class="stat"><span class="muted small">1RM estimé</span><b>${Math.round(rec.best.v)}</b></div><div class="stat"><span class="muted small">Charge max</span><b>${rec.heavy ? rec.heavy.w : '—'}</b></div>` : `<div class="stat"><span class="muted small">Réps max</span><b class="pr">${rec.reps.r}</b></div><div class="stat"><span class="muted small">Séances</span><b>${rec.count}</b></div>`}</div>` : ''}
+    ${stagBtn(name)}
     <div class="card">${pts.length ? '<canvas id="chart"></canvas>' : '<div class="empty" style="padding:16px">Pas encore de données pour ce graphique.</div>'}<div class="chips" style="margin-bottom:0">${chips}</div></div>
+    ${maxTable(rec)}
     <p class="muted" style="margin:16px 0 8px">Historique</p>
     ${ss.length ? ss.slice().reverse().slice(0, 30).map(({h, e}) => `<div class="card"><div class="row between"><b>${esc(h.routineName)}</b><span class="tag">${new Date(h.date).toLocaleDateString(LOC(), {day: 'numeric', month: 'short', year: 'numeric'})}</span></div>
       <div class="small" style="margin-top:6px">${(() => { let n = 0; return e.sets.map(s => `<div class="row between" style="padding:2px 0"><span class="muted">${s.t === 'W' ? 'Échauffement' : 'Série ' + (++n)}</span><span>${fmtSet(s, true)}</span></div>`).join(''); })()}</div></div>`).join('') : '<div class="empty">Tu n\'as pas encore fait cet exercice.</div>'}`;
+}
+
+
+/* ===================== v5 : stagnation, records en direct, maximums, récupération, programmes, image, médailles, bilan ===================== */
+const bestVal = e => { const ws = work(e.sets).filter(s => s.u !== 's'); if (!ws.length) return 0; const v = Math.max(...ws.map(s => e1rm(s.w, s.r))); return v > 0 ? v : Math.max(...ws.map(s => +s.r || 0)) / 1000; };
+function stagnation(name) {
+  const ss = exSessions(name).slice().sort((a, b) => a.h.date.localeCompare(b.h.date));
+  if (ss.length < 4 || ss.some(x => x.e.sets.some(s => s.u === 's'))) return null;
+  const vs = ss.map(x => bestVal(x.e)); const top = Math.max(...vs); if (!(top > 0)) return null;
+  const idx = vs.findIndex(v => v >= top - 1e-9);
+  const k = vs.length - 1 - idx;
+  if (k < 3) return null;
+  const b = ss[idx].e, bs = work(b.sets).filter(s => s.u !== 's').reduce((m, s) => (e1rm(s.w, s.r) || (+s.r / 1000)) > (e1rm(m.w, m.r) || (+m.r / 1000)) ? s : m);
+  return {k, date: ss[idx].h.date, best: `${bs.w === '' || bs.w == null ? BWL() : bs.w}×${bs.r}`, last: ss.slice(-6)};
+}
+function stagBtn(name, ei) {
+  const st = stagnation(name); if (!st) return '';
+  return `<button class="stag" data-act="stag" data-n="${esc(name)}" ${ei != null ? `data-e="${ei}"` : ''}>⚠️ ${T(`Stagne depuis ${st.k} séances`, `Stalled for ${st.k} workouts`)} <span class="muted">· ${T('voir les solutions', 'see options')} ›</span></button>`;
+}
+function openStag(name, ei) {
+  const st = stagnation(name); if (!st) return;
+  const re = S.routines.flatMap(r => r.exercises).find(x => norm(x.name) === norm(name));
+  const rr = re ? String(re.reps || '') : '';
+  const m = rr.match(/(\d+)\s*-\s*(\d+)/), lo = m ? +m[1] : 8;
+  const alt = lo <= 8 ? '10-15' : '5-8';
+  const hist = st.last.map(({h: hh, e}) => `${dateFr(hh.date)} : ${work(e.sets).map(s => `${s.w === '' || s.w == null ? BWL() : s.w}×${s.r}`).join(', ')}`).join('<br>');
+  modal(`<div class="row between"><h2>⚠️ ${esc(name)}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <p class="muted small">${T(`Ton meilleur résultat (<b>${st.best}</b>, le ${dateFr(st.date)}) n'a pas été battu depuis <b>${st.k} séances</b>.`, `Your best result (<b>${st.best}</b>, ${dateFr(st.date)}) hasn't been beaten for <b>${st.k} workouts</b>.`)}</p>
+    <div class="card small">${hist}</div>
+    <h3>${T('Solutions', 'Options')}</h3>
+    <ol class="small" style="padding-left:20px;margin:6px 0 12px">
+      <li style="margin:6px 0"><b>${T('Change la plage de reps', 'Change the rep range')}</b> : ${T(`passe à ${alt} reps pendant 3-4 semaines${rr ? ` (au lieu de ${esc(rr)})` : ''}, puis reviens.`, `switch to ${alt} reps for 3-4 weeks${rr ? ` (instead of ${esc(rr)})` : ''}, then come back.`)}</li>
+      <li style="margin:6px 0"><b>${T('Mini-deload', 'Mini deload')}</b> : ${T('baisse la charge de 10 % pendant une séance, puis remonte. Souvent, tu bats ton record 1-2 séances après.', 'drop the weight by 10 % for one workout, then go back up. You often beat your record 1-2 workouts later.')}</li>
+      <li style="margin:6px 0"><b>${T('Remplace l\'exercice', 'Swap the exercise')}</b> : ${T('une variante proche (haltères au lieu de barre, machine, autre angle) pendant un bloc.', 'a close variation (dumbbells instead of barbell, machine, another angle) for a block.')}</li>
+      <li style="margin:6px 0"><b>${T('Vérifie la récupération', 'Check recovery')}</b> : ${T('sommeil, protéines et nombre de séries sur ce muscle cette semaine.', 'sleep, protein and number of sets on that muscle this week.')}</li>
+    </ol>
+    <div class="menu">
+      ${ei != null ? `<button class="btn block" data-act="stag-deload" data-e="${ei}">🪶 ${T('Appliquer −10 % sur cet exercice aujourd\'hui', 'Apply −10 % to this exercise today')}</button>
+      <button class="btn block" data-act="ex-replace" data-e="${ei}">🔄 ${T('Remplacer l\'exercice', 'Swap the exercise')}</button>` : ''}
+      <button class="btn block" data-act="stag-ai" data-n="${esc(name)}">🤖 ${T('Demander à l\'IA quoi faire', 'Ask the AI what to do')}</button>
+    </div>`);
+}
+function stagPrompt(name) {
+  const st = stagnation(name);
+  const lines = st.last.map(({h: hh, e}) => `${new Date(hh.date).toLocaleDateString(LOC())} : ${work(e.sets).map(s => `${s.w === '' || s.w == null ? BWL() : s.w}×${s.r}`).join(', ')}`).join('\n');
+  return T(`Je stagne sur « ${name} » depuis ${st.k} séances (charges en ${U()}${S.settings.failDefault ? ", séries à l'échec" : ''}). Mes dernières séances :\n${lines}\n\nQue me conseilles-tu (plage de reps, deload, variante, volume)? Si tu modifies ma routine, donne-la dans ce format :\nROUTINE: Nom\n- Exercice | séries x reps | charge ${U()} | note | R:90\n\nMa question : `,
+    `I've stalled on “${name}” for ${st.k} workouts (weights in ${U()}${S.settings.failDefault ? ', sets to failure' : ''}). My latest workouts:\n${lines}\n\nWhat do you suggest (rep range, deload, variation, volume)? If you change my routine, give it in this format:\nROUTINE: Name\n- Exercise | sets x reps | weight ${U()} | note | R:90\n\nMy question: `);
+}
+function stagCard() {
+  const names = [...new Set(S.routines.flatMap(r => r.exercises.map(e => e.name)))].filter(n => stagnation(n));
+  if (!names.length) return '';
+  return `<div class="card" style="border-color:var(--warm)"><b>⚠️ ${T(`${names.length} exercice${names.length > 1 ? 's' : ''} qui stagne${names.length > 1 ? 'nt' : ''}`, `${names.length} stalled exercise${names.length > 1 ? 's' : ''}`)}</b>
+    <div class="chips" style="margin:8px 0 0">${names.map(n => `<button class="chip" data-act="stag" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div></div>`;
+}
+
+/* ----- Record en direct ----- */
+function livePR(ei, si) {
+  const e = S.active.exercises[ei], s = e.sets[si];
+  if (isW(s) || isTimed(e)) return false;
+  const w = +s.w || 0, r = +s.r || 0; if (!r) return false;
+  const hs = S.history.flatMap(h => h.exercises.filter(x => norm(x.name) === norm(e.name)).flatMap(x => work(x.sets))).filter(x => x.u !== 's');
+  if (!hs.length) return false;
+  const others = e.sets.filter((x, j) => j !== si && x.done && !isW(x));
+  const all = hs.concat(others);
+  if (w > 0) { const v = e1rm(w, r), b = Math.max(0, ...all.map(x => e1rm(x.w, x.r))); return b > 0 && v > b + 1e-9; }
+  const bw = all.filter(x => !(+x.w > 0)); return bw.length > 0 && r > Math.max(...bw.map(x => +x.r || 0));
+}
+
+/* ----- Tableau des maximums ----- */
+function maxTable(rec) {
+  if (!rec || !rec.best || !(rec.best.v > 0)) return '';
+  const one = rec.best.v, inc = incr(), rnd = v => Math.round(v / inc) * inc;
+  const rows = [1, 2, 3, 5, 6, 8, 10, 12, 15].map(r => { const w = r === 1 ? one : one / (1 + r / 30); return `<tr><td>${r}</td><td><b>${rnd(w)} ${U()}</b></td><td class="muted">${Math.round(w / one * 100)} %</td></tr>`; }).join('');
+  return `<div class="card"><h3>📐 ${T('Tes maximums estimés', 'Your estimated maxes')}</h3>
+    <p class="muted small" style="margin:2px 0 8px">${T(`Calculé à partir de ta meilleure série (${rec.best.w}×${rec.best.r}). Pratique quand l'IA te donne une nouvelle plage de reps.`, `Based on your best set (${rec.best.w}×${rec.best.r}). Handy when the AI gives you a new rep range.`)}</p>
+    <table class="stbl mxt"><thead><tr><th>${T('RÉPS', 'REPS')}</th><th>${T('CHARGE', 'WEIGHT')}</th><th>% 1RM</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+/* ----- Récupération musculaire ----- */
+function recovery() {
+  const now = Date.now(), f = {}, last = {};
+  S.history.forEach(h => {
+    const hrs = (now - new Date(h.date)) / 36e5 - (+h.duration || 0) / 60; if (hrs > 96 || hrs < -1) return;
+    h.exercises.forEach(e => {
+      const n = work(e.sets).length, L = libEntry(e.name); if (!n || !L) return;
+      const add = (m, k) => { const rt = ['pectorals', 'lats', 'upper back', 'quads', 'hamstrings', 'glutes', 'spine'].includes(m) ? 72 : 48;
+        f[m] = (f[m] || 0) + Math.min(1, n * k / 6) * Math.max(0, 1 - Math.max(0, hrs) / rt); if (!last[m] || hrs < last[m]) last[m] = Math.max(0, hrs); };
+      L.p.forEach(m => add(m, 1)); L.s.forEach(m => add(m, 0.5));
+    });
+  });
+  Object.keys(f).forEach(m => f[m] = Math.min(1, f[m]));
+  return {f, last};
+}
+function recovSVG(shapes, f, dx) {
+  return shapes.map(([t, m, ...g]) => {
+    const v = m ? (f[m] || 0) : 0;
+    const st = !m ? 'fill:var(--card2)' : `fill:hsl(${Math.round(120 * (1 - v))} 70% 45%)`;
+    if (t === 'c') return `<circle cx="${g[0] + dx}" cy="${g[1]}" r="${g[2]}" style="${st}"/>`;
+    if (t === 'e') return `<ellipse cx="${g[0] + dx}" cy="${g[1]}" rx="${g[2]}" ry="${g[3]}" style="${st}"/>`;
+    if (t === 'r') return `<rect x="${g[0] + dx}" y="${g[1]}" width="${g[2]}" height="${g[3]}" rx="${g[4]}" style="${st}"/>`;
+    return `<polygon points="${g[0].split(' ').map(q => { const [x, y] = q.split(',').map(Number); return (x + dx) + ',' + y; }).join(' ')}" style="${st}"/>`;
+  }).join('');
+}
+function vRecovery() {
+  const {f, last} = recovery();
+  const rows = Object.entries(f).sort((a, b) => b[1] - a[1]);
+  const fresh = rows.filter(([m, v]) => v < 0.25).length;
+  return `<p class="muted small" style="margin:0 0 10px">${T('Estimation selon tes séries des 4 derniers jours : les gros muscles récupèrent en ~72 h, les petits en ~48 h. Vert = prêt, rouge = encore fatigué.', 'Estimate based on your sets from the last 4 days: big muscles recover in ~72 h, small ones in ~48 h. Green = ready, red = still tired.')}</p>
+    <div class="card"><svg viewBox="0 0 300 312" width="100%" role="img" aria-label="${T('Récupération des muscles', 'Muscle recovery')}">${recovSVG(BODY_F, f, 0)}${recovSVG(BODY_B, f, 160)}
+      <text x="70" y="308" text-anchor="middle" style="fill:var(--muted);font-size:12px">${T('Avant', 'Front')}</text><text x="230" y="308" text-anchor="middle" style="fill:var(--muted);font-size:12px">${T('Arrière', 'Back')}</text></svg>
+      <div class="row" style="justify-content:center;gap:8px;margin-top:6px"><span class="small muted">${T('Prêt', 'Ready')}</span><span style="width:120px;height:10px;border-radius:5px;background:linear-gradient(90deg,hsl(120 70% 45%),hsl(60 70% 45%),hsl(0 70% 45%))"></span><span class="small muted">${T('Fatigué', 'Tired')}</span></div></div>
+    <div class="card"><h3>${T('Muscles travaillés récemment', 'Recently trained muscles')}</h3>
+    ${rows.length ? rows.map(([m, v]) => `<div class="bar"><span>${esc(musN(m))}</span><div class="track"><div class="fill" style="width:${Math.max(4, (1 - v) * 100)}%;background:hsl(${Math.round(120 * (1 - v))} 70% 45%)"></div></div><b>${Math.round((1 - v) * 100)} %</b></div><div class="small muted" style="margin:-4px 0 8px">${T('il y a', '')} ${Math.round(last[m])} h${isEN() ? ' ago' : ''}</div>`).join('')
+      : `<div class="empty">${T('Tout est récupéré 💪 Aucun muscle travaillé ces 4 derniers jours.', 'Everything is recovered 💪 No muscle trained in the last 4 days.')}</div>`}
+    ${rows.length ? `<p class="small" style="margin:8px 0 0">${T(`✅ ${fresh} muscle${fresh > 1 ? 's' : ''} prêt${fresh > 1 ? 's' : ''} sur ${rows.length} travaillés récemment. Les muscles absents de la liste sont reposés.`, `✅ ${fresh} of ${rows.length} recently trained muscles ready. Muscles not listed are rested.`)}</p>` : ''}</div>`;
+}
+
+/* ----- Programmes prêts à importer ----- */
+const PROGRAMS = [
+  ['ppl', 'Push / Pull / Legs', '3 routines · 3 ou 6 jours/semaine', '3 routines · 3 or 6 days/week', `ROUTINE: Push
+- Développé Couché (Barre) | 3 x 6-10 | ? | R:180
+- Développé Incliné (Haltère) | 3 x 8-12 | ? | R:120
+- Développé Militaire (Haltère) | 3 x 8-12 | ? | R:120
+- Élévation Latérale (Haltère) | 3 x 12-15 | ? | R:60
+- Extension Triceps Corde | 3 x 10-15 | ? | R:60
+- Extension Triceps au-dessus de la Tête (Poulie) | 2 x 10-15 | ? | R:60
+ROUTINE: Pull
+- Tractions | 3 x 6-10 | PDC | R:150
+- Rowing Penché (Barre) | 3 x 8-10 | ? | R:120
+- Rowing Poulie Assis | 3 x 10-12 | ? | R:90
+- Face Pull | 3 x 12-15 | ? | R:60
+- Curl Barre | 3 x 8-12 | ? | R:60
+- Curl Marteau (Haltère) | 2 x 10-15 | ? | R:60
+ROUTINE: Legs
+- Squat (Barre) | 3 x 6-10 | ? | R:180
+- Soulevé de Terre Roumain (Barre) | 3 x 8-10 | ? | R:150
+- Presse à Cuisses | 3 x 10-12 | ? | R:120
+- Leg Curl Couché (Machine) | 3 x 10-15 | ? | R:90
+- Extension des Jambes (Machine) | 2 x 12-15 | ? | R:60
+- Mollets Debout (Machine) | 3 x 10-15 | ? | R:60`],
+  ['ul', 'Upper / Lower', '4 routines · 4 jours/semaine', '4 routines · 4 days/week', `ROUTINE: Upper 1
+- Développé Couché (Barre) | 3 x 6-8 | ? | R:180
+- Rowing Penché (Barre) | 3 x 6-10 | ? | R:150
+- Développé Militaire (Haltère) | 2 x 8-12 | ? | R:120
+- Tirage Vertical (Poulie) | 2 x 8-12 | ? | R:120
+- Curl Barre | 2 x 8-12 | ? | R:60
+- Extension Triceps Corde | 2 x 10-15 | ? | R:60
+ROUTINE: Lower 1
+- Squat (Barre) | 3 x 6-8 | ? | R:180
+- Soulevé de Terre Roumain (Barre) | 3 x 8-10 | ? | R:150
+- Leg Curl Couché (Machine) | 2 x 10-15 | ? | R:90
+- Mollets Debout (Machine) | 3 x 10-15 | ? | R:60
+- Crunch (Poulie) | 3 x 10-15 | ? | R:60
+ROUTINE: Upper 2
+- Développé Incliné (Haltère) | 3 x 8-12 | ? | R:120
+- Tractions | 3 x 6-10 | PDC | R:150
+- Rowing Poulie Assis | 2 x 10-12 | ? | R:90
+- Élévation Latérale (Haltère) | 3 x 12-15 | ? | R:60
+- Curl Marteau (Haltère) | 2 x 10-15 | ? | R:60
+- Extension Triceps au-dessus de la Tête (Poulie) | 2 x 10-15 | ? | R:60
+ROUTINE: Lower 2
+- Presse à Cuisses | 3 x 10-12 | ? | R:120
+- Fentes Bulgares (Haltère) | 3 x 8-12 | ? | R:90
+- Extension des Jambes (Machine) | 2 x 12-15 | ? | R:60
+- Leg Curl Assis (Machine) | 2 x 10-15 | ? | R:60
+- Mollets Assis (Machine) | 3 x 12-15 | ? | R:60`],
+  ['phul', 'PHUL (force + hypertrophie)', '4 routines · 4 jours/semaine', '4 routines · 4 days/week', `ROUTINE: Upper Force
+- Développé Couché (Barre) | 4 x 3-5 | ? | R:180
+- Développé Incliné (Haltère) | 3 x 6-10 | ? | R:150
+- Rowing Penché (Barre) | 4 x 3-5 | ? | R:180
+- Tirage Vertical (Poulie) | 3 x 6-10 | ? | R:120
+- Développé Militaire (Barre) | 3 x 5-8 | ? | R:150
+- Curl Barre | 2 x 6-10 | ? | R:90
+ROUTINE: Lower Force
+- Squat (Barre) | 4 x 3-5 | ? | R:180
+- Soulevé de Terre (Barre) | 3 x 3-5 | ? | R:180
+- Presse à Cuisses | 3 x 10-15 | ? | R:120
+- Leg Curl Couché (Machine) | 3 x 6-10 | ? | R:90
+- Mollets Debout (Machine) | 4 x 6-10 | ? | R:60
+ROUTINE: Upper Hypertrophie
+- Développé Incliné (Barre) | 4 x 8-12 | ? | R:120
+- Écarté (Haltère) | 3 x 8-12 | ? | R:90
+- Rowing Poulie Assis | 4 x 8-12 | ? | R:90
+- Rowing Haltère à un Bras | 3 x 8-12 | ? | R:90
+- Élévation Latérale (Haltère) | 4 x 10-15 | ? | R:60
+- Curl Incliné Assis (Haltère) | 3 x 8-12 | ? | R:60
+- Extension Triceps Corde | 3 x 8-12 | ? | R:60
+ROUTINE: Lower Hypertrophie
+- Squat Avant (Barre) | 4 x 8-12 | ? | R:150
+- Fentes Bulgares (Haltère) | 3 x 8-12 | ? | R:90
+- Extension des Jambes (Machine) | 3 x 10-15 | ? | R:60
+- Leg Curl Assis (Machine) | 3 x 10-15 | ? | R:60
+- Mollets Assis (Machine) | 4 x 8-12 | ? | R:60`],
+  ['arnold', 'Arnold split', '3 routines · 6 jours/semaine', '3 routines · 6 days/week', `ROUTINE: Pecs & Dos
+- Développé Couché (Barre) | 4 x 6-10 | ? | R:150
+- Tractions | 4 x 6-10 | PDC | R:150
+- Développé Incliné (Haltère) | 3 x 8-12 | ? | R:120
+- Rowing Penché (Barre) | 3 x 8-12 | ? | R:120
+- Pull Over (Haltère) | 3 x 10-12 | ? | R:90
+- Écarté (Haltère) | 3 x 10-12 | ? | R:90
+ROUTINE: Épaules & Bras
+- Développé Militaire (Barre) | 4 x 6-10 | ? | R:150
+- Élévation Latérale (Haltère) | 4 x 10-15 | ? | R:60
+- Oiseau (Haltère) | 3 x 12-15 | ? | R:60
+- Curl Barre | 4 x 8-12 | ? | R:90
+- Barre au Front (Barre EZ) | 4 x 8-12 | ? | R:90
+- Curl Marteau (Haltère) | 3 x 10-12 | ? | R:60
+ROUTINE: Jambes
+- Squat (Barre) | 4 x 6-10 | ? | R:180
+- Soulevé de Terre Roumain (Barre) | 3 x 8-10 | ? | R:150
+- Presse à Cuisses | 3 x 10-12 | ? | R:120
+- Leg Curl Couché (Machine) | 3 x 10-12 | ? | R:90
+- Mollets Debout (Machine) | 4 x 10-15 | ? | R:60
+- Crunch (Poulie) | 3 x 12-15 | ? | R:60`],
+  ['fb', 'Full body', '3 routines · 3 jours/semaine', '3 routines · 3 days/week', `ROUTINE: Full Body A
+- Squat (Barre) | 3 x 6-8 | ? | R:180
+- Développé Couché (Barre) | 3 x 6-8 | ? | R:180
+- Rowing Penché (Barre) | 3 x 8-10 | ? | R:120
+- Élévation Latérale (Haltère) | 2 x 12-15 | ? | R:60
+- Curl Barre | 2 x 10-12 | ? | R:60
+ROUTINE: Full Body B
+- Soulevé de Terre (Barre) | 3 x 4-6 | ? | R:180
+- Développé Militaire (Barre) | 3 x 6-8 | ? | R:150
+- Tractions | 3 x 6-10 | PDC | R:150
+- Fentes Bulgares (Haltère) | 2 x 8-12 | ? | R:90
+- Extension Triceps Corde | 2 x 10-15 | ? | R:60
+ROUTINE: Full Body C
+- Presse à Cuisses | 3 x 10-12 | ? | R:120
+- Développé Incliné (Haltère) | 3 x 8-12 | ? | R:120
+- Rowing Poulie Assis | 3 x 10-12 | ? | R:90
+- Leg Curl Couché (Machine) | 2 x 10-15 | ? | R:60
+- Mollets Debout (Machine) | 3 x 10-15 | ? | R:60`],
+  ['bro', 'Split classique (bro split)', '5 routines · 5 jours/semaine', '5 routines · 5 days/week', `ROUTINE: Pectoraux
+- Développé Couché (Barre) | 4 x 6-10 | ? | R:150
+- Développé Incliné (Haltère) | 3 x 8-12 | ? | R:120
+- Écarté (Haltère) | 3 x 10-12 | ? | R:90
+- Dips | 3 x 8-12 | PDC | R:90
+ROUTINE: Dos
+- Tractions | 4 x 6-10 | PDC | R:150
+- Rowing Penché (Barre) | 3 x 8-10 | ? | R:120
+- Tirage Vertical (Poulie) | 3 x 10-12 | ? | R:90
+- Rowing Poulie Assis | 3 x 10-12 | ? | R:90
+ROUTINE: Épaules
+- Développé Militaire (Haltère) | 4 x 8-12 | ? | R:120
+- Élévation Latérale (Haltère) | 4 x 12-15 | ? | R:60
+- Oiseau (Haltère) | 3 x 12-15 | ? | R:60
+- Face Pull | 3 x 12-15 | ? | R:60
+ROUTINE: Bras
+- Curl Barre | 4 x 8-12 | ? | R:90
+- Barre au Front (Barre EZ) | 4 x 8-12 | ? | R:90
+- Curl Marteau (Haltère) | 3 x 10-12 | ? | R:60
+- Extension Triceps Corde | 3 x 10-15 | ? | R:60
+ROUTINE: Jambes
+- Squat (Barre) | 4 x 6-10 | ? | R:180
+- Presse à Cuisses | 3 x 10-12 | ? | R:120
+- Leg Curl Couché (Machine) | 3 x 10-12 | ? | R:90
+- Extension des Jambes (Machine) | 3 x 12-15 | ? | R:60
+- Mollets Debout (Machine) | 4 x 10-15 | ? | R:60`]];
+function openPrograms() {
+  modal(`<div class="row between"><h2>📚 ${T('Programmes connus', 'Popular programs')}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <p class="muted small">${T("Ajoute un programme dans un nouveau dossier. Les charges sont à remplir à ta première séance (ou envoie le dossier à l'IA pour qu'elle les adapte à tes charges).", 'Adds a program to a new folder. Fill in the weights at your first workout (or send the folder to the AI so it adapts them to your weights).')}</p>
+    ${PROGRAMS.map(([k, n, fr, en, txt]) => { const rs = parseText(txt); return `<details class="card"><summary style="cursor:pointer"><b>${esc(n)}</b><br><span class="muted small">${T(fr, en)}</span></summary>
+      <div class="small" style="margin:8px 0">${rs.map(r => `<b>${esc(r.name)}</b> : ${r.exercises.map(e => esc(e.name)).join(', ')}`).join('<br>')}</div>
+      <button class="btn primary block" data-act="prog-add" data-k="${k}">＋ ${T('Ajouter ce programme', 'Add this program')}</button></details>`; }).join('')}`);
+}
+const PROG_LINK = {'Développé Incliné (Haltère)': 'Dumbbell Incline Bench Press', 'Développé Militaire (Haltère)': 'Dumbbell Seated Shoulder Press',
+  'Développé Militaire (Barre)': 'Barbell Standing Wide Military Press', 'Rowing Penché (Barre)': 'Barbell Bent Over Row', 'Pull Over (Haltère)': 'Dumbbell Pullover',
+  'Rowing Haltère à un Bras': 'Dumbbell One Arm Bent-Over Row', 'Face Pull': 'Cable Rear Delt Row (With Rope)', 'Presse à Cuisses': 'Sled 45° Leg Press',
+  'Oiseau (Haltère)': 'Dumbbell Rear Delt Raise', 'Barre au Front (Barre EZ)': 'Barbell Lying Triceps Extension Skull Crusher'};
+function addProgram(k) {
+  const pr = PROGRAMS.find(x => x[0] === k); if (!pr) return;
+  let f = pr[1], i = 2; while (folders().includes(f)) f = `${pr[1]} ${i++}`;
+  if (!S.folders.includes(f)) S.folders.push(f);
+  Object.entries(PROG_LINK).forEach(([n, l]) => { const id = LIBBYNAME[norm(l)]; if (id && !(norm(n) in S.links)) { S.links[norm(n)] = id; autoMemo.delete(norm(n)); } });
+  parseText(pr[4]).forEach(r => S.routines.push({id: uid(), name: r.name, folder: f, exercises: r.exercises}));
+  save(); closeAll(); setRoot('train'); render(); toast(T(`📚 Programme ajouté dans « ${f} »`, `📚 Program added to “${f}”`));
+}
+
+/* ----- Records d'une séance ----- */
+function sessPRs(h) {
+  const prs = [];
+  h.exercises.forEach(e => {
+    const ws = work(e.sets).filter(s => s.u !== 's'); if (!ws.length) return;
+    const prev = S.history.filter(x => x.date < h.date).flatMap(x => x.exercises.filter(y => norm(y.name) === norm(e.name)).flatMap(y => work(y.sets))).filter(s => s.u !== 's');
+    if (!prev.length) return;
+    const v = Math.max(...ws.map(s => e1rm(s.w, s.r))), pv = Math.max(...prev.map(s => e1rm(s.w, s.r)));
+    if (v > 0 && pv > 0 && v > pv) { const b = ws.reduce((m, s) => e1rm(s.w, s.r) > e1rm(m.w, m.r) ? s : m); prs.push({name: e.name, set: `${b.w}×${b.r}`}); }
+  });
+  return prs;
+}
+
+/* ----- Image de séance ----- */
+function cssv(n, d) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || d; }
+async function shareImage(hid) {
+  const h = S.history.find(x => x.id === hid); if (!h) return;
+  const W = 1080, H = Math.min(1350, Math.max(1080, 660 + Math.min(10, h.exercises.length) * 66 + 150)), c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  const bg = cssv('--bg', '#0d0f12'), card = cssv('--card', '#181b21'), txt = cssv('--text', '#fff'), mut = cssv('--muted', '#9aa3ad'), acc = cssv('--accent', '#c6f135');
+  const F = (w, s) => `${w} ${s}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+  g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  g.fillStyle = acc; g.fillRect(0, 0, W, 14);
+  g.fillStyle = txt; g.font = F(800, 72); g.fillText(h.routineName.slice(0, 22), 70, 150);
+  g.fillStyle = mut; g.font = F(500, 36); g.fillText(new Date(h.date).toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}), 70, 210);
+  const prs = sessPRs(h), nS = h.exercises.reduce((n, e) => n + work(e.sets).length, 0);
+  const tiles = [[T('Durée', 'Duration'), h.duration + ' min'], [T('Volume', 'Volume'), Math.round(sessVol(h)).toLocaleString(LOC()) + ' ' + U()], [T('Séries', 'Sets'), nS], [T('Records', 'Records'), prs.length ? '🏆 ' + prs.length : '0']];
+  tiles.forEach(([l, v], i) => {
+    const x = 70 + (i % 2) * 480, y = 260 + Math.floor(i / 2) * 170;
+    g.fillStyle = card; g.beginPath(); g.roundRect ? g.roundRect(x, y, 460, 150, 28) : g.rect(x, y, 460, 150); g.fill();
+    g.fillStyle = mut; g.font = F(500, 32); g.fillText(l, x + 34, y + 54);
+    g.fillStyle = i === 3 && prs.length ? acc : txt; g.font = F(800, 56); g.fillText(String(v), x + 34, y + 120);
+  });
+  let y = 660; g.font = F(700, 38);
+  const exs = h.exercises.slice(0, 9);
+  exs.forEach(e => {
+    const ws = work(e.sets), b = ws.filter(s => s.u !== 's').reduce((m, s) => !m || e1rm(s.w, s.r) > e1rm(m.w, m.r) ? s : m, null);
+    const isPR = prs.some(p => norm(p.name) === norm(e.name));
+    g.fillStyle = txt; g.font = F(700, 38); g.fillText((isPR ? '🏆 ' : '') + (e.name.length > 30 ? e.name.slice(0, 29) + '…' : e.name), 70, y);
+    g.fillStyle = mut; g.font = F(500, 32);
+    const det = `${ws.length} × ` + (b ? `${b.w === '' || b.w == null ? BWL() : b.w + ' ' + U()} × ${b.r}` : ws[0] ? fmtSec(ws[0].r) : '');
+    g.textAlign = 'right'; g.fillText(det, W - 70, y); g.textAlign = 'left';
+    y += 66;
+  });
+  if (h.exercises.length > exs.length) { g.fillStyle = mut; g.font = F(500, 30); g.fillText(T(`+ ${h.exercises.length - exs.length} autres exercices`, `+ ${h.exercises.length - exs.length} more exercises`), 70, y); }
+  g.fillStyle = acc; g.font = F(800, 40); g.fillText('Carnet Muscu 💪', 70, H - 70);
+  const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+  const file = new File([blob], 'seance.png', {type: 'image/png'});
+  try { if (navigator.canShare && navigator.canShare({files: [file]})) { await navigator.share({files: [file]}); return; } } catch (e) { if (e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'seance-' + dkey(h.date) + '.png'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast(T('🖼️ Image enregistrée', '🖼️ Image saved'));
+}
+
+/* ----- Médailles ----- */
+const isBench = n => /couche|bench press/.test(n) && !/inclin|declin|haltere|dumbbell|smith|serre|close|guillotine|floor/.test(n);
+const isSquat = n => /squat/.test(n) && !/goblet|split|bulgar|hack|front|avant|sissy|jump|saut|haltere|dumbbell|smith|pistol|bosu|overhead|wall|band/.test(n);
+const isDead = n => /souleve de terre|deadlift/.test(n) && !/roumain|romanian|jambes tendues|stiff|haltere|dumbbell|trap|hex/.test(n);
+function medalDefs() {
+  const kg = U() === 'kg', u = U();
+  const L = (key, ic, fr, en, arr, kgArr) => (kg ? kgArr : arr).map((v, i) => ({id: key + v, ic, g: key, v, t: T(fr.replace('#', v.toLocaleString(LOC())), en.replace('#', v.toLocaleString(LOC()))), lvl: i}));
+  return [
+    {id: 'n1', ic: '🏋️', g: 'n', v: 1, t: T('Première séance', 'First workout')}, {id: 'pr1', ic: '🏆', g: 'pr', v: 1, t: T('Premier record battu', 'First record broken')},
+    ...L('n', '🏋️', '# séances', '# workouts', [10, 25, 50, 100, 250, 500, 1000], [10, 25, 50, 100, 250, 500, 1000]),
+    ...L('wk', '🔥', '# semaines de suite', '# weeks in a row', [4, 8, 12, 26, 52], [4, 8, 12, 26, 52]),
+    ...L('hr', '⏱️', '# heures d\'entraînement', '# hours of training', [10, 50, 100, 250, 500], [10, 50, 100, 250, 500]),
+    ...L('vol', '🏗️', `# ${u} soulevées au total`, `# ${u} lifted in total`, [100000, 500000, 1000000, 5000000], [50000, 250000, 500000, 2500000]),
+    ...L('pr', '🏆', '# records battus', '# records broken', [10, 50, 100, 250], [10, 50, 100, 250]),
+    ...L('bp', '🛏️', `# ${u} au développé couché`, `# ${u} bench press`, [135, 185, 225, 275, 315], [60, 80, 100, 120, 140]),
+    ...L('sq', '🦵', `# ${u} au squat`, `# ${u} squat`, [135, 225, 315, 405], [60, 100, 140, 180]),
+    ...L('dl', '⛓️', `# ${u} au soulevé de terre`, `# ${u} deadlift`, [135, 225, 315, 405, 495], [60, 100, 140, 180, 220])];
+}
+function medalsEarned(hist) {
+  const H = (hist || S.history).slice().sort((a, b) => a.date.localeCompare(b.date));
+  const st = {n: 0, wk: 0, hr: 0, vol: 0, pr: 0, bp: 0, sq: 0, dl: 0}, weeks = new Set(), best = {}, got = {}, defs = medalDefs();
+  H.forEach(h => {
+    st.n++; st.hr += (+h.duration || 0) / 60; st.vol += sessVol(h);
+    const wk = weekStart(h.date); weeks.add(dkey(wk));
+    const w2 = new Date(wk); let k = 0; while (weeks.has(dkey(w2))) { k++; w2.setDate(w2.getDate() - 7); } st.wk = Math.max(st.wk, k);
+    h.exercises.forEach(e => {
+      const ws = work(e.sets).filter(s => s.u !== 's'), nn = norm(e.name); if (!ws.length) return;
+      const v = Math.max(...ws.map(s => e1rm(s.w, s.r))), mw = Math.max(...ws.map(s => +s.w || 0));
+      if (best[nn] != null && v > best[nn] && best[nn] > 0) st.pr++;
+      best[nn] = Math.max(best[nn] || 0, v);
+      if (isBench(nn)) st.bp = Math.max(st.bp, mw); if (isSquat(nn)) st.sq = Math.max(st.sq, mw); if (isDead(nn)) st.dl = Math.max(st.dl, mw);
+    });
+    defs.forEach(d => { if (!got[d.id] && st[d.g] >= d.v) got[d.id] = h.date; });
+  });
+  return {got, st, defs};
+}
+function vMedals() {
+  const {got, st, defs} = medalsEarned();
+  const n = Object.keys(got).length;
+  const cur = {n: st.n, wk: st.wk, hr: Math.round(st.hr), vol: Math.round(st.vol), pr: st.pr, bp: st.bp, sq: st.sq, dl: st.dl};
+  return `<p class="muted" style="margin:0 0 12px"><b style="color:var(--text)">${n}</b> / ${defs.length} ${T('médailles gagnées', 'medals earned')}</p><div class="grid2">` +
+    defs.map(d => { const ok = got[d.id]; return `<div class="card medal ${ok ? 'ok' : ''}"><div class="mic2">${d.ic}</div><b class="small">${esc(d.t)}</b><div class="small muted">${ok ? dateFr(ok) + ' ' + new Date(ok).getFullYear() : `${Math.min(cur[d.g], d.v).toLocaleString(LOC())} / ${d.v.toLocaleString(LOC())}`}</div>${ok ? '' : `<div class="goal" style="margin-top:6px"><div style="width:${Math.min(100, cur[d.g] / d.v * 100)}%"></div></div>`}</div>`; }).join('') + '</div>';
+}
+
+/* ----- Bilan de l'année ----- */
+let yrSel = null;
+function yearStats(y) {
+  const hs = S.history.filter(h => new Date(h.date).getFullYear() === y).sort((a, b) => a.date.localeCompare(b.date));
+  const st = {n: hs.length, dur: 0, vol: 0, sets: 0, days: new Set(), months: Array(12).fill(0), ex: new Map(), prs: 0, wk: 0};
+  const weeks = new Set();
+  hs.forEach(h => {
+    st.dur += +h.duration || 0; st.vol += sessVol(h); st.days.add(dkey(h.date)); st.months[new Date(h.date).getMonth()]++; weeks.add(dkey(weekStart(h.date)));
+    st.prs += sessPRs(h).length;
+    h.exercises.forEach(e => { const ws = work(e.sets); if (!ws.length) return; st.sets += ws.length; const k = norm(e.name); const r = st.ex.get(k) || {name: e.name, n: 0, vals: []}; r.n++; r.vals.push(bestVal(e)); st.ex.set(k, r); });
+  });
+  [...weeks].forEach(w => { const d = new Date(w + 'T12:00'); let k = 0; while (weeks.has(dkey(weekStart(d)))) { k++; d.setDate(d.getDate() - 7); } st.wk = Math.max(st.wk, k); });
+  const exs = [...st.ex.values()];
+  st.fav = exs.sort((a, b) => b.n - a.n)[0];
+  st.gain = exs.filter(r => r.n >= 3 && r.vals[0] > 0.5).map(r => ({...r, pc: (Math.max(...r.vals) - r.vals[0]) / r.vals[0] * 100})).sort((a, b) => b.pc - a.pc)[0];
+  const bm = st.months.indexOf(Math.max(...st.months)); st.bestM = bm;
+  st.medals = Object.values(medalsEarned().got).filter(d => new Date(d).getFullYear() === y).length;
+  return st;
+}
+function vYear() {
+  const ys = [...new Set(S.history.map(h => new Date(h.date).getFullYear()))].sort();
+  if (!ys.length) return `<div class="empty">${T('Ton bilan apparaîtra après ta première séance.', 'Your review will appear after your first workout.')}</div>`;
+  const y = yrSel && ys.includes(yrSel) ? yrSel : ys[ys.length - 1], st = yearStats(y);
+  const big = (ic, v, l) => `<div class="card ybig"><div class="mic2">${ic}</div><b>${v}</b><span class="muted small">${l}</span></div>`;
+  const mName = st.n ? new Date(y, st.bestM, 1).toLocaleDateString(LOC(), {month: 'long'}) : '—';
+  return `${ys.length > 1 ? `<div class="seg">${ys.map(v => `<button class="${v === y ? 'on' : ''}" data-act="yr" data-y="${v}">${v}</button>`).join('')}</div>` : ''}
+    <div class="card" style="text-align:center;border-color:var(--accent)"><div style="font-size:44px">🎉</div><h2 style="margin:4px 0">${T(`Ton année ${y}`, `Your ${y}`)}</h2><p class="muted small" style="margin:0">${T('en muscu', 'in the gym')}</p></div>
+    <div class="grid2">
+      ${big('🏋️', st.n, T('séances', 'workouts'))}${big('⏱️', dec1(st.dur / 60) + ' h', T('d\'entraînement', 'of training'))}
+      ${big('🏗️', Math.round(st.vol).toLocaleString(LOC()), U() + ' ' + T('soulevées', 'lifted'))}${big('📅', st.days.size, T('jours actifs', 'active days'))}
+      ${big('🏆', st.prs, T('records battus', 'records broken'))}${big('🔥', st.wk, T('semaines de suite (max)', 'weeks in a row (best)'))}
+    </div>
+    ${st.fav ? `<div class="card"><span class="muted small">❤️ ${T('Ton exercice préféré', 'Your favorite exercise')}</span><h3 style="margin:4px 0">${esc(st.fav.name)}</h3><span class="small muted">${T(`${st.fav.n} séances`, `${st.fav.n} workouts`)}</span></div>` : ''}
+    ${st.gain && st.gain.pc > 0 ? `<div class="card"><span class="muted small">🚀 ${T('Ton plus gros progrès', 'Your biggest progress')}</span><h3 style="margin:4px 0">${esc(st.gain.name)}</h3><span class="small" style="color:var(--ok)">+${Math.round(st.gain.pc)} % ${T('sur ton 1RM estimé', 'on your estimated 1RM')}</span></div>` : ''}
+    <div class="card"><span class="muted small">🗓️ ${T('Ton meilleur mois', 'Your best month')}</span><h3 style="margin:4px 0;text-transform:capitalize">${mName}</h3><span class="small muted">${T(`${st.months[st.bestM]} séances`, `${st.months[st.bestM]} workouts`)} · 🏅 ${T(`${st.medals} médailles gagnées cette année`, `${st.medals} medals earned this year`)}</span>
+      <div class="ymonths">${st.months.map((v, i) => `<div title="${v}"><span style="height:${Math.round(v / Math.max(1, ...st.months) * 100)}%"></span><i>${new Date(y, i, 1).toLocaleDateString(LOC(), {month: 'narrow'})}</i></div>`).join('')}</div></div>
+    <button class="btn block" data-act="yr-share" data-y="${y}">📤 ${T('Partager mon bilan', 'Share my review')}</button>`;
+}
+function yearText(y) {
+  const st = yearStats(y);
+  return T(`🎉 Mon année ${y} en muscu\n\n🏋️ ${st.n} séances\n⏱️ ${dec1(st.dur / 60)} h d'entraînement\n🏗️ ${Math.round(st.vol).toLocaleString(LOC())} ${U()} soulevées\n📅 ${st.days.size} jours actifs\n🏆 ${st.prs} records battus\n🔥 ${st.wk} semaines de suite\n${st.fav ? `❤️ Exercice préféré : ${st.fav.name}\n` : ''}${st.gain && st.gain.pc > 0 ? `🚀 Plus gros progrès : ${st.gain.name} (+${Math.round(st.gain.pc)} %)\n` : ''}\n— Carnet Muscu 💪`,
+    `🎉 My ${y} in the gym\n\n🏋️ ${st.n} workouts\n⏱️ ${dec1(st.dur / 60)} h of training\n🏗️ ${Math.round(st.vol).toLocaleString(LOC())} ${U()} lifted\n📅 ${st.days.size} active days\n🏆 ${st.prs} records broken\n🔥 ${st.wk} weeks in a row\n${st.fav ? `❤️ Favorite exercise: ${st.fav.name}\n` : ''}${st.gain && st.gain.pc > 0 ? `🚀 Biggest progress: ${st.gain.name} (+${Math.round(st.gain.pc)} %)\n` : ''}\n— Carnet Muscu 💪`);
+}
+function yearBanner() {
+  const n = new Date(), y = n.getMonth() === 11 ? n.getFullYear() : n.getMonth() === 0 ? n.getFullYear() - 1 : null;
+  if (y == null || !S.history.some(h => new Date(h.date).getFullYear() === y)) return '';
+  return `<button class="btn block" data-act="go-year" data-y="${y}" style="border-color:var(--accent);margin-bottom:12px">🎉 ${T(`Ton bilan ${y} est prêt!`, `Your ${y} review is ready!`)}</button>`;
 }
 
 /* ---------- Calendrier façon Hevy ---------- */
@@ -2477,7 +2944,7 @@ const VIEWS = {
   stats: ['Statistiques', () => vStats()], 'st-vol': ['Séries par muscle', () => vVolume()], 'st-radar': ['Répartition musculaire', () => vRadar()],
   'st-body': ['Carte des muscles', () => vBodyMap()], 'st-top': ['Principaux exercices', () => vTopEx()], 'st-rec': ['Records personnels', () => vRecords()],
   'st-month': ['Rapport mensuel', () => vMonth()], exercises: ['Exercices', () => vExList()], exdetail: ['Exercice', () => vExDetail()],
-  measures: ['Mesures', () => vBody()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()]
+  measures: ['Mesures', () => vBody()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()]
 };
 function headerRight(v) {
   if (v === 'profile') return '<button class="hbtn" data-act="go" data-v="settings" aria-label="Réglages">⚙️</button>';
@@ -2591,6 +3058,7 @@ document.addEventListener('click', e => {
     case 'ai-copy': copy(aiPrompt([r])); break;
     case 'ai-share': shareText(aiPrompt([r])); break;
     case 'ai-all': copy(aiPrompt(S.routines)); break;
+    case 'ai-fresh': closeModal(); copy(freshPrompt()); break;
     case 'ai-folder': { const rs = S.routines.filter(x => (x.folder || DEF_FOLDER) === b.dataset.f); closeModal(); if (rs.length) copy(aiPrompt(rs)); break; }
     case 'paste-folder': { const f = b.dataset.f; closeModal(); openPaste('', f); break; }
     case 'ai-history': { const t = historyPrompt(); t ? copy(t) : toast('Aucune séance dans les 30 derniers jours'); break; }
@@ -2627,7 +3095,10 @@ document.addEventListener('click', e => {
       }
       s.done = !s.done;
       if (s.done && s.r === '') s.r = s.ph;
+      s.pr = s.done && livePR(ei, si);
+      if (!s.pr) delete s.pr;
       save(); render();
+      if (s.pr) { toast(T(`🏆 Nouveau record! ${s.w || BWL()}×${s.r}`, `🏆 New record! ${s.w || BWL()}×${s.r}`)); if (S.settings.sound !== false) { ensureAudio(); setTimeout(() => beep(true), 30); } if (navigator.vibrate) navigator.vibrate([80, 60, 80, 60, 200]); }
       if (s.done) {
         const inSS = e.ss && A.exercises[ei + 1] && A.exercises[ei + 1].ss === e.ss;
         if (!inSS && +e.rest !== -1) startTimer(s.t === 'W' ? 45 : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)));
@@ -2697,6 +3168,15 @@ document.addEventListener('click', e => {
     case 'cal-day': cal.sel = cal.sel === b.dataset.d ? null : b.dataset.d; render(); break;
     case 'del-hist': if (confirm('Supprimer cette séance?')) { S.history = S.history.filter(h => h.id !== b.dataset.hid); save(); closeAll(); render(); } break;
     case 'hist-edit': openEditor(b.dataset.hid); break;
+    case 'hist-img': shareImage(b.dataset.hid); break;
+    case 'stag': openStag(b.dataset.n, b.dataset.e != null ? +b.dataset.e : null); break;
+    case 'stag-ai': { const t = stagPrompt(b.dataset.n); closeModal(); copy(t); break; }
+    case 'stag-deload': { const e = S.active && S.active.exercises[+b.dataset.e]; if (e) { e.sets.forEach(s => { if (!s.done && !isW(s) && +s.w > 0) s.w = Math.round(+s.w * 0.9 / incr()) * incr(); }); save(); closeModal(); render(); toast(T('🪶 −10 % appliqué', '🪶 −10 % applied')); } break; }
+    case 'programs': closeAll(); openPrograms(); break;
+    case 'prog-add': addProgram(b.dataset.k); break;
+    case 'yr': yrSel = +b.dataset.y; render(); break;
+    case 'go-year': yrSel = +b.dataset.y; go('year'); break;
+    case 'yr-share': shareText(yearText(+b.dataset.y)); break;
     case 'hist-share': { const hh = S.history.find(x => x.id === b.dataset.hid); if (hh) shareText(workoutText(hh)); break; }
     case 'hist-new': openNewPast(); break;
     case 'new-past-ok': createPast(); break;
