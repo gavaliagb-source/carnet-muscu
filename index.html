@@ -1569,7 +1569,10 @@ function deleteFolder(f) {
 }
 
 /* ---------- Sauvegarde automatique dans un Gist GitHub privé ---------- */
-const TKEY = 'carnet-muscu-token', GFILE = 'carnet-muscu-backup.json';
+const TKEY = 'carnet-muscu-token', GFILE = 'carnet-muscu-backup.json', GRE = /^carnet-muscu.*\.json$/;
+const cfile = () => (S.cloud && S.cloud.file) || GFILE;
+const slug = s => norm(s).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'moi';
+const profLabel = f => f === GFILE ? 'Sauvegarde sans prénom' : f.replace(/^carnet-muscu-|\.json$/g, '').replace(/-/g, ' ').replace(/^./, c => c.toUpperCase());
 let cloudTimer = null, cloudBusy = false, cloudDirty = false;
 const ghTok = () => { try { return localStorage.getItem(TKEY) || ''; } catch (e) { return ''; } };
 const cloudOn = () => !!(ghTok() && S.cloud && S.cloud.gist);
@@ -1588,7 +1591,7 @@ async function cloudPush(force) {
   if (!navigator.onLine) { S.cloud.err = 'Hors ligne — envoi au retour du réseau'; cloudDirty = true; saveLocal(); return; }
   cloudBusy = true;
   try {
-    await gh('/gists/' + S.cloud.gist, {method: 'PATCH', body: JSON.stringify({files: {[GFILE]: {content: body}}})});
+    await gh('/gists/' + S.cloud.gist, {method: 'PATCH', body: JSON.stringify({files: {[cfile()]: {content: body}}})});
     S.cloud.last = new Date().toISOString(); S.cloud.hash = hs; delete S.cloud.err; cloudDirty = false;
   } catch (e) { S.cloud.err = e.message; cloudDirty = true; }
   cloudBusy = false; saveLocal();
@@ -1596,7 +1599,7 @@ async function cloudPush(force) {
 }
 async function cloudFetch() {
   const g = await gh('/gists/' + S.cloud.gist);
-  const f = g.files && g.files[GFILE]; if (!f) throw new Error('Fichier de sauvegarde introuvable');
+  const f = g.files && g.files[cfile()]; if (!f) throw new Error('Fichier de sauvegarde introuvable');
   const txt = f.truncated ? await (await fetch(f.raw_url)).text() : f.content;
   return JSON.parse(txt);
 }
@@ -1609,33 +1612,51 @@ function cloudRestoreData(d) {
 }
 async function cloudConnect() {
   const tok = (($('#ghtok') || {}).value || '').trim();
+  const name = (($('#ghname') || {}).value || '').trim();
+  if (!name) { toast('Écris ton prénom'); return; }
   if (!tok) { toast('Colle ta clé GitHub'); return; }
   try { localStorage.setItem(TKEY, tok); } catch (e) {}
+  if (!S.settings.name) S.settings.name = name;
   const msg = $('#cloudmsg'); if (msg) msg.textContent = '⏳ Connexion à GitHub…';
   try {
     const me = await gh('/user');
     const gists = await gh('/gists?per_page=100');
-    const g = gists.find(x => x.files && x.files[GFILE]);
-    S.cloud = {user: me.login};
-    if (g) {
-      S.cloud.gist = g.id; saveLocal();
-      const d = await cloudFetch();
-      modal(`<h2>☁️ Sauvegarde trouvée</h2>
-        <p>Ton compte GitHub contient déjà une sauvegarde : <b>${(d.history || []).length} séances</b> et <b>${(d.routines || []).length} routines</b>${g.updated_at ? ' (mise à jour ' + ago(g.updated_at) + ')' : ''}.</p>
-        <p class="muted small">Sur ce téléphone : ${S.history.length} séances et ${S.routines.length} routines.</p>
-        <button class="btn primary block" data-act="cloud-restore-ok">⬇ Restaurer la sauvegarde sur ce téléphone</button>
-        <button class="btn block" data-act="cloud-keep" style="margin-top:8px">Garder ce téléphone (remplace la sauvegarde)</button>`);
-      window._cloudData = d;
-    } else {
-      const ng = await gh('/gists', {method: 'POST', body: JSON.stringify({description: 'Carnet Muscu — sauvegarde automatique', public: false, files: {[GFILE]: {content: backupBody()}}})});
-      S.cloud.gist = ng.id; S.cloud.last = new Date().toISOString(); S.cloud.hash = strHash(backupBody());
-      saveLocal(); render(); toast('☁️ Sauvegarde automatique activée');
+    const g = gists.find(x => x.files && Object.keys(x.files).some(k => GRE.test(k)));
+    const mine = `carnet-muscu-${slug(name)}.json`;
+    S.cloud = {user: me.login, want: mine, wantName: name};
+    if (!g) {
+      const ng = await gh('/gists', {method: 'POST', body: JSON.stringify({description: 'Carnet Muscu — sauvegardes automatiques', public: false, files: {[mine]: {content: backupBody()}}})});
+      Object.assign(S.cloud, {gist: ng.id, file: mine, profile: name, last: new Date().toISOString(), hash: strHash(backupBody())});
+      saveLocal(); render(); toast('☁️ Sauvegarde automatique activée'); return;
     }
+    S.cloud.gist = g.id; saveLocal();
+    const files = Object.keys(g.files).filter(k => GRE.test(k));
+    modal(`<h2>☁️ Qui utilise ce téléphone?</h2>
+      <p class="muted small">Ce compte GitHub contient déjà ${files.length > 1 ? 'ces profils' : 'ce profil'}. Choisis le tien pour le restaurer, ou crée un nouveau profil.</p>
+      ${files.map(f => `<button class="btn block" style="margin-bottom:8px;text-align:left" data-act="cloud-pick" data-f="${esc(f)}">👤 ${esc(profLabel(f))}${f === mine ? ' <span class="muted small">(ton prénom)</span>' : ''}</button>`).join('')}
+      ${files.includes(mine) ? '' : `<button class="btn primary block" data-act="cloud-new">＋ Nouveau profil « ${esc(name)} »</button>`}
+      <p class="muted small">Chaque profil a son propre fichier : les données ne se mélangent jamais.</p>`);
   } catch (e) {
     try { localStorage.removeItem(TKEY); } catch (x) {}
     S.cloud = {}; saveLocal();
     if ($('#cloudmsg')) $('#cloudmsg').textContent = '⚠️ ' + e.message; else toast('⚠️ ' + e.message);
   }
+}
+async function cloudPick(f) {
+  S.cloud.file = f; S.cloud.profile = profLabel(f); saveLocal(); closeAll();
+  try {
+    const d = await cloudFetch();
+    window._cloudData = d;
+    modal(`<h2>👤 ${esc(profLabel(f))}</h2>
+      <p>Sauvegarde : <b>${(d.history || []).length} séances</b> et <b>${(d.routines || []).length} routines</b>.</p>
+      <p class="muted small">Sur ce téléphone : ${S.history.length} séances et ${S.routines.length} routines.</p>
+      <button class="btn primary block" data-act="cloud-restore-ok">⬇ Restaurer ce profil sur ce téléphone</button>
+      <button class="btn block" data-act="cloud-keep" style="margin-top:8px">Garder ce téléphone (remplace la sauvegarde de ce profil)</button>`);
+  } catch (e) { toast('⚠️ ' + e.message); }
+}
+async function cloudNew() {
+  const f = S.cloud.want; S.cloud.file = f; S.cloud.profile = S.cloud.wantName; saveLocal(); closeAll();
+  await cloudPush(true); render(); toast(S.cloud.err ? '⚠️ ' + S.cloud.err : `☁️ Profil « ${S.cloud.profile} » créé et sauvegardé`);
 }
 const ago = iso => { const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 1 ? "à l'instant" : m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.round(m / 60)} h` : 'le ' + dateFr(iso); };
 function cloudCard() {
@@ -1646,10 +1667,14 @@ function cloudCard() {
       <li>Ouvre <a href="https://github.com/settings/tokens/new?scopes=gist&description=Carnet%20Muscu" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700">ce lien GitHub</a> (connecté à ton compte).</li>
       <li><b>Expiration</b> : choisis « No expiration ». La case <b>gist</b> est déjà cochée, ne touche à rien d'autre.</li>
       <li>Touche <b>Generate token</b>, copie la clé (elle commence par ghp_) et colle-la ici.</li></ol>
+    <label>Ton prénom (un fichier de sauvegarde par personne)</label>
+    <input id="ghname" placeholder="Ex. : Alissa" value="${esc(S.settings.name || '')}">
+    <label>Clé GitHub</label>
     <input id="ghtok" placeholder="ghp_…" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <p class="muted small" style="margin:6px 0 0">Vous pouvez être plusieurs avec la même clé (ex. toi et ta femme) : chacun écrit son prénom et a son propre profil.</p>
     <button class="btn primary block" data-act="cloud-connect" style="margin-top:8px">Connecter</button><p class="small muted" id="cloudmsg" style="margin:6px 0 0"></p></div>`;
   return `<div class="card"><h3>☁️ Sauvegarde automatique</h3>
-    <p class="small" style="margin:6px 0">${c.err ? '⚠️ ' + esc(c.err) : c.last ? '✅ Sauvegardé ' + ago(c.last) : '⏳ Première sauvegarde en cours…'}<br><span class="muted">Compte GitHub : ${esc(c.user || '')} · envoi automatique après chaque modification</span></p>
+    <p class="small" style="margin:6px 0">${c.err ? '⚠️ ' + esc(c.err) : c.last ? '✅ Sauvegardé ' + ago(c.last) : '⏳ Première sauvegarde en cours…'}<br><span class="muted">Profil : <b>${esc(c.profile || profLabel(cfile()))}</b> · compte GitHub ${esc(c.user || '')}<br>Envoi automatique après chaque modification</span></p>
     <div class="grid2"><button class="btn sm" data-act="cloud-push">⬆ Sauvegarder maintenant</button><button class="btn sm" data-act="cloud-restore">⬇ Restaurer</button></div>
     <button class="btn sm danger block" data-act="cloud-off" style="margin-top:8px">Déconnecter</button></div>`;
 }
@@ -2459,6 +2484,8 @@ document.addEventListener('click', e => {
     case 'deload-off': delete S.settings.deload; save(); render(); break;
     case 'nag-later': S.settings.nagUntil = Date.now() + 7 * 864e5; save(); render(); break;
     case 'cloud-connect': cloudConnect(); break;
+    case 'cloud-pick': cloudPick(b.dataset.f); break;
+    case 'cloud-new': cloudNew(); break;
     case 'cloud-push': cloudPush(true).then(() => toast(S.cloud && S.cloud.err ? '⚠️ ' + S.cloud.err : '☁️ Sauvegardé')); break;
     case 'cloud-restore': if (confirm('Remplacer les données de ce téléphone par la sauvegarde GitHub?')) cloudFetch().then(cloudRestoreData).catch(err => toast('⚠️ ' + err.message)); break;
     case 'cloud-restore-ok': cloudRestoreData(window._cloudData); break;
