@@ -1471,6 +1471,7 @@ function vSettings() {
     <div class="card"><h3>Préférences</h3><div class="gap"></div>
       <label>Langue / Language</label>
       <select data-set="lang" data-notr="1"><option value="fr" ${isEN() ? '' : 'selected'}>Français</option><option value="en" ${isEN() ? 'selected' : ''}>English</option></select>
+      <label class="row" style="margin:10px 0 4px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="stagOn" ${S.settings.stagOff ? '' : 'checked'}> ⚠️ ${T('Alertes de plateau', 'Plateau alerts')}</label>
       <label>Objectif de séances par semaine</label>
       <select data-set="goal">${[0, 1, 2, 3, 4, 5, 6, 7].map(n => `<option value="${n}" ${(+S.settings.goal || 0) === n ? 'selected' : ''}>${n ? n : 'Aucun'}</option>`).join('')}</select>
       <label>Nom affiché sur le profil</label>
@@ -2567,19 +2568,40 @@ function vExDetail() {
 
 /* ===================== v5 : stagnation, records en direct, maximums, récupération, programmes, image, médailles, bilan ===================== */
 const bestVal = e => { const ws = work(e.sets).filter(s => s.u !== 's'); if (!ws.length) return 0; const v = Math.max(...ws.map(s => e1rm(s.w, s.r))); return v > 0 ? v : Math.max(...ws.map(s => +s.r || 0)) / 1000; };
+/* Plateau = aucune progression (charge, reps ou 1RM estimé) depuis au moins 4 séances ET 3 semaines,
+   sur un exercice fait récemment. On compare seulement aux 10 dernières semaines (une vieille marque d'avant une sèche ne compte pas). */
+const STAG_N = 4, STAG_DAYS = 21, STAG_WIN = 70, STAG_RECENT = 21;
+const sesMet = e => {
+  const ws = work(e.sets).filter(s => s.u !== 's'); if (!ws.length) return null;
+  const top = Math.max(...ws.map(s => +s.w || 0));
+  return {top, reps: ws.filter(s => (+s.w || 0) === top).reduce((a, s) => a + (+s.r || 0), 0), e: Math.max(...ws.map(s => e1rm(s.w, s.r))), maxR: Math.max(...ws.map(s => +s.r || 0))};
+};
 function stagnation(name) {
-  const ss = exSessions(name).slice().sort((a, b) => a.h.date.localeCompare(b.h.date));
-  if (ss.length < 4 || ss.some(x => x.e.sets.some(s => s.u === 's'))) return null;
-  const vs = ss.map(x => bestVal(x.e)); const top = Math.max(...vs); if (!(top > 0)) return null;
-  const idx = vs.findIndex(v => v >= top - 1e-9);
-  const k = vs.length - 1 - idx;
-  if (k < 3) return null;
-  const b = ss[idx].e, bs = work(b.sets).filter(s => s.u !== 's').reduce((m, s) => (e1rm(s.w, s.r) || (+s.r / 1000)) > (e1rm(m.w, m.r) || (+m.r / 1000)) ? s : m);
-  return {k, date: ss[idx].h.date, best: `${bs.w === '' || bs.w == null ? BWL() : bs.w}×${bs.r}`, last: ss.slice(-6)};
+  if (S.settings.stagOff) return null;
+  const ign = (S.settings.stagIgn || {})[norm(name)]; if (ign && Date.now() < ign) return null;
+  const now = Date.now();
+  const ss = exSessions(name).slice().sort((a, b) => a.h.date.localeCompare(b.h.date)).filter(x => now - new Date(x.h.date) <= STAG_WIN * 864e5);
+  if (ss.length < STAG_N + 1 || ss.some(x => x.e.sets.some(s => s.u === 's'))) return null;
+  if (now - new Date(ss[ss.length - 1].h.date) > STAG_RECENT * 864e5) return null;
+  let best = null, bestReps = {}, lastProg = 0;
+  ss.forEach((x, i) => {
+    const m = sesMet(x.e); if (!m) return;
+    if (!best) { best = m; bestReps[m.top] = m.reps; lastProg = i; return; }
+    const bw = m.top === 0 && best.top === 0;
+    const prog = bw ? m.maxR > best.maxR || m.reps > (bestReps[0] || 0)
+      : m.e > best.e * 1.01 || m.top > best.top || m.reps > (bestReps[m.top] ?? Infinity);
+    if (prog) lastProg = i;
+    if (m.e > best.e || m.top > best.top || (bw && m.maxR > best.maxR)) best = {...best, e: Math.max(best.e, m.e), top: Math.max(best.top, m.top), maxR: Math.max(best.maxR, m.maxR)};
+    bestReps[m.top] = Math.max(bestReps[m.top] || 0, m.reps);
+  });
+  const k = ss.length - 1 - lastProg, days = (now - new Date(ss[lastProg].h.date)) / 864e5;
+  if (k < STAG_N || days < STAG_DAYS) return null;
+  const b = ss[lastProg].e, bs = work(b.sets).filter(s => s.u !== 's').reduce((m, s) => (e1rm(s.w, s.r) || (+s.r / 1000)) > (e1rm(m.w, m.r) || (+m.r / 1000)) ? s : m);
+  return {k, wk: Math.floor(days / 7), date: ss[lastProg].h.date, best: `${bs.w === '' || bs.w == null ? BWL() : bs.w}×${bs.r}`, last: ss.slice(lastProg).slice(-7)};
 }
 function stagBtn(name, ei) {
   const st = stagnation(name); if (!st) return '';
-  return `<button class="stag" data-act="stag" data-n="${esc(name)}" ${ei != null ? `data-e="${ei}"` : ''}>⚠️ ${T(`Stagne depuis ${st.k} séances`, `Stalled for ${st.k} workouts`)} <span class="muted">· ${T('voir les solutions', 'see options')} ›</span></button>`;
+  return `<button class="stag" data-act="stag" data-n="${esc(name)}" ${ei != null ? `data-e="${ei}"` : ''}>⚠️ ${T(`Plateau depuis ${st.wk} semaines (${st.k} séances)`, `Plateau for ${st.wk} weeks (${st.k} workouts)`)} <span class="muted">· ${T('voir les solutions', 'see options')} ›</span></button>`;
 }
 function openStag(name, ei) {
   const st = stagnation(name); if (!st) return;
@@ -2589,7 +2611,7 @@ function openStag(name, ei) {
   const alt = lo <= 8 ? '10-15' : '5-8';
   const hist = st.last.map(({h: hh, e}) => `${dateFr(hh.date)} : ${work(e.sets).map(s => `${s.w === '' || s.w == null ? BWL() : s.w}×${s.r}`).join(', ')}`).join('<br>');
   modal(`<div class="row between"><h2>⚠️ ${esc(name)}</h2><button class="btn sm" data-act="close">✕</button></div>
-    <p class="muted small">${T(`Ton meilleur résultat (<b>${st.best}</b>, le ${dateFr(st.date)}) n'a pas été battu depuis <b>${st.k} séances</b>.`, `Your best result (<b>${st.best}</b>, ${dateFr(st.date)}) hasn't been beaten for <b>${st.k} workouts</b>.`)}</p>
+    <p class="muted small">${T(`Ta dernière progression date du <b>${dateFr(st.date)}</b> (${st.best}). Depuis, <b>${st.k} séances</b> en ${st.wk} semaines sans faire mieux : ni plus de charge, ni plus de reps à la même charge.`, `Your last progress was on <b>${dateFr(st.date)}</b> (${st.best}). Since then, <b>${st.k} workouts</b> over ${st.wk} weeks without doing better: no more weight, no more reps at the same weight.`)}</p>
     <div class="card small">${hist}</div>
     <h3>${T('Solutions', 'Options')}</h3>
     <ol class="small" style="padding-left:20px;margin:6px 0 12px">
@@ -2597,18 +2619,20 @@ function openStag(name, ei) {
       <li style="margin:6px 0"><b>${T('Mini-deload', 'Mini deload')}</b> : ${T('baisse la charge de 10 % pendant une séance, puis remonte. Souvent, tu bats ton record 1-2 séances après.', 'drop the weight by 10 % for one workout, then go back up. You often beat your record 1-2 workouts later.')}</li>
       <li style="margin:6px 0"><b>${T('Remplace l\'exercice', 'Swap the exercise')}</b> : ${T('une variante proche (haltères au lieu de barre, machine, autre angle) pendant un bloc.', 'a close variation (dumbbells instead of barbell, machine, another angle) for a block.')}</li>
       <li style="margin:6px 0"><b>${T('Vérifie la récupération', 'Check recovery')}</b> : ${T('sommeil, protéines et nombre de séries sur ce muscle cette semaine.', 'sleep, protein and number of sets on that muscle this week.')}</li>
+      <li style="margin:6px 0"><b>${T('En sèche?', 'Cutting?')}</b> : ${T('garder tes charges en mangeant moins, c\'est déjà une réussite. Tu peux ignorer l\'alerte.', 'keeping your weights while eating less is already a win. You can ignore the alert.')}</li>
     </ol>
     <div class="menu">
       ${ei != null ? `<button class="btn block" data-act="stag-deload" data-e="${ei}">🪶 ${T('Appliquer −10 % sur cet exercice aujourd\'hui', 'Apply −10 % to this exercise today')}</button>
       <button class="btn block" data-act="ex-replace" data-e="${ei}">🔄 ${T('Remplacer l\'exercice', 'Swap the exercise')}</button>` : ''}
       <button class="btn block" data-act="stag-ai" data-n="${esc(name)}">🤖 ${T('Demander à l\'IA quoi faire', 'Ask the AI what to do')}</button>
+      <button class="btn block" data-act="stag-ign" data-n="${esc(name)}">🔕 ${T('Ignorer pour cet exercice (4 semaines)', 'Ignore for this exercise (4 weeks)')}</button>
     </div>`);
 }
 function stagPrompt(name) {
   const st = stagnation(name);
   const lines = st.last.map(({h: hh, e}) => `${new Date(hh.date).toLocaleDateString(LOC())} : ${work(e.sets).map(s => `${s.w === '' || s.w == null ? BWL() : s.w}×${s.r}`).join(', ')}`).join('\n');
-  return T(`Je stagne sur « ${name} » depuis ${st.k} séances (charges en ${U()}${S.settings.failDefault ? ", séries à l'échec" : ''}). Mes dernières séances :\n${lines}\n\nQue me conseilles-tu (plage de reps, deload, variante, volume)? Si tu modifies ma routine, donne-la dans ce format :\nROUTINE: Nom\n- Exercice | séries x reps | charge ${U()} | note | R:90\n\nMa question : `,
-    `I've stalled on “${name}” for ${st.k} workouts (weights in ${U()}${S.settings.failDefault ? ', sets to failure' : ''}). My latest workouts:\n${lines}\n\nWhat do you suggest (rep range, deload, variation, volume)? If you change my routine, give it in this format:\nROUTINE: Name\n- Exercise | sets x reps | weight ${U()} | note | R:90\n\nMy question: `);
+  return T(`Je stagne sur « ${name} » depuis ${st.k} séances (${st.wk} semaines) (charges en ${U()}${S.settings.failDefault ? ", séries à l'échec" : ''}). Mes dernières séances :\n${lines}\n\nQue me conseilles-tu (plage de reps, deload, variante, volume)? Si tu modifies ma routine, donne-la dans ce format :\nROUTINE: Nom\n- Exercice | séries x reps | charge ${U()} | note | R:90\n\nMa question : `,
+    `I've stalled on “${name}” for ${st.k} workouts (${st.wk} weeks) (weights in ${U()}${S.settings.failDefault ? ', sets to failure' : ''}). My latest workouts:\n${lines}\n\nWhat do you suggest (rep range, deload, variation, volume)? If you change my routine, give it in this format:\nROUTINE: Name\n- Exercise | sets x reps | weight ${U()} | note | R:90\n\nMy question: `);
 }
 function stagCard() {
   const names = [...new Set(S.routines.flatMap(r => r.exercises.map(e => e.name)))].filter(n => stagnation(n));
@@ -3247,6 +3271,7 @@ document.addEventListener('click', e => {
       closeModal(); const f = newCb; newCb = null; if (f) f(); break;
     }
     case 'stag': openStag(b.dataset.n, b.dataset.e != null ? +b.dataset.e : null); break;
+    case 'stag-ign': { S.settings.stagIgn = S.settings.stagIgn || {}; S.settings.stagIgn[norm(b.dataset.n)] = Date.now() + 28 * 864e5; save(); closeModal(); render(); toast(T('🔕 Alerte masquée 4 semaines', '🔕 Alert hidden for 4 weeks')); break; }
     case 'stag-ai': { const t = stagPrompt(b.dataset.n); closeModal(); copy(t); break; }
     case 'stag-deload': { const e = S.active && S.active.exercises[+b.dataset.e]; if (e) { e.sets.forEach(s => { if (!s.done && !isW(s) && +s.w > 0) s.w = Math.round(+s.w * 0.9 / incr()) * incr(); }); save(); closeModal(); render(); toast(T('🪶 −10 % appliqué', '🪶 −10 % applied')); } break; }
     case 'programs': closeAll(); openPrograms(); break;
@@ -3305,7 +3330,8 @@ document.addEventListener('input', e => {
   if (t.dataset.stnote !== undefined && setCtx) { const s = setCtx.sets[setCtx.si]; if (t.value.trim()) s.n = t.value; else delete s.n; }
   if (t.dataset.exnote !== undefined && S.active) { S.active.exercises[+t.dataset.exnote].note = t.value; }
   if (t.dataset.set) {
-    if (t.type === 'checkbox') { S.settings[t.dataset.set] = t.checked; if (t.dataset.set === 'wake') syncWake(); }
+    if (t.dataset.set === 'stagOn') S.settings.stagOff = !t.checked;
+    else if (t.type === 'checkbox') { S.settings[t.dataset.set] = t.checked; if (t.dataset.set === 'wake') syncWake(); }
     else if (t.dataset.set === 'inc') { const v = parseFloat(t.value.replace(',', '.')); if (v > 0) S.settings.inc = v; else delete S.settings.inc; }
     else S.settings[t.dataset.set] = t.dataset.set === 'rest' ? (parseInt(t.value, 10) || 150) : t.dataset.set === 'goal' ? +t.value : t.value;
     save();
