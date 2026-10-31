@@ -1278,6 +1278,9 @@ function vSettings() {
       <span class="small muted" style="flex:1">${S.settings.accent ? 'Couleur perso : ' + esc(S.settings.accent) : 'Couleur du thème'}</span>
       ${S.settings.accent ? '<button class="btn sm" data-act="accent-reset">Remettre celle du thème</button>' : ''}</div>
     </div>
+    <div class="card"><h3>📤 Partager l'appli</h3>
+      <p class="muted small" style="margin:4px 0 8px">Envoie le lien et les instructions à un ami. Chacun garde ses propres données sur son téléphone.</p>
+      <button class="btn block" data-act="share-app">📤 Envoyer l'appli à un ami</button></div>
     <div class="card"><h3>Sauvegarde manuelle (fichier)</h3>
       <p class="muted small">Tes données restent sur ce téléphone. Exporte un fichier de temps en temps (et avant de changer de cell), puis importe-le sur le nouveau.</p>
       <div class="row wrap">
@@ -1664,6 +1667,7 @@ function cloudCard() {
   if (!cloudOn()) return `<div class="card" style="border-color:var(--accent)"><h3>☁️ Sauvegarde automatique</h3>
     <p class="small" style="margin:6px 0">Tes données sont copiées toutes seules dans ton compte GitHub (gratuit, privé) après chaque modification. Sur un nouveau téléphone, tu remets la même clé et tout revient. À faire une seule fois :</p>
     <ol class="small" style="padding-left:20px;margin:6px 0">
+      <li>Pas de compte GitHub? <a href="https://github.com/signup" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700">Crée-en un gratuitement</a> (courriel + mot de passe), puis reviens ici.</li>
       <li>Ouvre <a href="https://github.com/settings/tokens/new?scopes=gist&description=Carnet%20Muscu" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700">ce lien GitHub</a> (connecté à ton compte).</li>
       <li><b>Expiration</b> : choisis « No expiration ». La case <b>gist</b> est déjà cochée, ne touche à rien d'autre.</li>
       <li>Touche <b>Generate token</b>, copie la clé (elle commence par ghp_) et colle-la ici.</li></ol>
@@ -1671,7 +1675,7 @@ function cloudCard() {
     <input id="ghname" placeholder="Ex. : Alissa" value="${esc(S.settings.name || '')}">
     <label>Clé GitHub</label>
     <input id="ghtok" placeholder="ghp_…" autocomplete="off" autocapitalize="off" spellcheck="false">
-    <p class="muted small" style="margin:6px 0 0">Vous pouvez être plusieurs avec la même clé (ex. toi et ta femme) : chacun écrit son prénom et a son propre profil.</p>
+    <p class="muted small" style="margin:6px 0 0">🔒 Ta clé donne accès à toutes les sauvegardes de ton compte : partage-la seulement avec une personne de confiance (ex. ta conjointe), qui écrit son prénom pour avoir son propre profil. Tes amis doivent créer <b>leur propre clé</b>.</p>
     <button class="btn primary block" data-act="cloud-connect" style="margin-top:8px">Connecter</button><p class="small muted" id="cloudmsg" style="margin:6px 0 0"></p></div>`;
   return `<div class="card"><h3>☁️ Sauvegarde automatique</h3>
     <p class="small" style="margin:6px 0">${c.err ? '⚠️ ' + esc(c.err) : c.last ? '✅ Sauvegardé ' + ago(c.last) : '⏳ Première sauvegarde en cours…'}<br><span class="muted">Profil : <b>${esc(c.profile || profLabel(cfile()))}</b> · compte GitHub ${esc(c.user || '')}<br>Envoi automatique après chaque modification</span></p>
@@ -2484,6 +2488,11 @@ document.addEventListener('click', e => {
     case 'deload-off': delete S.settings.deload; save(); render(); break;
     case 'nag-later': S.settings.nagUntil = Date.now() + 7 * 864e5; save(); render(); break;
     case 'cloud-connect': cloudConnect(); break;
+    case 'share-app': {
+      const url = location.origin + location.pathname;
+      shareText(`💪 Carnet Muscu : mon appli d'entraînement gratuite (routines, séances, GIF des exercices, statistiques).\n\n1. Ouvre ce lien dans Chrome : ${url}\n2. Menu ⋮ → « Installer l'application ».\n3. Pour ne jamais perdre tes données : dans l'appli, Profil → ⚙️ Réglages → Sauvegarde automatique, et suis les étapes avec TON propre compte GitHub (gratuit).\n\nTes données restent sur ton téléphone, personne d'autre ne les voit.`);
+      break;
+    }
     case 'cloud-pick': cloudPick(b.dataset.f); break;
     case 'cloud-new': cloudNew(); break;
     case 'cloud-push': cloudPush(true).then(() => toast(S.cloud && S.cloud.err ? '⚠️ ' + S.cloud.err : '☁️ Sauvegardé')); break;
