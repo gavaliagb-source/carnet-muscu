@@ -350,9 +350,62 @@ const LIB = EXOS.map((r, i) => {
 });
 const LIBMAP = Object.fromEntries(LIB.map(l => [l.id, l]));
 const LIBBYNAME = Object.fromEntries(LIB.map(l => [l.key, l.id]));
+
+/* Exercices populaires absents de la base : ajoutés avec l'animation d'un mouvement très proche */
+const HT_FR = ['Assieds-toi au sol, le haut du dos appuyé contre un banc, la charge posée sur les hanches (avec un coussin).', 'Pieds à plat, écartés à la largeur des hanches, tibias verticaux en haut du mouvement.', 'Pousse dans les talons et monte les hanches jusqu\'à ce que le corps soit aligné des épaules aux genoux. Serre les fessiers 1 seconde.', 'Redescends lentement les hanches sans toucher le sol, puis recommence.'];
+const HT_EN = ['Sit on the floor with your upper back against a bench and the weight resting on your hips (use a pad).', 'Feet flat, hip-width apart, shins vertical at the top of the movement.', 'Drive through your heels and lift your hips until your body is in line from shoulders to knees. Squeeze your glutes for 1 second.', 'Lower your hips slowly without touching the floor, then repeat.'];
+const EXTRA = [
+  ['x_ht', 'Barbell Hip Thrust', 'glutes', 'hamstrings,quads', 'barbell', 'Barbell Glute Bridge', 'hip thrust pont fessier fessiers barre', HT_FR, HT_EN],
+  ['x_htd', 'Dumbbell Hip Thrust', 'glutes', 'hamstrings,quads', 'dumbbell', 'Barbell Glute Bridge', 'hip thrust pont fessier fessiers haltere', HT_FR, HT_EN],
+  ['x_htm', 'Machine Hip Thrust', 'glutes', 'hamstrings,quads', 'leverage machine', 'Barbell Glute Bridge', 'hip thrust pont fessier fessiers machine', HT_FR, HT_EN],
+  ['x_hts', 'Smith Machine Hip Thrust', 'glutes', 'hamstrings,quads', 'smith machine', 'Barbell Glute Bridge', 'hip thrust pont fessier fessiers smith', HT_FR, HT_EN],
+  ['x_ht1', 'Single Leg Hip Thrust', 'glutes', 'hamstrings', 'body weight', 'Glute Bridge March', 'hip thrust unilateral une jambe pont fessier fessiers', HT_FR, HT_EN],
+  ['x_bss', 'Dumbbell Bulgarian Split Squat', 'quads', 'glutes,hamstrings', 'dumbbell', 'Dumbbell Single Leg Split Squat', 'squat bulgare fentes bulgares bulgarian split',
+    ['Dos à un banc, pose le dessus du pied arrière sur le banc, un haltère dans chaque main.', 'Descends en pliant le genou avant jusqu\'à ce que la cuisse soit presque parallèle au sol.', 'Pousse dans le pied avant pour remonter. Fais toutes les reps, puis change de jambe.'],
+    ['Stand in front of a bench, rest the top of your back foot on it, a dumbbell in each hand.', 'Lower by bending the front knee until the thigh is nearly parallel to the floor.', 'Push through the front foot to stand back up. Do all reps, then switch legs.']],
+  ['x_pend', 'Pendulum Squat', 'quads', 'glutes', 'sled machine', 'Sled Hack Squat', 'squat pendule pendulum machine',
+    ['Place-toi dans la machine, épaules sous les coussins, pieds au milieu de la plateforme.', 'Descends lentement le plus bas possible en gardant le dos collé au dossier.', 'Pousse dans les pieds pour remonter sans verrouiller les genoux.'],
+    ['Get into the machine with your shoulders under the pads and feet in the middle of the platform.', 'Lower slowly as deep as you can, keeping your back against the pad.', 'Push through your feet to come back up without locking your knees.']],
+  ['x_belt', 'Belt Squat', 'quads', 'glutes,hamstrings', 'leverage machine', 'Sled Hack Squat', 'squat ceinture belt machine',
+    ['Attache la ceinture à la machine et place-toi debout, pieds à la largeur des épaules.', 'Descends en squat en gardant le torse droit.', 'Remonte en poussant dans les talons.'],
+    ['Attach the belt to the machine and stand with feet shoulder-width apart.', 'Squat down while keeping your torso upright.', 'Stand back up by driving through your heels.']],
+  ['x_nord', 'Nordic Hamstring Curl', 'hamstrings', 'glutes,calves', 'body weight', 'Inverse Leg Curl (Bench Support)', 'nordic curl ischios ischio-jambiers nordique',
+    ['À genoux, chevilles bloquées sous un support ou tenues par un partenaire.', 'Penche-toi lentement vers l\'avant en gardant le corps droit des genoux à la tête, en freinant avec les ischios.', 'Rattrape-toi avec les mains et repousse pour revenir en haut.'],
+    ['Kneel with your ankles anchored under a support or held by a partner.', 'Slowly lean forward keeping your body straight from knees to head, braking with your hamstrings.', 'Catch yourself with your hands and push back up to the start.']],
+  ['x_seal', 'Barbell Seal Row', 'upper back', 'lats,biceps', 'barbell', 'Barbell Incline Row', 'seal row rowing phoque banc poitrine appuyee',
+    ['Allonge-toi sur le ventre sur un banc surélevé, la barre sous toi.', 'Tire la barre vers le bas du torse en serrant les omoplates.', 'Redescends lentement, bras tendus.'],
+    ['Lie face down on an elevated bench with the bar below you.', 'Pull the bar to your lower chest, squeezing your shoulder blades.', 'Lower slowly to full arm extension.']],
+  ['x_csr', 'Chest Supported Dumbbell Row', 'upper back', 'lats,biceps,delts', 'dumbbell', 'Dumbbell Incline Row', 'rowing poitrine appuyee banc incline halteres chest supported',
+    ['Allonge-toi sur le ventre sur un banc incliné à 30-45°, un haltère dans chaque main.', 'Tire les haltères vers les hanches en serrant les omoplates.', 'Redescends lentement.'],
+    ['Lie face down on a bench inclined at 30-45°, a dumbbell in each hand.', 'Row the dumbbells toward your hips, squeezing your shoulder blades.', 'Lower slowly.']],
+  ['x_kbm', 'Machine Glute Kickback', 'glutes', 'hamstrings', 'leverage machine', 'Lever Hip Extension V. 2', 'kickback fessier machine extension hanche',
+    ['Place-toi dans la machine, le pied contre le coussin ou la plateforme.', 'Pousse la jambe vers l\'arrière en serrant le fessier, sans cambrer le bas du dos.', 'Reviens lentement. Change de jambe.'],
+    ['Set up in the machine with your foot against the pad or platform.', 'Push your leg back by squeezing your glute, without arching your lower back.', 'Return slowly. Switch legs.']],
+  ['x_kbc', 'Cable Glute Kickback', 'glutes', 'hamstrings', 'cable', 'Cable Standing Hip Extension', 'kickback fessier poulie cable',
+    ['Attache la sangle à la cheville, face à la poulie basse.', 'Pousse la jambe vers l\'arrière en serrant le fessier.', 'Reviens lentement. Change de jambe.'],
+    ['Attach the strap to your ankle, facing the low pulley.', 'Kick your leg back by squeezing your glute.', 'Return slowly. Switch legs.']],
+  ['x_bay', 'Cable Bayesian Curl', 'biceps', 'forearms', 'cable', 'Cable One Arm Curl', 'curl bayesien bayesian poulie',
+    ['Dos à la poulie basse, la poignée dans une main, le bras tiré vers l\'arrière.', 'Fléchis le coude pour monter la poignée sans avancer le coude.', 'Redescends lentement jusqu\'à l\'étirement complet.'],
+    ['Stand facing away from the low pulley, handle in one hand, arm pulled back.', 'Curl the handle up without moving your elbow forward.', 'Lower slowly to a full stretch.']],
+  ['x_yr', 'Cable Y Raise', 'delts', 'upper back,traps', 'cable', 'Cable Lateral Raise', 'elevation en y raise poulie epaules',
+    ['Face aux poulies basses, câbles croisés, une poignée dans chaque main.', 'Monte les bras en diagonale pour former un Y au-dessus de la tête.', 'Redescends lentement.'],
+    ['Face the low pulleys with cables crossed, a handle in each hand.', 'Raise your arms diagonally to form a Y overhead.', 'Lower slowly.']]];
+EXTRA.forEach(([id, name, p, s, eq, src, fw, fr, en]) => {
+  const sid = LIBBYNAME[norm(src)]; if (!sid) return; const S0 = LIBMAP[sid];
+  const nameWords = words(name), extra = [...words(fw)];
+  [p, ...s.split(',')].forEach(m => extra.push(...words(m), ...words(MUS_FR[m] || ''))); extra.push(...words(eq), ...words(EQ_FR[eq] || ''));
+  const L = {id, name, p: [p], s: s ? s.split(',') : [], eq, media: S0.media, mid: sid, sim: true, fr, en, nameWords, hay: nameWords.concat(extra), key: norm(name)};
+  LIB.push(L); LIBMAP[id] = L; LIBBYNAME[L.key] = id;
+});
+/* Exercices perso avec muscle choisi */
+function customEntry(c) {
+  const id = 'c_' + norm(c.name).replace(/[^a-z0-9]+/g, '-');
+  if (!LIBMAP[id]) { const nw = words(c.name); LIBMAP[id] = {id, name: c.name, p: c.p || [], s: c.s || [], eq: c.eq || '', media: null, custom: true, fr: [], en: [], nameWords: nw, hay: nw, key: norm(c.name)}; }
+  return id;
+}
 const REPO = 'hasaneyldrm/exercises-dataset';
-const gifUrl = L => `https://raw.githubusercontent.com/${REPO}/main/videos/${L.id}-${L.media}.gif`;
-const gifUrl2 = L => `https://github.com/${REPO}/raw/main/videos/${L.id}-${L.media}.gif`;
+const gifUrl = L => `https://raw.githubusercontent.com/${REPO}/main/videos/${L.mid || L.id}-${L.media}.gif`;
+const gifUrl2 = L => `https://github.com/${REPO}/raw/main/videos/${L.mid || L.id}-${L.media}.gif`;
 
 /* Traduction français -> mots de recherche anglais (bibliothèque) */
 const FR_TOK = {
@@ -430,7 +483,14 @@ const AL = [
   [['mollets debout','mollets','standing calf raise','standing calf raise machine'],'lever standing calf raise'],
   [['mollets assis','seated calf raise'],'lever seated calf raise'],
   [['mollets presse'],'sled calf press on leg press'],
-  [['hip thrust','pont fessier','hip thrust barbell'],'barbell glute bridge two legs on bench (male)'],
+  [['hip thrust','pont fessier','hip thrust barbell','hip thrust barre','hip thrust (barre)'],'barbell hip thrust'],
+  [['hip thrust machine','hip thrust (machine)'],'machine hip thrust'],
+  [['hip thrust haltere','hip thrust (haltere)'],'dumbbell hip thrust'],
+  [['squat bulgare','fentes bulgares','bulgarian split squat','fentes bulgares (haltere)'],'dumbbell bulgarian split squat'],
+  [['pendulum squat','squat pendule'],'pendulum squat'],
+  [['nordic curl','nordic hamstring curl'],'nordic hamstring curl'],
+  [['seal row'],'barbell seal row'],
+  [['kickback fessier','glute kickback'],'cable glute kickback'],
   [['fentes','fentes halteres','lunge dumbbell'],'dumbbell lunge'],
   [['fentes marchees'],'walking lunge'],
   [['fentes arriere'],'dumbbell rear lunge'],
@@ -510,6 +570,7 @@ function autoMatch(name) {
 }
 function libId(name) {
   const k = norm(name);
+  (S.custom || []).forEach(customEntry);
   if (S.links && k in S.links) { const v = S.links[k]; if (v === 0) return null; if (v && LIBMAP[v]) return v; }
   if (!autoMemo.has(k)) autoMemo.set(k, autoMatch(name));
   return autoMemo.get(k);
@@ -871,9 +932,18 @@ function renderPicker() {
   if (q && !pk.libOnly) html += '<div class="pkh">Autre</div>' + add('new', q, 'Créer un exercice perso avec ce nom');
   $('#pkres').innerHTML = html;
 }
+const MUS_LIST = ['pectorals', 'delts', 'lats', 'upper back', 'traps', 'biceps', 'triceps', 'forearms', 'abs', 'quads', 'hamstrings', 'glutes', 'calves', 'adductors', 'abductors', 'spine'];
+let newCb = null;
 function doPick(i) {
   const it = pkResults[i]; if (!it || !pk) return;
   const cb = pk.cb; closeModal();
+  if (it.kind === 'new' && !S.custom?.some(c => norm(c.name) === norm(it.name))) {
+    newCb = () => cb({name: it.name, lib: null});
+    modal(`<h2>＋ ${esc(it.name)}</h2><p class="muted small">${T('Quel muscle travaille surtout cet exercice? Il comptera dans tes statistiques et la récupération.', 'Which muscle does this exercise mainly work? It will count in your stats and recovery.')}</p>
+      <div class="chips">${MUS_LIST.map(m => `<button class="chip" data-act="new-mus" data-m="${m}" data-n="${esc(it.name)}">${esc(musN(m))}</button>`).join('')}</div>
+      <button class="btn block" data-act="new-mus" data-m="" data-n="${esc(it.name)}" style="margin-top:8px">${T('Passer', 'Skip')}</button>`);
+    return;
+  }
   cb({name: it.name, lib: it.kind === 'lib' ? it.id : null});
 }
 
@@ -881,8 +951,10 @@ function doPick(i) {
 function openExo(name) {
   const L = libEntry(name);
   let body = '';
-  if (L) {
-    body = `<div class="exoimg" id="exoimg"><img alt="" referrerpolicy="no-referrer" src="${gifUrl(L)}" data-id="${L.id}"></div>
+  if (L && L.custom) {
+    body = `<div class="chips">${L.p.map(m => `<span class="chip main">${esc(musN(m))}</span>`).join('')}</div><p class="muted small">${T('Exercice perso : pas d\'animation, mais il compte dans tes statistiques et la récupération.', 'Custom exercise: no animation, but it counts in your stats and recovery.')}</p>`;
+  } else if (L) {
+    body = `${L.sim ? `<p class="muted small" style="margin:0 0 6px">🎞 ${T('Animation d\'un mouvement très proche (cet exercice n\'existe pas dans la base d\'animations).', 'Animation of a very similar movement (this exercise is not in the animation database).')}</p>` : ''}<div class="exoimg" id="exoimg"><img alt="" referrerpolicy="no-referrer" src="${gifUrl(L)}" data-id="${L.id}"></div>
       <div class="chips">${L.p.map(m => `<span class="chip main">${esc(musN(m))}</span>`).join('')}${L.s.map(m => `<span class="chip">${esc(musN(m))}</span>`).join('')}</div>
       <p class="muted small" style="margin:4px 0">${L.eq ? 'Équipement : ' + esc(eqN(L.eq)) + ' · ' : ''}<b style="color:var(--accent)">Muscle principal</b> / secondaires<br>Bibliothèque : ${esc(L.name)}</p>
       ${(isEN() ? L.en : L.fr).length ? `<details class="card" style="margin:10px 0" open><summary style="cursor:pointer;font-weight:700">Instructions</summary><ol style="margin:8px 0 0;padding-left:20px" class="small">${(isEN() ? L.en : L.fr).map(t => `<li style="margin:4px 0">${esc(t)}</li>`).join('')}</ol></details>` : ''}
@@ -1663,8 +1735,8 @@ function chartPoints() {
 
 /* ===================== v3 : écrans façon Hevy ===================== */
 /* ---------- Miniatures rondes ---------- */
-const thumbUrl = L => `https://raw.githubusercontent.com/${REPO}/main/images/${L.id}-${L.media}.jpg`;
-const thumbL = (L, sz = 42) => `<span class="th" style="--s:${sz}px">${L ? `<img src="${thumbUrl(L)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</span>`;
+const thumbUrl = L => `https://raw.githubusercontent.com/${REPO}/main/images/${L.mid || L.id}-${L.media}.jpg`;
+const thumbL = (L, sz = 42) => `<span class="th" style="--s:${sz}px">${L && L.media ? `<img src="${thumbUrl(L)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</span>`;
 const thumb = (name, sz = 42) => thumbL(libEntry(name), sz);
 
 /* ---------- Séries détaillées des routines ---------- */
@@ -2479,7 +2551,7 @@ function vExDetail() {
   const rec = computeRecords().find(r => norm(r.name) === norm(name));
   const pts = exPoints(name);
   const chips = [['1rm', '1RM estimé'], ['max', 'Charge max'], ['vol', 'Volume'], ['reps', 'Réps max']].map(([k, l]) => `<button class="chip ${exMetric === k ? 'on' : ''}" data-act="ex-metric" data-m="${k}">${l}</button>`).join('');
-  return `<div class="card" style="text-align:center">${L ? `<img class="gifbig" src="${gifUrl(L)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : thumb(name, 96)}
+  return `<div class="card" style="text-align:center">${L && L.media ? `<img class="gifbig" src="${gifUrl(L)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : thumb(name, 96)}
       <h2 style="margin-top:8px">${esc(name)}</h2>
       ${L ? `<div class="chips" style="justify-content:center">${L.p.map(m => `<span class="chip main">${esc(musN(m))}</span>`).join('')}${L.s.map(m => `<span class="chip">${esc(musN(m))}</span>`).join('')}</div>` : ''}
       <button class="btn sm" data-act="exo" data-n="${esc(name)}">📖 Instructions et lien</button></div>
@@ -3169,6 +3241,11 @@ document.addEventListener('click', e => {
     case 'del-hist': if (confirm('Supprimer cette séance?')) { S.history = S.history.filter(h => h.id !== b.dataset.hid); save(); closeAll(); render(); } break;
     case 'hist-edit': openEditor(b.dataset.hid); break;
     case 'hist-img': shareImage(b.dataset.hid); break;
+    case 'new-mus': {
+      const n = b.dataset.n, m = b.dataset.m;
+      if (m) { S.custom = (S.custom || []).filter(c => norm(c.name) !== norm(n)); S.custom.push({name: n, p: [m]}); S.links[norm(n)] = customEntry({name: n, p: [m]}); autoMemo.delete(norm(n)); save(); }
+      closeModal(); const f = newCb; newCb = null; if (f) f(); break;
+    }
     case 'stag': openStag(b.dataset.n, b.dataset.e != null ? +b.dataset.e : null); break;
     case 'stag-ai': { const t = stagPrompt(b.dataset.n); closeModal(); copy(t); break; }
     case 'stag-deload': { const e = S.active && S.active.exercises[+b.dataset.e]; if (e) { e.sets.forEach(s => { if (!s.done && !isW(s) && +s.w > 0) s.w = Math.round(+s.w * 0.9 / incr()) * incr(); }); save(); closeModal(); render(); toast(T('🪶 −10 % appliqué', '🪶 −10 % applied')); } break; }
