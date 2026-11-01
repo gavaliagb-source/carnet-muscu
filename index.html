@@ -185,6 +185,8 @@ button.chip{cursor:pointer}
 .cday.today .dn{box-shadow:inset 0 0 0 1.5px var(--accent)}
 .wstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:12px 0 4px}
 .wday{background:var(--card2);border-radius:8px;padding:6px 2px;text-align:center;font-size:11px;min-width:0}
+.wday.past{opacity:.55}.cycrow{padding:6px 0;border-bottom:1px solid var(--line)}
+.cycprev{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.cycprev div{background:var(--card2);border-radius:8px;padding:5px 2px;text-align:center;font-size:10px;min-width:0}.cycprev b{display:block;color:var(--muted);font-weight:600}.cycprev span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cycprev .rest{opacity:.6}
 .wday b{display:block;font-size:11px;color:var(--muted);font-weight:600}
 .wday span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
 .wday.on{background:var(--accent);color:var(--accent-ink)}
@@ -1957,29 +1959,88 @@ function renderPlates() {
 
 /* ---------- Horaire de la semaine ---------- */
 const dayIdx = d => (d.getDay() + 6) % 7;
-const schedR = i => S.routines.find(x => x.id === S.schedule[i]);
+/* Deux modes : semaine fixe (une routine par jour) ou cycle en rotation (Push → Pull → Legs → Push…)
+   sur les jours d'entraînement choisis. Le cycle suit ta dernière séance faite : si tu sautes un jour, il reprend où tu étais. */
+const cyc = () => S.cycle || (S.cycle = {on: false, order: [], days: [true, true, true, true, true, false, false]});
+const cycleOn = () => !!(S.cycle && S.cycle.on && cycRs().length);
+const cycRs = () => (S.cycle && S.cycle.order || []).map(id => S.routines.find(r => r.id === id)).filter(Boolean);
+function cycInRot(h) { const rs = cycRs(); return rs.findIndex(r => h.routineId === r.id || norm(h.routineName) === norm(r.name)); }
+function cycSeq(n) {
+  const rs = cycRs(), c = S.cycle, out = [], today = new Date(); today.setHours(12, 0, 0, 0);
+  const hs = S.history.slice().sort((a, b) => a.date.localeCompare(b.date)).filter(h => cycInRot(h) >= 0);
+  const last = hs[hs.length - 1];
+  let idx = last ? (cycInRot(last) + 1) % rs.length : 0;
+  if (c.next && rs.some(r => r.id === c.next.rid) && (!last || last.date < c.next.at)) idx = rs.findIndex(r => r.id === c.next.rid);
+  const doneToday = last && dkey(last.date) === dkey(today) ? rs[cycInRot(last)] : null;
+  for (let k = 0; k < n; k++) {
+    const d = new Date(today); d.setDate(d.getDate() + k); const wi = dayIdx(d);
+    if (k === 0 && doneToday) { out.push({d, r: doneToday, done: true}); continue; }
+    if (!c.days[wi]) { out.push({d, rest: true}); continue; }
+    out.push({d, r: rs[idx]}); idx = (idx + 1) % rs.length;
+  }
+  return out;
+}
+function weekPlan() {
+  const di = dayIdx(new Date()), out = [];
+  if (!cycleOn()) return days().map((d, i) => ({r: S.routines.find(x => x.id === S.schedule[i]), rest: S.schedule[i] === 'rest'}));
+  const seq = cycSeq(7 - di);
+  for (let i = 0; i < 7; i++) {
+    if (i >= di) { out.push(seq[i - di]); continue; }
+    const dd = new Date(); dd.setDate(dd.getDate() - (di - i));
+    const hh = S.history.find(x => dkey(x.date) === dkey(dd));
+    out.push(hh ? {r: S.routines.find(r => r.id === hh.routineId) || {name: hh.routineName}, done: true, past: true} : {rest: !S.cycle.days[i], past: true, none: true});
+  }
+  return out;
+}
+const schedR = i => { const p = weekPlan()[i]; return p && p.r && p.r.id ? p.r : null; };
 function todayCard() {
   const sc = S.schedule || [];
-  if (!sc.some(x => x === 'rest' || S.routines.some(r => r.id === x)))
+  if (!cycleOn() && !sc.some(x => x === 'rest' || S.routines.some(r => r.id === x)))
     return `<button class="btn block" data-act="sched-edit" style="margin-bottom:10px;text-align:left">📅 Planifier ma semaine <span class="muted small">(lundi : Upper, mardi : repos…)</span></button>`;
-  const di = dayIdx(new Date()), r = schedR(di);
+  const di = dayIdx(new Date()), wp = weekPlan(), r = wp[di].r && wp[di].r.id ? wp[di].r : null;
   const doneToday = S.history.some(x => dkey(x.date) === dkey(new Date()));
   let nxt = '';
-  for (let k = 1; k <= 7; k++) { const j = (di + k) % 7, rr = schedR(j); if (rr) { nxt = T(`Prochaine séance : ${k === 1 ? 'demain' : days()[j].toLowerCase()} — ${esc(rr.name)}`, `Next session: ${k === 1 ? 'tomorrow' : days()[j]} — ${esc(rr.name)}`); break; } }
-  let main = `<div class="muted small">${T("Aujourd'hui", 'Today')} · ${days()[di]}</div>`;
-  if (r) main += `<h2 style="margin:4px 0 10px">${esc(r.name)}</h2>${doneToday ? '<p class="small" style="color:var(--ok);margin:0 0 8px">✅ Séance faite aujourd\'hui</p>' : ''}<button class="btn primary block" data-act="start" data-rid="${r.id}">▶ Lancer la séance d'aujourd'hui</button>`;
-  else if (sc[di] === 'rest') main += `<h2 style="margin:4px 0">😴 Jour de repos</h2><p class="muted small" style="margin:4px 0 0">${nxt || 'Récupère bien.'}</p>`;
+  if (cycleOn()) { const sq = cycSeq(15); for (let k = 1; k < sq.length; k++) if (sq[k].r) { const j = dayIdx(sq[k].d); nxt = T(`Prochaine séance : ${k === 1 ? 'demain' : days()[j].toLowerCase()} — ${esc(sq[k].r.name)}`, `Next session: ${k === 1 ? 'tomorrow' : days()[j]} — ${esc(sq[k].r.name)}`); break; } }
+  else for (let k = 1; k <= 7; k++) { const j = (di + k) % 7, rr = wp[j].r; if (rr) { nxt = T(`Prochaine séance : ${k === 1 ? 'demain' : days()[j].toLowerCase()} — ${esc(rr.name)}`, `Next session: ${k === 1 ? 'tomorrow' : days()[j]} — ${esc(rr.name)}`); break; } }
+  let main = `<div class="muted small">${T("Aujourd'hui", 'Today')} · ${days()[di]}${cycleOn() ? ' · 🔁 ' + T('cycle', 'cycle') : ''}</div>`;
+  if (r) main += `<h2 style="margin:4px 0 10px">${esc(r.name)}</h2>${doneToday ? '<p class="small" style="color:var(--ok);margin:0 0 8px">✅ Séance faite aujourd\'hui</p>' : ''}${doneToday && cycleOn() ? `<p class="muted small" style="margin:0">${nxt}</p>` : `<button class="btn primary block" data-act="start" data-rid="${r.id}">▶ Lancer la séance d'aujourd'hui</button>`}`;
+  else if (wp[di].rest) main += `<h2 style="margin:4px 0">😴 Jour de repos</h2><p class="muted small" style="margin:4px 0 0">${nxt || 'Récupère bien.'}</p>`;
   else main += `<h2 style="margin:4px 0">Rien de prévu</h2><p class="muted small" style="margin:4px 0 0">${nxt}</p>`;
-  const strip = days().map((d, i) => { const rr = schedR(i); return `<div class="wday ${i === di ? 'on' : ''}"><b>${d.slice(0, 3)}</b><span>${sc[i] === 'rest' ? '😴' : rr ? esc(rr.name) : '—'}</span></div>`; }).join('');
+  const strip = days().map((d, i) => { const p = wp[i]; return `<div class="wday ${i === di ? 'on' : ''} ${p.past ? 'past' : ''}"><b>${d.slice(0, 3)}</b><span>${p.r ? (p.done && i !== di ? '✓ ' : '') + esc(p.r.name) : p.rest ? '😴' : '—'}</span></div>`; }).join('');
   return `<div class="card today">${main}<div class="wstrip">${strip}</div><button class="linkbtn" data-act="sched-edit">📅 Modifier mon horaire</button></div>`;
 }
 function openSched() {
-  modal(`<div class="row between"><h2>📅 Mon horaire</h2><button class="btn sm" data-act="close">✕</button></div>
-    <p class="muted small">Choisis la routine de chaque jour. L'onglet Entraînement te proposera la séance du jour.</p>
-    ${days().map((d, i) => `<label>${d}</label><select data-sched="${i}"><option value="">— Rien</option><option value="rest" ${S.schedule[i] === 'rest' ? 'selected' : ''}>😴 Repos</option>${S.routines.map(r => `<option value="${r.id}" ${S.schedule[i] === r.id ? 'selected' : ''}>${esc(r.name)}</option>`).join('')}</select>`).join('')}
-    <button class="btn primary block" data-act="close" style="margin-top:14px">OK</button>`, {onclose: () => render()});
+  modal(`<div class="row between"><h2>📅 Mon horaire</h2><button class="btn sm" data-act="close">✕</button></div><div id="schedbox"></div>`, {onclose: () => render()});
+  renderSched();
+}
+function renderSched() {
+  const box = $('#schedbox'); if (!box) return;
+  const c = cyc(), on = c.on;
+  let h = `<div class="seg"><button class="${on ? '' : 'on'}" data-act="sched-mode" data-m="0">📅 ${T('Semaine fixe', 'Fixed week')}</button><button class="${on ? 'on' : ''}" data-act="sched-mode" data-m="1">🔁 ${T('Cycle en rotation', 'Rotating cycle')}</button></div>`;
+  if (!on) {
+    h += `<p class="muted small">Choisis la routine de chaque jour. L'onglet Entraînement te proposera la séance du jour.</p>
+    ${days().map((d, i) => `<label>${d}</label><select data-sched="${i}"><option value="">— Rien</option><option value="rest" ${S.schedule[i] === 'rest' ? 'selected' : ''}>😴 Repos</option>${S.routines.map(r => `<option value="${r.id}" ${S.schedule[i] === r.id ? 'selected' : ''}>${esc(r.name)}</option>`).join('')}</select>`).join('')}`;
+  } else {
+    const rs = cycRs(), seq = rs.length ? cycSeq(14) : [];
+    h += `<p class="muted small">${T('Tes routines tournent dans l\'ordre sur tes jours d\'entraînement (ex. Push → Pull → Legs → Push…). Le cycle suit ta dernière séance : si tu sautes un jour, il reprend où tu étais.', 'Your routines rotate in order on your training days (e.g. Push → Pull → Legs → Push…). The cycle follows your last workout: if you skip a day, it picks up where you left off.')}</p>
+      <label>${T('Jours d\'entraînement', 'Training days')} (${c.days.filter(Boolean).length}/7)</label>
+      <div class="chips">${days().map((d, i) => `<button class="chip ${c.days[i] ? 'on' : ''}" data-act="cyc-day" data-i="${i}">${d.slice(0, 3)}</button>`).join('')}</div>
+      <label>${T('Ordre du cycle', 'Cycle order')}</label>
+      ${rs.length ? rs.map((r, i) => `<div class="row between cycrow"><span><b class="muted">${i + 1}.</b> ${esc(r.name)}</span><span class="row" style="gap:4px"><button class="btn sm" data-act="cyc-mv" data-i="${i}" data-d="-1" ${i ? '' : 'disabled'}>↑</button><button class="btn sm" data-act="cyc-mv" data-i="${i}" data-d="1" ${i < rs.length - 1 ? '' : 'disabled'}>↓</button><button class="btn sm" data-act="cyc-rm" data-i="${i}">✕</button></span></div>`).join('') : `<p class="muted small">${T('Aucune routine. Ajoute un dossier ou des routines ci-dessous.', 'No routines yet. Add a folder or routines below.')}</p>`}
+      <div class="grid2" style="margin-top:8px">
+        <select data-cycfold><option value="">📁 ${T('Ajouter un dossier…', 'Add a folder…')}</option>${folders().map(f => `<option value="${esc(f)}">${esc(f)}</option>`).join('')}</select>
+        <select data-cycadd><option value="">＋ ${T('Ajouter une routine…', 'Add a routine…')}</option>${S.routines.map(r => `<option value="${r.id}">${esc(r.name)}</option>`).join('')}</select>
+      </div>
+      ${rs.length ? `<label>${T('Prochaine séance du cycle', 'Next workout in the cycle')}</label>
+      <select data-cycnext>${rs.map(r => `<option value="${r.id}" ${seq.find(x => x.r && !x.done) && seq.find(x => x.r && !x.done).r.id === r.id ? 'selected' : ''}>${esc(r.name)}</option>`).join('')}</select>
+      <label>${T('Aperçu des 2 prochaines semaines', 'Preview of the next 2 weeks')}</label>
+      <div class="cycprev">${seq.map(x => `<div class="${x.rest ? 'rest' : ''}"><b>${x.d.toLocaleDateString(LOC(), {weekday: 'short', day: 'numeric'})}</b><span>${x.rest ? '😴' : (x.done ? '✓ ' : '') + esc(x.r.name)}</span></div>`).join('')}</div>` : ''}`;
+  }
+  h += `<button class="btn primary block" data-act="close" style="margin-top:14px">OK</button>`;
+  box.innerHTML = h;
 }
 function schedTxt() {
+  if (cycleOn()) { const c = S.cycle; return T(`\n\nJe fais un cycle en rotation : ${cycRs().map(r => r.name).join(' → ')}, puis je recommence, sur mes jours d'entraînement (${days().filter((d, i) => c.days[i]).join(', ').toLowerCase()}). Repos les autres jours.`, `\n\nI follow a rotating cycle: ${cycRs().map(r => r.name).join(' → ')}, then repeat, on my training days (${days().filter((d, i) => c.days[i]).join(', ')}). Rest on the other days.`); }
   if (!(S.schedule || []).some(x => x)) return '';
   return T('\n\nMon horaire de la semaine : ', '\n\nMy weekly schedule: ') + days().map((d, i) => `${d}: ${S.schedule[i] === 'rest' ? T('repos', 'rest') : schedR(i) ? schedR(i).name : '—'}`).join(', ') + '.';
 }
@@ -3098,6 +3159,10 @@ document.addEventListener('click', e => {
     case 'rd-ss-pick': closeModal(); openSSPicker(rdraft.exercises, ei, nl => { rdraft.exercises = nl; rdirty = true; render(); }); break;
     case 'wo-ss-pick': closeModal(); openSSPicker(A.exercises, ei, nl => { A.exercises = nl; nl.forEach(x => { const re = routineEx(A.routineId, x.name); if (re) { if (x.ss) re.ss = x.ss; else delete re.ss; } }); save(); render(); }); break;
     case 'sched-edit': openSched(); break;
+    case 'sched-mode': cyc().on = b.dataset.m === '1'; save(); renderSched(); break;
+    case 'cyc-day': { const c = cyc(), i = +b.dataset.i; c.days[i] = !c.days[i]; if (!c.days.some(Boolean)) c.days[i] = true; save(); renderSched(); break; }
+    case 'cyc-mv': { const o = cyc().order, rs = cycRs().map(r => r.id), i = +b.dataset.i, j = i + +b.dataset.d; [rs[i], rs[j]] = [rs[j], rs[i]]; S.cycle.order = rs; save(); renderSched(); break; }
+    case 'cyc-rm': { const rs = cycRs().map(r => r.id); rs.splice(+b.dataset.i, 1); S.cycle.order = rs; save(); renderSched(); break; }
     case 'accent-pick': S.settings.accent = b.dataset.c; save(); applyTheme(); render(); break;
     case 'accent-reset': delete S.settings.accent; save(); applyTheme(); render(); break;
     case 'rd-reorder': if (b.closest('.sheet')) closeModal(); openReorder(rdraft.exercises, arr => { rdraft.exercises = regroupSS(arr); rdirty = true; render(); }); break;
@@ -3366,6 +3431,9 @@ document.addEventListener('change', e => {
   if (t.dataset.pf === 'range') { pfWeeks = +t.value; pfSel = null; render(); }
   if (t.id === 'pltb') { S.settings.bar = +t.value; save(); renderPlates(); }
   if (t.dataset.sched !== undefined) { S.schedule[+t.dataset.sched] = t.value; save(); }
+  if (t.dataset.cycfold !== undefined && t.value) { const c = cyc(); S.routines.filter(r => (r.folder || DEF_FOLDER) === t.value).forEach(r => { if (!c.order.includes(r.id)) c.order.push(r.id); }); save(); renderSched(); }
+  if (t.dataset.cycadd !== undefined && t.value) { const c = cyc(); if (!c.order.includes(t.value)) c.order.push(t.value); save(); renderSched(); }
+  if (t.dataset.cycnext !== undefined) { cyc().next = {rid: t.value, at: new Date().toISOString()}; save(); renderSched(); }
   if (t.dataset.accent !== undefined) render();
   if (t.dataset.move !== undefined) {
     const r2 = S.routines.find(x => x.id === t.dataset.move); if (!r2) return;
