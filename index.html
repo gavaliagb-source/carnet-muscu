@@ -100,6 +100,7 @@ textarea.short{min-height:80px;font-family:inherit;font-size:16px}
 #timer{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:6;
   background:var(--accent);color:var(--accent-ink);border-radius:14px;padding:10px 14px;
   display:none;align-items:center;justify-content:space-between;font-weight:700;box-shadow:0 8px 24px #0008}
+
 #timer.show{display:flex}#timer.fin{background:var(--ok);color:#06210f}
 #timer .t{font-size:24px;font-variant-numeric:tabular-nums}
 #timer button{background:#0002;border:0;color:inherit;border-radius:8px;padding:8px 10px;font-weight:700;font-size:14px}
@@ -1584,6 +1585,7 @@ function vSettings() {
       <label>${T('Volume du bip', 'Beep volume')} : <b id="bvl">${S.settings.beepVol ?? 70} %</b></label>
       <input type="range" min="0" max="100" step="5" value="${S.settings.beepVol ?? 70}" data-bvol="1" style="--p:${S.settings.beepVol ?? 70}%">
       <p class="muted small" style="margin:2px 0 0">${T('Le volume dépend aussi du volume « média » de ton téléphone.', 'Volume also depends on your phone’s media volume.')}</p>
+      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="swipe" ${S.settings.swipe !== false ? 'checked' : ''}> ${T('👆 Glisser pour changer de page (Entraînement ⇄ Profil, retour)', '👆 Swipe to switch pages (Workout ⇄ Profile, back)')}</label>
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="autoScroll" ${S.settings.autoScroll !== false ? 'checked' : ''}> ${T('↓ Aller à l\'exercice suivant après la dernière série (et alterner en superset)', '↓ Jump to the next exercise after the last set (and alternate in supersets)')}</label>
       <div class="row wrap" style="margin-top:10px"><button class="btn sm" data-act="test-beep">🔊 Tester le son</button><button class="btn sm" data-act="test-lock">🔒 Test écran éteint (10 s)</button></div>
     </div>
@@ -3254,6 +3256,50 @@ function updElapsed() {
   const sv = $('#swv'); if (sv && sw) sv.textContent = fmtSec((Date.now() - sw.t0) / 1000);
 }
 setInterval(updElapsed, 1000);
+
+/* ===================== Glisser pour changer de page ===================== */
+/* Entraînement ⇄ Profil en glissant; sur une sous-page, glisser vers la droite = retour. */
+let swp = null;
+function swipeTarget(dx) {
+  if (stack.length > 1) return dx > 0 ? 'back' : null;
+  const v = stack[0].v;
+  if (v === 'train' && dx < 0) return 'profile';
+  if (v === 'profile' && dx > 0) return 'train';
+  return null;
+}
+document.addEventListener('touchstart', e => {
+  swp = null;
+  if (modals.length || e.touches.length > 1 || S.settings.swipe === false) return;
+  const t = e.target;
+  if (!t.closest('#app') || t.closest('input,textarea,select,button.check,.chs,.chips,.wstrip,.cycprev,.seg,.stbl,canvas,[data-noswipe]')) return;
+  const p = e.touches[0]; swp = {x: p.clientX, y: p.clientY, t: Date.now(), lock: null, dx: 0};
+}, {passive: true});
+document.addEventListener('touchmove', e => {
+  if (!swp) return;
+  const p = e.touches[0], dx = p.clientX - swp.x, dy = p.clientY - swp.y;
+  if (!swp.lock && (Math.abs(dx) > 12 || Math.abs(dy) > 12)) swp.lock = Math.abs(dx) > Math.abs(dy) * 1.6 && swipeTarget(dx) ? 'h' : 'v';
+  if (swp.lock !== 'h') return;
+  if (!swipeTarget(dx)) { swp.dx = 0; $('#app').style.transform = ''; return; }
+  swp.dx = dx;
+  const a = $('#app'); a.style.transition = 'none'; a.style.transform = `translateX(${dx * 0.45}px)`; a.style.opacity = String(1 - Math.min(0.5, Math.abs(dx) / 600));
+}, {passive: true});
+document.addEventListener('touchend', () => {
+  if (!swp) return;
+  const s = swp; swp = null; const a = $('#app');
+  if (s.lock !== 'h') return;
+  const dest = swipeTarget(s.dx), fast = Math.abs(s.dx) > 40 && Date.now() - s.t < 250;
+  a.style.transition = 'transform .18s ease, opacity .18s ease';
+  if (dest && (Math.abs(s.dx) > 80 || fast)) {
+    a.style.transform = `translateX(${s.dx > 0 ? 40 : -40}%)`; a.style.opacity = '0';
+    setTimeout(() => {
+      a.style.transition = 'none'; a.style.transform = `translateX(${s.dx > 0 ? -25 : 25}%)`;
+      if (dest === 'back') back();
+      else { setRoot(dest); render(); window.scrollTo(0, 0); }
+      requestAnimationFrame(() => { a.style.transition = 'transform .2s ease, opacity .2s ease'; a.style.transform = ''; a.style.opacity = ''; });
+    }, 170);
+  } else { a.style.transform = ''; a.style.opacity = ''; }
+}, {passive: true});
+document.addEventListener('touchcancel', () => { if (swp) { swp = null; const a = $('#app'); a.style.transform = ''; a.style.opacity = ''; } }, {passive: true});
 
 /* ===================== Événements ===================== */
 document.addEventListener('click', e => {
