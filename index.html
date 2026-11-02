@@ -101,10 +101,22 @@ textarea.short{min-height:80px;font-family:inherit;font-size:16px}
   background:var(--accent);color:var(--accent-ink);border-radius:14px;padding:10px 14px;
   display:none;align-items:center;justify-content:space-between;font-weight:700;box-shadow:0 8px 24px #0008}
 
+#wobar{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:6;display:none;align-items:center;gap:10px;
+  background:var(--card2);border:1px solid var(--accent);border-radius:14px;padding:10px 14px;box-shadow:0 8px 24px #0007;cursor:pointer}
+#wobar.show{display:flex}#wobar .wn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+#wobar .wt{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:700}
+body.wob #timer{bottom:calc(140px + env(safe-area-inset-bottom))}body.wob main{padding-bottom:150px}
+.wprog{position:sticky;top:var(--hdrh,58px);z-index:3;background:var(--bg);margin:-6px -2px 10px;padding:6px 2px 8px}
+.pbar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:5px}.pbar>div{height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}.check.pop{animation:pop .3s ease}
+@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}#app.enter>*{animation:enter .25s ease both}#app.enter>*:nth-child(2){animation-delay:.03s}#app.enter>*:nth-child(3){animation-delay:.06s}#app.enter>*:nth-child(4){animation-delay:.09s}#app.enter>*:nth-child(n+5){animation-delay:.12s}
+@media (prefers-reduced-motion: reduce){.check.pop,#app.enter>*{animation:none}}
+.confetti{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:60}
 #timer.show{display:flex}#timer.fin{background:var(--ok);color:#06210f}
 #timer .t{font-size:24px;font-variant-numeric:tabular-nums}
 #timer button{background:#0002;border:0;color:inherit;border-radius:8px;padding:8px 10px;font-weight:700;font-size:14px}
-#toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top));transform:translateX(-50%) translateY(-140%);
+#toast .btn{padding:4px 10px}#toast{display:flex;align-items:center;justify-content:center;gap:4px;
+  position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top));transform:translateX(-50%) translateY(-140%);
   background:var(--card2);border:1px solid var(--line);padding:10px 16px;border-radius:12px;z-index:50;
   transition:transform .25s;max-width:90vw;text-align:center}
 #toast.show{transform:translateX(-50%) translateY(0)}
@@ -229,6 +241,13 @@ button.chip{cursor:pointer}
 .mxt td{padding:6px 4px;text-align:center}.medal{text-align:center;opacity:.45;margin:0}.medal.ok{opacity:1;border-color:var(--accent)}.mic2{font-size:30px;line-height:1.2}
 .ybig{text-align:center;margin:0;display:flex;flex-direction:column;gap:2px}.ybig b{font-size:26px}
 .ymonths{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;height:90px;margin-top:10px;align-items:end}.ymonths div{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}.ymonths span{width:70%;background:var(--accent);border-radius:3px;min-height:2px}.ymonths i{font-style:normal;font-size:10px;color:var(--muted);margin-top:3px}
+.trow .btn{white-space:nowrap;display:flex;align-items:center;justify-content:center;padding-left:8px;padding-right:8px;font-size:15px}.trow .btn .ico{margin-right:6px}.trow .btn:last-child .ico{margin:0}
+.ico{display:inline-block;vertical-align:-0.2em;flex:none}nav button .ic .ico{display:block;margin:0 auto 3px}
+.btn .ico{margin-right:6px}.tile .ico{color:var(--accent);margin-right:8px}
+.setsec{padding:0;overflow:hidden}.setsec>summary{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;list-style:none}.setsec>summary::-webkit-details-marker{display:none}
+.setsec .sic{width:40px;height:40px;border-radius:12px;background:var(--card2);display:flex;align-items:center;justify-content:center;color:var(--accent);flex:none;font-size:20px}
+.setsec .chev{color:var(--muted);font-size:22px;transition:transform .2s}.setsec[open] .chev{transform:rotate(90deg)}
+.setsec .secb{padding:0 16px 16px;border-top:1px solid var(--line)}.setsec .secb>.card{background:var(--card2);margin:12px 0 0}
 .chrono{font-variant-numeric:tabular-nums;font-weight:700;color:var(--accent);font-size:15px}
 .cday .dl{font-size:10px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
 </style>
@@ -236,12 +255,13 @@ button.chip{cursor:pointer}
 <body>
 <header><button id="back" data-act="back" aria-label="Retour" style="visibility:hidden">←</button><h1 id="title">Carnet Muscu</h1><div id="hdr"></div></header>
 <main id="app"></main>
-<div id="timer"><span data-act="timer-go" style="flex:1;cursor:pointer"><span id="tlab">Repos</span> <span class="t" id="tval">0:00</span></span>
+<div id="timer"><span data-act="timer-go" style="flex:1;cursor:pointer" title="Agrandir / retour à la séance"><span id="tlab">Repos</span> <span class="t" id="tval">0:00</span></span>
   <span class="row" id="tbtns"><button data-act="timer-add">+30 s</button><button data-act="timer-stop">Passer</button></span></div>
 <nav id="nav">
   <button data-tab="train"><span class="ic">🏋️</span>Entraînement</button>
   <button data-tab="profile"><span class="ic">👤</span>Profil</button>
 </nav>
+<div id="wobar" data-act="go-workout"></div>
 <div id="toast"></div>
 <input type="file" id="fileIn" accept=".json,application/json,.csv,text/csv" hidden>
 
@@ -675,7 +695,7 @@ if (navigator.storage && navigator.storage.persist) navigator.storage.persist().
 let stack = S.active ? [{v: 'train'}, {v: 'workout'}] : [{v: 'train'}];
 const cur = () => stack[stack.length - 1];
 let woY = 0;
-function go(v, p = {}) { if (cur().v === 'workout') woY = scrollY; stack.push({v, ...p}); try { history.pushState({d: stack.length}, ''); } catch (e) {} render(); window.scrollTo(0, 0); }
+function go(v, p = {}) { navAnim = true; if (cur().v === 'workout') woY = scrollY; stack.push({v, ...p}); try { history.pushState({d: stack.length}, ''); } catch (e) {} render(); window.scrollTo(0, 0); }
 function back() {
   if (stack.length < 2) return;
   if (cur().v === 'redit' && rdirty && !confirm('Quitter sans enregistrer les modifications?')) return;
@@ -690,6 +710,12 @@ let cal = {y: now0.getFullYear(), m: now0.getMonth(), sel: null};
 
 /* ---------- Toast & modales ---------- */
 let toastT;
+let undoSnap = null, undoT = null;
+function snap() { undoSnap = JSON.stringify(S); }
+function undoToast(msg) {
+  const t = $('#toast'); t.innerHTML = `<span>${esc(msg)}</span> <button class="btn sm" data-act="undo" style="margin-left:10px">↩ ${T('Annuler', 'Undo')}</button>`;
+  t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => { t.classList.remove('show'); undoSnap = null; }, 5000);
+}
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2400); }
 const modals = []; let exoTimer = null;
 function modal(html, opts = {}) {
@@ -1118,6 +1144,20 @@ function startWorkout(rid) {
 }
 function openWorkout() { stack = [{v: 'train'}, {v: 'workout'}]; try { history.pushState({}, ''); } catch (e) {} render(); window.scrollTo(0, 0); setTimeout(scrollCur, 30); }
 /* Exercice en cours = premier exercice avec une série non cochée */
+let justChk = null;
+function confetti(n = 90) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const c = document.createElement('canvas'); c.className = 'confetti'; c.width = innerWidth * devicePixelRatio; c.height = innerHeight * devicePixelRatio; document.body.appendChild(c);
+  const g = c.getContext('2d'), dpr = devicePixelRatio, acc = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c6f135';
+  const cols = [acc, '#ffffff', '#ffc857', '#7dd3fc', '#ff6fae'];
+  const ps = Array.from({length: n}, () => ({x: innerWidth / 2 + (Math.random() - 0.5) * 80, y: innerHeight * 0.35, vx: (Math.random() - 0.5) * 11, vy: -Math.random() * 11 - 4, r: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.4, s: 5 + Math.random() * 5, c: cols[Math.random() * cols.length | 0]}));
+  const t0 = performance.now();
+  (function f(t) {
+    const k = (t - t0) / 1600; g.clearRect(0, 0, c.width, c.height);
+    ps.forEach(p => { p.vy += 0.32; p.x += p.vx; p.y += p.vy; p.r += p.vr; g.save(); g.globalAlpha = Math.max(0, 1 - k); g.translate(p.x * dpr, p.y * dpr); g.rotate(p.r); g.fillStyle = p.c; g.fillRect(-p.s * dpr / 2, -p.s * dpr / 4, p.s * dpr, p.s * dpr / 2); g.restore(); });
+    if (k < 1) requestAnimationFrame(f); else c.remove();
+  })(t0);
+}
 function curEx() { const a = S.active; if (!a) return -1; return a.exercises.findIndex(e => e.sets.some(s => !s.done)); }
 function scrollToEx(ei, smooth) {
   const c = document.getElementById('wex' + ei); if (!c) return;
@@ -1178,7 +1218,7 @@ function finishWorkout() {
   const wasFree = !a.routineId;
   const medDefs = medalDefs(), medNew = Object.keys(medalsEarned().got).filter(k => !medBefore[k]).map(k => medDefs.find(d => d.id === k)).filter(Boolean);
   setTimeout(() => queueCloud(1500), 0);
-  S.active = null; save(); stopTimer(); setRoot('profile'); render();
+  S.active = null; save(); stopTimer(); setRoot('profile'); render(); setTimeout(() => confetti(prs.length ? 160 : 90), 200);
   modal(`<h2>Séance enregistrée 💪</h2>
     <div class="row" style="margin:10px 0"><div class="stat"><span class="muted small">Durée</span><b>${fmtDur(Date.now() - new Date(a.start))}</b></div><div class="stat"><span class="muted small">Exercices</span><b>${exercises.length}</b></div><div class="stat"><span class="muted small">Séries</span><b>${exercises.reduce((n, e) => n + work(e.sets).length, 0)}</b></div></div>
     ${prs.length ? `<div class="pr" style="margin:10px 0 4px">🏆 ${prs.length > 1 ? prs.length + ' nouveaux records' : 'Nouveau record'}!</div>${prs.map(r => `<p style="margin:4px 0">${esc(r.name)} : <span class="muted">${esc(r.from)}</span> → <b class="pr">${esc(r.to)}</b></p>`).join('')}` : ''}
@@ -1214,6 +1254,19 @@ function addExercise(pick) {
 /* ---------- Minuteur ---------- */
 let timerEnd = 0, timerInt = null;
 let timerFinT = null;
+let bigT = null, timerTot = 0;
+function openBigTimer() {
+  if (!$('#timer').classList.contains('show') || $('#timer').classList.contains('fin')) return;
+  modal(`<div style="text-align:center;padding:10px 0 4px"><div class="muted small">${T('Repos', 'Rest')}</div>
+    <svg viewBox="0 0 200 200" width="230" height="230" style="display:block;margin:6px auto"><circle cx="100" cy="100" r="88" fill="none" stroke="var(--line)" stroke-width="12"/>
+    <circle id="bigring" cx="100" cy="100" r="88" fill="none" stroke="var(--accent)" stroke-width="12" stroke-linecap="round" transform="rotate(-90 100 100)" stroke-dasharray="552.9" stroke-dashoffset="0"/>
+    <text id="bigtxt" x="100" y="114" text-anchor="middle" style="fill:var(--text);font-size:46px;font-weight:800;font-variant-numeric:tabular-nums">0:00</text></svg>
+    <div class="row" style="gap:8px;justify-content:center"><button class="btn" data-act="timer-sub">−15 s</button><button class="btn" data-act="timer-add">+30 s</button><button class="btn primary" data-act="timer-stop-big">${T('Passer', 'Skip')}</button></div></div>`, {id: 'bigtimer', onclose: () => { clearInterval(bigT); bigT = null; }});
+  const upd = () => { const left = Math.max(0, (timerEnd - Date.now()) / 1000), r = $('#bigring'), tx = $('#bigtxt'); if (!r) { clearInterval(bigT); return; }
+    const s = Math.round(left); tx.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; r.setAttribute('stroke-dashoffset', String(552.9 * (1 - Math.min(1, left / Math.max(1, timerTot)))));
+    if (left <= 0) { clearInterval(bigT); closeModal(); } };
+  upd(); clearInterval(bigT); bigT = setInterval(upd, 200);
+}
 function timerBtns() {
   clearTimeout(timerFinT); $('#timer').classList.remove('fin');
   $('#tlab').textContent = T('Repos', 'Rest');
@@ -1229,7 +1282,7 @@ function timerDone() {
   clearTimeout(timerFinT); timerFinT = setTimeout(() => { el.classList.remove('show', 'fin'); }, 20000);
 }
 function startTimer(sec) {
-  timerEnd = Date.now() + sec * 1000;
+  timerEnd = Date.now() + sec * 1000; timerTot = sec;
   timerBtns();
   $('#timer').classList.add('show');
   scheduleBeeps(sec);
@@ -1302,7 +1355,9 @@ function vWorkout() {
   const a = S.active;
   if (!a) { setRoot('train'); return vTrain(); }
   if (!a.exercises.length) return `<div class="empty">Séance vide. Ajoute ton premier exercice.</div><button class="btn primary block" data-act="add-exo">＋ Ajouter un exercice</button><div class="gap"></div><button class="btn danger block" data-act="cancel-workout">Abandonner</button>`;
-  return (deloadOn() ? `<div class="card" style="border-color:var(--warm);padding:10px 14px"><span class="small">🪶 Semaine de récupération : charges −${S.settings.deload.pct} %</span></div>` : '') + a.exercises.map((e, ei) => {
+  const {d: dS, n: nS} = woStats(), ce = curEx();
+  const prog = `<div class="wprog"><div class="row between small"><span>${ce >= 0 ? T(`Exercice ${ce + 1}/${a.exercises.length}`, `Exercise ${ce + 1}/${a.exercises.length}`) : T('✅ Tout est fait!', '✅ All done!')}</span><span class="muted">${dS}/${nS} ${T('séries', 'sets')}</span></div><div class="pbar"><div style="width:${nS ? Math.round(dS / nS * 100) : 0}%"></div></div></div>`;
+  return prog + (deloadOn() ? `<div class="card" style="border-color:var(--warm);padding:10px 14px"><span class="small">🪶 Semaine de récupération : charges −${S.settings.deload.pct} %</span></div>` : '') + a.exercises.map((e, ei) => {
     const last = lastFor(e.name), prev = lastFull(e.name), tm = isTimed(e);
     const first = e.ss && !(a.exercises[ei - 1] && a.exercises[ei - 1].ss === e.ss);
     let wi = 0, wu = 0;
@@ -1325,7 +1380,7 @@ function vWorkout() {
           <button class="prev" data-act="use-prev" data-e="${ei}" data-s="${si}" aria-label="Reprendre la performance précédente">${prevCell(prev, s, k)}</button>
           <input inputmode="decimal" value="${esc(s.w)}" placeholder="—" data-in="w" data-e="${ei}" data-s="${si}">
           <input inputmode="numeric" value="${esc(s.r)}" placeholder="${esc(s.ph)}" data-in="r" data-e="${ei}" data-s="${si}">
-          <button class="check ${running ? 'run' : ''} ${s.done && s.pr ? 'pr' : ''}" data-act="done" data-e="${ei}" data-s="${si}" aria-label="${tm ? 'Chrono / valider' : 'Valider la série'}">${s.done && s.pr ? '🏆' : chk}</button>
+          <button class="check ${running ? 'run' : ''} ${s.done && s.pr ? 'pr' : ''} ${justChk === ei + '-' + si ? 'pop' : ''}" data-act="done" data-e="${ei}" data-s="${si}" aria-label="${tm ? 'Chrono / valider' : 'Valider la série'}">${s.done && s.pr ? '🏆' : chk}</button>
         </div>${s.n || (s.rir != null && s.rir !== '') ? `<div class="last">${s.rir != null && s.rir !== '' ? 'RIR ' + esc(s.rir) + ' ' : ''}${s.n ? '📝 ' + esc(s.n) : ''}</div>` : ''}`;
       }).join('')}
       <div class="row wrap" style="margin-top:8px">
@@ -1560,65 +1615,70 @@ function saveBody() {
 }
 
 /* ----- Réglages ----- */
+let secOpen = new Set();
+const setSec = (id, icon, emo, title, sub, body) => `<details class="card setsec" data-sec="${id}" ${secOpen.has(id) ? 'open' : ''}><summary><span class="sic">${IC(icon, emo, 22)}</span><span style="flex:1;min-width:0"><b>${title}</b><br><span class="muted small">${sub}</span></span><span class="chev">›</span></summary><div class="secb">${body}</div></details>`;
 function vSettings() {
-  return `${cloudCard()}
-    <div class="card"><h3>Préférences</h3><div class="gap"></div>
-      <label>Langue / Language</label>
-      <select data-set="lang" data-notr="1"><option value="fr" ${isEN() ? '' : 'selected'}>Français</option><option value="en" ${isEN() ? 'selected' : ''}>English</option></select>
-      <label class="row" style="margin:10px 0 4px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="stagOn" ${S.settings.stagOff ? '' : 'checked'}> ⚠️ ${T('Alertes de plateau', 'Plateau alerts')}</label>
-      <label>Objectif de séances par semaine</label>
-      <select data-set="goal">${[0, 1, 2, 3, 4, 5, 6, 7].map(n => `<option value="${n}" ${(+S.settings.goal || 0) === n ? 'selected' : ''}>${n ? n : 'Aucun'}</option>`).join('')}</select>
+  if (!cloudOn() && !vSettings.done) { vSettings.done = 1; secOpen.add('cloud'); }
+  return setSec('gen', 'user', '👤', T('Général', 'General'), T('Nom, langue, objectif, navigation', 'Name, language, goal, navigation'), `
       <label>Nom affiché sur le profil</label>
       <input data-set="name" value="${esc(S.settings.name || '')}" placeholder="Ton nom">
+      <label>Langue / Language</label>
+      <select data-set="lang" data-notr="1"><option value="fr" ${isEN() ? '' : 'selected'}>Français</option><option value="en" ${isEN() ? 'selected' : ''}>English</option></select>
+      <label>Objectif de séances par semaine</label>
+      <select data-set="goal">${[0, 1, 2, 3, 4, 5, 6, 7].map(n => `<option value="${n}" ${(+S.settings.goal || 0) === n ? 'selected' : ''}>${n ? n : 'Aucun'}</option>`).join('')}</select>
+      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="swipe" ${S.settings.swipe !== false ? 'checked' : ''}> ${T('👆 Glisser pour changer de page (Entraînement ⇄ Profil, retour)', '👆 Swipe to switch pages (Workout ⇄ Profile, back)')}</label>`) +
+  setSec('wo', 'dumbbell', '🏋️', T('Séance', 'Workout'), T('Unité, repos, charges, alertes', 'Unit, rest, weights, alerts'), `
       <label>Unité</label>
       <select data-set="unit"><option value="lb" ${U() === 'lb' ? 'selected' : ''}>lb (mensurations en po)</option><option value="kg" ${U() === 'kg' ? 'selected' : ''}>kg (mensurations en cm)</option></select>
       <label>Repos par défaut (secondes)</label>
       <input inputmode="numeric" data-set="rest" value="${S.settings.rest}">
       <label>Augmentation de charge suggérée (${U()})</label>
       <input inputmode="decimal" data-set="inc" value="${incr()}">
+      <p class="muted small" style="margin:2px 0 0">${T('Épaules et bras : +2,5 lb par défaut. Change-le par exercice avec ⚙️ dans la séance.', 'Shoulders and arms: +2.5 lb by default. Change it per exercise with ⚙️ during the workout.')}</p>
       <label class="row" style="margin-top:14px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="failDefault" ${S.settings.failDefault ? 'checked' : ''}> Séries à l'échec par défaut</label>
-      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="sound" ${S.settings.sound !== false ? 'checked' : ''}> 🔔 Bip à la fin du repos (3-2-1 puis bip final)</label>
+      <label class="row" style="margin:10px 0 4px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="stagOn" ${S.settings.stagOff ? '' : 'checked'}> ⚠️ ${T('Alertes de plateau', 'Plateau alerts')}</label>
+      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="autoScroll" ${S.settings.autoScroll !== false ? 'checked' : ''}> ${T('↓ Aller à l\'exercice suivant après la dernière série (et alterner en superset)', '↓ Jump to the next exercise after the last set (and alternate in supersets)')}</label>
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="wake" ${S.settings.wake === true ? 'checked' : ''}> <span>📱 Garder l'écran allumé pendant la séance<br><span class="muted small">Consomme de la batterie, pas nécessaire pour le bip.</span></span></label>
-      <button class="btn sm" data-act="plates-free" style="margin-top:10px">🧮 Calculateur de disques</button>
+      <button class="btn sm" data-act="plates-free" style="margin-top:10px">🧮 Calculateur de disques</button>`) +
+  setSec('snd', 'timer', '⏱', T('Minuteur et son', 'Timer and sound'), T('Bip, volume, vibration', 'Beep, volume, vibration'), `
+      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="sound" ${S.settings.sound !== false ? 'checked' : ''}> 🔔 Bip à la fin du repos (3-2-1 puis bip final)</label>
       <label>${T('Son du bip', 'Beep sound')}</label>
       <select data-set="beepSnd">${Object.entries(SOUNDS).map(([k, s]) => `<option value="${k}" ${(S.settings.beepSnd || 'classique') === k ? 'selected' : ''}>${T(s.fr, s.en)}</option>`).join('')}</select>
       <label>${T('Volume du bip', 'Beep volume')} : <b id="bvl">${S.settings.beepVol ?? 70} %</b></label>
       <input type="range" min="0" max="100" step="5" value="${S.settings.beepVol ?? 70}" data-bvol="1" style="--p:${S.settings.beepVol ?? 70}%">
       <p class="muted small" style="margin:2px 0 0">${T('Le volume dépend aussi du volume « média » de ton téléphone.', 'Volume also depends on your phone’s media volume.')}</p>
-      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="swipe" ${S.settings.swipe !== false ? 'checked' : ''}> ${T('👆 Glisser pour changer de page (Entraînement ⇄ Profil, retour)', '👆 Swipe to switch pages (Workout ⇄ Profile, back)')}</label>
-      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="autoScroll" ${S.settings.autoScroll !== false ? 'checked' : ''}> ${T('↓ Aller à l\'exercice suivant après la dernière série (et alterner en superset)', '↓ Jump to the next exercise after the last set (and alternate in supersets)')}</label>
-      <div class="row wrap" style="margin-top:10px"><button class="btn sm" data-act="test-beep">🔊 Tester le son</button><button class="btn sm" data-act="test-lock">🔒 Test écran éteint (10 s)</button></div>
-    </div>
-    <div class="card"><h3>Thème</h3><p class="muted small" style="margin:4px 0 0">Thèmes prêts à utiliser :</p>
+      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="haptic" ${S.settings.haptic !== false ? 'checked' : ''}> ${T('📳 Petite vibration quand je coche une série', '📳 Small vibration when I check a set')}</label>
+      <div class="row wrap" style="margin-top:10px"><button class="btn sm" data-act="test-beep">🔊 Tester le son</button><button class="btn sm" data-act="test-lock">🔒 Test écran éteint (10 s)</button></div>`) +
+  setSec('look', 'palette', '🎨', T('Apparence', 'Appearance'), T('Thème, couleurs, fond, icônes', 'Theme, colors, background, icons'), `<p class="muted small" style="margin:4px 0 0">Thèmes prêts à utiliser :</p>
       <div class="grid2" style="margin-top:10px">${THEMES.map(([k, l, c]) => `<button class="btn sm ${(S.settings.theme || 'noir') === k ? 'on' : ''}" style="text-align:left" data-act="theme" data-t="${k}"><span class="sw" style="background:${c}"></span>${l}</button>`).join('')}</div>
       <label style="margin-top:16px">Couleur des boutons (personnalisée)</label>
       <div class="chips">${ACCENTS.map(c => `<button class="chip" data-act="accent-pick" data-c="${c}" style="background:${c};border-color:${S.settings.accent === c ? 'var(--text)' : c};width:34px;height:34px;padding:0" aria-label="Couleur ${c}"></button>`).join('')}</div>
       <div class="row" style="margin-top:6px"><input type="color" data-accent="1" value="${S.settings.accent || getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c6f135'}" style="width:64px;height:44px;padding:4px" aria-label="Choisir une couleur">
       <span class="small muted" style="flex:1">${S.settings.accent ? 'Couleur perso : ' + esc(S.settings.accent) : 'Couleur du thème'}</span>
       ${S.settings.accent ? '<button class="btn sm" data-act="accent-reset">Remettre celle du thème</button>' : ''}</div>
+      <label class="row" style="margin-top:14px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="icons" ${S.settings.icons !== false ? 'checked' : ''}> ${T('Icônes modernes (décoche pour garder les emojis)', 'Modern icons (uncheck to keep emojis)')}</label>
       <label style="margin-top:16px">${T('Couleur du fond (personnalisée)', 'Background color (custom)')}</label>
       <div class="chips">${BGS.map(c => `<button class="chip" data-act="bg-pick" data-c="${c}" style="background:${c};border-color:${S.settings.bg === c ? 'var(--accent)' : '#8886'};border-width:2px;width:34px;height:34px;padding:0" aria-label="${T('Fond', 'Background')} ${c}"></button>`).join('')}</div>
       <div class="row" style="margin-top:6px"><input type="color" data-bgc="1" value="${S.settings.bg || getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0f1114'}" style="width:64px;height:44px;padding:4px" aria-label="${T('Choisir la couleur du fond', 'Pick the background color')}">
       <span class="small muted" style="flex:1">${S.settings.bg ? T('Fond perso : ', 'Custom background: ') + esc(S.settings.bg) : T('Fond du thème', 'Theme background')}</span>
-      ${S.settings.bg ? `<button class="btn sm" data-act="bg-reset">${T('Remettre celui du thème', "Use the theme's")}</button>` : ''}</div>
-    </div>
-    <div class="card"><h3>📤 Partager l'appli</h3>
-      <p class="muted small" style="margin:4px 0 8px">Envoie le lien et les instructions à un ami. Chacun garde ses propres données sur son téléphone.</p>
-      <button class="btn block" data-act="share-app">📤 Envoyer l'appli à un ami</button></div>
-    <div class="card"><h3>Sauvegarde manuelle (fichier)</h3>
+      ${S.settings.bg ? `<button class="btn sm" data-act="bg-reset">${T('Remettre celui du thème', "Use the theme's")}</button>` : ''}</div>`) +
+  setSec('cloud', 'cloud', '☁️', T('Sauvegarde', 'Backup'), cloudOn() ? T('☁️ Automatique activée', '☁️ Automatic backup on') : T('⚠️ Automatique pas activée', '⚠️ Automatic backup off'), `${cloudCard()}
+    <h3 style="margin-top:14px">${T('Sauvegarde manuelle (fichier)', 'Manual backup (file)')}</h3>
       <p class="muted small">Tes données restent sur ce téléphone. Exporte un fichier de temps en temps (et avant de changer de cell), puis importe-le sur le nouveau.</p>
       <div class="row wrap">
         <button class="btn primary" style="flex:1" data-act="export">⬇ Exporter</button>
         <button class="btn" style="flex:1" data-act="import">⬆ Importer</button>
       </div>
-      <p class="muted small" style="margin-bottom:0">Importer accepte aussi l'export CSV de Hevy.</p>
-    </div>
-    <div class="card"><h3>Bilan pour l'IA</h3>
+      <p class="muted small" style="margin-bottom:0">Importer accepte aussi l'export CSV de Hevy.</p>`) +
+  setSec('ai', 'spark', '🤖', T('IA et partage', 'AI and sharing'), T('Bilan pour l\'IA, envoyer l\'appli à un ami', 'AI summary, send the app to a friend'), `
+      <h3>${T('Bilan pour l\'IA', 'AI summary')}</h3>
       <p class="muted small">Copie tes 30 derniers jours de séances pour demander une analyse ou des ajustements.</p>
       <button class="btn block" data-act="ai-history">🤖 Envoyer mon historique à l'IA</button>
-    </div>
-    <div class="card"><button class="btn danger block" data-act="reset">Tout effacer</button></div>
-    <p class="muted small" style="text-align:center">Carnet Muscu · ${S.history.length} séances · ${S.routines.length} routines<br>Animations © Gym visual · base exercises-dataset</p>`;
+      <h3 style="margin-top:14px">📤 ${T('Partager l\'appli', 'Share the app')}</h3>
+      <p class="muted small" style="margin:4px 0 8px">Envoie le lien et les instructions à un ami. Chacun garde ses propres données sur son téléphone.</p>
+      <button class="btn block" data-act="share-app">📤 Envoyer l'appli à un ami</button>`) +
+  setSec('data', 'trash', '🗑', T('Données', 'Data'), T('Tout effacer', 'Erase everything'), `<p class="muted small">${T('Efface toutes tes séances, routines et mesures de ce téléphone. Exporte d\'abord si tu veux les garder.', 'Erases all your workouts, routines and measurements from this phone. Export first if you want to keep them.')}</p><button class="btn danger block" data-act="reset">Tout effacer</button>`) +
+  `<p class="muted small" style="text-align:center">Carnet Muscu · ${S.history.length} séances · ${S.routines.length} routines<br>Animations © Gym visual · base exercises-dataset</p>`;
 }
 
 /* ===================== Éditeur de séance passée ===================== */
@@ -2111,7 +2171,7 @@ function todayCard() {
   else if (wp[di].rest) main += `<h2 style="margin:4px 0">😴 Jour de repos</h2><p class="muted small" style="margin:4px 0 0">${nxt || 'Récupère bien.'}</p>`;
   else main += `<h2 style="margin:4px 0">Rien de prévu</h2><p class="muted small" style="margin:4px 0 0">${nxt}</p>`;
   const strip = days().map((d, i) => { const p = wp[i]; return `<div class="wday ${i === di ? 'on' : ''} ${p.past ? 'past' : ''}"><b>${d.slice(0, 3)}</b><span>${p.r ? (p.done && i !== di ? '✓ ' : '') + esc(p.r.name) : p.rest ? '😴' : '—'}</span></div>`; }).join('');
-  return `<div class="card today">${main}<div class="wstrip">${strip}</div><button class="linkbtn" data-act="sched-edit">📅 Modifier mon horaire</button></div>`;
+  return `<div class="card today">${main}<div class="wstrip">${strip}</div><button class="linkbtn" data-act="sched-edit">${IC('calendar', '📅', 18)} Modifier mon horaire</button></div>`;
 }
 function openSched() {
   modal(`<div class="row between"><h2>📅 Mon horaire</h2><button class="btn sm" data-act="close">✕</button></div><div id="schedbox"></div>`, {onclose: () => render()});
@@ -2293,11 +2353,9 @@ function vTrain() {
   h += weekGoal();
   h += cloudNag();
   if (deloadOn()) h += `<div class="card" style="border-color:var(--warm)"><div class="row between"><div><b>🪶 Semaine de récupération</b><br><span class="muted small">Charges −${S.settings.deload.pct} % jusqu'au ${new Date(S.settings.deload.until + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'long'})}</span></div><button class="btn sm" data-act="deload-off">Arrêter</button></div></div>`;
-  h += `<button class="btn block big" data-act="start-empty">＋ Démarrer un entraînement vide</button>
-    <div class="row between" style="margin:18px 0 8px"><h2 style="margin:0">Routines</h2><button class="btn sm" data-act="new-folder" aria-label="Nouveau dossier">📁＋</button></div>
-    <div class="grid2" style="margin-bottom:8px"><button class="btn" data-act="new-routine">📋 Nouv. routine</button><button class="btn" data-act="ai-menu">🤖 Programme IA</button></div>
-    <button class="linkbtn small" data-act="programs" style="margin-bottom:6px;display:block">📚 ${T('Programmes connus prêts à importer', 'Popular programs ready to import')}</button>
-    ${deloadOn() ? '' : '<button class="linkbtn small" data-act="deload-menu" style="margin-bottom:6px">🪶 Semaine de récupération (deload)</button>'}`;
+  h += `<button class="btn block big" data-act="start-empty">${IC('plus', '＋')} ${T('Démarrer un entraînement vide', 'Start an empty workout')}</button>
+    <div class="row between" style="margin:18px 0 8px"><h2 style="margin:0">Routines</h2><button class="btn sm" data-act="new-folder" aria-label="Nouveau dossier">${IC('folderp', '📁＋')}</button></div>
+    <div class="row trow" style="margin-bottom:12px;gap:8px"><button class="btn" style="flex:1" data-act="new-routine">${IC('clip', '📋')} ${T('Nouv. routine', 'New routine')}</button><button class="btn" style="flex:1" data-act="ai-menu">${IC('spark', '🤖')} ${T('Programme IA', 'AI program')}</button><button class="btn" data-act="train-more" aria-label="${T('Plus', 'More')}">${IC('more', '⋯')}</button></div>`;
   folders().forEach(f => {
     const rs = S.routines.filter(r => (r.folder || DEF_FOLDER) === f);
     const closed = !!S.settings.folded[f];
@@ -2561,12 +2619,12 @@ function vProfile() {
     <div class="chips">${[['dur', 'Durée'], ['vol', 'Volume'], ['reps', 'Réps']].map(([k, l]) => `<button class="chip ${pfMetric === k ? 'on' : ''}" data-act="pf-metric" data-m="${k}">${l}</button>`).join('')}</div>
     <p class="muted" style="margin:16px 0 8px">Tableau de bord</p>
     <div class="grid2">
-      <button class="btn tile" data-act="go" data-v="stats">📈 Statistiques</button>
-      <button class="btn tile" data-act="go" data-v="exercises">🏋️ Exercices</button>
-      <button class="btn tile" data-act="go" data-v="measures">🧍 Mesures</button>
-      <button class="btn tile" data-act="go" data-v="calendar">📅 Calendrier</button>
-      <button class="btn tile" data-act="go" data-v="medals">🏅 ${T('Médailles', 'Medals')}</button>
-      <button class="btn tile" data-act="go" data-v="recov">💪 ${T('Récupération', 'Recovery')}</button>
+      <button class="btn tile" data-act="go" data-v="stats">${IC('chart', '📈')} ${T('Statistiques', 'Statistics')}</button>
+      <button class="btn tile" data-act="go" data-v="exercises">${IC('dumbbell', '🏋️')} ${T('Exercices', 'Exercises')}</button>
+      <button class="btn tile" data-act="go" data-v="measures">${IC('ruler', '🧍')} ${T('Mesures', 'Measures')}</button>
+      <button class="btn tile" data-act="go" data-v="calendar">${IC('calendar', '📅')} ${T('Calendrier', 'Calendar')}</button>
+      <button class="btn tile" data-act="go" data-v="medals">${IC('medal', '🏅')} ${T('Médailles', 'Medals')}</button>
+      <button class="btn tile" data-act="go" data-v="recov">${IC('pulse', '💪')} ${T('Récupération', 'Recovery')}</button>
     </div>
     <div class="row between" style="margin:20px 0 8px"><p class="muted" style="margin:0">Séances récentes</p><button class="btn sm" data-act="hist-new">＋ Séance oubliée</button></div>
     ${recent.length ? recent.map(h => histCard(h)).join('') + (S.history.length > 8 ? `<button class="btn block" data-act="go" data-v="history">Voir toutes les séances (${S.history.length})</button>` : '') : '<div class="empty">Aucune séance encore.</div>'}`;
@@ -3221,14 +3279,16 @@ const VIEWS = {
   measures: ['Mesures', () => vBody()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()]
 };
 function headerRight(v) {
-  if (v === 'profile') return '<button class="hbtn" data-act="go" data-v="settings" aria-label="Réglages">⚙️</button>';
+  if (v === 'profile') return `<button class="hbtn" data-act="go" data-v="settings" aria-label="Réglages">${IC('gear', '⚙️', 24)}</button>`;
   if (v === 'workout' && S.active) return '<span class="chrono" id="elapsed"></span><button class="btn primary sm" data-act="finish">Terminer</button>';
   if (v === 'redit') return '<button class="btn primary sm" data-act="rd-save">Enregistrer</button>';
   if (v === 'routine') return `<button class="hbtn" data-act="routine-menu" data-rid="${cur().rid}" aria-label="Options">⋯</button>`;
   return '';
 }
+let navAnim = false;
 function render() {
   applyLang();
+  renderChrome();
   if (!VIEWS[cur().v]) setRoot('train');
   const html = VIEWS[cur().v][1]();
   const c = cur();
@@ -3238,7 +3298,10 @@ function render() {
   $('#app').innerHTML = html;
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === stack[0].v));
   afterRender(c);
+  updWobar();
   updElapsed();
+  justChk = null;
+  if (navAnim) { navAnim = false; const a = $('#app'); a.classList.remove('enter'); void a.offsetWidth; a.classList.add('enter'); }
   syncWake();
 }
 function afterRender(c) {
@@ -3248,7 +3311,17 @@ function afterRender(c) {
   if (c.v === 'calendar' && !c.scrolled) { c.scrolled = true; setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 0); }
 }
 const fmtDur = ms => { const s = Math.max(0, Math.floor(ms / 1000)), hh = Math.floor(s / 3600), mm = Math.floor(s / 60) % 60, ss = s % 60; return hh ? `${hh}:${pad2(mm)}:${pad2(ss)}` : `${mm}:${pad2(ss)}`; };
+function woStats() { const a = S.active; let d = 0, n = 0; a.exercises.forEach(e => e.sets.forEach(s => { n++; if (s.done) d++; })); return {d, n}; }
+function updWobar() {
+  const el = $('#wobar'); if (!el) return;
+  const on = !!S.active && cur().v !== 'workout';
+  el.classList.toggle('show', on); document.body.classList.toggle('wob', on);
+  if (!on) return;
+  const {d, n} = woStats();
+  el.innerHTML = `<span class="wt">${IC('timer', '⏱', 18)} <span id="wobt">${fmtDur(Date.now() - new Date(S.active.start))}</span></span><span class="wn">${esc(S.active.routineName)}</span><span class="small muted">${d}/${n} ${T('séries', 'sets')}</span><b style="color:var(--accent)">›</b>`;
+}
 function updElapsed() {
+  { const w = $('#wobt'); if (w && S.active) w.textContent = fmtDur(Date.now() - new Date(S.active.start)); }
   if (!S.active) return;
   const t = fmtDur(Date.now() - new Date(S.active.start));
   const el = $('#elapsed'); if (el) el.textContent = '⏱ ' + t;
@@ -3256,6 +3329,38 @@ function updElapsed() {
   const sv = $('#swv'); if (sv && sw) sv.textContent = fmtSec((Date.now() - sw.t0) / 1000);
 }
 setInterval(updElapsed, 1000);
+
+
+/* ===================== Icônes (style Lucide, dessinées en SVG) ===================== */
+const ICP = {
+  dumbbell: '<path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>',
+  user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  gear: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+  back: '<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
+  chart: '<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+  calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>',
+  ruler: '<path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/>',
+  medal: '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
+  pulse: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  clip: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14h6"/><path d="M12 17v-6"/>',
+  spark: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>',
+  more: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
+  folderp: '<path d="M12 10v6"/><path d="M9 13h6"/><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+  play: '<polygon points="6 3 20 12 6 21 6 3"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  timer: '<path d="M10 2h4"/><path d="m12 14 3-3"/><circle cx="12" cy="14" r="8"/>',
+  book: '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>',
+  feather: '<path d="M12.67 19a2 2 0 0 0 1.416-.588l6.154-6.172a6 6 0 0 0-8.49-8.49L5.586 9.914A2 2 0 0 0 5 11.328V18a1 1 0 0 0 1 1z"/><path d="M16 8 2 22"/><path d="M17.5 15H9"/>'};
+Object.assign(ICP, {cloud: '<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>',
+  trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+  palette: '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>'});
+const iconsOn = () => S.settings.icons !== false;
+const ic = (k, sz = 20) => `<svg class="ico" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICP[k] || ''}</svg>`;
+const IC = (k, emo, sz) => iconsOn() ? ic(k, sz) : emo;
+function renderChrome() {
+  const nav = $('#nav'); if (nav) nav.innerHTML = `<button data-tab="train"><span class="ic">${IC('dumbbell', '🏋️', 22)}</span>${T('Entraînement', 'Workout')}</button><button data-tab="profile"><span class="ic">${IC('user', '👤', 22)}</span>${T('Profil', 'Profile')}</button>`;
+  const bk = $('#back'); if (bk) bk.innerHTML = IC('back', '←', 22);
+}
 
 /* ===================== Glisser pour changer de page ===================== */
 /* Entraînement ⇄ Profil en glissant; sur une sous-page, glisser vers la droite = retour. */
@@ -3301,10 +3406,11 @@ document.addEventListener('touchend', () => {
 }, {passive: true});
 document.addEventListener('touchcancel', () => { if (swp) { swp = null; const a = $('#app'); a.style.transform = ''; a.style.opacity = ''; } }, {passive: true});
 
+document.addEventListener('toggle', e => { const d = e.target; if (d.dataset && d.dataset.sec) { if (d.open) secOpen.add(d.dataset.sec); else secOpen.delete(d.dataset.sec); } }, true);
 /* ===================== Événements ===================== */
 document.addEventListener('click', e => {
   const n = e.target.closest('[data-tab]');
-  if (n) { setRoot(n.dataset.tab); render(); window.scrollTo(0, 0); return; }
+  if (n) { navAnim = true; setRoot(n.dataset.tab); render(); window.scrollTo(0, 0); return; }
   const b = e.target.closest('[data-act]'); if (!b) return;
   const act = b.dataset.act, rid = b.dataset.rid, r = S.routines.find(x => x.id === rid);
   const ei = +b.dataset.e, si = +b.dataset.s;
@@ -3319,7 +3425,7 @@ document.addEventListener('click', e => {
     case 'ss-remove': { const {list, ei: i0, onDone} = ssCtx; delete list[i0].ss; fixSS(list); closeModal(); onDone(list); break; }
     case 'rd-ss-pick': closeModal(); openSSPicker(rdraft.exercises, ei, nl => { rdraft.exercises = nl; rdirty = true; render(); }); break;
     case 'wo-ss-pick': closeModal(); openSSPicker(A.exercises, ei, nl => { A.exercises = nl; nl.forEach(x => { const re = routineEx(A.routineId, x.name); if (re) { if (x.ss) re.ss = x.ss; else delete re.ss; } }); save(); render(); }); break;
-    case 'sched-edit': openSched(); break;
+    case 'sched-edit': closeAll(); openSched(); break;
     case 'sched-mode': cyc().on = b.dataset.m === '1'; save(); renderSched(); break;
     case 'cyc-day': { const c = cyc(), i = +b.dataset.i; c.days[i] = !c.days[i]; if (!c.days.some(Boolean)) c.days[i] = true; save(); renderSched(); break; }
     case 'cyc-mv': { const o = cyc().order, rs = cycRs().map(r => r.id), i = +b.dataset.i, j = i + +b.dataset.d; [rs[i], rs[j]] = [rs[j], rs[i]]; S.cycle.order = rs; save(); renderSched(); break; }
@@ -3333,7 +3439,7 @@ document.addEventListener('click', e => {
     case 'reo-del': b.closest('.reo').remove(); break;
     case 'reo-done': { const idx = [...document.querySelectorAll('#reolist .reo')].map(x => +x.dataset.i); const arr = idx.map(i => reo.list[i]); const cb = reo.onDone; closeModal(); cb(arr); break; }
     case 'fix-import': { const bad = new Set(brokenImports()); S.history = S.history.filter(x => !bad.has(x)); save(); closeAll(); render(); toast(`🧹 ${bad.size} séances retirées — choisis ton fichier CSV Hevy`); $('#fileIn').click(); break; }
-    case 'go': go(b.dataset.v, {n: b.dataset.n, rid: b.dataset.rid}); break;
+    case 'go': if (b.dataset.v === 'settings' && b.closest('.nag, .card') && !cloudOn() && /Activer|Turn on/.test(b.textContent)) secOpen.add('cloud'); go(b.dataset.v, {n: b.dataset.n, rid: b.dataset.rid}); break;
     case 'start-empty': startEmpty(); break;
     case 'new-routine': editRoutine(null); break;
     case 'open-routine': go('routine', {rid}); break;
@@ -3400,8 +3506,9 @@ document.addEventListener('click', e => {
       ta.value = ta.value.replace(/\s+$/, '') + `\n- ${p.name} | 2 x 8-12 | PDC`;
       renderRestPick(); const ok = document.querySelector('[data-act="paste-ok"]'); previewPaste(ok ? ok.dataset.rid : '');
     }}); break;
-    case 'del-routine': if (r && confirm(`Supprimer « ${r.name} »?`)) { S.routines = S.routines.filter(x => x.id !== rid); rdraft = null; rdirty = false; save(); closeAll(); setRoot('train'); render(); } break;
+    case 'del-routine': if (r) { snap(); S.routines = S.routines.filter(x => x.id !== rid); rdraft = null; rdirty = false; save(); closeAll(); setRoot('train'); render(); undoToast(T(`« ${r.name} » supprimée`, `“${r.name}” deleted`)); } break;
     case 'close': closeModal(); break;
+    case 'undo': if (undoSnap) { const keepCloud = S.cloud; S = migrate(JSON.parse(undoSnap)); S.cloud = keepCloud; undoSnap = null; save(); closeAll(); render(); $('#toast').classList.remove('show'); toast(T('↩ Annulé', '↩ Undone')); } break;
 
     /* fiche exercice / bibliothèque */
     case 'exo': openExo(b.dataset.n); break;
@@ -3420,10 +3527,11 @@ document.addEventListener('click', e => {
       s.done = !s.done;
       if (s.done && s.r === '') s.r = s.ph;
       s.pr = s.done && livePR(ei, si);
+      if (s.done) { justChk = ei + '-' + si; if (navigator.vibrate && S.settings.haptic !== false) navigator.vibrate(18); }
       if (s.done) autoNext(ei);
       if (!s.pr) delete s.pr;
       save(); render();
-      if (s.pr) { toast(T(`🏆 Nouveau record! ${s.w || BWL()}×${s.r}`, `🏆 New record! ${s.w || BWL()}×${s.r}`)); if (S.settings.sound !== false) { ensureAudio(); setTimeout(() => beep(true), 30); } if (navigator.vibrate) navigator.vibrate([80, 60, 80, 60, 200]); }
+      if (s.pr) { confetti(); toast(T(`🏆 Nouveau record! ${s.w || BWL()}×${s.r}`, `🏆 New record! ${s.w || BWL()}×${s.r}`)); if (S.settings.sound !== false) { ensureAudio(); setTimeout(() => beep(true), 30); } if (navigator.vibrate) navigator.vibrate([80, 60, 80, 60, 200]); }
       if (s.done) {
         const inSS = e.ss && A.exercises[ei + 1] && A.exercises[ei + 1].ss === e.ss;
         if (!inSS && +e.rest !== -1) startTimer(s.t === 'W' ? 45 : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)));
@@ -3442,7 +3550,9 @@ document.addEventListener('click', e => {
     case 'plates': { const e = A.exercises[ei], ws = e.sets.find(x => x.t !== 'W' && +x.w > 0); closeModal(); openPlates(ws ? ws.w : ''); break; }
     case 'plates-free': openPlates(''); break;
     case 'st-rir': { const s = setCtx.sets[setCtx.si]; if (b.dataset.v === '') delete s.rir; else s.rir = +b.dataset.v; document.querySelectorAll('.rirs .btn').forEach(x => x.classList.toggle('on', x === b)); break; }
-    case 'deload-menu': openDeload(); break;
+    case 'deload-menu': closeAll();
+    // fallthrough
+    case 'deload-menu2': openDeload(); break;
     case 'deload-on': { const u = new Date(); u.setDate(u.getDate() + 6); S.settings.deload = {until: dkey(u), pct: +b.dataset.p}; save(); closeAll(); render(); toast('🪶 Semaine de récupération activée'); break; }
     case 'deload-off': delete S.settings.deload; save(); render(); break;
     case 'nag-later': S.settings.nagUntil = Date.now() + 7 * 864e5; save(); render(); break;
@@ -3463,7 +3573,7 @@ document.addEventListener('click', e => {
     case 'rd-timed': { const e = rdraft.exercises[ei]; e.timed = !isTimed(e); if (!e.timed && TIMED_RE.test(e.name)) e.timed = false; rdirty = true; closeModal(); render(); break; }
     case 'set-menu': openSetMenu(A.exercises[ei].sets, si, A.exercises[ei].name, () => { save(); render(); }); break;
     case 'st-type': { const s = setCtx.sets[setCtx.si]; if (b.dataset.t === 'N') delete s.t; else s.t = b.dataset.t; document.querySelectorAll('#sttypes .btn').forEach(x => x.classList.toggle('on', x === b)); break; }
-    case 'st-del': { setCtx.sets.splice(setCtx.si, 1); closeModal(); break; }
+    case 'st-del': { snap(); setCtx.sets.splice(setCtx.si, 1); closeModal(); undoToast(T('Série supprimée', 'Set deleted')); break; }
     case 'ex-menu': openExMenu(ei); break;
     case 'ex-replace': closeModal(); openPicker({title: `Remplacer « ${A.exercises[ei].name} »`, cb: p => replaceExercise(ei, p)}); break;
     case 'ex-ss': {
@@ -3479,7 +3589,7 @@ document.addEventListener('click', e => {
       const re = routineEx(A.routineId, e.name); if (re) delete re.ss;
       save(); closeModal(); break;
     }
-    case 'ex-del': if (confirm(`Retirer « ${A.exercises[ei].name} » de cette séance?`)) { A.exercises.splice(ei, 1); fixSS(A.exercises); save(); closeModal(); } break;
+    case 'ex-del': { snap(); const nm = A.exercises[ei].name; A.exercises.splice(ei, 1); fixSS(A.exercises); save(); closeModal(); undoToast(T(`« ${nm} » retiré`, `“${nm}” removed`)); break; }
     case 'add-exo': openPicker({title: 'Ajouter un exercice', cb: addExercise}); break;
     case 'finish': finishWorkout(); break;
     case 'cancel-workout': if (confirm('Abandonner cette séance sans l\'enregistrer?')) { S.active = null; save(); stopTimer(); setRoot('train'); render(); } break;
@@ -3494,16 +3604,19 @@ document.addEventListener('click', e => {
       e.mach = {u: U() === 'lb' ? 'kg' : 'lb', v: +$('#convin').value.replace(',', '.')};
       save(); closeModal(); render(); toast(`⚖️ ${$('#convin') ? '' : ''}${dec1(v)} ${U()}`); break;
     }
-    case 'timer-add': timerEnd += 30000; scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); tickTimer(); break;
+    case 'timer-sub': timerEnd = Math.max(Date.now() + 1000, timerEnd - 15000); scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); tickTimer(); break;
+    case 'timer-stop-big': closeModal(); stopTimer(); break;
+    case 'timer-add': timerTot += 30; timerEnd += 30000; scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); tickTimer(); break;
     case 'timer-stop': stopTimer(); break;
-    case 'timer-go': if (!S.active) break; if ($('#timer').classList.contains('fin')) stopTimer(); if (cur().v !== 'workout') { closeAll(); openWorkout(); } else scrollCur(); break;
+    case 'timer-big': openBigTimer(); break;
+    case 'timer-go': if (!S.active) break; if (cur().v === 'workout' && $('#timer').classList.contains('show') && !$('#timer').classList.contains('fin')) { openBigTimer(); break; } if ($('#timer').classList.contains('fin')) stopTimer(); if (cur().v !== 'workout') { closeAll(); openWorkout(); } else scrollCur(); break;
 
     /* historique */
     case 'hist-mode': histMode = b.dataset.m; render(); break;
     case 'cal-prev': cal.m--; if (cal.m < 0) { cal.m = 11; cal.y--; } cal.sel = null; render(); break;
     case 'cal-next': cal.m++; if (cal.m > 11) { cal.m = 0; cal.y++; } cal.sel = null; render(); break;
     case 'cal-day': cal.sel = cal.sel === b.dataset.d ? null : b.dataset.d; render(); break;
-    case 'del-hist': if (confirm('Supprimer cette séance?')) { S.history = S.history.filter(h => h.id !== b.dataset.hid); save(); closeAll(); render(); } break;
+    case 'del-hist': { snap(); S.history = S.history.filter(h => h.id !== b.dataset.hid); save(); closeAll(); render(); undoToast(T('Séance supprimée', 'Workout deleted')); break; }
     case 'hist-edit': openEditor(b.dataset.hid); break;
     case 'hist-img': shareImage(b.dataset.hid); break;
     case 'new-mus': {
@@ -3516,6 +3629,11 @@ document.addEventListener('click', e => {
     case 'stag-ai': { const t = stagPrompt(b.dataset.n); closeModal(); copy(t); break; }
     case 'stag-deload': { const e = S.active && S.active.exercises[+b.dataset.e]; if (e) { e.sets.forEach(s => { if (!s.done && !isW(s) && +s.w > 0) s.w = Math.round(+s.w * 0.9 / incr()) * incr(); }); save(); closeModal(); render(); toast(T('🪶 −10 % appliqué', '🪶 −10 % applied')); } break; }
     case 'programs': closeAll(); openPrograms(); break;
+    case 'train-more': modal(`<div class="row between"><h2>${T('Plus', 'More')}</h2><button class="btn sm" data-act="close">✕</button></div><div class="menu">
+      <button class="btn block" data-act="programs">${IC('book', '📚')} ${T('Programmes connus prêts à importer', 'Popular programs ready to import')}</button>
+      ${deloadOn() ? '' : `<button class="btn block" data-act="deload-menu">${IC('feather', '🪶')} ${T('Semaine de récupération (deload)', 'Recovery week (deload)')}</button>`}
+      <button class="btn block" data-act="sched-edit">${IC('calendar', '📅')} ${T('Mon horaire', 'My schedule')}</button>
+      <button class="btn block" data-act="new-folder">${IC('folderp', '📁')} ${T('Nouveau dossier', 'New folder')}</button></div>`); break;
     case 'prog-add': addProgram(b.dataset.k); break;
     case 'yr': yrSel = +b.dataset.y; render(); break;
     case 'go-year': yrSel = +b.dataset.y; go('year'); break;
@@ -3549,7 +3667,7 @@ document.addEventListener('click', e => {
     }
     case 'vol-p': volPeriod = b.dataset.p; render(); break;
     case 'body-save': saveBody(); break;
-    case 'body-del': if (confirm('Supprimer cette mesure?')) { S.body = S.body.filter(x => x.id !== b.dataset.id); save(); render(); } break;
+    case 'body-del': { snap(); S.body = S.body.filter(x => x.id !== b.dataset.id); save(); render(); undoToast(T('Mesure supprimée', 'Measurement deleted')); break; }
 
     /* réglages */
     case 'export': exportData(); break;
@@ -3599,7 +3717,7 @@ document.addEventListener('change', e => {
   const t = e.target;
   if (t.id === 'exSel') { progEx = t.value; render(); }
   if (t.id === 'bodySel') { bodyMetric = t.value; render(); }
-  if (t.dataset.set === 'unit') render();
+  if (t.dataset.set === 'unit' || t.dataset.set === 'icons') render();
   if (t.dataset.rd === 'folder' && rdraft) {
     if (t.value === '__new') { const nf = (prompt('Nom du nouveau dossier :') || '').trim(); if (nf) { if (!S.folders.includes(nf)) S.folders.push(nf); rdraft.folder = nf; } render(); }
     else rdraft.folder = t.value;
