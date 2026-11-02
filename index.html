@@ -94,7 +94,7 @@ textarea.short{min-height:80px;font-family:inherit;font-size:16px}
 #timer{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:6;
   background:var(--accent);color:var(--accent-ink);border-radius:14px;padding:10px 14px;
   display:none;align-items:center;justify-content:space-between;font-weight:700;box-shadow:0 8px 24px #0008}
-#timer.show{display:flex}
+#timer.show{display:flex}#timer.fin{background:var(--ok);color:#06210f}
 #timer .t{font-size:24px;font-variant-numeric:tabular-nums}
 #timer button{background:#0002;border:0;color:inherit;border-radius:8px;padding:8px 10px;font-weight:700;font-size:14px}
 #toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top));transform:translateX(-50%) translateY(-140%);
@@ -229,8 +229,8 @@ button.chip{cursor:pointer}
 <body>
 <header><button id="back" data-act="back" aria-label="Retour" style="visibility:hidden">←</button><h1 id="title">Carnet Muscu</h1><div id="hdr"></div></header>
 <main id="app"></main>
-<div id="timer"><span>Repos <span class="t" id="tval">0:00</span></span>
-  <span class="row"><button data-act="timer-add">+30 s</button><button data-act="timer-stop">Passer</button></span></div>
+<div id="timer"><span data-act="timer-go" style="flex:1;cursor:pointer"><span id="tlab">Repos</span> <span class="t" id="tval">0:00</span></span>
+  <span class="row" id="tbtns"><button data-act="timer-add">+30 s</button><button data-act="timer-stop">Passer</button></span></div>
 <nav id="nav">
   <button data-tab="train"><span class="ic">🏋️</span>Entraînement</button>
   <button data-tab="profile"><span class="ic">👤</span>Profil</button>
@@ -627,13 +627,39 @@ function applyTheme() {
     de.style.setProperty('--accent', a); de.style.setProperty('--accent-ink', lum > 0.6 ? '#111111' : '#ffffff');
     de.style.setProperty('--has-bg', `color-mix(in srgb, ${a} 18%, var(--card))`); de.style.setProperty('--has-line', `color-mix(in srgb, ${a} 45%, var(--card))`);
   } else ['--accent', '--accent-ink', '--has-bg', '--has-line'].forEach(k => de.style.removeProperty(k));
+  const bg = S.settings.bg, BGV = ['--bg', '--card', '--card2', '--line', '--text', '--muted', 'color-scheme', '--done-bg'];
+  if (bg && /^#[0-9a-f]{6}$/i.test(bg)) {
+    const n = parseInt(bg.slice(1), 16), lum = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255, light = lum > 0.55;
+    const mix = (p, c) => `color-mix(in srgb, ${bg} ${100 - p}%, ${c})`;
+    de.style.setProperty('--bg', bg);
+    de.style.setProperty('--card', light ? mix(4, '#000') : mix(7, '#fff'));
+    de.style.setProperty('--card2', light ? mix(8, '#000') : mix(12, '#fff'));
+    de.style.setProperty('--line', light ? mix(15, '#000') : mix(18, '#fff'));
+    de.style.setProperty('--text', light ? '#14181f' : '#eef0f3'); de.style.setProperty('--muted', light ? '#5f6b7a' : '#9aa3b0');
+    de.style.setProperty('--done-bg', `color-mix(in srgb, ${bg} 80%, #22c55e)`);
+    de.style.setProperty('color-scheme', light ? 'light' : 'dark');
+    if (light) {
+      const acc = (S.settings.accent || getComputedStyle(de).getPropertyValue('--accent').trim() || '').toLowerCase();
+      if (/^#[0-9a-f]{6}$/.test(acc)) { const q = parseInt(acc.slice(1), 16); if ((0.299 * (q >> 16) + 0.587 * ((q >> 8) & 255) + 0.114 * (q & 255)) / 255 > 0.6) { de.style.setProperty('--accent', `color-mix(in srgb, ${acc} 55%, #000)`); de.style.setProperty('--accent-ink', '#ffffff'); } }
+    }
+  } else BGV.forEach(k => de.style.removeProperty(k));
   const m = document.querySelector('meta[name="theme-color"]');
   if (m) m.content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
 }
 applyTheme();
 try { matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => { if (S.settings.theme === 'auto') { applyTheme(); render(); } }); } catch (e) {}
+const BGS = ['#000000', '#0f1114', '#111827', '#0b1a2e', '#1a1030', '#0f2018', '#2a1414', '#1c1917', '#f3f4f6', '#fff7ed', '#eef6ff'];
 const ACCENTS = ['#c6f135', '#1e88ff', '#4cc9f0', '#3ee6b0', '#7bc96f', '#f5c542', '#ff9f1c', '#ff5a5f', '#ff6fae', '#b388ff', '#ffffff'];
 const incr = () => +S.settings.inc > 0 ? +S.settings.inc : (S.settings.unit === 'kg' ? 2.5 : 5);
+/* Petits muscles (épaules, bras) : saut plus petit par défaut. Modifiable par exercice. */
+const SMALL_MUS = ['delts', 'biceps', 'triceps', 'forearms', 'abductors', 'adductors'];
+function incFor(name) {
+  const v = (S.incs || {})[norm(name)]; if (+v > 0) return +v;
+  const L = typeof libEntry === 'function' ? libEntry(name) : null;
+  if (L && L.p.some(m => SMALL_MUS.includes(m))) return S.settings.unit === 'kg' ? 1 : 2.5;
+  return incr();
+}
+const INC_OPTS = () => S.settings.unit === 'kg' ? [0.5, 1, 1.25, 2, 2.5, 5] : [1, 2.5, 5, 10];
 function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('⚠️ Sauvegarde impossible'); } }
 function save() { saveLocal(); if (typeof queueCloud === 'function') queueCloud(); }
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
@@ -641,11 +667,13 @@ if (navigator.storage && navigator.storage.persist) navigator.storage.persist().
 /* ---------- Navigation façon Hevy (pile d'écrans) ---------- */
 let stack = S.active ? [{v: 'train'}, {v: 'workout'}] : [{v: 'train'}];
 const cur = () => stack[stack.length - 1];
-function go(v, p = {}) { stack.push({v, ...p}); try { history.pushState({d: stack.length}, ''); } catch (e) {} render(); window.scrollTo(0, 0); }
+let woY = 0;
+function go(v, p = {}) { if (cur().v === 'workout') woY = scrollY; stack.push({v, ...p}); try { history.pushState({d: stack.length}, ''); } catch (e) {} render(); window.scrollTo(0, 0); }
 function back() {
   if (stack.length < 2) return;
   if (cur().v === 'redit' && rdirty && !confirm('Quitter sans enregistrer les modifications?')) return;
   stack.pop(); render(); window.scrollTo(0, 0);
+  if (cur().v === 'workout') setTimeout(() => { if (woY) window.scrollTo(0, woY); else scrollCur(); }, 30);
 }
 function setRoot(v) { stack = [{v}]; }
 window.addEventListener('popstate', () => { if (modals.length) { closeModal(); return; } back(); });
@@ -1005,9 +1033,12 @@ function openExMenu(ei) {
       <button class="btn" data-act="ex-replace" data-e="${ei}">🔄 Remplacer</button>
       <button class="btn" data-act="wo-reorder">↕ Réorganiser</button>
       <button class="btn" data-act="plates" data-e="${ei}">🧮 Disques</button>
+      <button class="btn" data-act="conv" data-e="${ei}">⚖️ ${T(U() === 'lb' ? 'Machine en kg' : 'Machine en lb', U() === 'lb' ? 'Machine in kg' : 'Machine in lb')}</button>
       ${e.ss ? `<button class="btn" data-act="ex-ss-off" data-e="${ei}">⛓ Retirer du superset</button>` : ''}
       ${S.active.exercises.length > 1 ? `<button class="btn" data-act="wo-ss-pick" data-e="${ei}">⛓ Superset avec…</button>` : ''}
     </div>
+    <label>${T('Augmentation de charge suggérée pour cet exercice', 'Suggested weight increase for this exercise')}</label>
+    <div class="chips">${INC_OPTS().map(v => `<button class="chip ${incFor(e.name) === v ? 'on' : ''}" data-act="inc-set" data-n="${esc(e.name)}" data-v="${v}">+${dec1(v)} ${U()}</button>`).join('')}</div>
     <label>Repos après chaque série de cet exercice</label>
     <select data-exrest="${ei}">${RS.map(([v, l]) => `<option value="${v}" ${String(e.rest || '') === String(v) ? 'selected' : ''}>${l}</option>`).join('')}</select>
     <label>Note sur l'exercice (cette séance)</label>
@@ -1017,6 +1048,19 @@ function openExMenu(ei) {
 }
 
 /* ---------- Séance ---------- */
+/* ----- Conversion lb ↔ kg (machine dans l'autre unité) ----- */
+const KG = 2.20462;
+function convVal() { const x = parseFloat((($('#convin') || {}).value || '').replace(',', '.')); if (!(x > 0)) return 0; const v = U() === 'lb' ? x * KG : x / KG; return Math.round(v * 10) / 10; }
+function openConv(ei) {
+  const e = S.active.exercises[ei], other = U() === 'lb' ? 'kg' : 'lb';
+  modal(`<h2>⚖️ ${T(`Machine en ${other}`, `Machine in ${other}`)}</h2><p class="muted small">${esc(e.name)} · ${T(`Entre la charge affichée sur la machine en ${other}, l'appli la convertit en ${U()} pour ton suivi.`, `Enter the weight shown on the machine in ${other}; the app converts it to ${U()} for your log.`)}</p>
+    <div class="row" style="align-items:center;gap:10px"><input id="convin" inputmode="decimal" placeholder="${other}" value="${e.mach && e.mach.u === other ? e.mach.v : ''}" style="flex:1;font-size:22px"><b>${other}</b></div>
+    <p style="font-size:20px;margin:12px 0" id="convout">= — ${U()}</p>
+    <button class="btn primary block" data-act="conv-apply" data-e="${ei}">${T('Appliquer aux séries non cochées', 'Apply to unchecked sets')}</button>
+    <button class="btn block" data-act="close" style="margin-top:8px">${T('Fermer', 'Close')}</button>`);
+  const upd = () => { const v = convVal(); $('#convout').textContent = v ? `= ${dec1(v)} ${U()}` : `= — ${U()}`; };
+  $('#convin').addEventListener('input', upd); upd(); setTimeout(() => $('#convin').focus(), 50);
+}
 function repRange(reps) {
   const m = String(reps).replace(/[–—]/g, '-').match(/^\s*(\d+)\s*(?:-\s*(\d+))?/);
   if (!m) return null;
@@ -1030,7 +1074,7 @@ function suggestFor(e) {
   const rg = repRange(e.target.reps); if (!rg) return null;
   const [lo, hi] = rg;
   if (!last.sets.every(s => +s.r >= hi)) return null;
-  const inc = incr();
+  const inc = incFor(e.name);
   const next = last.sets.map(s => ({w: Math.round(((s.w === '' || s.w == null ? 0 : +s.w) + inc) * 100) / 100}));
   const work0 = e.sets.filter(s => s.t !== 'W' && !s.done);
   if (!work0.length || work0.every((s, k) => +s.w === next[Math.min(k, next.length - 1)].w)) return null;
@@ -1065,7 +1109,31 @@ function startWorkout(rid) {
     exercises: r.exercises.map(e => ({name: e.name, ss: e.ss, rest: e.rest, note: '', target: {...e}, sets: mkSetsFromRoutine(e, lastFor(e.name))}))};
   save(); openWorkout();
 }
-function openWorkout() { stack = [{v: 'train'}, {v: 'workout'}]; try { history.pushState({}, ''); } catch (e) {} render(); window.scrollTo(0, 0); }
+function openWorkout() { stack = [{v: 'train'}, {v: 'workout'}]; try { history.pushState({}, ''); } catch (e) {} render(); window.scrollTo(0, 0); setTimeout(scrollCur, 30); }
+/* Exercice en cours = premier exercice avec une série non cochée */
+function curEx() { const a = S.active; if (!a) return -1; return a.exercises.findIndex(e => e.sets.some(s => !s.done)); }
+function scrollToEx(ei, smooth) {
+  const c = document.getElementById('wex' + ei); if (!c) return;
+  const row = c.querySelector('.setrow:not(.done)') ;
+  const hdr = (document.querySelector('header') || {}).offsetHeight || 60;
+  const y = (row && c.getBoundingClientRect().height > innerHeight * 0.7 ? row.getBoundingClientRect().top - 120 : c.getBoundingClientRect().top - 8) + scrollY - hdr;
+  window.scrollTo({top: Math.max(0, y), behavior: smooth ? 'smooth' : 'auto'});
+}
+function scrollCur() { if (cur().v !== 'workout') return; const i = curEx(); if (i > 0) scrollToEx(i, false); }
+/* Après avoir coché une série : superset → l'autre exercice; dernière série → exercice suivant */
+function autoNext(ei) {
+  if (S.settings.autoScroll === false) return;
+  const L = S.active.exercises, e = L[ei], open = x => x && x.sets.some(s => !s.done);
+  let t = -1;
+  if (e.ss) {
+    const grp = L.map((x, i) => x.ss === e.ss ? i : -1).filter(i => i >= 0);
+    const k = grp.indexOf(ei);
+    for (let j = 1; j <= grp.length; j++) { const g = grp[(k + j) % grp.length]; if (open(L[g])) { t = g; break; } }
+    if (t === ei && !open(e)) t = -1;
+  }
+  if (t < 0 && !open(e)) { for (let j = ei + 1; j < L.length; j++) if (open(L[j])) { t = j; break; } if (t < 0) t = L.findIndex(open); }
+  if (t >= 0 && t !== ei) setTimeout(() => scrollToEx(t, true), 350);
+}
 function startEmpty() {
   if (S.active && !confirm('Une séance est déjà en cours. La remplacer?')) { openWorkout(); return; }
   S.active = {routineId: null, routineName: 'Entraînement libre', start: new Date().toISOString(), exercises: []};
@@ -1138,8 +1206,24 @@ function addExercise(pick) {
 
 /* ---------- Minuteur ---------- */
 let timerEnd = 0, timerInt = null;
+let timerFinT = null;
+function timerBtns() {
+  clearTimeout(timerFinT); $('#timer').classList.remove('fin');
+  $('#tlab').textContent = T('Repos', 'Rest');
+  $('#tbtns').innerHTML = `<button data-act="timer-add">+30 s</button><button data-act="timer-stop">${T('Passer', 'Skip')}</button>`;
+}
+function timerDone() {
+  clearInterval(timerInt); sched = [];
+  const el = $('#timer'); el.classList.add('show', 'fin');
+  $('#tlab').textContent = T('✅ Repos terminé', '✅ Rest over'); $('#tval').textContent = '';
+  const onWo = cur().v === 'workout';
+  $('#tbtns').innerHTML = (onWo ? '' : `<button data-act="timer-go">↩ ${T('Retour à la séance', 'Back to workout')}</button>`) + `<button data-act="timer-stop">OK</button>`;
+  if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
+  clearTimeout(timerFinT); timerFinT = setTimeout(() => { el.classList.remove('show', 'fin'); }, 20000);
+}
 function startTimer(sec) {
   timerEnd = Date.now() + sec * 1000;
+  timerBtns();
   $('#timer').classList.add('show');
   scheduleBeeps(sec);
   clearInterval(timerInt); tickTimer(); timerInt = setInterval(tickTimer, 250);
@@ -1148,9 +1232,9 @@ function startTimer(sec) {
    est éteint et que l'appli est en pause. Un son inaudible garde le moteur audio actif pendant le repos. */
 let sched = [];
 function cancelBeeps() { sched.forEach(n => { try { n.stop(); } catch (e) {} try { n.disconnect(); } catch (e) {} }); sched = []; }
-function schedTone(freq, at, dur, vol) {
+function schedTone(freq, at, dur, vol, wave) {
   const o = actx.createOscillator(), g = actx.createGain();
-  o.type = 'sine'; o.frequency.value = freq;
+  o.type = wave || 'sine'; o.frequency.value = freq; vol = Math.max(0.0002, vol);
   g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(vol, at + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
   o.connect(g); g.connect(actx.destination); o.start(at); o.stop(at + dur + 0.05); sched.push(o);
 }
@@ -1163,16 +1247,16 @@ function scheduleBeeps(sec) {
     const keep = actx.createOscillator(), kg = actx.createGain();
     keep.frequency.value = 30; kg.gain.value = 0.0005;
     keep.connect(kg); kg.connect(actx.destination); keep.start(t0); keep.stop(t0 + sec + 1.5); sched.push(keep);
-    [3, 2, 1].forEach(k => { if (sec - k > 0.3) schedTone(660, t0 + sec - k, 0.1, 0.3); });
-    schedTone(880, t0 + sec, 0.18, 0.5); schedTone(880, t0 + sec + 0.25, 0.18, 0.5); schedTone(1320, t0 + sec + 0.5, 0.35, 0.55);
+    [3, 2, 1].forEach(k => { if (sec - k > 0.3) playSnd(false, t0 + sec - k, true); });
+    playSnd(true, t0 + sec, true);
   } catch (e) {}
 }
 function tickTimer() {
   const left = Math.max(0, Math.round((timerEnd - Date.now()) / 1000));
   $('#tval').textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
-  if (left <= 0) { clearInterval(timerInt); $('#timer').classList.remove('show'); sched = []; if (navigator.vibrate) navigator.vibrate([300, 150, 300]); toast('⏱️ Repos terminé!'); }
+  if (left <= 0) timerDone();
 }
-function stopTimer() { clearInterval(timerInt); cancelBeeps(); $('#timer').classList.remove('show'); }
+function stopTimer() { clearInterval(timerInt); cancelBeeps(); clearTimeout(timerFinT); $('#timer').classList.remove('show', 'fin'); }
 
 /* ===================== Vues ===================== */
 const exl = n => `<span class="exlink" data-act="exo" data-n="${esc(n)}">${esc(n)}</span>`;
@@ -1215,14 +1299,15 @@ function vWorkout() {
     const last = lastFor(e.name), prev = lastFull(e.name), tm = isTimed(e);
     const first = e.ss && !(a.exercises[ei - 1] && a.exercises[ei - 1].ss === e.ss);
     let wi = 0, wu = 0;
-    return `<div class="card ${e.ss ? 'ss' : ''}" ${ssSty(e)}>
+    return `<div class="card ${e.ss ? 'ss' : ''}" id="wex${ei}" ${ssSty(e)}>
       ${first ? `<div class="small" style="color:var(--ss);margin-bottom:6px;font-weight:600">⛓ SUPERSET ${esc(e.ss)} <span class="muted" style="font-weight:400">— alterne, repos après le dernier</span></div>` : ''}
       <div class="row between"><div class="row" style="gap:10px;min-width:0">${thumb(e.name, 40)}<h3>${exl(e.name)}</h3></div><span class="row"><span class="tag">${e.target.sets}×${esc(e.target.reps)}${tm ? ' s' : ''}${e.rest ? ' · ⏱' + esc(fmtRest(e.rest)) : ''}</span><button class="btn sm" data-act="ex-menu" data-e="${ei}" aria-label="Options">⋯</button></span></div>
       ${e.target.note ? `<div class="last">📋 ${esc(e.target.note)}</div>` : ''}
       ${e.note ? `<div class="last">📝 ${esc(e.note)}</div>` : ''}
       ${!last ? '<div class="last">Première fois</div>' : last.note ? `<div class="last">Dernière note : ${esc(last.note)}</div>` : ''}
       ${stagBtn(e.name, ei)}
-      ${(() => { const sg = suggestFor(e); return sg ? `<div class="sug"><span>💡 Haut de la fourchette atteint (${esc(sg.from)}). Essaie <b>${sg.top} ${U()}${sg.bw ? ' de lest' : ''}</b>.</span><button class="btn primary sm" data-act="apply-sug" data-e="${ei}">Appliquer</button></div>` : ''; })()}
+      ${e.mach ? `<div class="last">⚖️ ${T('Machine', 'Machine')} : ${dec1(e.mach.v)} ${e.mach.u} = ${dec1(e.mach.u === 'kg' ? e.mach.v * KG : e.mach.v / KG)} ${U()}</div>` : ''}
+      ${(() => { const sg = suggestFor(e); return sg ? `<div class="sug"><span>💡 Haut de la fourchette atteint (${esc(sg.from)}). Essaie <b>${dec1(sg.top)} ${U()}${sg.bw ? ' de lest' : ''}</b>.</span><span class="row" style="gap:4px;flex-direction:column"><button class="btn primary sm" data-act="apply-sug" data-e="${ei}">Appliquer</button><button class="linkbtn small" data-act="inc-menu" data-e="${ei}">+${dec1(incFor(e.name))} ${U()} ⚙️</button></span></div>` : ''; })()}
       <div class="colhead w5"><span>#</span><span>Précédent</span><span>${U()}</span><span>${tm ? 'Sec' : 'Reps'}</span><span></span></div>
       ${e.sets.map((s, si) => {
         const k = s.t === 'W' ? wu++ : wi++;
@@ -1488,6 +1573,12 @@ function vSettings() {
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="sound" ${S.settings.sound !== false ? 'checked' : ''}> 🔔 Bip à la fin du repos (3-2-1 puis bip final)</label>
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="wake" ${S.settings.wake === true ? 'checked' : ''}> <span>📱 Garder l'écran allumé pendant la séance<br><span class="muted small">Consomme de la batterie, pas nécessaire pour le bip.</span></span></label>
       <button class="btn sm" data-act="plates-free" style="margin-top:10px">🧮 Calculateur de disques</button>
+      <label>${T('Son du bip', 'Beep sound')}</label>
+      <select data-set="beepSnd">${Object.entries(SOUNDS).map(([k, s]) => `<option value="${k}" ${(S.settings.beepSnd || 'classique') === k ? 'selected' : ''}>${T(s.fr, s.en)}</option>`).join('')}</select>
+      <label>${T('Volume du bip', 'Beep volume')} : <b id="bvl">${S.settings.beepVol ?? 70} %</b></label>
+      <input type="range" min="0" max="100" step="5" value="${S.settings.beepVol ?? 70}" data-bvol="1" style="width:100%">
+      <p class="muted small" style="margin:2px 0 0">${T('Le volume dépend aussi du volume « média » de ton téléphone.', 'Volume also depends on your phone’s media volume.')}</p>
+      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="autoScroll" ${S.settings.autoScroll !== false ? 'checked' : ''}> ${T('↓ Aller à l\'exercice suivant après la dernière série (et alterner en superset)', '↓ Jump to the next exercise after the last set (and alternate in supersets)')}</label>
       <div class="row wrap" style="margin-top:10px"><button class="btn sm" data-act="test-beep">🔊 Tester le son</button><button class="btn sm" data-act="test-lock">🔒 Test écran éteint (10 s)</button></div>
     </div>
     <div class="card"><h3>Thème</h3><p class="muted small" style="margin:4px 0 0">Thèmes prêts à utiliser :</p>
@@ -1497,6 +1588,11 @@ function vSettings() {
       <div class="row" style="margin-top:6px"><input type="color" data-accent="1" value="${S.settings.accent || getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c6f135'}" style="width:64px;height:44px;padding:4px" aria-label="Choisir une couleur">
       <span class="small muted" style="flex:1">${S.settings.accent ? 'Couleur perso : ' + esc(S.settings.accent) : 'Couleur du thème'}</span>
       ${S.settings.accent ? '<button class="btn sm" data-act="accent-reset">Remettre celle du thème</button>' : ''}</div>
+      <label style="margin-top:16px">${T('Couleur du fond (personnalisée)', 'Background color (custom)')}</label>
+      <div class="chips">${BGS.map(c => `<button class="chip" data-act="bg-pick" data-c="${c}" style="background:${c};border-color:${S.settings.bg === c ? 'var(--accent)' : '#8886'};border-width:2px;width:34px;height:34px;padding:0" aria-label="${T('Fond', 'Background')} ${c}"></button>`).join('')}</div>
+      <div class="row" style="margin-top:6px"><input type="color" data-bgc="1" value="${S.settings.bg || getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0f1114'}" style="width:64px;height:44px;padding:4px" aria-label="${T('Choisir la couleur du fond', 'Pick the background color')}">
+      <span class="small muted" style="flex:1">${S.settings.bg ? T('Fond perso : ', 'Custom background: ') + esc(S.settings.bg) : T('Fond du thème', 'Theme background')}</span>
+      ${S.settings.bg ? `<button class="btn sm" data-act="bg-reset">${T('Remettre celui du thème', "Use the theme's")}</button>` : ''}</div>
     </div>
     <div class="card"><h3>📤 Partager l'appli</h3>
       <p class="muted small" style="margin:4px 0 8px">Envoie le lien et les instructions à un ami. Chacun garde ses propres données sur son téléphone.</p>
@@ -2144,9 +2240,23 @@ function ensureAudio() {
   } catch (e) {}
 }
 document.addEventListener('pointerdown', ensureAudio, {passive: true});
-function tone(freq, at, dur, vol) {
+const SOUNDS = {
+  classique: {fr: 'Classique', en: 'Classic', w: 'sine', tick: [660, 0.1], fin: [[880, 0, 0.18], [880, 0.25, 0.18], [1320, 0.5, 0.35]]},
+  doux: {fr: 'Doux', en: 'Soft', w: 'triangle', tick: [520, 0.12], fin: [[660, 0, 0.3], [784, 0.3, 0.3], [988, 0.6, 0.6]]},
+  cloche: {fr: 'Cloche', en: 'Bell', w: 'sine', tick: [1046, 0.25], fin: [[1568, 0, 1.0], [1175, 0.4, 1.4]]},
+  digital: {fr: 'Montre digitale', en: 'Digital watch', w: 'square', tick: [1000, 0.06], fin: [[2000, 0, 0.08], [2000, 0.15, 0.08], [2000, 0.3, 0.08], [2000, 0.45, 0.08]], k: 0.35},
+  alarme: {fr: 'Alarme', en: 'Alarm', w: 'sawtooth', tick: [900, 0.1], fin: [[1200, 0, 0.25], [900, 0.3, 0.25], [1200, 0.6, 0.25], [900, 0.9, 0.25]], k: 0.45},
+  arcade: {fr: 'Arcade', en: 'Arcade', w: 'square', tick: [440, 0.08], fin: [[523, 0, 0.12], [659, 0.12, 0.12], [784, 0.24, 0.12], [1046, 0.36, 0.35]], k: 0.35}};
+const snd = () => SOUNDS[S.settings.beepSnd] || SOUNDS.classique;
+const bvol = () => Math.min(1.8, Math.max(0, (S.settings.beepVol ?? 70) / 100 * 1.8)) * (snd().k || 1);
+function playSnd(final, t, push) {
+  const s = snd(), f = push ? schedTone : tone;
+  if (final) s.fin.forEach(([fr, o, d]) => f(fr, t + o, d, Math.min(0.99, 0.55 * bvol()), s.w));
+  else f(s.tick[0], t, s.tick[1], Math.min(0.99, 0.3 * bvol()), s.w);
+}
+function tone(freq, at, dur, vol, wave) {
   const o = actx.createOscillator(), g = actx.createGain();
-  o.type = 'sine'; o.frequency.value = freq;
+  o.type = wave || 'sine'; o.frequency.value = freq; vol = Math.max(0.0002, vol);
   g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(vol, at + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
   o.connect(g); g.connect(actx.destination); o.start(at); o.stop(at + dur + 0.02);
 }
@@ -2154,8 +2264,7 @@ function beep(final) {
   if (S.settings.sound === false || !actx) return;
   try {
     const t = actx.currentTime;
-    if (final) { tone(880, t, 0.18, 0.5); tone(880, t + 0.25, 0.18, 0.5); tone(1320, t + 0.5, 0.35, 0.55); }
-    else tone(660, t, 0.1, 0.3);
+    playSnd(!!final, t, false);
   } catch (e) {}
 }
 async function syncWake() {
@@ -3164,6 +3273,8 @@ document.addEventListener('click', e => {
     case 'cyc-mv': { const o = cyc().order, rs = cycRs().map(r => r.id), i = +b.dataset.i, j = i + +b.dataset.d; [rs[i], rs[j]] = [rs[j], rs[i]]; S.cycle.order = rs; save(); renderSched(); break; }
     case 'cyc-rm': { const rs = cycRs().map(r => r.id); rs.splice(+b.dataset.i, 1); S.cycle.order = rs; save(); renderSched(); break; }
     case 'accent-pick': S.settings.accent = b.dataset.c; save(); applyTheme(); render(); break;
+    case 'bg-pick': S.settings.bg = b.dataset.c; save(); applyTheme(); render(); break;
+    case 'bg-reset': delete S.settings.bg; save(); applyTheme(); render(); break;
     case 'accent-reset': delete S.settings.accent; save(); applyTheme(); render(); break;
     case 'rd-reorder': if (b.closest('.sheet')) closeModal(); openReorder(rdraft.exercises, arr => { rdraft.exercises = regroupSS(arr); rdirty = true; render(); }); break;
     case 'wo-reorder': closeModal(); openReorder(A.exercises, arr => { A.exercises = regroupSS(arr); save(); render(); }); break;
@@ -3215,7 +3326,7 @@ document.addEventListener('click', e => {
     case 'rd-text-ai': copy(aiPrompt([draftRoutine()])); break;
     case 'rd-text-ok': applyDraftText(); break;
     case 'rd-save': saveRoutineDraft(); break;
-    case 'go-workout': openWorkout(); break;
+    case 'go-workout': closeAll(); openWorkout(); break;
     case 'ai-copy': copy(aiPrompt([r])); break;
     case 'ai-share': shareText(aiPrompt([r])); break;
     case 'ai-all': copy(aiPrompt(S.routines)); break;
@@ -3257,6 +3368,7 @@ document.addEventListener('click', e => {
       s.done = !s.done;
       if (s.done && s.r === '') s.r = s.ph;
       s.pr = s.done && livePR(ei, si);
+      if (s.done) autoNext(ei);
       if (!s.pr) delete s.pr;
       save(); render();
       if (s.pr) { toast(T(`🏆 Nouveau record! ${s.w || BWL()}×${s.r}`, `🏆 New record! ${s.w || BWL()}×${s.r}`)); if (S.settings.sound !== false) { ensureAudio(); setTimeout(() => beep(true), 30); } if (navigator.vibrate) navigator.vibrate([80, 60, 80, 60, 200]); }
@@ -3319,8 +3431,20 @@ document.addEventListener('click', e => {
     case 'add-exo': openPicker({title: 'Ajouter un exercice', cb: addExercise}); break;
     case 'finish': finishWorkout(); break;
     case 'cancel-workout': if (confirm('Abandonner cette séance sans l\'enregistrer?')) { S.active = null; save(); stopTimer(); setRoot('train'); render(); } break;
+    case 'inc-set': { S.incs = S.incs || {}; S.incs[norm(b.dataset.n)] = +b.dataset.v; save(); b.parentElement.querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === b)); if (!b.closest('.sheet .chips[data-ret]')) {} break; }
+    case 'inc-menu': { const e = A.exercises[ei]; modal(`<h2>${T('Augmentation suggérée', 'Suggested increase')}</h2><p class="muted small">${esc(e.name)} · ${T("Quand tu atteins le haut de ta plage de reps, l'appli propose d'ajouter ce poids.", 'When you reach the top of your rep range, the app suggests adding this weight.')}</p>
+      <div class="chips">${INC_OPTS().map(v => `<button class="chip ${incFor(e.name) === v ? 'on' : ''}" data-act="inc-set" data-n="${esc(e.name)}" data-v="${v}">+${dec1(v)} ${U()}</button>`).join('')}</div>
+      <button class="btn primary block" data-act="close" style="margin-top:12px">OK</button>`, {onclose: () => render()}); break; }
+    case 'conv': { closeModal(); openConv(ei); break; }
+    case 'conv-apply': {
+      const e = A.exercises[+b.dataset.e], v = convVal(); if (!(v > 0)) { toast(T('Entre une charge', 'Enter a weight')); break; }
+      e.sets.forEach(s => { if (!s.done && s.t !== 'W') s.w = String(v); });
+      e.mach = {u: U() === 'lb' ? 'kg' : 'lb', v: +$('#convin').value.replace(',', '.')};
+      save(); closeModal(); render(); toast(`⚖️ ${$('#convin') ? '' : ''}${dec1(v)} ${U()}`); break;
+    }
     case 'timer-add': timerEnd += 30000; scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); tickTimer(); break;
     case 'timer-stop': stopTimer(); break;
+    case 'timer-go': if (!S.active) break; if ($('#timer').classList.contains('fin')) stopTimer(); if (cur().v !== 'workout') { closeAll(); openWorkout(); } else scrollCur(); break;
 
     /* historique */
     case 'hist-mode': histMode = b.dataset.m; render(); break;
@@ -3416,6 +3540,8 @@ document.addEventListener('input', e => {
   if (t.id === 'exq') { exQ = t.value; $('#exlist').innerHTML = exListHtml(); }
   if (t.id === 'pltw') renderPlates();
   if (t.dataset.accent !== undefined) { S.settings.accent = t.value; save(); applyTheme(); }
+  if (t.dataset.bgc !== undefined) { S.settings.bg = t.value; save(); applyTheme(); }
+  if (t.dataset.bvol !== undefined) { S.settings.beepVol = +t.value; const l = $('#bvl'); if (l) l.textContent = t.value + ' %'; save(); }
 });
 document.addEventListener('change', e => {
   const t = e.target;
@@ -3434,7 +3560,9 @@ document.addEventListener('change', e => {
   if (t.dataset.cycfold !== undefined && t.value) { const c = cyc(); S.routines.filter(r => (r.folder || DEF_FOLDER) === t.value).forEach(r => { if (!c.order.includes(r.id)) c.order.push(r.id); }); save(); renderSched(); }
   if (t.dataset.cycadd !== undefined && t.value) { const c = cyc(); if (!c.order.includes(t.value)) c.order.push(t.value); save(); renderSched(); }
   if (t.dataset.cycnext !== undefined) { cyc().next = {rid: t.value, at: new Date().toISOString()}; save(); renderSched(); }
-  if (t.dataset.accent !== undefined) render();
+  if (t.dataset.accent !== undefined || t.dataset.bgc !== undefined) render();
+  if (t.dataset.bvol !== undefined) { ensureAudio(); setTimeout(() => beep(true), 30); }
+  if (t.dataset.set === 'beepSnd') { ensureAudio(); setTimeout(() => beep(true), 30); }
   if (t.dataset.move !== undefined) {
     const r2 = S.routines.find(x => x.id === t.dataset.move); if (!r2) return;
     let f = t.value;
