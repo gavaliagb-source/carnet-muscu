@@ -3775,10 +3775,10 @@ document.addEventListener('click', e => {
     case 'st-menu': { const rt = stAll().find(x => x.id === b.dataset.id), own = (S.stretches || []).some(x => x.id === rt.id);
       modal(`<h2>🧘 ${esc(T(rt.n[0], rt.n[1] || rt.n[0]))}</h2><div class="menu">${own ? `<button class="btn block" data-act="st-edit" data-id="${rt.id}">✏️ ${T('Modifier', 'Edit')}</button>` : ''}
         <button class="btn block" data-act="st-copy" data-id="${rt.id}">⧉ ${own ? T('Dupliquer', 'Duplicate') : T('Copier et modifier', 'Copy and edit')}</button>
-        ${own ? `<button class="btn danger block" data-act="st-del" data-id="${rt.id}">${T('Supprimer', 'Delete')}</button>` : ''}<button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`); break; }
+        ${own ? `<button class="btn danger block" data-act="str-del" data-id="${rt.id}">${T('Supprimer', 'Delete')}</button>` : ''}<button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`); break; }
     case 'st-edit': { const rt = (S.stretches || []).find(x => x.id === b.dataset.id); closeAll(); openStEdit(rt); break; }
     case 'st-copy': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); const c = JSON.parse(JSON.stringify(rt)); c.id = 's' + uid(); c.n = [c.n[0] + T(' (copie)', ' (copy)'), (c.n[1] || c.n[0]) + ' (copy)']; delete c.d; openStEdit(c); break; }
-    case 'st-del': { snap(); S.stretches = (S.stretches || []).filter(x => x.id !== b.dataset.id); save(); closeAll(); render(); undoToast(T('Routine supprimée', 'Routine deleted')); break; }
+    case 'str-del': { snap(); S.stretches = (S.stretches || []).filter(x => x.id !== b.dataset.id); save(); closeAll(); render(); undoToast(T('Routine supprimée', 'Routine deleted')); break; }
     case 'st-sides': { const it = stDraft.items[+b.dataset.i]; it.sides = !it.sides; renderStEdit(); break; }
     case 'st-rm': stDraft.items.splice(+b.dataset.i, 1); renderStEdit(); break;
     case 'st-add': openPicker({title: T('Ajouter un étirement', 'Add a stretch'), libOnly: true, cb: pkd => { const L = LIBMAP[pkd.lib] || libEntry(pkd.name); stDraft.items.push(SI(pkd.name, pkd.name, L ? L.name : pkd.name, 30, false)); renderStEdit(); }});
