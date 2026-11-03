@@ -248,6 +248,8 @@ button.chip{cursor:pointer}
 .setsec .sic{width:40px;height:40px;border-radius:12px;background:var(--card2);display:flex;align-items:center;justify-content:center;color:var(--accent);flex:none;font-size:20px}
 .setsec .chev{color:var(--muted);font-size:22px;transition:transform .2s}.setsec[open] .chev{transform:rotate(90deg)}
 .setsec .secb{padding:0 16px 16px;border-top:1px solid var(--line)}.setsec .secb>.card{background:var(--card2);margin:12px 0 0}
+.stgif{width:min(70vw,260px);aspect-ratio:1;margin:0 auto;border-radius:16px;overflow:hidden;background:#fff}.stgif img{width:100%;height:100%;object-fit:contain}
+.stside{font-weight:700;color:var(--accent);min-height:20px}
 .chrono{font-variant-numeric:tabular-nums;font-weight:700;color:var(--accent);font-size:15px}
 .cday .dl{font-size:10px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
 </style>
@@ -1240,6 +1242,7 @@ function finishWorkout() {
     ${medNew.length ? `<div class="card" style="border-color:var(--accent);margin:8px 0"><b>🏅 ${T(medNew.length > 1 ? 'Nouvelles médailles!' : 'Nouvelle médaille!', medNew.length > 1 ? 'New medals!' : 'New medal!')}</b>${medNew.map(d => `<div style="margin-top:4px">${d.ic} ${esc(d.t)}</div>`).join('')}</div>` : ''}
     ${wasFree ? `<button class="btn block" data-act="save-as-routine" data-hid="${id}" style="margin-bottom:8px">💾 Enregistrer comme routine</button>` : ''}
     <div class="grid2" style="margin-bottom:8px"><button class="btn" data-act="hist-img" data-hid="${id}">🖼️ ${T('Image', 'Image')}</button><button class="btn" data-act="hist-share" data-hid="${id}">📤 ${T('Texte', 'Text')}</button></div>
+    <button class="btn block" data-act="st-go" data-id="${stSuggest(S.history[S.history.length - 1])}" style="margin-bottom:8px">🧘 ${T('Étirements', 'Stretching')} ${esc(T(ST_PRESETS.find(x => x.id === stSuggest(S.history[S.history.length - 1])).n[0], ST_PRESETS.find(x => x.id === stSuggest(S.history[S.history.length - 1])).n[1]).toLowerCase())} (≈ ${fmtMin(stDur(ST_PRESETS.find(x => x.id === stSuggest(S.history[S.history.length - 1]))))})</button>
     <button class="btn primary block" data-act="close">Super</button>`);
 }
 function replaceExercise(ei, pick) {
@@ -2468,7 +2471,7 @@ function vTrain() {
   h += weekGoal();
   h += cloudNag();
   if (deloadOn()) h += `<div class="card" style="border-color:var(--warm)"><div class="row between"><div><b>🪶 Semaine de récupération</b><br><span class="muted small">Charges −${S.settings.deload.pct} % jusqu'au ${new Date(S.settings.deload.until + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'long'})}</span></div><button class="btn sm" data-act="deload-off">Arrêter</button></div></div>`;
-  h += `<button class="btn block big" data-act="start-empty">${IC('plus', '＋')} ${T('Démarrer un entraînement vide', 'Start an empty workout')}</button>
+  h += `<div class="row trow" style="gap:8px"><button class="btn big" style="flex:1;margin:0" data-act="start-empty">${IC('plus', '＋')} ${T('Entraînement vide', 'Empty workout')}</button><button class="btn big" style="flex:1;margin:0" data-act="go" data-v="stretch">${IC('yoga', '🧘')} ${T('Étirements', 'Stretching')}</button></div>
     <div class="row between" style="margin:18px 0 8px"><h2 style="margin:0">Routines</h2><button class="btn sm" data-act="new-folder" aria-label="Nouveau dossier">${IC('folderp', '📁＋')}</button></div>
     <div class="row trow" style="margin-bottom:12px;gap:8px"><button class="btn" style="flex:1" data-act="new-routine">${IC('clip', '📋')} ${T('Nouv. routine', 'New routine')}</button><button class="btn" style="flex:1" data-act="ai-menu">${IC('spark', '🤖')} ${T('Programme IA', 'AI program')}</button><button class="btn" data-act="train-more" aria-label="${T('Plus', 'More')}">${IC('more', '⋯')}</button></div>`;
   folders().forEach(f => {
@@ -3364,6 +3367,167 @@ function yearBanner() {
   return `<button class="btn block" data-act="go-year" data-y="${y}" style="border-color:var(--accent);margin-bottom:12px">🎉 ${T(`Ton bilan ${y} est prêt!`, `Your ${y} review is ready!`)}</button>`;
 }
 
+
+/* ===================== Étirements et mobilité (minuteur guidé) ===================== */
+const SI = (fr, en, lib, sec, sides) => ({n: [fr, en], lib, sec, sides: !!sides});
+const ST_PRESETS = [
+  {id: 'p_upper', n: ['Après Upper', 'After Upper'], d: ['Pecs, épaules, dos, bras', 'Chest, shoulders, back, arms'], items: [
+    SI('Pectoraux et avant des épaules', 'Chest and front shoulders', 'Chest And Front Of Shoulder Stretch', 30, 1),
+    SI('Dorsaux à genoux', 'Kneeling lats', 'Kneeling Lat Stretch', 30),
+    SI('Étirement latéral debout', 'Standing side stretch', 'Standing Lateral Stretch', 30, 1),
+    SI('Arrière des épaules', 'Rear delts', 'Rear Deltoid Stretch', 30, 1),
+    SI('Triceps au-dessus de la tête', 'Overhead triceps', 'Overhead Triceps Stretch', 30, 1),
+    SI('Haut du dos', 'Upper back', 'Upper Back Stretch', 30),
+    SI('Cou sur le côté', 'Neck side stretch', 'Neck Side Stretch', 20, 1),
+    SI('Poignets et avant-bras', 'Wrists and forearms', 'Side Wrist Pull Stretch', 20, 1)]},
+  {id: 'p_lower', n: ['Après Lower', 'After Lower'], d: ['Quads, ischios, fessiers, mollets, hanches', 'Quads, hamstrings, glutes, calves, hips'], items: [
+    SI('Quadriceps couché sur le côté', 'Side-lying quads', 'Lying (Side) Quads Stretch', 30, 1),
+    SI('Fléchisseurs de hanche', 'Hip flexors', 'Intermediate Hip Flexor And Quad Stretch', 30, 1),
+    SI('Ischio-jambiers', 'Hamstrings', 'Hamstring Stretch', 30, 1),
+    SI('Fessiers assis', 'Seated glutes', 'Seated Glute Stretch', 30, 1),
+    SI('Piriforme', 'Piriformis', 'Seated Piriformis Stretch', 30, 1),
+    SI('Adducteurs (papillon)', 'Adductors (butterfly)', 'Butterfly Yoga Pose', 40),
+    SI('Mollets au mur', 'Calves against the wall', 'Calf Stretch With Hands Against Wall', 30, 1),
+    SI('Bas du dos assis', 'Seated lower back', 'Seated Lower Back Stretch', 30)]},
+  {id: 'p_full', n: ['Corps complet', 'Full body'], d: ['Tout le corps, idéal les jours de repos', 'Whole body, great on rest days'], items: [
+    SI('Le meilleur étirement du monde', 'World’s greatest stretch', 'World Greatest Stretch', 30, 1),
+    SI('Pectoraux et avant des épaules', 'Chest and front shoulders', 'Chest And Front Of Shoulder Stretch', 30, 1),
+    SI('Dorsaux à genoux', 'Kneeling lats', 'Kneeling Lat Stretch', 30),
+    SI('Triceps au-dessus de la tête', 'Overhead triceps', 'Overhead Triceps Stretch', 30, 1),
+    SI('Fléchisseurs de hanche', 'Hip flexors', 'Intermediate Hip Flexor And Quad Stretch', 30, 1),
+    SI('Ischio-jambiers', 'Hamstrings', 'Hamstring Stretch', 30, 1),
+    SI('Fessiers assis', 'Seated glutes', 'Seated Glute Stretch', 30, 1),
+    SI('Mollets au mur', 'Calves against the wall', 'Calf Stretch With Hands Against Wall', 30, 1),
+    SI('Colonne vertébrale', 'Spine', 'Spine Stretch', 30),
+    SI('Cou sur le côté', 'Neck side stretch', 'Neck Side Stretch', 20, 1)]},
+  {id: 'p_warm', n: ['Échauffement mobilité', 'Mobility warm-up'], d: ['5 min avant la séance, mouvements dynamiques', '5 min before training, dynamic moves'], items: [
+    SI('Cercles de poignets', 'Wrist circles', 'Wrist Circles', 20),
+    SI('Cercles de chevilles', 'Ankle circles', 'Ankle Circles', 20, 1),
+    SI('Inchworm (marche des mains)', 'Inchworm', 'Inchworm', 40),
+    SI('Le meilleur étirement du monde', 'World’s greatest stretch', 'World Greatest Stretch', 20, 1),
+    SI('Fentes marchées genoux hauts', 'Walking high-knee lunges', 'Walking High Knees Lunge', 40),
+    SI('Fentes avec rotation', 'Lunges with twist', 'Lunge With Twist', 40),
+    SI('Ouverture de poitrine dynamique', 'Dynamic chest opener', 'Dynamic Chest Stretch (Male)', 30)]},
+  {id: 'p_back', n: ['Dos et bas du dos', 'Back and lower back'], d: ['Soulage le dos après une grosse journée', 'Relieves your back after a long day'], items: [
+    SI('Colonne vertébrale', 'Spine', 'Spine Stretch', 40),
+    SI('Bas du dos assis', 'Seated lower back', 'Seated Lower Back Stretch', 40),
+    SI('Dorsaux à genoux', 'Kneeling lats', 'Kneeling Lat Stretch', 30),
+    SI('Étirement au sol sur le côté', 'Side-lying floor stretch', 'Side Lying Floor Stretch', 30, 1),
+    SI('Croix de fer (rotation)', 'Iron cross (rotation)', 'Iron Cross Stretch', 30, 1),
+    SI('Grenouille', 'Rocking frog', 'Rocking Frog Stretch', 40),
+    SI('Haut du dos', 'Upper back', 'Upper Back Stretch', 30)]}];
+const stLib = lib => { const id = LIBBYNAME[norm(lib)] || libId(lib); return id ? LIBMAP[id] : null; };
+const stName = it => T(it.n[0], it.n[1] || it.n[0]);
+const stAll = () => [...ST_PRESETS, ...(S.stretches || [])];
+const stPrep = () => +S.settings.stPrep > 0 ? +S.settings.stPrep : 5;
+const stDur = rt => rt.items.reduce((t, it) => t + it.sec * (it.sides ? 2 : 1) + stPrep() + (it.sides ? 3 : 0), 0);
+const fmtMin = s => s >= 60 ? Math.round(s / 60) + ' min' : s + ' s';
+function vStretch() {
+  const log = S.stretchLog || [], ws = weekStart(new Date()), wk = log.filter(x => new Date(x.date) >= ws);
+  const card = (rt, own) => `<div class="card"><div class="row between"><div style="min-width:0"><h3 style="margin:0">${esc(T(rt.n[0], rt.n[1] || rt.n[0]))}</h3><span class="muted small">${rt.d ? esc(T(rt.d[0], rt.d[1])) + ' · ' : ''}${rt.items.length} ${T('étirements', 'stretches')} · ≈ ${fmtMin(stDur(rt))}</span></div>
+    <button class="btn sm" data-act="st-menu" data-id="${rt.id}" aria-label="Options">⋯</button></div>
+    <div class="row" style="gap:6px;margin:10px 0;overflow:hidden">${rt.items.slice(0, 6).map(it => thumbL(stLib(it.lib), 36)).join('')}</div>
+    <button class="btn primary block" data-act="st-go" data-id="${rt.id}">▶ ${T('Commencer', 'Start')}</button></div>`;
+  return `<div class="card"><div class="row between"><span>🧘 ${T('Cette semaine', 'This week')}</span><b>${wk.length} ${T('séance' + (wk.length > 1 ? 's' : ''), 'session' + (wk.length !== 1 ? 's' : ''))} · ${fmtMin(wk.reduce((t, x) => t + (+x.sec || 0), 0))}</b></div>
+      <label>${T('Préparation entre deux étirements', 'Prep time between stretches')}</label>
+      <select data-set="stPrep">${[3, 5, 10, 15].map(v => `<option value="${v}" ${stPrep() === v ? 'selected' : ''}>${v} s</option>`).join('')}</select></div>
+    <p class="muted" style="margin:16px 0 8px">${T('Routines prêtes', 'Ready-made routines')}</p>${ST_PRESETS.map(rt => card(rt)).join('')}
+    <div class="row between" style="margin:16px 0 8px"><p class="muted" style="margin:0">${T('Mes routines d\'étirement', 'My stretching routines')}</p><button class="btn sm" data-act="st-new">＋ ${T('Créer', 'Create')}</button></div>
+    ${(S.stretches || []).length ? S.stretches.map(rt => card(rt, true)).join('') : `<p class="muted small">${T('Crée ta propre routine, ou copie une routine prête avec son menu ⋯ pour la modifier.', 'Create your own routine, or copy a ready-made one with its ⋯ menu to edit it.')}</p>`}`;
+}
+/* ----- Éditeur ----- */
+let stDraft = null;
+function openStEdit(rt) {
+  stDraft = rt ? JSON.parse(JSON.stringify(rt)) : {id: 's' + uid(), n: [T('Mes étirements', 'My stretches'), ''], items: []};
+  if (!stDraft.n[1]) stDraft.n[1] = stDraft.n[0];
+  modal(`<div class="row between"><h2>🧘 ${T('Routine d\'étirement', 'Stretching routine')}</h2><button class="btn sm" data-act="close">✕</button></div><div id="stedbox"></div>`, {id: 'stedit'});
+  renderStEdit();
+}
+function renderStEdit() {
+  const box = $('#stedbox'); if (!box || !stDraft) return;
+  box.innerHTML = `<label>${T('Nom', 'Name')}</label><input id="stname" value="${esc(T(stDraft.n[0], stDraft.n[1]))}">
+    <label>${T('Étirements', 'Stretches')} · ≈ ${fmtMin(stDur(stDraft))}</label>
+    <div id="stitems">${stDraft.items.map((it, i) => `<div class="reo" data-i="${i}"><span class="handle">≡</span>${thumbL(stLib(it.lib), 36)}<span class="reon"><b class="small">${esc(stName(it))}</b><br>
+      <span class="row" style="gap:6px;margin-top:4px"><select data-stsec="${i}" style="width:auto;padding:4px 8px">${[10, 15, 20, 30, 40, 45, 60, 90, 120].map(v => `<option value="${v}" ${it.sec === v ? 'selected' : ''}>${v} s</option>`).join('')}</select>
+      <button class="chip ${it.sides ? 'on' : ''}" data-act="st-sides" data-i="${i}" style="margin:0">${T('2 côtés', '2 sides')}</button></span></span>
+      <button class="reodel" data-act="st-rm" data-i="${i}">−</button></div>`).join('')}</div>
+    <button class="btn block" data-act="st-add" style="margin-top:10px">＋ ${T('Ajouter un étirement', 'Add a stretch')}</button>
+    <button class="btn primary block" data-act="st-save" style="margin-top:10px">${T('Enregistrer', 'Save')}</button>`;
+  makeSortable($('#stitems'), box.closest('.sheet'), order => { stDraft.items = order.map(i => stDraft.items[i]); renderStEdit(); });
+  $('#stname').addEventListener('input', e => { stDraft.n = [e.target.value, e.target.value]; });
+}
+/* ----- Lecteur guidé ----- */
+let stp = null, stWake = null;
+function stSteps(rt) { const out = []; rt.items.forEach((it, k) => { const L = stLib(it.lib); if (it.sides) { out.push({it, L, k, side: 1}); out.push({it, L, k, side: 2}); } else out.push({it, L, k, side: 0}); }); return out; }
+function startStretch(id) {
+  const rt = stAll().find(x => x.id === id); if (!rt || !rt.items.length) return;
+  closeAll(); ensureAudio();
+  stp = {rt, steps: stSteps(rt), i: 0, phase: 'prep', end: Date.now() + stPrep() * 1000, dur: stPrep(), paused: null, t0: Date.now(), last: -1, held: 0};
+  modal(`<div id="stpl" style="text-align:center"></div>`, {id: 'stplayer', onclose: stopStretch});
+  try { if ('wakeLock' in navigator) navigator.wakeLock.request('screen').then(w => stWake = w).catch(() => {}); } catch (e) {}
+  stDraw(true); stp.int = setInterval(stTick, 200);
+}
+function stopStretch() { if (stp) clearInterval(stp.int); stp = null; try { if (stWake) stWake.release(); } catch (e) {} stWake = null; }
+const sideTxt = s => s === 1 ? T('Côté gauche', 'Left side') : s === 2 ? T('Côté droit', 'Right side') : '';
+function stDraw(full) {
+  const box = $('#stpl'); if (!box || !stp) return;
+  const st = stp.steps[stp.i], nx = stp.steps[stp.i + 1];
+  if (full) box.innerHTML = `<div class="row between small muted"><span>${esc(T(stp.rt.n[0], stp.rt.n[1] || stp.rt.n[0]))}</span><span>${stp.i + 1}/${stp.steps.length}</span></div>
+    <div class="pbar" style="margin:6px 0 10px"><div style="width:${Math.round(stp.i / stp.steps.length * 100)}%"></div></div>
+    ${st.L && st.L.media ? `<div class="stgif"><img src="${gifUrl(st.L)}" alt="" referrerpolicy="no-referrer" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${gifUrl2(st.L)}'}"></div>` : ''}
+    <h2 style="margin:8px 0 2px">${esc(stName(st.it))}</h2><div id="stside" class="stside">${sideTxt(st.side)}</div>
+    <svg viewBox="0 0 200 200" width="150" height="150" style="display:block;margin:4px auto"><circle cx="100" cy="100" r="88" fill="none" stroke="var(--line)" stroke-width="12"/>
+      <circle id="string" cx="100" cy="100" r="88" fill="none" stroke="var(--accent)" stroke-width="12" stroke-linecap="round" transform="rotate(-90 100 100)" stroke-dasharray="552.9" stroke-dashoffset="0"/>
+      <text id="sttxt" x="100" y="112" text-anchor="middle" style="fill:var(--text);font-size:52px;font-weight:800;font-variant-numeric:tabular-nums">0</text>
+      <text id="stph" x="100" y="140" text-anchor="middle" style="fill:var(--muted);font-size:14px"></text></svg>
+    <p class="muted small" style="margin:0 0 10px">${nx ? T('Ensuite : ', 'Next: ') + esc(stName(nx.it)) + (nx.side ? ' · ' + sideTxt(nx.side).toLowerCase() : '') : T('Dernier étirement!', 'Last stretch!')}</p>
+    <div class="row" style="gap:8px;justify-content:center"><button class="btn" data-act="st-prev" aria-label="${T('Précédent', 'Previous')}">⏮</button><button class="btn primary" data-act="st-pause" id="stpb" style="min-width:110px">${stp.paused ? '▶ ' + T('Reprendre', 'Resume') : '⏸ Pause'}</button><button class="btn" data-act="st-next" aria-label="${T('Suivant', 'Next')}">⏭</button></div>
+    ${(st.L && (isEN() ? st.L.en : st.L.fr) || []).length ? `<details style="text-align:left;margin-top:12px"><summary class="small muted" style="cursor:pointer">${T('Comment faire', 'How to')}</summary><ol class="small" style="padding-left:20px">${(isEN() ? st.L.en : st.L.fr).map(t => `<li style="margin:3px 0">${esc(t)}</li>`).join('')}</ol></details>` : ''}`;
+  const left = Math.max(0, ((stp.paused ?? stp.end) - (stp.paused ? 0 : Date.now())) / 1000);
+  const s = Math.ceil(left - 1e-6), r = $('#string'), tx = $('#sttxt'), ph = $('#stph');
+  if (tx) tx.textContent = s >= 60 ? `${Math.floor(s / 60)}:${pad2(s % 60)}` : s;
+  if (ph) ph.textContent = stp.phase === 'prep' ? (st.side === 2 && stp.steps[stp.i - 1] && stp.steps[stp.i - 1].k === st.k ? T('Change de côté', 'Switch sides') : T('Prépare-toi', 'Get ready')) : T('Tiens la position', 'Hold');
+  if (r) { r.setAttribute('stroke-dashoffset', String(552.9 * (1 - Math.min(1, left / Math.max(1, stp.dur))))); r.style.stroke = stp.phase === 'prep' ? 'var(--warm)' : 'var(--accent)'; }
+}
+function stGoto(i) {
+  stp.i = i; const st = stp.steps[i], prevSame = st.side === 2 && stp.steps[i - 1] && stp.steps[i - 1].k === st.k;
+  stp.phase = 'prep'; stp.dur = prevSame ? 3 : stPrep(); stp.end = Date.now() + stp.dur * 1000; stp.last = -1; if (stp.paused) stp.paused = stp.dur * 1000;
+  stDraw(true);
+  if (typeof notifOn === 'function' && notifOn()) notify('🧘 ' + stName(st.it), (sideTxt(st.side) ? sideTxt(st.side) + ' · ' : '') + st.it.sec + ' s', {silent: true});
+}
+function stTick() {
+  if (!stp || stp.paused) return;
+  const left = (stp.end - Date.now()) / 1000, s = Math.ceil(left);
+  if (s !== stp.last && s <= 3 && s >= 1 && S.settings.sound !== false) { try { playSnd(false, actx.currentTime, false); } catch (e) {} }
+  stp.last = s;
+  if (left <= 0) {
+    if (stp.phase === 'prep') {
+      const st = stp.steps[stp.i]; stp.phase = 'hold'; stp.dur = st.it.sec; stp.end = Date.now() + st.it.sec * 1000; stp.last = -1;
+      if (navigator.vibrate) navigator.vibrate(120);
+      if (typeof notifOn === 'function' && notifOn()) notify('🧘 ' + T('Tiens : ', 'Hold: ') + stName(st.it), (sideTxt(st.side) ? sideTxt(st.side) + ' · ' : '') + st.it.sec + ' s');
+    } else {
+      stp.held += stp.dur;
+      if (navigator.vibrate) navigator.vibrate([150, 80, 150]);
+      try { if (S.settings.sound !== false) playSnd(true, actx.currentTime, false); } catch (e) {}
+      if (stp.i + 1 >= stp.steps.length) { stFinish(); return; }
+      stGoto(stp.i + 1); return;
+    }
+  }
+  stDraw(false);
+}
+function stFinish() {
+  const sec = Math.round((Date.now() - stp.t0) / 1000), rt = stp.rt;
+  (S.stretchLog = S.stretchLog || []).push({id: uid(), date: new Date().toISOString(), rid: rt.id, name: T(rt.n[0], rt.n[1] || rt.n[0]), sec});
+  save(); clearInterval(stp.int); clearNotif();
+  $('#stpl').innerHTML = `<div style="font-size:54px;margin-top:10px">🧘</div><h2>${T('Bravo, c\'est fini!', 'Well done, all done!')}</h2><p class="muted">${esc(T(rt.n[0], rt.n[1] || rt.n[0]))} · ${fmtDur(sec * 1000)}</p><button class="btn primary block" data-act="close">${T('Terminer', 'Finish')}</button>`;
+  confetti(70); if (cur().v === 'stretch') setTimeout(render, 50);
+}
+function stSuggest(h) {
+  const LEG = ['quads', 'hamstrings', 'glutes', 'calves', 'adductors', 'abductors']; let lo = 0, up = 0;
+  h.exercises.forEach(e => { const L = libEntry(e.name), n = work(e.sets).length; if (!L) return; if (L.p.some(m => LEG.includes(m))) lo += n; else up += n; });
+  return lo > up ? 'p_lower' : 'p_upper';
+}
+
 /* ---------- Calendrier façon Hevy ---------- */
 let calMonths = 6;
 function vCal2() {
@@ -3395,7 +3559,7 @@ const VIEWS = {
   stats: ['Statistiques', () => vStats()], 'st-vol': ['Séries par muscle', () => vVolume()], 'st-radar': ['Répartition musculaire', () => vRadar()],
   'st-body': ['Carte des muscles', () => vBodyMap()], 'st-top': ['Principaux exercices', () => vTopEx()], 'st-rec': ['Records personnels', () => vRecords()],
   'st-month': ['Rapport mensuel', () => vMonth()], exercises: ['Exercices', () => vExList()], exdetail: ['Exercice', () => vExDetail()],
-  measures: ['Mesures', () => vBody()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()]
+  measures: ['Mesures', () => vBody()], stretch: ['Étirements', () => vStretch()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()]
 };
 function headerRight(v) {
   if (v === 'profile') return `<button class="hbtn" data-act="go" data-v="settings" aria-label="Réglages">${IC('gear', '⚙️', 24)}</button>`;
@@ -3499,7 +3663,7 @@ Object.assign(ICP, {
 const EMO = [['🤖', 'bot'], ['✨', 'spark'], ['📥', 'down'], ['📤', 'share'], ['✏', 'pencil'], ['📁＋', 'folderp'], ['📁', 'folder'], ['📋', 'clip'], ['📚', 'book'], ['🪶', 'feather'],
   ['📅', 'calendar'], ['🗓', 'calendar'], ['🔄', 'refresh'], ['↕', 'move'], ['🧮', 'calc'], ['⚖', 'scale'], ['⛓', 'link'], ['🔗', 'link'], ['🎞', 'eye'], ['📝', 'file'], ['⧉', 'copy'],
   ['🗑', 'trash'], ['▶', 'play'], ['🔊', 'vol'], ['🔒', 'lock'], ['⬇', 'down'], ['⬆', 'up'], ['☁', 'cloud'], ['📊', 'chart'], ['📈', 'chart'], ['🖼', 'image'], ['💾', 'save'],
-  ['🔥', 'flame'], ['📖', 'bookopen'], ['＋', 'plus'], ['🏅', 'medal'], ['⚙', 'gear'], ['🏋', 'dumbbell'], ['🧍', 'ruler'], ['💪', 'pulse']];
+  ['🔥', 'flame'], ['📖', 'bookopen'], ['＋', 'plus'], ['🏅', 'medal'], ['⚙', 'gear'], ['🏋', 'dumbbell'], ['🧍', 'ruler'], ['💪', 'pulse'], ['🧘', 'yoga']];
 function iconize(root) {
   if (!root || !iconsOn()) return;
   root.querySelectorAll('.btn, .linkbtn, .sheet h2, .mrow .mic').forEach(el => {
@@ -3517,6 +3681,7 @@ function iconize(root) {
     if (!rest.trim()) n.nodeValue = '';
   });
 }
+ICP.yoga = '<circle cx="12" cy="4.5" r="2"/><path d="M12 7v6"/><path d="m5 10 7 2 7-2"/><path d="m8 20 4-7 4 7"/>';
 const iconsOn = () => S.settings.icons !== false;
 const ic = (k, sz = 20) => `<svg class="ico" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICP[k] || ''}</svg>`;
 const IC = (k, emo, sz) => iconsOn() ? ic(k, sz) : emo;
@@ -3605,6 +3770,23 @@ document.addEventListener('click', e => {
     case 'fix-import': { const bad = new Set(brokenImports()); S.history = S.history.filter(x => !bad.has(x)); save(); closeAll(); render(); toast(`🧹 ${bad.size} séances retirées — choisis ton fichier CSV Hevy`); $('#fileIn').click(); break; }
     case 'go': if (b.dataset.v === 'settings' && b.closest('.nag, .card') && !cloudOn() && /Activer|Turn on/.test(b.textContent)) secOpen.add('cloud'); go(b.dataset.v, {n: b.dataset.n, rid: b.dataset.rid}); break;
     case 'start-empty': startEmpty(); break;
+    case 'st-go': startStretch(b.dataset.id); break;
+    case 'st-new': openStEdit(null); break;
+    case 'st-menu': { const rt = stAll().find(x => x.id === b.dataset.id), own = (S.stretches || []).some(x => x.id === rt.id);
+      modal(`<h2>🧘 ${esc(T(rt.n[0], rt.n[1] || rt.n[0]))}</h2><div class="menu">${own ? `<button class="btn block" data-act="st-edit" data-id="${rt.id}">✏️ ${T('Modifier', 'Edit')}</button>` : ''}
+        <button class="btn block" data-act="st-copy" data-id="${rt.id}">⧉ ${own ? T('Dupliquer', 'Duplicate') : T('Copier et modifier', 'Copy and edit')}</button>
+        ${own ? `<button class="btn danger block" data-act="st-del" data-id="${rt.id}">${T('Supprimer', 'Delete')}</button>` : ''}<button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`); break; }
+    case 'st-edit': { const rt = (S.stretches || []).find(x => x.id === b.dataset.id); closeAll(); openStEdit(rt); break; }
+    case 'st-copy': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); const c = JSON.parse(JSON.stringify(rt)); c.id = 's' + uid(); c.n = [c.n[0] + T(' (copie)', ' (copy)'), (c.n[1] || c.n[0]) + ' (copy)']; delete c.d; openStEdit(c); break; }
+    case 'st-del': { snap(); S.stretches = (S.stretches || []).filter(x => x.id !== b.dataset.id); save(); closeAll(); render(); undoToast(T('Routine supprimée', 'Routine deleted')); break; }
+    case 'st-sides': { const it = stDraft.items[+b.dataset.i]; it.sides = !it.sides; renderStEdit(); break; }
+    case 'st-rm': stDraft.items.splice(+b.dataset.i, 1); renderStEdit(); break;
+    case 'st-add': openPicker({title: T('Ajouter un étirement', 'Add a stretch'), libOnly: true, cb: pkd => { const L = LIBMAP[pkd.lib] || libEntry(pkd.name); stDraft.items.push(SI(pkd.name, pkd.name, L ? L.name : pkd.name, 30, false)); renderStEdit(); }});
+      setTimeout(() => { const q = $('#pkq'); if (q) { q.value = 'stretch'; renderPicker(); } }, 60); break;
+    case 'st-save': { if (!stDraft.items.length) { toast(T('Ajoute au moins un étirement', 'Add at least one stretch')); break; } S.stretches = S.stretches || []; const i = S.stretches.findIndex(x => x.id === stDraft.id); if (i >= 0) S.stretches[i] = stDraft; else S.stretches.push(stDraft); save(); stDraft = null; closeAll(); render(); toast(T('🧘 Routine enregistrée', '🧘 Routine saved')); break; }
+    case 'st-pause': if (stp) { if (stp.paused) { stp.end = Date.now() + stp.paused; stp.paused = null; } else stp.paused = Math.max(0, stp.end - Date.now()); stDraw(true); } break;
+    case 'st-next': if (stp) { if (stp.i + 1 >= stp.steps.length) stFinish(); else stGoto(stp.i + 1); } break;
+    case 'st-prev': if (stp) stGoto(Math.max(0, stp.phase === 'hold' || stp.i === 0 ? stp.i : stp.i - 1)); break;
     case 'new-routine': editRoutine(null); break;
     case 'open-routine': go('routine', {rid}); break;
     case 'edit-routine': closeAll(); editRoutine(rid); break;
@@ -3887,6 +4069,7 @@ document.addEventListener('change', e => {
   const t = e.target;
   if (t.id === 'exSel') { progEx = t.value; render(); }
   if (t.id === 'bodySel') { bodyMetric = t.value; render(); }
+  if (t.dataset.set === 'stPrep') { S.settings.stPrep = +t.value; save(); render(); }
   if (['unit', 'icons', 'weekSun', 'prevMode', 'bwVol'].includes(t.dataset.set)) { bwMemo.clear(); render(); }
   if (t.dataset.rd === 'folder' && rdraft) {
     if (t.value === '__new') { const nf = (prompt('Nom du nouveau dossier :') || '').trim(); if (nf) { if (!S.folders.includes(nf)) S.folders.push(nf); rdraft.folder = nf; } render(); }
@@ -3897,6 +4080,7 @@ document.addEventListener('change', e => {
   if (t.dataset.pf === 'range') { pfWeeks = +t.value; pfSel = null; render(); }
   if (t.id === 'pltb') { S.settings.bar = +t.value; save(); renderPlates(); }
   if (t.dataset.sched !== undefined) { S.schedule[+t.dataset.sched] = t.value; save(); }
+  if (t.dataset.stsec !== undefined && stDraft) { stDraft.items[+t.dataset.stsec].sec = +t.value; renderStEdit(); }
   if (t.dataset.cycfold !== undefined && t.value) { const c = cyc(); S.routines.filter(r => (r.folder || DEF_FOLDER) === t.value).forEach(r => { if (!c.order.includes(r.id)) c.order.push(r.id); }); save(); renderSched(); }
   if (t.dataset.cycadd !== undefined && t.value) { const c = cyc(); if (!c.order.includes(t.value)) c.order.push(t.value); save(); renderSched(); }
   if (t.dataset.cycnext !== undefined) { cyc().next = {rid: t.value, at: new Date().toISOString()}; save(); renderSched(); }
