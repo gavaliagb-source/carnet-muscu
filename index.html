@@ -351,7 +351,9 @@ window.confirm = m => _cf(tr(m));
 window.prompt = (m, d) => _pr(tr(m), d == null ? d : tr(d));
 const DAYS_FR = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'], DAYS_EN = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const days = () => isEN() ? DAYS_EN : DAYS_FR;
-const wdl = () => isEN() ? ['M', 'T', 'W', 'T', 'F', 'S', 'S'] : ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+const sunFirst = () => !!(typeof S !== 'undefined' && S.settings && S.settings.weekSun);
+const wOff = d => sunFirst() ? d.getDay() : (d.getDay() + 6) % 7;
+const wdl = () => { const a = isEN() ? ['M', 'T', 'W', 'T', 'F', 'S', 'S'] : ['L', 'M', 'M', 'J', 'V', 'S', 'D']; return sunFirst() ? [a[6], ...a.slice(0, 6)] : a; };
 const BWL = () => isEN() ? 'BW' : 'PDC';
 const dec1 = v => { const s = (Math.round(v * 10) / 10).toString(); return isEN() ? s : s.replace('.', ','); };
 const dateFr = iso => new Date(iso).toLocaleDateString(LOC(), {day: 'numeric', month: 'short'});
@@ -644,6 +646,7 @@ let S = load();
 const THEMES = [['noir', 'Noir & lime', '#c6f135'], ['oled', 'Noir OLED', '#c6f135'], ['clair', 'Clair', '#1f9d55'], ['bleu', 'Bleu glace', '#4cc9f0'],
   ['hevy', 'Bleu Hevy', '#1e88ff'], ['rouge', 'Rouge', '#ff5a5f'], ['violet', 'Violet', '#b388ff'], ['orange', 'Orange', '#ff9f1c'], ['rose', 'Rose', '#ff6fae'], ['menthe', 'Menthe', '#3ee6b0'], ['or', 'Or', '#f5c542'], ['foret', 'Forêt', '#7bc96f'], ['auto', 'Auto (système)', 'linear-gradient(90deg,#f3f4f6 50%,#0f1114 50%)']];
 function applyTheme() {
+  try { document.body.style.zoom = {sm: '0.9', lg: '1.15', xl: '1.3'}[S.settings.fontScale] || ''; } catch (e) {}
   let t = S.settings.theme || 'noir';
   if (t === 'auto') t = matchMedia('(prefers-color-scheme: light)').matches ? 'clair' : 'noir';
   const de = document.documentElement;
@@ -680,6 +683,7 @@ const ACCENTS = ['#c6f135', '#1e88ff', '#4cc9f0', '#3ee6b0', '#7bc96f', '#f5c542
 const incr = () => +S.settings.inc > 0 ? +S.settings.inc : (S.settings.unit === 'kg' ? 2.5 : 5);
 /* Petits muscles (épaules, bras) : saut plus petit par défaut. Modifiable par exercice. */
 const SMALL_MUS = ['delts', 'biceps', 'triceps', 'forearms', 'abductors', 'adductors'];
+function isDB(name) { const L = typeof libEntry === 'function' ? libEntry(name) : null; return (L && L.eq === 'dumbbell') || /halt[eè]re|dumbbell/i.test(name); }
 function incFor(name) {
   const v = (S.incs || {})[norm(name)]; if (+v > 0) return +v;
   const L = typeof libEntry === 'function' ? libEntry(name) : null;
@@ -743,6 +747,13 @@ const REST_OPTS = [30, 45, 60, 90, 120, 150, 180, 240, 300];
 const work = sets => sets.filter(s => !isW(s));
 const fmtSec = v => { v = Math.round(+v || 0); return v >= 60 ? `${Math.floor(v / 60)}:${pad2(v % 60)}` : `${v} s`; };
 const TIMED_RE = /planche|plank|gainage|wall ?sit|chaise|hollow|dead ?hang|suspension/i;
+function bestFull(name) {
+  let best = null, bv = -1;
+  S.history.forEach(h => { const e = h.exercises.find(x => norm(x.name) === norm(name)); if (!e || !e.sets.length) return; const ws = work(e.sets).filter(s => s.u !== 's'); if (!ws.length) return;
+    const v = Math.max(...ws.map(s => e1rm(s.w, s.r) || (+s.r / 1000))); if (v >= bv) { bv = v; best = e.sets; } });
+  return best || lastFull(name);
+}
+const prevFor = name => S.settings.prevMode === 'best' ? bestFull(name) : lastFull(name);
 function lastFull(name) {
   for (let i = S.history.length - 1; i >= 0; i--) { const e = S.history[i].exercises.find(x => norm(x.name) === norm(name)); if (e && e.sets.length) return e.sets; }
   return null;
@@ -1107,8 +1118,9 @@ function suggestFor(e) {
   const rg = repRange(e.target.reps); if (!rg) return null;
   const [lo, hi] = rg;
   if (!last.sets.every(s => +s.r >= hi)) return null;
-  const inc = incFor(e.name);
-  const next = last.sets.map(s => ({w: Math.round(((s.w === '' || s.w == null ? 0 : +s.w) + inc) * 100) / 100}));
+  const inc = incFor(e.name), db = isDB(e.name) && +S.settings.dbStep > 0 ? +S.settings.dbStep : 0;
+  const up = w => { let x = Math.round((w + inc) * 100) / 100; if (db && w > 0) { x = Math.ceil((w + inc - 1e-9) / db) * db; if (x <= w) x = w + db; } return Math.round(x * 100) / 100; };
+  const next = last.sets.map(s => ({w: up(s.w === '' || s.w == null ? 0 : +s.w)}));
   const work0 = e.sets.filter(s => s.t !== 'W' && !s.done);
   if (!work0.length || work0.every((s, k) => +s.w === next[Math.min(k, next.length - 1)].w)) return null;
   return {next, lo, hi, top: Math.max(...next.map(x => x.w)), bw: last.sets.every(s => s.w === '' || s.w == null || +s.w === 0),
@@ -1218,7 +1230,7 @@ function finishWorkout() {
   const wasFree = !a.routineId;
   const medDefs = medalDefs(), medNew = Object.keys(medalsEarned().got).filter(k => !medBefore[k]).map(k => medDefs.find(d => d.id === k)).filter(Boolean);
   setTimeout(() => queueCloud(1500), 0);
-  S.active = null; save(); stopTimer(); setRoot('profile'); render(); setTimeout(() => confetti(prs.length ? 160 : 90), 200);
+  S.active = null; save(); stopTimer(); clearNotif(); setRoot('profile'); render(); setTimeout(() => confetti(prs.length ? 160 : 90), 200);
   modal(`<h2>Séance enregistrée 💪</h2>
     <div class="row" style="margin:10px 0"><div class="stat"><span class="muted small">Durée</span><b>${fmtDur(Date.now() - new Date(a.start))}</b></div><div class="stat"><span class="muted small">Exercices</span><b>${exercises.length}</b></div><div class="stat"><span class="muted small">Séries</span><b>${exercises.reduce((n, e) => n + work(e.sets).length, 0)}</b></div></div>
     ${prs.length ? `<div class="pr" style="margin:10px 0 4px">🏆 ${prs.length > 1 ? prs.length + ' nouveaux records' : 'Nouveau record'}!</div>${prs.map(r => `<p style="margin:4px 0">${esc(r.name)} : <span class="muted">${esc(r.from)}</span> → <b class="pr">${esc(r.to)}</b></p>`).join('')}` : ''}
@@ -1253,6 +1265,32 @@ function addExercise(pick) {
 
 /* ---------- Minuteur ---------- */
 let timerEnd = 0, timerInt = null;
+/* ===================== Notifications (cell + Galaxy Watch) ===================== */
+const notifOn = () => S.settings.notif === true && 'Notification' in window && Notification.permission === 'granted';
+function nextSetInfo() {
+  const a = S.active; if (!a) return '';
+  const i = curEx(); if (i < 0) return T('✅ Toutes les séries sont faites', '✅ All sets done');
+  const e = a.exercises[i], si = e.sets.findIndex(s => !s.done), s = e.sets[si];
+  const work = e.sets.filter(x => x.t !== 'W'), k = s.t === 'W' ? 0 : work.indexOf(s) + 1;
+  const w = s.w === '' || s.w == null ? BWL() : `${dec1(+s.w)} ${U()}`, r = s.r || s.ph || '?';
+  return `${e.name} · ${w} × ${r}${isTimed(e) ? ' s' : ''}` + (s.t === 'W' ? T(' (échauffement)', ' (warm-up)') : ` (${T('série', 'set')} ${k}/${work.length})`);
+}
+async function notify(title, body, opts = {}) {
+  if (!notifOn()) return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    await reg.showNotification(title, {body, tag: 'carnet-rest', renotify: !opts.silent, silent: !!opts.silent, icon: 'icon-192.png', badge: 'icon-192.png',
+      vibrate: opts.silent ? undefined : [300, 120, 300], timestamp: opts.ts || Date.now(), requireInteraction: false, data: {go: 'workout'}});
+  } catch (e) { try { if (!opts.silent) new Notification(title, {body, tag: 'carnet-rest', icon: 'icon-192.png'}); } catch (x) {} }
+}
+async function clearNotif() { try { const reg = await navigator.serviceWorker.ready; (await reg.getNotifications({tag: 'carnet-rest'})).forEach(n => n.close()); } catch (e) {} }
+async function askNotif() {
+  if (!('Notification' in window)) { toast(T('Notifications non disponibles sur ce navigateur', 'Notifications not available in this browser')); return false; }
+  let p = Notification.permission; if (p !== 'granted') p = await Notification.requestPermission();
+  if (p !== 'granted') { toast(T('⚠️ Autorise les notifications pour Carnet Muscu dans les réglages du téléphone', '⚠️ Allow notifications for Carnet Muscu in your phone settings')); return false; }
+  return true;
+}
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.type === 'open-workout' && S.active && cur().v !== 'workout') { closeAll(); openWorkout(); } });
 let timerFinT = null;
 let bigT = null, timerTot = 0;
 function openBigTimer() {
@@ -1274,6 +1312,7 @@ function timerBtns() {
 }
 function timerDone() {
   clearInterval(timerInt); sched = [];
+  notify(T('✅ Repos terminé', '✅ Rest over'), T('À toi : ', 'Your turn: ') + nextSetInfo());
   const el = $('#timer'); el.classList.add('show', 'fin');
   $('#tlab').textContent = T('✅ Repos terminé', '✅ Rest over'); $('#tval').textContent = '';
   const onWo = cur().v === 'workout';
@@ -1284,6 +1323,7 @@ function timerDone() {
 function startTimer(sec) {
   timerEnd = Date.now() + sec * 1000; timerTot = sec;
   timerBtns();
+  if (notifOn() && S.settings.notifStart !== false) { const t = new Date(timerEnd); notify(T(`⏱ Repos ${fmtRest(Math.round(sec))} — fin à ${t.getHours()}:${pad2(t.getMinutes())}`, `⏱ Rest ${fmtRest(Math.round(sec))} — ends at ${t.getHours()}:${pad2(t.getMinutes())}`), T('Ensuite : ', 'Next: ') + nextSetInfo(), {silent: true, ts: timerEnd}); }
   $('#timer').classList.add('show');
   scheduleBeeps(sec);
   clearInterval(timerInt); tickTimer(); timerInt = setInterval(tickTimer, 250);
@@ -1316,7 +1356,7 @@ function tickTimer() {
   $('#tval').textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
   if (left <= 0) timerDone();
 }
-function stopTimer() { clearInterval(timerInt); cancelBeeps(); clearTimeout(timerFinT); $('#timer').classList.remove('show', 'fin'); }
+function stopTimer() { clearInterval(timerInt); cancelBeeps(); clearNotif(); clearTimeout(timerFinT); $('#timer').classList.remove('show', 'fin'); }
 
 /* ===================== Vues ===================== */
 const exl = n => `<span class="exlink" data-act="exo" data-n="${esc(n)}">${esc(n)}</span>`;
@@ -1358,7 +1398,7 @@ function vWorkout() {
   const {d: dS, n: nS} = woStats(), ce = curEx();
   const prog = `<div class="wprog"><div class="row between small"><span>${ce >= 0 ? T(`Exercice ${ce + 1}/${a.exercises.length}`, `Exercise ${ce + 1}/${a.exercises.length}`) : T('✅ Tout est fait!', '✅ All done!')}</span><span class="muted">${dS}/${nS} ${T('séries', 'sets')}</span></div><div class="pbar"><div style="width:${nS ? Math.round(dS / nS * 100) : 0}%"></div></div></div>`;
   return prog + (deloadOn() ? `<div class="card" style="border-color:var(--warm);padding:10px 14px"><span class="small">🪶 Semaine de récupération : charges −${S.settings.deload.pct} %</span></div>` : '') + a.exercises.map((e, ei) => {
-    const last = lastFor(e.name), prev = lastFull(e.name), tm = isTimed(e);
+    const last = lastFor(e.name), prev = prevFor(e.name), tm = isTimed(e);
     const first = e.ss && !(a.exercises[ei - 1] && a.exercises[ei - 1].ss === e.ss);
     let wi = 0, wu = 0;
     return `<div class="card ${e.ss ? 'ss' : ''}" id="wex${ei}" ${ssSty(e)}>
@@ -1369,8 +1409,8 @@ function vWorkout() {
       ${!last ? '<div class="last">Première fois</div>' : last.note ? `<div class="last">Dernière note : ${esc(last.note)}</div>` : ''}
       ${stagBtn(e.name, ei)}
       ${e.mach ? `<div class="last">⚖️ ${T('Machine', 'Machine')} : ${dec1(e.mach.v)} ${e.mach.u} = ${dec1(e.mach.u === 'kg' ? e.mach.v * KG : e.mach.v / KG)} ${U()}</div>` : ''}
-      ${(() => { const sg = suggestFor(e); return sg ? `<div class="sug"><span>💡 Haut de la fourchette atteint (${esc(sg.from)}). Essaie <b>${dec1(sg.top)} ${U()}${sg.bw ? ' de lest' : ''}</b>.</span><span class="row" style="gap:4px;flex-direction:column"><button class="btn primary sm" data-act="apply-sug" data-e="${ei}">Appliquer</button><button class="linkbtn small" data-act="inc-menu" data-e="${ei}">+${dec1(incFor(e.name))} ${U()} ⚙️</button></span></div>` : ''; })()}
-      <div class="colhead w5"><span>#</span><span>Précédent</span><span>${U()}</span><span>${tm ? 'Sec' : 'Reps'}</span><span></span></div>
+      ${(() => { const sg = suggestFor(e); return sg ? `<div class="sug"><span>💡 Haut de la fourchette atteint (${esc(sg.from)}). Essaie <b>${dec1(sg.top)} ${U()}${sg.bw ? ' de lest' : ''}</b>.${(() => { const lw = Math.max(...e.sets.filter(s => s.t !== 'W').map(s => +s.w || 0)); return lw > 0 && (sg.top - lw) / lw > 0.1 ? `<br><span class="small muted">${T('Gros saut : vise d\'abord le bas de ta plage de reps avec la nouvelle charge.', 'Big jump: aim for the bottom of your rep range with the new weight first.')}</span>` : ''; })()}</span><span class="row" style="gap:4px;flex-direction:column"><button class="btn primary sm" data-act="apply-sug" data-e="${ei}">Appliquer</button><button class="linkbtn small" data-act="inc-menu" data-e="${ei}">${isDB(e.name) && +S.settings.dbStep > 0 ? T('haltères ', 'dumbbells ') + dec1(+S.settings.dbStep) : '+' + dec1(incFor(e.name))} ${U()} ⚙️</button></span></div>` : ''; })()}
+      <div class="colhead w5"><span>#</span><span>${S.settings.prevMode === 'best' ? T('Meilleur', 'Best') : 'Précédent'}</span><span>${U()}</span><span>${tm ? 'Sec' : 'Reps'}</span><span></span></div>
       ${e.sets.map((s, si) => {
         const k = s.t === 'W' ? wu++ : wi++;
         const running = sw && sw.ei === ei && sw.si === si;
@@ -1438,7 +1478,7 @@ function vHistory() {
 }
 function vCalendar() {
   const first = new Date(cal.y, cal.m, 1), days = new Date(cal.y, cal.m + 1, 0).getDate();
-  const lead = (first.getDay() + 6) % 7;
+  const lead = wOff(first);
   const byDay = {};
   S.history.forEach(h => { const k = dkey(h.date); (byDay[k] = byDay[k] || []).push(h); });
   const today = dkey(new Date());
@@ -1528,7 +1568,7 @@ function vRecords() {
         <div class="stat"><span class="muted small">Séances</span><b>${r.count}</b></div>`}
       </div></div>`).join('');
 }
-function weekStart(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
+function weekStart(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - wOff(x)); return x; }
 function volumeBy(from, to) {
   const out = {}, unk = {}; let sessions = 0;
   S.history.forEach(h => {
@@ -1620,6 +1660,10 @@ const setSec = (id, icon, emo, title, sub, body) => `<details class="card setsec
 function vSettings() {
   if (!cloudOn() && !vSettings.done) { vSettings.done = 1; secOpen.add('cloud'); }
   return setSec('gen', 'user', '👤', T('Général', 'General'), T('Nom, langue, objectif, navigation', 'Name, language, goal, navigation'), `
+      <label>${T('Taille du texte', 'Text size')}</label>
+      <select data-set="fontScale">${[['sm', T('Petit', 'Small')], ['', T('Normal', 'Normal')], ['lg', T('Grand', 'Large')], ['xl', T('Très grand', 'Extra large')]].map(([v, l]) => `<option value="${v}" ${(S.settings.fontScale || '') === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <label>${T('Premier jour de la semaine', 'First day of the week')}</label>
+      <select data-set="weekSun"><option value="" ${sunFirst() ? '' : 'selected'}>${T('Lundi', 'Monday')}</option><option value="1" ${sunFirst() ? 'selected' : ''}>${T('Dimanche', 'Sunday')}</option></select>
       <label>Nom affiché sur le profil</label>
       <input data-set="name" value="${esc(S.settings.name || '')}" placeholder="Ton nom">
       <label>Langue / Language</label>
@@ -1632,8 +1676,22 @@ function vSettings() {
       <select data-set="unit"><option value="lb" ${U() === 'lb' ? 'selected' : ''}>lb (mensurations en po)</option><option value="kg" ${U() === 'kg' ? 'selected' : ''}>kg (mensurations en cm)</option></select>
       <label>Repos par défaut (secondes)</label>
       <input inputmode="numeric" data-set="rest" value="${S.settings.rest}">
+      <div class="grid2"><div><label>${T('Après un échauffement', 'After a warm-up')}</label><select data-set="restWarm">${[30, 45, 60, 90, 120].map(v => `<option value="${v}" ${(+S.settings.restWarm || 45) === v ? 'selected' : ''}>${fmtRest(v)}</option>`).join('')}</select></div>
+      <div><label>${T('Après un drop set', 'After a drop set')}</label><select data-set="restDrop"><option value="">${T('Comme l\'exercice', 'Same as exercise')}</option>${[30, 60, 90, 120, 180].map(v => `<option value="${v}" ${+S.settings.restDrop === v ? 'selected' : ''}>${fmtRest(v)}</option>`).join('')}</select></div></div>
+      <label>${T('Entre les exercices d\'un superset', 'Between superset exercises')}</label>
+      <select data-set="restSS"><option value="">${T('Aucun repos (enchaîner)', 'No rest (go straight)')}</option>${[10, 15, 20, 30, 45, 60].map(v => `<option value="${v}" ${+S.settings.restSS === v ? 'selected' : ''}>${fmtRest(v)}</option>`).join('')}</select>
       <label>Augmentation de charge suggérée (${U()})</label>
       <input inputmode="decimal" data-set="inc" value="${incr()}">
+      <label>${T('Haltères de ton gym (écart entre deux haltères)', 'Your gym’s dumbbells (step between two dumbbells)')}</label>
+      <select data-set="dbStep"><option value="">${T('Pas d\'arrondi', 'No rounding')}</option>${(U() === 'kg' ? [1, 2, 2.5] : [2.5, 5]).map(v => `<option value="${v}" ${+S.settings.dbStep === v ? 'selected' : ''}>${T('De ' + dec1(v) + ' en ' + dec1(v), 'Every ' + dec1(v))} ${U()}</option>`).join('')}</select>
+      <p class="muted small" style="margin:2px 0 0">${T('Les suggestions de charge aux haltères tombent toujours sur un haltère qui existe.', 'Dumbbell weight suggestions always land on a dumbbell that exists.')}</p>
+      <label>${T('Colonne « Précédent » pendant la séance', '“Previous” column during workouts')}</label>
+      <select data-set="prevMode"><option value="">${T('Ma dernière séance', 'My last workout')}</option><option value="best" ${S.settings.prevMode === 'best' ? 'selected' : ''}>${T('Ma meilleure performance', 'My best performance')}</option></select>
+      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="bwVol" ${S.settings.bwVol !== false ? 'checked' : ''}> <span>${T('Compter mon poids de corps dans le volume (tractions, dips, pompes…)', 'Count my bodyweight in volume (pull-ups, dips, push-ups…)')}<br><span class="muted small">${S.body.some(b => +b.w > 0) ? T('Utilise ton poids dans Mesures.', 'Uses your weight from Measures.') : T('Ajoute ton poids dans Profil → Mesures pour l\'activer.', 'Add your weight in Profile → Measures to use it.')}</span></span></label>
+      <label>${T('Disques de ton gym (calculateur)', 'Your gym’s plates (calculator)')}</label>
+      <div class="chips">${PLATES_ALL[U()].map(v => { const own = (S.settings.plates || {})[U()] || PLATES[U()]; return `<button class="chip ${own.includes(v) ? 'on' : ''}" data-act="plate-tog" data-v="${v}">${dec1(v)}</button>`; }).join('')}${(S.settings.plates || {})[U()] ? `<button class="chip" data-act="plate-reset">↺</button>` : ''}</div>
+      <label>${T('Barre par défaut', 'Default bar')}</label>
+      <select data-set="bar">${(U() === 'kg' ? [20, 15, 10, 0] : [45, 35, 25, 15, 0]).map(b => `<option value="${b}" ${(S.settings.bar != null ? +S.settings.bar : (U() === 'kg' ? 20 : 45)) === b ? 'selected' : ''}>${b ? b + ' ' + U() : T('Aucune (machine)', 'None (machine)')}</option>`).join('')}</select>
       <p class="muted small" style="margin:2px 0 0">${T('Épaules et bras : +2,5 lb par défaut. Change-le par exercice avec ⚙️ dans la séance.', 'Shoulders and arms: +2.5 lb by default. Change it per exercise with ⚙️ during the workout.')}</p>
       <label class="row" style="margin-top:14px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="failDefault" ${S.settings.failDefault ? 'checked' : ''}> Séries à l'échec par défaut</label>
       <label class="row" style="margin:10px 0 4px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="stagOn" ${S.settings.stagOff ? '' : 'checked'}> ⚠️ ${T('Alertes de plateau', 'Plateau alerts')}</label>
@@ -1642,6 +1700,9 @@ function vSettings() {
       <button class="btn sm" data-act="plates-free" style="margin-top:10px">🧮 Calculateur de disques</button>`) +
   setSec('snd', 'timer', '⏱', T('Minuteur et son', 'Timer and sound'), T('Bip, volume, vibration', 'Beep, volume, vibration'), `
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="sound" ${S.settings.sound !== false ? 'checked' : ''}> 🔔 Bip à la fin du repos (3-2-1 puis bip final)</label>
+      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="notif" ${S.settings.notif === true ? 'checked' : ''}> <span>⌚ ${T('Notifications pour ma montre', 'Notifications for my watch')}<br><span class="muted small">${T('Fin du repos + prochaine série. Ta Galaxy Watch vibre et affiche la notification.', 'End of rest + next set. Your Galaxy Watch vibrates and shows the notification.')}</span></span></label>
+      ${S.settings.notif === true ? `<label class="row" style="margin-top:6px;color:var(--text);font-size:14px;padding-left:32px"><input type="checkbox" style="width:20px;height:20px" data-set="notifStart" ${S.settings.notifStart !== false ? 'checked' : ''}> ${T('Aussi au début du repos (silencieuse, avec l\'heure de fin)', 'Also at the start of rest (silent, with end time)')}</label>
+      <button class="btn sm" data-act="test-notif" style="margin-top:8px">⌚ ${T('Tester la notification (5 s)', 'Test the notification (5 s)')}</button>` : ''}
       <label>${T('Son du bip', 'Beep sound')}</label>
       <select data-set="beepSnd">${Object.entries(SOUNDS).map(([k, s]) => `<option value="${k}" ${(S.settings.beepSnd || 'classique') === k ? 'selected' : ''}>${T(s.fr, s.en)}</option>`).join('')}</select>
       <label>${T('Volume du bip', 'Beep volume')} : <b id="bvl">${S.settings.beepVol ?? 70} %</b></label>
@@ -1669,7 +1730,8 @@ function vSettings() {
         <button class="btn primary" style="flex:1" data-act="export">⬇ Exporter</button>
         <button class="btn" style="flex:1" data-act="import">⬆ Importer</button>
       </div>
-      <p class="muted small" style="margin-bottom:0">Importer accepte aussi l'export CSV de Hevy.</p>`) +
+      <p class="muted small" style="margin-bottom:0">Importer accepte aussi l'export CSV de Hevy.</p>
+      <button class="btn block" data-act="export-csv" style="margin-top:10px">📊 ${T('Exporter pour Excel / Google Sheets (CSV)', 'Export for Excel / Google Sheets (CSV)')}</button>`) +
   setSec('ai', 'spark', '🤖', T('IA et partage', 'AI and sharing'), T('Bilan pour l\'IA, envoyer l\'appli à un ami', 'AI summary, send the app to a friend'), `
       <h3>${T('Bilan pour l\'IA', 'AI summary')}</h3>
       <p class="muted small">Copie tes 30 derniers jours de séances pour demander une analyse ou des ajustements.</p>
@@ -1743,6 +1805,24 @@ function createPast() {
 }
 
 /* ===================== Import / export ===================== */
+async function exportCsv() {
+  const sep = isEN() ? ',' : ';', q = v => { const s = v == null ? '' : String(v); return /[";,\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const num = v => v === '' || v == null ? '' : (isEN() ? String(v) : String(v).replace('.', ','));
+  const head = isEN() ? ['Date', 'Time', 'Routine', 'Duration (min)', 'Exercise', 'Set', 'Type', 'Weight', 'Unit', 'Reps', 'Seconds', 'RIR', 'Set note', 'Exercise note']
+    : ['Date', 'Heure', 'Routine', 'Durée (min)', 'Exercice', 'Série', 'Type', 'Charge', 'Unité', 'Réps', 'Secondes', 'RIR', 'Note série', 'Note exercice'];
+  const TY = {W: T('Échauffement', 'Warm-up'), F: T('Échec', 'Failure'), D: 'Drop set'};
+  const rows = [head.join(sep)];
+  S.history.slice().sort((a, b) => a.date.localeCompare(b.date)).forEach(h => {
+    const d = new Date(h.date), ds = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`, ts = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+    h.exercises.forEach(e => { let k = 0; e.sets.forEach(s => { const n = s.t === 'W' ? 'W' : ++k;
+      rows.push([ds, ts, h.routineName, h.duration, e.name, n, TY[s.t] || T('Normale', 'Normal'), num(s.w), U(), s.u === 's' ? '' : s.r, s.u === 's' ? s.r : '', s.rir ?? '', s.n || '', e.note || ''].map(q).join(sep)); }); });
+  });
+  const name = `carnet-muscu-${new Date().toISOString().slice(0, 10)}.csv`;
+  const file = new File(['﻿' + rows.join('\r\n')], name, {type: 'text/csv'});
+  if (navigator.canShare && navigator.canShare({files: [file]})) { try { await navigator.share({files: [file], title: name}); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast(T(`✅ ${rows.length - 1} séries exportées`, `✅ ${rows.length - 1} sets exported`));
+}
 async function exportData() {
   const data = JSON.stringify({...S, active: null, exportedAt: new Date().toISOString()}, null, 1);
   const name = `carnet-muscu-${new Date().toISOString().slice(0, 10)}.json`;
@@ -2095,10 +2175,12 @@ function openDeload() {
 
 /* ---------- Calculateur de disques ---------- */
 const PLATES = {lb: [45, 35, 25, 10, 5, 2.5], kg: [25, 20, 15, 10, 5, 2.5, 1.25]};
+const PLATES_ALL = {lb: [55, 45, 35, 25, 15, 10, 5, 2.5, 1.25], kg: [25, 20, 15, 10, 5, 2.5, 2, 1.25, 1, 0.5]};
 function platesFor(total, bar) {
   let side = (total - bar) / 2; const out = [];
   if (side < 0) return {out, rest: 0, under: true};
-  for (const pl of PLATES[U()]) while (side >= pl - 1e-9) { out.push(pl); side = Math.round((side - pl) * 1000) / 1000; }
+  const own = (S.settings.plates || {})[U()], list = own && own.length ? PLATES_ALL[U()].filter(x => own.includes(x)) : PLATES[U()];
+  for (const pl of list) while (side >= pl - 1e-9) { out.push(pl); side = Math.round((side - pl) * 1000) / 1000; }
   return {out, rest: Math.round(side * 2 * 100) / 100};
 }
 function openPlates(w) {
@@ -2118,7 +2200,7 @@ function renderPlates() {
   box.innerHTML = under ? `<p class="muted">C'est moins que la barre (${bar} ${U()}).</p>` :
     `<p style="margin:0 0 8px"><b>De chaque côté :</b> ${out.length ? out.join(' + ') + ' ' + U() : 'rien, la barre seule'}</p>
      <div class="pltviz"><span class="sleeve"></span>${out.map(pl => `<span class="plate" style="height:${Math.round(34 + pl / big * 76)}px">${pl}</span>`).join('')}</div>
-     ${rest > 0.001 ? `<p class="small" style="color:var(--warm)">⚠️ Impossible exactement : il manque ${rest} ${U()} avec les disques standards.</p>` : ''}`;
+     ${rest > 0.001 ? `<p class="small" style="color:var(--warm)">⚠️ Impossible exactement : il manque ${rest} ${U()} avec ${(S.settings.plates || {})[U()] ? T('les disques de ton gym', 'your gym’s plates') : T('les disques standards', 'standard plates')}.</p>` : ''}`;
 }
 
 /* ---------- Horaire de la semaine ---------- */
@@ -2412,7 +2494,11 @@ function saveAsRoutine(hid) {
 /* ---------- Page d'une routine ---------- */
 let rtMetric = 'vol';
 const routineSessions = r => S.history.filter(h => h.routineId === r.id || norm(h.routineName) === norm(r.name));
-const sessVol = h => h.exercises.reduce((t, e) => t + work(e.sets).reduce((a, s) => a + (s.u === 's' ? 0 : (+s.w || 0) * (+s.r || 0)), 0), 0);
+const BW_RE = /traction|\bdips?\b|pull.?up|chin.?up|pompe|push.?up|muscle.?up|inverted row|rowing invers/i;
+const bwMemo = new Map();
+function isBWEx(name) { const k = norm(name); if (!bwMemo.has(k)) { const L = libEntry(name); bwMemo.set(k, (L && ['body weight', 'weighted'].includes(L.eq)) || BW_RE.test(name)); } return bwMemo.get(k); }
+function bwAt(iso) { if (S.settings.bwVol === false || !S.body.length) return 0; const d = String(iso).slice(0, 10); let v = 0; for (const b of S.body.slice().sort((a, c) => a.d.localeCompare(c.d))) { if (b.d <= d && +b.w > 0) v = +b.w; } return v || (+S.body.filter(b => +b.w > 0).sort((a, c) => a.d.localeCompare(c.d))[0]?.w || 0); }
+const sessVol = h => { let bw = null; return h.exercises.reduce((t, e) => { const add = isBWEx(e.name) ? (bw ?? (bw = bwAt(h.date))) : 0; return t + work(e.sets).reduce((a, s) => a + (s.u === 's' ? 0 : ((+s.w || 0) + add) * (+s.r || 0)), 0); }, 0); };
 const sessReps = h => h.exercises.reduce((t, e) => t + work(e.sets).reduce((a, s) => a + (s.u === 's' ? 0 : (+s.r || 0)), 0), 0);
 function routinePoints(r) {
   return routineSessions(r).map(h => ({d: h.date, v: rtMetric === 'vol' ? sessVol(h) : rtMetric === 'reps' ? sessReps(h) : (+h.duration || 0)}));
@@ -3257,7 +3343,7 @@ function vCal2() {
   const now = new Date(), today = dkey(now);
   for (let i = calMonths - 1; i >= 0; i--) {
     const first = new Date(now.getFullYear(), now.getMonth() - i, 1), Y = first.getFullYear(), M = first.getMonth();
-    const days = new Date(Y, M + 1, 0).getDate(), lead = (first.getDay() + 6) % 7;
+    const days = new Date(Y, M + 1, 0).getDate(), lead = wOff(first);
     h += `<h3 class="mtitle">${first.toLocaleDateString(LOC(), {month: 'long', year: 'numeric'})}</h3><div class="cal2">`;
     for (let j = 0; j < lead; j++) h += '<div></div>';
     for (let d = 1; d <= days; d++) {
@@ -3463,6 +3549,7 @@ document.addEventListener('click', e => {
   switch (act) {
     case 'start': startWorkout(rid); break;
     case 'back': back(); break;
+    case 'test-notif': { toast(T('⌚ Notification dans 5 s : éteins l\'écran ou regarde ta montre', '⌚ Notification in 5 s: turn off the screen or look at your watch')); setTimeout(() => notify(T('✅ Repos terminé (test)', '✅ Rest over (test)'), T('À toi : Développé couché · 185 lb × 8 (série 2/3)', 'Your turn: Bench press · 185 lb × 8 (set 2/3)')), 5000); break; }
     case 'test-beep': ensureAudio(); setTimeout(() => beep(true), 60); break;
     case 'test-lock': ensureAudio(); startTimer(10); toast('🔒 Éteins l\'écran maintenant : bip dans 10 s'); break;
     case 'ss-pick': { const {list, ei: i0, onDone} = ssCtx; const nl = ssJoin(list, i0, +b.dataset.j); closeModal(); onDone(nl); toast('⛓ Superset créé'); break; }
@@ -3578,7 +3665,8 @@ document.addEventListener('click', e => {
       if (s.pr) { confetti(); toast(T(`🏆 Nouveau record! ${s.w || BWL()}×${s.r}`, `🏆 New record! ${s.w || BWL()}×${s.r}`)); if (S.settings.sound !== false) { ensureAudio(); setTimeout(() => beep(true), 30); } if (navigator.vibrate) navigator.vibrate([80, 60, 80, 60, 200]); }
       if (s.done) {
         const inSS = e.ss && A.exercises[ei + 1] && A.exercises[ei + 1].ss === e.ss;
-        if (!inSS && +e.rest !== -1) startTimer(s.t === 'W' ? 45 : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)));
+        if (inSS) { if (+S.settings.restSS > 0) startTimer(+S.settings.restSS); }
+        else if (+e.rest !== -1) startTimer(s.t === 'W' ? (+S.settings.restWarm > 0 ? +S.settings.restWarm : 45) : s.t === 'D' && +S.settings.restDrop > 0 ? +S.settings.restDrop : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)));
       }
       break;
     }
@@ -3586,7 +3674,7 @@ document.addEventListener('click', e => {
     case 'add-warm': { const st = A.exercises[ei].sets; st.unshift({w: '', r: '', done: false, ph: '10', t: 'W'}); save(); render(); break; }
     case 'rm-set': A.exercises[ei].sets.pop(); save(); render(); break;
     case 'use-prev': {
-      const e = A.exercises[ei], s = e.sets[si], prev = lastFull(e.name); if (!prev) break;
+      const e = A.exercises[ei], s = e.sets[si], prev = prevFor(e.name); if (!prev) break;
       const list = s.t === 'W' ? prev.filter(x => x.t === 'W') : prev.filter(x => x.t !== 'W');
       const k = e.sets.slice(0, si).filter(x => (x.t === 'W') === (s.t === 'W')).length, pv = list[k]; if (!pv) break;
       s.w = pv.w === '' || pv.w == null ? '' : pv.w; s.r = String(pv.r); save(); render(); break;
@@ -3715,6 +3803,9 @@ document.addEventListener('click', e => {
 
     /* réglages */
     case 'export': exportData(); break;
+    case 'export-csv': exportCsv(); break;
+    case 'plate-tog': { const u = U(), own = (S.settings.plates = S.settings.plates || {})[u] || PLATES[u].slice(), v = +b.dataset.v; S.settings.plates[u] = own.includes(v) ? own.filter(x => x !== v) : [...own, v]; save(); render(); break; }
+    case 'plate-reset': if (S.settings.plates) delete S.settings.plates[U()]; save(); render(); break;
     case 'import': $('#fileIn').click(); break;
     case 'reset': if (confirm('Effacer TOUTES tes données? Exporte d\'abord si tu veux les garder.')) { S = migrate(seed()); save(); setRoot('train'); render(); } break;
   }
@@ -3734,9 +3825,11 @@ document.addEventListener('input', e => {
   if (t.dataset.exnote !== undefined && S.active) { S.active.exercises[+t.dataset.exnote].note = t.value; }
   if (t.dataset.set) {
     if (t.dataset.set === 'stagOn') S.settings.stagOff = !t.checked;
+    else if (t.dataset.set === 'notif') { if (t.checked) { askNotif().then(ok => { S.settings.notif = ok; save(); render(); if (ok) toast(T('⌚ Notifications activées', '⌚ Notifications on')); }); return; } S.settings.notif = false; save(); render(); return; }
     else if (t.type === 'checkbox') { S.settings[t.dataset.set] = t.checked; if (t.dataset.set === 'wake') syncWake(); }
     else if (t.dataset.set === 'inc') { const v = parseFloat(t.value.replace(',', '.')); if (v > 0) S.settings.inc = v; else delete S.settings.inc; }
-    else S.settings[t.dataset.set] = t.dataset.set === 'rest' ? (parseInt(t.value, 10) || 150) : t.dataset.set === 'goal' ? +t.value : t.value;
+    else S.settings[t.dataset.set] = t.dataset.set === 'rest' ? (parseInt(t.value, 10) || 150) : ['goal', 'bar', 'restWarm'].includes(t.dataset.set) ? +t.value : t.dataset.set === 'weekSun' ? !!t.value : t.value;
+    if (t.dataset.set === 'fontScale') applyTheme();
     save();
     if (t.dataset.set === 'lang') { setTimeout(() => location.reload(), 150); return; }
   }
@@ -3761,7 +3854,7 @@ document.addEventListener('change', e => {
   const t = e.target;
   if (t.id === 'exSel') { progEx = t.value; render(); }
   if (t.id === 'bodySel') { bodyMetric = t.value; render(); }
-  if (t.dataset.set === 'unit' || t.dataset.set === 'icons') render();
+  if (['unit', 'icons', 'weekSun', 'prevMode', 'bwVol'].includes(t.dataset.set)) { bwMemo.clear(); render(); }
   if (t.dataset.rd === 'folder' && rdraft) {
     if (t.value === '__new') { const nf = (prompt('Nom du nouveau dossier :') || '').trim(); if (nf) { if (!S.folders.includes(nf)) S.folders.push(nf); rdraft.folder = nf; } render(); }
     else rdraft.folder = t.value;
@@ -3809,6 +3902,7 @@ render();
 { const q = new URLSearchParams(location.search).get('go');
   if (q) {
     try { history.replaceState(null, '', location.pathname); } catch (e) {}
+    if (q === 'workout' && S.active) openWorkout();
     if (q === 'today') { if (S.active) openWorkout(); else { const r = schedR(dayIdx(new Date())); if (r) startWorkout(r.id); else toast("Rien de prévu aujourd'hui dans ton horaire"); } }
     else if (q === 'empty') startEmpty();
     else if (q === 'profile') { setRoot('profile'); render(); }

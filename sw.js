@@ -12,3 +12,12 @@ self.addEventListener('fetch', e => {
     const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r;
   }).catch(() => caches.match(e.request).then(r => r || caches.match('./index.html'))));
 });
+// Toucher une notification (cell ou montre) ramène à l'appli, sur la séance
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({type: 'window', includeUncontrolled: true}).then(cs => {
+    const c = cs.find(x => 'focus' in x);
+    if (c) { c.postMessage({type: 'open-workout'}); return c.focus(); }
+    return self.clients.openWindow('./?go=workout');
+  }));
+});
