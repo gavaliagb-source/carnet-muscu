@@ -2272,7 +2272,7 @@ function renderSched() {
       <label>${T('Jours d\'entraînement', 'Training days')} (${c.days.filter(Boolean).length}/7)</label>
       <div class="chips">${days().map((d, i) => `<button class="chip ${c.days[i] ? 'on' : ''}" data-act="cyc-day" data-i="${i}">${d.slice(0, 3)}</button>`).join('')}</div>
       <label>${T('Ordre du cycle', 'Cycle order')}</label>
-      ${rs.length ? rs.map((r, i) => `<div class="row between cycrow"><span><b class="muted">${i + 1}.</b> ${esc(r.name)}</span><span class="row" style="gap:4px"><button class="btn sm" data-act="cyc-mv" data-i="${i}" data-d="-1" ${i ? '' : 'disabled'}>↑</button><button class="btn sm" data-act="cyc-mv" data-i="${i}" data-d="1" ${i < rs.length - 1 ? '' : 'disabled'}>↓</button><button class="btn sm" data-act="cyc-rm" data-i="${i}">✕</button></span></div>`).join('') : `<p class="muted small">${T('Aucune routine. Ajoute un dossier ou des routines ci-dessous.', 'No routines yet. Add a folder or routines below.')}</p>`}
+      ${rs.length ? `<div id="cycbox">${rs.map((r, i) => `<div class="reo" data-i="${i}"><span class="handle" aria-label="${T('Glisser', 'Drag')}">≡</span><b class="muted" style="width:20px">${i + 1}.</b><span class="reon">${esc(r.name)}</span><button class="reodel" data-act="cyc-rm" data-i="${i}" aria-label="${T('Retirer', 'Remove')}">−</button></div>`).join('')}</div><p class="muted small" style="margin:4px 0 0">${T('Glisse ≡ pour changer l\'ordre. Touche − pour retirer.', 'Drag ≡ to change the order. Tap − to remove.')}</p>` : `<p class="muted small">${T('Aucune routine. Ajoute un dossier ou des routines ci-dessous.', 'No routines yet. Add a folder or routines below.')}</p>`}
       <div class="grid2" style="margin-top:8px">
         <select data-cycfold><option value="">📁 ${T('Ajouter un dossier…', 'Add a folder…')}</option>${folders().map(f => `<option value="${esc(f)}">${esc(f)}</option>`).join('')}</select>
         <select data-cycadd><option value="">＋ ${T('Ajouter une routine…', 'Add a routine…')}</option>${S.routines.map(r => `<option value="${r.id}">${esc(r.name)}</option>`).join('')}</select>
@@ -2284,6 +2284,7 @@ function renderSched() {
   }
   h += `<button class="btn primary block" data-act="close" style="margin-top:14px">OK</button>`;
   box.innerHTML = h; try { iconize(box); } catch (e) {}
+  const cb = $('#cycbox'); if (cb) makeSortable(cb, box.closest('.sheet'), order => { const ids = cycRs().map(r => r.id); S.cycle.order = order.map(i => ids[i]); save(); renderSched(); });
 }
 function schedTxt() {
   if (cycleOn()) { const c = S.cycle; return T(`\n\nJe fais un cycle en rotation : ${cycRs().map(r => r.name).join(' → ')}, puis je recommence, sur mes jours d'entraînement (${days().filter((d, i) => c.days[i]).join(', ').toLowerCase()}). Repos les autres jours.`, `\n\nI follow a rotating cycle: ${cycRs().map(r => r.name).join(' → ')}, then repeat, on my training days (${days().filter((d, i) => c.days[i]).join(', ')}). Rest on the other days.`); }
@@ -2340,6 +2341,38 @@ function openReorder(list, onDone) {
     const rest = items.filter(x => x !== item);
     if (to >= rest.length) box.appendChild(item); else box.insertBefore(item, rest[to]);
     d = null;
+  };
+  box.addEventListener('pointerup', end); box.addEventListener('pointercancel', end);
+}
+/* Glisser-déposer réutilisable (même geste que « Réorganiser ») */
+function makeSortable(box, scroller, onEnd) {
+  let d = null;
+  const shift = () => d.items.forEach((it, k) => { if (k === d.from) return; let s = 0; if (d.from < k && k <= d.to) s = -d.h; else if (d.to <= k && k < d.from) s = d.h; it.style.transform = s ? `translateY(${s}px)` : ''; });
+  box.addEventListener('pointerdown', e => {
+    const hd = e.target.closest('.handle'); if (!hd) return;
+    const item = hd.closest('.reo'), items = [...box.querySelectorAll('.reo')], rects = items.map(x => x.getBoundingClientRect());
+    d = {item, items, rects, from: items.indexOf(item), to: items.indexOf(item), y0: e.clientY, s0: scroller.scrollTop, h: rects[items.indexOf(item)].height};
+    items.forEach(x => { if (x !== item) x.style.transition = 'transform .18s ease'; });
+    item.classList.add('dragging'); try { hd.setPointerCapture(e.pointerId); } catch (x) {}
+    if (navigator.vibrate) navigator.vibrate(12); e.preventDefault();
+  });
+  box.addEventListener('pointermove', e => {
+    if (!d) return;
+    const sr = scroller.getBoundingClientRect();
+    if (e.clientY > sr.bottom - 50) scroller.scrollTop += 8; else if (e.clientY < sr.top + 50) scroller.scrollTop -= 8;
+    const dy = e.clientY - d.y0 + (scroller.scrollTop - d.s0);
+    d.item.style.transform = `translateY(${dy}px) scale(1.02)`;
+    const c = d.rects[d.from].top + d.h / 2 + dy; let to = 0;
+    d.rects.forEach((r, k) => { if (k !== d.from && c > r.top + r.height / 2) to++; });
+    if (to !== d.to) { d.to = to; shift(); if (navigator.vibrate) navigator.vibrate(5); }
+    e.preventDefault();
+  });
+  const end = () => {
+    if (!d) return;
+    const {item, items, from, to} = d; d = null;
+    items.forEach(x => { x.style.transition = ''; x.style.transform = ''; }); item.classList.remove('dragging');
+    const order = items.map((x, i) => i); order.splice(from, 1); order.splice(to, 0, from);
+    if (from !== to) onEnd(order);
   };
   box.addEventListener('pointerup', end); box.addEventListener('pointercancel', end);
 }
