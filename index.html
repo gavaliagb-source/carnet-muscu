@@ -1716,6 +1716,7 @@ function vSettings() {
       <select data-set="fontScale">${[['sm', T('Petit', 'Small')], ['', T('Normal', 'Normal')], ['lg', T('Grand', 'Large')], ['xl', T('Très grand', 'Extra large')]].map(([v, l]) => `<option value="${v}" ${(S.settings.fontScale || '') === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
       <label>${T('Premier jour de la semaine', 'First day of the week')}</label>
       <select data-set="weekSun"><option value="" ${sunFirst() ? '' : 'selected'}>${T('Lundi', 'Monday')}</option><option value="1" ${sunFirst() ? 'selected' : ''}>${T('Dimanche', 'Sunday')}</option></select>
+      <button class="btn block" data-act="news" style="margin:12px 0 4px">🆕 ${T('Nouveautés', 'What\'s new')} <span class="muted small">· v${APP_VERSION}</span></button>
       <label>Nom affiché sur le profil</label>
       <input data-set="name" value="${esc(S.settings.name || '')}" placeholder="Ton nom">
       <label>Langue / Language</label>
@@ -1794,7 +1795,7 @@ function vSettings() {
       <p class="muted small" style="margin:4px 0 8px">Envoie le lien et les instructions à un ami. Chacun garde ses propres données sur son téléphone.</p>
       <button class="btn block" data-act="share-app">📤 Envoyer l'appli à un ami</button>`) +
   setSec('data', 'trash', '🗑', T('Données', 'Data'), T('Tout effacer', 'Erase everything'), `<p class="muted small">${T('Efface toutes tes séances, routines et mesures de ce téléphone. Exporte d\'abord si tu veux les garder.', 'Erases all your workouts, routines and measurements from this phone. Export first if you want to keep them.')}</p><button class="btn danger block" data-act="reset">Tout effacer</button>`) +
-  `<p class="muted small" style="text-align:center">Carnet Muscu · ${S.history.length} séances · ${S.routines.length} routines<br>Animations © Gym visual · base exercises-dataset</p>`;
+  `<p class="muted small" style="text-align:center">Carnet Muscu v${APP_VERSION} · ${S.history.length} séances · ${S.routines.length} routines<br>Animations © Gym visual · base exercises-dataset</p>`;
 }
 
 /* ===================== Éditeur de séance passée ===================== */
@@ -3798,6 +3799,37 @@ function doImport() {
   window._imp = null; save(); closeAll(); render(); toast(msg);
 }
 
+
+/* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
+const APP_VERSION = '7.3';
+const CHANGELOG = [
+  {v: '7.3', d: '2026-11-04', fr: ['🆕 Ce message! À chaque mise à jour, l\'appli te montre ce qui a changé.', 'Tu peux revoir toutes les nouveautés dans Réglages → Général → Nouveautés.'],
+    en: ['🆕 This message! After each update, the app shows you what changed.', 'You can see all updates in Settings → General → What\'s new.']},
+  {v: '7.2.1', d: '2026-11-04', fr: ['📤 Partager sans tes charges : ton ami reçoit « ? » et son appli reprend ses propres poids.'], en: ['📤 Share without your weights: your friend gets “?” and their app uses their own weights.']},
+  {v: '7.2', d: '2026-11-04', fr: ['📤 Le partage avec un ami se fait en texte à copier-coller (Programme IA → Coller un programme).', '📥 Bouton « Coller » dans Intervalles et Étirements pour ajouter ce qu\'un ami t\'envoie.'],
+    en: ['📤 Sharing with a friend is now copy-paste text (AI program → Paste a program).', '📥 “Paste” button in Intervals and Stretching to add what a friend sends you.']},
+  {v: '7.1', d: '2026-11-04', fr: ['⏱ Les durées s\'affichent en heures (1 h 20).', '✍️ Toucher une case de chiffre sélectionne tout pour écrire directement.', '📤 Partager un dossier ou une routine à un ami.'],
+    en: ['⏱ Durations shown in hours (1 h 20).', '✍️ Tapping a number box selects it so you can type right away.', '📤 Share a folder or a routine with a friend.']},
+  {v: '7.0', d: '2026-11-04', fr: ['⏱ Nouvel éditeur d\'intervalles : blocs avec répétitions, étapes en temps ou en réps, couleurs.', '📱 Onglets Étirements et Intervalles dans le menu du bas.'],
+    en: ['⏱ New interval editor: blocks with repetitions, time or rep steps, colors.', '📱 Stretching and Intervals tabs in the bottom menu.']},
+  {v: '6.7', d: '2026-11-04', fr: ['🎯 Réglage « Intensité de tes séries » (à l\'échec, 1-2 RIR, normal) pris en compte par l\'IA.', '👋 Écran de bienvenue pour les nouveaux.', '🤖 L\'IA donne toujours des plages de reps et peut nommer le dossier.'],
+    en: ['🎯 “How hard you train” setting (failure, 1-2 RIR, normal) used by the AI.', '👋 Welcome screen for new users.', '🤖 The AI always gives rep ranges and can name the folder.']},
+  {v: '6.6', d: '2026-11-03', fr: ['🧘 Section Étirements avec routines guidées et minuteur.'], en: ['🧘 Stretching section with guided routines and timer.']}];
+const verCmp = (a, b) => { const x = String(a).split('.').map(Number), y = String(b).split('.').map(Number); for (let i = 0; i < 3; i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d; } return 0; };
+function openNews(all) {
+  const seen = S.settings.seenVer, list = all || !seen ? CHANGELOG : CHANGELOG.filter(c => verCmp(c.v, seen) > 0);
+  modal(`<div class="row between"><h2>🆕 ${all ? T('Nouveautés', 'What\'s new') : T('Mise à jour ' + APP_VERSION, 'Update ' + APP_VERSION)}</h2><button class="btn sm" data-act="close">✕</button></div>
+    ${all ? '' : `<p class="muted small" style="margin:2px 0 8px">${T('Voici ce qui a changé depuis ta dernière visite :', 'Here\'s what changed since your last visit:')}</p>`}
+    ${(all ? list : list.slice(0, 5)).map(c => `<div class="card" style="margin:8px 0"><div class="row between"><b>${T('Version', 'Version')} ${c.v}</b><span class="muted small">${new Date(c.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'short'})}</span></div>
+      <ul style="margin:6px 0 0;padding-left:18px">${(isEN() ? c.en : c.fr).map(x => `<li style="margin:4px 0">${esc(x)}</li>`).join('')}</ul></div>`).join('')}
+    <button class="btn primary block" data-act="close" style="margin-top:6px">${T('Super!', 'Great!')}</button>`, {onclose: () => { S.settings.seenVer = APP_VERSION; saveLocal(); }});
+}
+function checkNews() {
+  if (!S.settings.onboarded) { S.settings.seenVer = APP_VERSION; saveLocal(); return; }
+  if (!S.settings.seenVer) { S.settings.seenVer = '7.2.1'; }
+  if (verCmp(APP_VERSION, S.settings.seenVer) > 0) setTimeout(() => { if (!modals.length) openNews(false); else S.settings.seenVer = APP_VERSION; }, 700);
+}
+
 /* ---------- Calendrier façon Hevy ---------- */
 let calMonths = 6;
 function vCal2() {
@@ -4057,6 +4089,7 @@ document.addEventListener('click', e => {
       break; }
     case 'st-share': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); if (rt) { const c = JSON.parse(JSON.stringify(rt)); delete c.id; shareItem('s', [c], T(rt.n[0], rt.n[1] || rt.n[0])); } break; }
     case 'imp-ok': doImport(); break;
+    case 'news': openNews(true); break;
     case 'pcode': openPasteCode(b.dataset.k); break;
     case 'pcode-ok': pasteCodeOk(); break;
     case 'pcode-clip': navigator.clipboard.readText().then(t => { $('#pcode').value = t; }).catch(() => toast(T('Colle avec un appui long dans la case', 'Long-press the box to paste'))); break;
@@ -4457,6 +4490,7 @@ function openWelcome() {
     <button class="btn primary block" data-act="wl-ok" style="margin-top:14px">${T('C\'est parti!', 'Let\'s go!')}</button>`, {id: 'welcome', onclose: () => { S.settings.onboarded = true; save(); setTimeout(checkImport, 250); }});
 }
 if (!S.settings.onboarded) setTimeout(openWelcome, 300);
+checkNews();
 if (S.settings.onboarded) setTimeout(checkImport, 450);
 window.addEventListener('hashchange', checkImport);
 { const bad = brokenImports(); if (bad.length) modal(`<h2>🛠️ Dates de séances à réparer</h2>
