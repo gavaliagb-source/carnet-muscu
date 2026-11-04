@@ -2080,9 +2080,18 @@ function openFolderMenu(f) {
     <p class="muted small" style="margin:2px 0 6px">${T("Le collage touche seulement les routines de ce dossier : les autres dossiers ne changent pas.", 'Pasting only touches the routines in this folder: other folders stay unchanged.')}</p>
     ${n ? `<button class="btn block" data-act="share-f" data-f="${esc(f)}">📤 ${T('Partager le dossier à un ami', 'Share the folder with a friend')}</button>` : ''}
     <button class="btn block" data-act="rename-folder" data-f="${esc(f)}">✏️ Renommer</button>
+    ${folders().length > 1 ? `<button class="btn block" data-act="fold-reo">↕ ${T('Changer l\'ordre des dossiers', 'Reorder folders')}</button>` : ''}
     <button class="btn danger block" data-act="del-folder" data-f="${esc(f)}">Supprimer le dossier</button>
     <button class="btn block" data-act="close">Annuler</button></div>
     <p class="muted small">Supprimer un dossier déplace ses routines dans « ${DEF_FOLDER} ».</p>`);
+}
+function openFolderReo() {
+  const fs = folders();
+  const m = modal(`<div class="row between"><h2>↕ ${T('Ordre des dossiers', 'Folder order')}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <p class="muted small">${T('Glisse ≡ pour changer l\'ordre.', 'Drag ≡ to change the order.')}</p>
+    <div id="foldbox">${fs.map((f, i) => `<div class="reo" data-i="${i}">${IC('folder', '📁', 20)}<span class="reon">${esc(f)} <span class="muted small">(${S.routines.filter(r => (r.folder || DEF_FOLDER) === f).length})</span></span><span class="handle" aria-label="${T('Glisser', 'Drag')}">≡</span></div>`).join('')}</div>
+    <button class="btn primary block" data-act="close" style="margin-top:14px">${T('Terminé', 'Done')}</button>`);
+  makeSortable(m.querySelector('#foldbox'), m.querySelector('.sheet'), order => { S.folders = order.map(i => fs[i]); save(); render(); closeModal(); openFolderReo(); });
 }
 function renameFolder(f) {
   const n = (prompt('Nouveau nom du dossier :', f) || '').trim();
@@ -3472,6 +3481,8 @@ const ST_PRESETS = [
     SI('Haut du dos', 'Upper back', 'Upper Back Stretch', 30)]}];
 const stLib = lib => { const id = LIBBYNAME[norm(lib)] || libId(lib); return id ? LIBMAP[id] : null; };
 const stName = it => T(it.n[0], it.n[1] || it.n[0]);
+const hidPre = () => (S.settings.hidePre = S.settings.hidePre || []);
+const stPre = () => ST_PRESETS.filter(x => !hidPre().includes(x.id));
 const stAll = () => [...ST_PRESETS, ...(S.stretches || [])];
 const stPrep = () => +S.settings.stPrep > 0 ? +S.settings.stPrep : 5;
 const stDur = rt => rt.items.reduce((t, it) => t + it.sec * (it.sides ? 2 : 1) + stPrep() + (it.sides ? 3 : 0), 0);
@@ -3485,9 +3496,10 @@ function vStretch() {
   return `<div class="card"><div class="row between"><span>🧘 ${T('Cette semaine', 'This week')}</span><b>${wk.length} ${T('séance' + (wk.length > 1 ? 's' : ''), 'session' + (wk.length !== 1 ? 's' : ''))} · ${fmtMin(wk.reduce((t, x) => t + (+x.sec || 0), 0))}</b></div>
       <label>${T('Préparation entre deux étirements', 'Prep time between stretches')}</label>
       <select data-set="stPrep">${[3, 5, 10, 15].map(v => `<option value="${v}" ${stPrep() === v ? 'selected' : ''}>${v} s</option>`).join('')}</select></div>
-    <p class="muted" style="margin:16px 0 8px">${T('Routines prêtes', 'Ready-made routines')}</p>${ST_PRESETS.map(rt => card(rt)).join('')}
+    ${stPre().length ? `<p class="muted" style="margin:16px 0 8px">${T('Routines prêtes', 'Ready-made routines')}</p>${stPre().map(rt => card(rt)).join('')}` : ''}
     <div class="row between" style="margin:16px 0 8px"><p class="muted" style="margin:0">${T('Mes routines d\'étirement', 'My stretching routines')}</p><span class="row" style="gap:6px"><button class="btn sm" data-act="pcode" data-k="s">📥 ${T('Coller', 'Paste')}</button><button class="btn sm" data-act="st-new">＋ ${T('Créer', 'Create')}</button></span></div>
-    ${(S.stretches || []).length ? S.stretches.map(rt => card(rt, true)).join('') : `<p class="muted small">${T('Crée ta propre routine, ou copie une routine prête avec son menu ⋯ pour la modifier.', 'Create your own routine, or copy a ready-made one with its ⋯ menu to edit it.')}</p>`}`;
+    ${(S.stretches || []).length ? S.stretches.map(rt => card(rt, true)).join('') : `<p class="muted small">${T('Crée ta propre routine, ou copie une routine prête avec son menu ⋯ pour la modifier.', 'Create your own routine, or copy a ready-made one with its ⋯ menu to edit it.')}</p>`}
+    ${stPre().length < ST_PRESETS.length ? `<button class="btn sm ghost block" data-act="pre-restore" data-k="s" style="margin-top:14px">↺ ${T('Remettre les routines prêtes supprimées', 'Restore deleted ready-made routines')}</button>` : ''}`;
 }
 /* ----- Éditeur ----- */
 let stDraft = null;
@@ -3594,6 +3606,7 @@ const TM_PRESETS = [
   {id: 't_tempo', n: ['Tempo : 4 s descente × 12', 'Tempo: 4 s down × 12'], prep: 5, rounds: 12, skipLast: false, cool: 0, steps: [TMS(['Descends', 'Lower'], 4, '#0a8f45'), TMS(['Monte', 'Lift'], 1, '#c99a06')]},
   {id: 't_plank', n: ['Gainage 3 × 45 s', 'Plank 3 × 45 s'], prep: 10, rounds: 3, skipLast: true, cool: 0, steps: [TMS(['Gainage', 'Plank'], 45, '#13917e'), TMS(['Repos', 'Rest'], 30, '#1e7ad3')]}];
 const tmAll = () => [...(S.timers || []), ...TM_PRESETS];
+const tmPre = () => TM_PRESETS.filter(x => !hidPre().includes(x.id));
 const tmN = x => Array.isArray(x.n) ? T(x.n[0], x.n[1] || x.n[0]) : x.n;
 /* Un minuteur = des blocs. Chaque bloc a un nombre de répétitions et des étapes (en temps ou en réps). */
 function tmBlocks(t) {
@@ -3629,7 +3642,8 @@ function tmCard(t) {
 function vTimers() {
   return `<div class="row between" style="margin:0 0 10px"><p class="muted" style="margin:0">${T('Minuteurs d\'intervalles : travail, repos, tempo, tabata…', 'Interval timers: work, rest, tempo, tabata…')}</p><span class="row" style="gap:6px"><button class="btn sm" data-act="pcode" data-k="t">📥 ${T('Coller', 'Paste')}</button><button class="btn sm" data-act="tm-new">＋ ${T('Créer', 'Create')}</button></span></div>
     ${(S.timers || []).length ? `<p class="muted small" style="margin:0 0 6px">${T('Mes minuteurs', 'My timers')}</p>` + S.timers.map(tmCard).join('') : ''}
-    <p class="muted small" style="margin:14px 0 6px">${T('Minuteurs prêts', 'Ready-made timers')}</p>${TM_PRESETS.map(tmCard).join('')}`;
+    ${tmPre().length ? `<p class="muted small" style="margin:14px 0 6px">${T('Minuteurs prêts', 'Ready-made timers')}</p>${tmPre().map(tmCard).join('')}` : ''}
+    ${tmPre().length < TM_PRESETS.length ? `<button class="btn sm ghost block" data-act="pre-restore" data-k="t" style="margin-top:14px">↺ ${T('Remettre les minuteurs prêts supprimés', 'Restore deleted ready-made timers')}</button>` : ''}`;
 }
 /* ----- Éditeur ----- */
 let tmDraft = null;
@@ -3801,8 +3815,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '7.3';
+const APP_VERSION = '7.4';
 const CHANGELOG = [
+  {v: '7.4', d: '2026-11-04', fr: ['Tu peux maintenant supprimer les minuteurs prêts et les routines d\'étirement prêtes (menu ⋯ → Supprimer). Un bouton en bas permet de les remettre.', 'Change l\'ordre de tes dossiers en glissant ≡ : menu ⋯ d\'un dossier → Changer l\'ordre des dossiers.'],
+   en: ['You can now delete ready-made timers and stretching routines (⋯ menu → Delete). A button at the bottom brings them back.', 'Reorder your folders by dragging ≡: a folder\'s ⋯ menu → Reorder folders.']},
   {v: '7.3', d: '2026-11-04', fr: ['🆕 Ce message! À chaque mise à jour, l\'appli te montre ce qui a changé.', 'Tu peux revoir toutes les nouveautés dans Réglages → Général → Nouveautés.'],
     en: ['🆕 This message! After each update, the app shows you what changed.', 'You can see all updates in Settings → General → What\'s new.']},
   {v: '7.2.1', d: '2026-11-04', fr: ['📤 Partager sans tes charges : ton ami reçoit « ? » et son appli reprend ses propres poids.'], en: ['📤 Share without your weights: your friend gets “?” and their app uses their own weights.']},
@@ -4089,6 +4105,8 @@ document.addEventListener('click', e => {
       break; }
     case 'st-share': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); if (rt) { const c = JSON.parse(JSON.stringify(rt)); delete c.id; shareItem('s', [c], T(rt.n[0], rt.n[1] || rt.n[0])); } break; }
     case 'imp-ok': doImport(); break;
+    case 'pre-restore': { const L = b.dataset.k === 't' ? TM_PRESETS : ST_PRESETS; S.settings.hidePre = hidPre().filter(id => !L.some(x => x.id === id)); save(); render(); toast(T('↺ Remis', '↺ Restored')); break; }
+    case 'fold-reo': closeAll(); openFolderReo(); break;
     case 'news': openNews(true); break;
     case 'pcode': openPasteCode(b.dataset.k); break;
     case 'pcode-ok': pasteCodeOk(); break;
@@ -4099,10 +4117,10 @@ document.addEventListener('click', e => {
     case 'tm-menu': { const t = tmAll().find(x => x.id === b.dataset.id), own = (S.timers || []).some(x => x.id === t.id);
       modal(`<h2>⏱ ${esc(tmN(t))}</h2><div class="menu">${own ? `<button class="btn block" data-act="tm-edit" data-id="${t.id}">✏️ ${T('Modifier', 'Edit')}</button>` : ''}
         <button class="btn block" data-act="tm-copy" data-id="${t.id}">⧉ ${own ? T('Dupliquer', 'Duplicate') : T('Copier et modifier', 'Copy and edit')}</button>
-        ${own ? `<button class="btn danger block" data-act="tm-del" data-id="${t.id}">${T('Supprimer', 'Delete')}</button>` : ''}<button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`); break; }
+        <button class="btn danger block" data-act="tm-del" data-id="${t.id}">${T('Supprimer', 'Delete')}</button><button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`); break; }
     case 'tm-edit': { const t = (S.timers || []).find(x => x.id === b.dataset.id); closeAll(); openTmEdit(t); break; }
     case 'tm-copy': { const t = JSON.parse(JSON.stringify(tmAll().find(x => x.id === b.dataset.id))); t.id = 'tm' + uid(); t.n = tmN(t) + T(' (copie)', ' (copy)'); t.blocks = JSON.parse(JSON.stringify(tmBlocks(t))); closeAll(); openTmEdit(t); break; }
-    case 'tm-del': { snap(); S.timers = (S.timers || []).filter(x => x.id !== b.dataset.id); save(); closeAll(); render(); undoToast(T('Minuteur supprimé', 'Timer deleted')); break; }
+    case 'tm-del': { snap(); if (TM_PRESETS.some(x => x.id === b.dataset.id)) hidPre().push(b.dataset.id); S.timers = (S.timers || []).filter(x => x.id !== b.dataset.id); save(); closeAll(); render(); undoToast(T('Minuteur supprimé', 'Timer deleted')); break; }
     case 'tm-mode': { const s = tmDraft.blocks[+b.dataset.b].steps[+b.dataset.i]; s.mode = b.dataset.v; renderTmEdit(); break; }
     case 'tm-step': { const s = tmDraft.blocks[+b.dataset.b].steps[+b.dataset.i], d = +b.dataset.d;
       if (s.mode === 'reps') s.reps = Math.max(1, (+s.reps || 1) + d); else { const st = +s.sec >= 120 ? 15 : +s.sec >= 30 ? 5 : 1; s.sec = Math.max(1, (+s.sec || 0) + d * st); } renderTmEdit(); break; }
@@ -4141,10 +4159,10 @@ document.addEventListener('click', e => {
       modal(`<h2>🧘 ${esc(T(rt.n[0], rt.n[1] || rt.n[0]))}</h2><div class="menu">${own ? `<button class="btn block" data-act="st-edit" data-id="${rt.id}">✏️ ${T('Modifier', 'Edit')}</button>` : ''}
         <button class="btn block" data-act="st-copy" data-id="${rt.id}">⧉ ${own ? T('Dupliquer', 'Duplicate') : T('Copier et modifier', 'Copy and edit')}</button>
         <button class="btn block" data-act="st-share" data-id="${rt.id}">📤 ${T('Partager à un ami', 'Share with a friend')}</button>
-        ${own ? `<button class="btn danger block" data-act="str-del" data-id="${rt.id}">${T('Supprimer', 'Delete')}</button>` : ''}<button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`); break; }
+        <button class="btn danger block" data-act="str-del" data-id="${rt.id}">${T('Supprimer', 'Delete')}</button><button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`); break; }
     case 'st-edit': { const rt = (S.stretches || []).find(x => x.id === b.dataset.id); closeAll(); openStEdit(rt); break; }
     case 'st-copy': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); const c = JSON.parse(JSON.stringify(rt)); c.id = 's' + uid(); c.n = [c.n[0] + T(' (copie)', ' (copy)'), (c.n[1] || c.n[0]) + ' (copy)']; delete c.d; openStEdit(c); break; }
-    case 'str-del': { snap(); S.stretches = (S.stretches || []).filter(x => x.id !== b.dataset.id); save(); closeAll(); render(); undoToast(T('Routine supprimée', 'Routine deleted')); break; }
+    case 'str-del': { snap(); if (ST_PRESETS.some(x => x.id === b.dataset.id)) hidPre().push(b.dataset.id); S.stretches = (S.stretches || []).filter(x => x.id !== b.dataset.id); save(); closeAll(); render(); undoToast(T('Routine supprimée', 'Routine deleted')); break; }
     case 'st-sides': { const it = stDraft.items[+b.dataset.i]; it.sides = !it.sides; renderStEdit(); break; }
     case 'st-rm': stDraft.items.splice(+b.dataset.i, 1); renderStEdit(); break;
     case 'st-add': openPicker({title: T('Ajouter un étirement', 'Add a stretch'), libOnly: true, cb: pkd => { const L = LIBMAP[pkd.lib] || libEntry(pkd.name); stDraft.items.push(SI(pkd.name, pkd.name, L ? L.name : pkd.name, 30, false)); renderStEdit(); }});
@@ -4346,7 +4364,8 @@ document.addEventListener('click', e => {
       <button class="btn block" data-act="programs">${IC('book', '📚')} ${T('Programmes connus prêts à importer', 'Popular programs ready to import')}</button>
       ${deloadOn() ? '' : `<button class="btn block" data-act="deload-menu">${IC('feather', '🪶')} ${T('Semaine de récupération (deload)', 'Recovery week (deload)')}</button>`}
       <button class="btn block" data-act="sched-edit">${IC('calendar', '📅')} ${T('Mon horaire', 'My schedule')}</button>
-      <button class="btn block" data-act="new-folder">${IC('folderp', '📁')} ${T('Nouveau dossier', 'New folder')}</button></div>`); break;
+      <button class="btn block" data-act="new-folder">${IC('folderp', '📁')} ${T('Nouveau dossier', 'New folder')}</button>
+      ${folders().length > 1 ? `<button class="btn block" data-act="fold-reo">↕ ${T('Changer l\'ordre des dossiers', 'Reorder folders')}</button>` : ''}</div>`); break;
     case 'prog-add': addProgram(b.dataset.k); break;
     case 'yr': yrSel = +b.dataset.y; render(); break;
     case 'go-year': yrSel = +b.dataset.y; go('year'); break;
