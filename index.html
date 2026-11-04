@@ -381,6 +381,8 @@ const wOff = d => sunFirst() ? d.getDay() : (d.getDay() + 6) % 7;
 const wdl = () => { const a = isEN() ? ['M', 'T', 'W', 'T', 'F', 'S', 'S'] : ['L', 'M', 'M', 'J', 'V', 'S', 'D']; return sunFirst() ? [a[6], ...a.slice(0, 6)] : a; };
 const BWL = () => isEN() ? 'BW' : 'PDC';
 const dec1 = v => { const s = (Math.round(v * 10) / 10).toString(); return isEN() ? s : s.replace('.', ','); };
+/* Minutes → « 50 min » ou « 1 h 20 » */
+const hm = m => { m = Math.round(+m || 0); return m < 60 ? m + ' min' : `${Math.floor(m / 60)} h${m % 60 ? ' ' + pad2(m % 60) : ''}`; };
 const dateFr = iso => new Date(iso).toLocaleDateString(LOC(), {day: 'numeric', month: 'short'});
 const toLocalInput = iso => { const d = new Date(iso); return `${dkey(d)}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
 const e1rm = (w, r) => (+w > 0 && +r > 0) ? +w * (1 + +r / 30) : 0;
@@ -1277,7 +1279,7 @@ function finishWorkout() {
     ${prs.length ? `<div class="pr" style="margin:10px 0 4px">🏆 ${prs.length > 1 ? prs.length + ' nouveaux records' : 'Nouveau record'}!</div>${prs.map(r => `<p style="margin:4px 0">${esc(r.name)} : <span class="muted">${esc(r.from)}</span> → <b class="pr">${esc(r.to)}</b></p>`).join('')}` : ''}
     ${(() => { if (!prevH) return ''; const nh = S.history[S.history.length - 1];
       const row = (l, nv, pv, f) => { const pc = pv ? Math.round((nv - pv) / pv * 100) : null; return `<div class="row between" style="padding:5px 0"><span class="muted">${l}</span><span><b>${f(nv)}</b> ${pc == null ? '' : `<span class="small" style="color:${pc >= 0 ? 'var(--ok)' : 'var(--danger)'}">${pc >= 0 ? '▲' : '▼'} ${Math.abs(pc)} %</span>`}</span></div>`; };
-      return `<div class="card" style="margin:8px 0"><b>Par rapport au ${dateFr(prevH.date)}</b>${row('Volume', sessVol(nh), sessVol(prevH), v => Math.round(v).toLocaleString(LOC()) + ' ' + U())}${row('Réps', sessReps(nh), sessReps(prevH), v => v)}${prevH.duration ? row('Durée', nh.duration, prevH.duration, v => v + ' min') : ''}</div>`; })()}
+      return `<div class="card" style="margin:8px 0"><b>Par rapport au ${dateFr(prevH.date)}</b>${row('Volume', sessVol(nh), sessVol(prevH), v => Math.round(v).toLocaleString(LOC()) + ' ' + U())}${row('Réps', sessReps(nh), sessReps(prevH), v => v)}${prevH.duration ? row('Durée', nh.duration, prevH.duration, v => hm(v)) : ''}</div>`; })()}
     ${medNew.length ? `<div class="card" style="border-color:var(--accent);margin:8px 0"><b>🏅 ${T(medNew.length > 1 ? 'Nouvelles médailles!' : 'Nouvelle médaille!', medNew.length > 1 ? 'New medals!' : 'New medal!')}</b>${medNew.map(d => `<div style="margin-top:4px">${d.ic} ${esc(d.t)}</div>`).join('')}</div>` : ''}
     ${wasFree ? `<button class="btn block" data-act="save-as-routine" data-hid="${id}" style="margin-bottom:8px">💾 Enregistrer comme routine</button>` : ''}
     <div class="grid2" style="margin-bottom:8px"><button class="btn" data-act="hist-img" data-hid="${id}">🖼️ ${T('Image', 'Image')}</button><button class="btn" data-act="hist-share" data-hid="${id}">📤 ${T('Texte', 'Text')}</button></div>
@@ -1483,7 +1485,7 @@ function vWorkout() {
 /* ----- Historique ----- */
 function histCard(h, open) {
   return `<details class="card hist" ${open ? 'open' : ''}><summary>
-      <div class="row between"><div><h3>${esc(h.routineName)}</h3><span class="muted small">${new Date(h.date).toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long'})} · ${h.duration} min</span></div><span class="tag">${h.exercises.length} exos ▾</span></div>
+      <div class="row between"><div><h3>${esc(h.routineName)}</h3><span class="muted small">${new Date(h.date).toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long'})} · ${hm(h.duration)}</span></div><span class="tag">${h.exercises.length} exos ▾</span></div>
     </summary>
     <ul class="exlist">${h.exercises.map(e => `<li><span class="row" style="gap:8px;align-items:flex-start">${thumb(e.name, 28)}<span>${exl(e.name)}${e.ss ? ` <span class="tag">⛓${esc(e.ss)}</span>` : ''}${e.note ? `<br><span class="small muted">📝 ${esc(e.note)}</span>` : ''}${e.sets.map((s, i) => s.n ? `<br><span class="small muted">Série ${i + 1} : ${esc(s.n)}</span>` : '').join('')}</span></span><span class="tag">${e.sets.map(s => fmtSet(s, true)).join(', ')}</span></li>`).join('')}</ul>
     <div class="row"><button class="btn sm" data-act="hist-edit" data-hid="${h.id}">✏️ Modifier</button>
@@ -1495,7 +1497,7 @@ function histCard(h, open) {
 function workoutText(h) {
   const d = new Date(h.date).toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
   const vol = sessVol(h), nS = h.exercises.reduce((n, e) => n + work(e.sets).length, 0);
-  const lines = [h.routineName, `${d} · ${h.duration} min`, T(`Volume : ${Math.round(vol).toLocaleString(LOC())} ${U()} · ${nS} séries`, `Volume: ${Math.round(vol).toLocaleString(LOC())} ${U()} · ${nS} sets`), ''];
+  const lines = [h.routineName, `${d} · ${hm(h.duration)}`, T(`Volume : ${Math.round(vol).toLocaleString(LOC())} ${U()} · ${nS} séries`, `Volume: ${Math.round(vol).toLocaleString(LOC())} ${U()} · ${nS} sets`), ''];
   h.exercises.forEach(e => {
     lines.push(e.name + (e.ss ? ` (superset ${e.ss})` : ''));
     let k = 0;
@@ -1894,13 +1896,13 @@ function parseCsv(txt) {
 const MONTHS = [['janv', 0], ['jan', 0], ['fevr', 1], ['fev', 1], ['feb', 1], ['mars', 2], ['mar', 2], ['avr', 3], ['apr', 3], ['mai', 4], ['may', 4],
   ['juin', 5], ['jun', 5], ['juil', 6], ['jul', 6], ['aout', 7], ['aug', 7], ['sept', 8], ['sep', 8], ['oct', 9], ['nov', 10], ['dec', 11]];
 function monthIdx(w) { w = norm(w).replace(/[^a-z]/g, ''); for (const [k, i] of MONTHS) if (w.startsWith(k)) return i; return -1; }
-function hm(hh, ap) { hh = +hh; ap = (ap || '').toLowerCase(); if (ap.startsWith('p') && hh < 12) hh += 12; if (ap.startsWith('a') && hh === 12) hh = 0; return hh; }
+function hm12(hh, ap) { hh = +hh; ap = (ap || '').toLowerCase(); if (ap.startsWith('p') && hh < 12) hh += 12; if (ap.startsWith('a') && hh === 12) hh = 0; return hh; }
 function parseHevyDate(s) {
   s = String(s).trim();
   let m = s.match(/(\d{1,2})\s+([A-Za-zÀ-ÿ.]+)\s+(\d{4}),?\s+(?:à\s+|at\s+)?(\d{1,2}):(\d{2})\s*([ap]\.?\s?m\.?)?/i);
-  if (m) { const mo = monthIdx(m[2]); if (mo >= 0) return new Date(+m[3], mo, +m[1], hm(m[4], m[6]), +m[5]); }
+  if (m) { const mo = monthIdx(m[2]); if (mo >= 0) return new Date(+m[3], mo, +m[1], hm12(m[4], m[6]), +m[5]); }
   m = s.match(/([A-Za-zÀ-ÿ.]+)\s+(\d{1,2}),?\s+(\d{4}),?\s+(?:à\s+|at\s+)?(\d{1,2}):(\d{2})\s*([ap]\.?\s?m\.?)?/i);
-  if (m) { const mo = monthIdx(m[1]); if (mo >= 0) return new Date(+m[3], mo, +m[2], hm(m[4], m[6]), +m[5]); }
+  if (m) { const mo = monthIdx(m[1]); if (mo >= 0) return new Date(+m[3], mo, +m[2], hm12(m[4], m[6]), +m[5]); }
   m = s.match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
   if (m) return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
   return new Date(s);
@@ -1976,12 +1978,12 @@ function historyPrompt() {
   const hs = S.history.filter(h => new Date(h.date) >= since);
   if (!hs.length) return null;
   if (isEN()) return `Here are my workouts from the last 30 days (weights in ${U()}, weight×reps format${effTxt()}):\n\n` +
-    hs.map(h => `${new Date(h.date).toLocaleDateString('en-CA')} — ${h.routineName} (${h.duration} min)\n` +
+    hs.map(h => `${new Date(h.date).toLocaleDateString('en-CA')} — ${h.routineName} (${hm(h.duration)})\n` +
       h.exercises.map(e => `  ${e.name}: ${e.sets.map(s => fmtSet(s, false).replace(' (échec)', '')).join(', ')}${e.note ? ' — note: ' + e.note : ''}`).join('\n')).join('\n\n') +
     `\n\nMy current routines:\n\n${S.routines.map(routineToText).join('\n\n')}\n\n` +
     `If you suggest routine changes, give them in EXACTLY this format so I can paste them into my app:\nROUTINE: Name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note | R:90 (rest in s, optional) | SS:A (optional, for a superset)\nALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. \n\nMy question: `;
   return `Voici mes séances d'entraînement des 30 derniers jours (charges en ${U()}, format charge×reps${effTxt()}) :\n\n` +
-    hs.map(h => `${new Date(h.date).toLocaleDateString(LOC())} — ${h.routineName} (${h.duration} min)\n` +
+    hs.map(h => `${new Date(h.date).toLocaleDateString(LOC())} — ${h.routineName} (${hm(h.duration)})\n` +
       h.exercises.map(e => `  ${e.name} : ${e.sets.map(s => fmtSet(s, false).replace(' (échec)', '')).join(', ')}${e.note ? ' — note : ' + e.note : ''}`).join('\n')).join('\n\n') +
     `\n\nMes routines actuelles :\n\n${S.routines.map(routineToText).join('\n\n')}\n\n` +
     `Si tu proposes des changements de routines, donne-les dans EXACTEMENT ce format pour que je puisse les coller dans mon appli :\nROUTINE: Nom\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note | R:90 (repos en s, optionnel) | SS:A (optionnel pour un superset)\nDonne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. \n\nMa question : `;
@@ -2764,13 +2766,13 @@ function vProfile() {
   const vals = wk.map(b => pfMetric === 'dur' ? b.dur : pfMetric === 'vol' ? b.vol : b.reps);
   const step = Math.max(30, 290 / wk.length) >= 44 ? 1 : 2;
   const labels = wk.map((b, i) => (wk.length - 1 - i) % step === 0 ? dateFr(b.s) : '');
-  const fmtT = b => pfMetric === 'dur' ? dec1(b.dur) + ' h' : pfMetric === 'vol' ? Math.round(b.vol).toLocaleString(LOC()) + ' ' + U() : b.reps + T(' réps', ' reps');
+  const fmtT = b => pfMetric === 'dur' ? hm(b.dur * 60) : pfMetric === 'vol' ? Math.round(b.vol).toLocaleString(LOC()) + ' ' + U() : b.reps + T(' réps', ' reps');
   window._chtips = wk.map(b => T(`Semaine du ${dateFr(b.s)} : <b>${fmtT(b)}</b> · ${b.n} séance${b.n > 1 ? 's' : ''}`, `Week of ${dateFr(b.s)}: <b>${fmtT(b)}</b> · ${b.n} workout${b.n !== 1 ? 's' : ''}`));
   if (pfSel != null && pfSel >= wk.length) pfSel = null;
   setTimeout(() => { const c = $('#chs'); if (c) c.scrollLeft = c.scrollWidth; }, 0);
   const fmtV = {dur: v => (Math.round(v * 10) / 10) + ' h', vol: v => v >= 1000 ? (Math.round(v / 100) / 10) + 'k' : Math.round(v) + '', reps: v => Math.round(v) + ''}[pfMetric];
   const f1 = v => dec1(v);
-  const headline = pfMetric === 'dur' ? `<b>${f1(last.dur)} ${T('heure' + (last.dur >= 2 ? 's' : ''), last.dur === 1 ? 'hour' : 'hours')}</b> <span class="muted">cette semaine</span>`
+  const headline = pfMetric === 'dur' ? `<b>${hm(last.dur * 60)}</b> <span class="muted">cette semaine</span>`
     : pfMetric === 'vol' ? `<b>${Math.round(last.vol).toLocaleString(LOC())} ${U()}</b> <span class="muted">cette semaine</span>` : `<b>${last.reps} réps</b> <span class="muted">cette semaine</span>`;
   const n0 = new Date();
   const month = S.history.filter(h => { const d = new Date(h.date); return d.getMonth() === n0.getMonth() && d.getFullYear() === n0.getFullYear(); }).length;
@@ -2915,7 +2917,7 @@ function vMonth() {
   const mmax = Math.max(1, ...mus.map(x => x[1]));
   const tile = (l, v, d) => `<div class="stat"><span class="muted small">${l}</span><b>${v}</b>${d}</div>`;
   return `<div class="row between" style="margin-bottom:12px"><button class="btn sm" data-act="month-prev" aria-label="Mois précédent">‹</button><h3 style="text-transform:capitalize">${esc(title)}</h3><button class="btn sm" data-act="month-next" aria-label="Mois suivant">›</button></div>
-    ${a.n ? `<div class="grid2">${tile('Séances', a.n, dl(a.n, b.n))}${tile('Durée totale', f1c(a.dur / 60) + ' h', dl(a.dur, b.dur))}${tile('Volume', Math.round(a.vol).toLocaleString(LOC()) + ' ' + U(), dl(a.vol, b.vol))}${tile('Séries', a.sets, dl(a.sets, b.sets))}${tile('Réps', a.reps.toLocaleString(LOC()), dl(a.reps, b.reps))}${tile('Jours actifs', a.days.size, '')}</div>
+    ${a.n ? `<div class="grid2">${tile('Séances', a.n, dl(a.n, b.n))}${tile('Durée totale', hm(a.dur), dl(a.dur, b.dur))}${tile('Volume', Math.round(a.vol).toLocaleString(LOC()) + ' ' + U(), dl(a.vol, b.vol))}${tile('Séries', a.sets, dl(a.sets, b.sets))}${tile('Réps', a.reps.toLocaleString(LOC()), dl(a.reps, b.reps))}${tile('Jours actifs', a.days.size, '')}</div>
     <p class="muted small">Les flèches comparent avec le mois précédent.</p>
     <div class="card"><h3>🏆 Records du mois (${prs.length})</h3>${prs.length ? prs.map(e => `<div class="row between" style="padding:5px 0"><span>${esc(e.name)}</span><span class="pr">${e.s.w}×${e.s.r}</span></div>`).join('') : '<p class="muted small">Aucun record ce mois-ci.</p>'}</div>
     <div class="card"><h3>Exercices les plus travaillés</h3>${top.map(t => `<div class="row between" style="padding:5px 0"><span class="row" style="gap:8px">${thumb(t.name, 28)}${esc(t.name)}</span><span class="muted small">${t.sets} séries</span></div>`).join('')}</div>
@@ -3290,7 +3292,7 @@ async function shareImage(hid) {
   g.fillStyle = txt; g.font = F(800, 72); g.fillText(h.routineName.slice(0, 22), 70, 150);
   g.fillStyle = mut; g.font = F(500, 36); g.fillText(new Date(h.date).toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'}), 70, 210);
   const prs = sessPRs(h), nS = h.exercises.reduce((n, e) => n + work(e.sets).length, 0);
-  const tiles = [[T('Durée', 'Duration'), h.duration + ' min'], [T('Volume', 'Volume'), Math.round(sessVol(h)).toLocaleString(LOC()) + ' ' + U()], [T('Séries', 'Sets'), nS], [T('Records', 'Records'), prs.length ? '🏆 ' + prs.length : '0']];
+  const tiles = [[T('Durée', 'Duration'), hm(h.duration)], [T('Volume', 'Volume'), Math.round(sessVol(h)).toLocaleString(LOC()) + ' ' + U()], [T('Séries', 'Sets'), nS], [T('Records', 'Records'), prs.length ? '🏆 ' + prs.length : '0']];
   tiles.forEach(([l, v], i) => {
     const x = 70 + (i % 2) * 480, y = 260 + Math.floor(i / 2) * 170;
     g.fillStyle = card; g.beginPath(); g.roundRect ? g.roundRect(x, y, 460, 150, 28) : g.rect(x, y, 460, 150); g.fill();
@@ -3389,7 +3391,7 @@ function vYear() {
   return `${ys.length > 1 ? `<div class="seg">${ys.map(v => `<button class="${v === y ? 'on' : ''}" data-act="yr" data-y="${v}">${v}</button>`).join('')}</div>` : ''}
     <div class="card" style="text-align:center;border-color:var(--accent)"><div style="font-size:44px">🎉</div><h2 style="margin:4px 0">${T(`Ton année ${y}`, `Your ${y}`)}</h2><p class="muted small" style="margin:0">${T('en muscu', 'in the gym')}</p></div>
     <div class="grid2">
-      ${big('🏋️', st.n, T('séances', 'workouts'))}${big('⏱️', dec1(st.dur / 60) + ' h', T('d\'entraînement', 'of training'))}
+      ${big('🏋️', st.n, T('séances', 'workouts'))}${big('⏱️', hm(st.dur), T('d\'entraînement', 'of training'))}
       ${big('🏗️', Math.round(st.vol).toLocaleString(LOC()), U() + ' ' + T('soulevées', 'lifted'))}${big('📅', st.days.size, T('jours actifs', 'active days'))}
       ${big('🏆', st.prs, T('records battus', 'records broken'))}${big('🔥', st.wk, T('semaines de suite (max)', 'weeks in a row (best)'))}
     </div>
@@ -3401,8 +3403,8 @@ function vYear() {
 }
 function yearText(y) {
   const st = yearStats(y);
-  return T(`🎉 Mon année ${y} en muscu\n\n🏋️ ${st.n} séances\n⏱️ ${dec1(st.dur / 60)} h d'entraînement\n🏗️ ${Math.round(st.vol).toLocaleString(LOC())} ${U()} soulevées\n📅 ${st.days.size} jours actifs\n🏆 ${st.prs} records battus\n🔥 ${st.wk} semaines de suite\n${st.fav ? `❤️ Exercice préféré : ${st.fav.name}\n` : ''}${st.gain && st.gain.pc > 0 ? `🚀 Plus gros progrès : ${st.gain.name} (+${Math.round(st.gain.pc)} %)\n` : ''}\n— Carnet Muscu 💪`,
-    `🎉 My ${y} in the gym\n\n🏋️ ${st.n} workouts\n⏱️ ${dec1(st.dur / 60)} h of training\n🏗️ ${Math.round(st.vol).toLocaleString(LOC())} ${U()} lifted\n📅 ${st.days.size} active days\n🏆 ${st.prs} records broken\n🔥 ${st.wk} weeks in a row\n${st.fav ? `❤️ Favorite exercise: ${st.fav.name}\n` : ''}${st.gain && st.gain.pc > 0 ? `🚀 Biggest progress: ${st.gain.name} (+${Math.round(st.gain.pc)} %)\n` : ''}\n— Carnet Muscu 💪`);
+  return T(`🎉 Mon année ${y} en muscu\n\n🏋️ ${st.n} séances\n⏱️ ${hm(st.dur)} d'entraînement\n🏗️ ${Math.round(st.vol).toLocaleString(LOC())} ${U()} soulevées\n📅 ${st.days.size} jours actifs\n🏆 ${st.prs} records battus\n🔥 ${st.wk} semaines de suite\n${st.fav ? `❤️ Exercice préféré : ${st.fav.name}\n` : ''}${st.gain && st.gain.pc > 0 ? `🚀 Plus gros progrès : ${st.gain.name} (+${Math.round(st.gain.pc)} %)\n` : ''}\n— Carnet Muscu 💪`,
+    `🎉 My ${y} in the gym\n\n🏋️ ${st.n} workouts\n⏱️ ${hm(st.dur)} of training\n🏗️ ${Math.round(st.vol).toLocaleString(LOC())} ${U()} lifted\n📅 ${st.days.size} active days\n🏆 ${st.prs} records broken\n🔥 ${st.wk} weeks in a row\n${st.fav ? `❤️ Favorite exercise: ${st.fav.name}\n` : ''}${st.gain && st.gain.pc > 0 ? `🚀 Biggest progress: ${st.gain.name} (+${Math.round(st.gain.pc)} %)\n` : ''}\n— Carnet Muscu 💪`);
 }
 function yearBanner() {
   const n = new Date(), y = n.getMonth() === 11 ? n.getFullYear() : n.getMonth() === 0 ? n.getFullYear() - 1 : null;
@@ -3834,7 +3836,7 @@ function afterRender(c) {
   if (c.v === 'measures') drawChart(bodySeries(bodyMetric).map(p => ({d: p.d + 'T12:00', v: +p.v})));
   if (c.v === 'calendar' && !c.scrolled) { c.scrolled = true; setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 0); }
 }
-const fmtDur = ms => { const s = Math.max(0, Math.floor(ms / 1000)), hh = Math.floor(s / 3600), mm = Math.floor(s / 60) % 60, ss = s % 60; return hh ? `${hh}:${pad2(mm)}:${pad2(ss)}` : `${mm}:${pad2(ss)}`; };
+const fmtDur = ms => { const s = Math.max(0, Math.floor(ms / 1000)), hh = Math.floor(s / 3600), mm = Math.floor(s / 60) % 60, ss = s % 60; return hh ? `${hh} h ${pad2(mm)}:${pad2(ss)}` : `${mm}:${pad2(ss)}`; };
 function woStats() { const a = S.active; let d = 0, n = 0; a.exercises.forEach(e => e.sets.forEach(s => { n++; if (s.done) d++; })); return {d, n}; }
 function updWobar() {
   const el = $('#wobar'); if (!el) return;
@@ -3974,6 +3976,13 @@ document.addEventListener('touchend', () => {
 document.addEventListener('touchcancel', () => { if (swp) { swp = null; const a = $('#app'); a.style.transform = ''; a.style.opacity = ''; } }, {passive: true});
 
 document.addEventListener('toggle', e => { const d = e.target; if (d.dataset && d.dataset.sec) { if (d.open) secOpen.add(d.dataset.sec); else secOpen.delete(d.dataset.sec); } }, true);
+/* Toucher une case de chiffres (charge, reps, durée…) sélectionne tout : on tape directement la nouvelle valeur */
+document.addEventListener('focusin', e => {
+  const t = e.target;
+  if (t.tagName !== 'INPUT' || !(/^(numeric|decimal)$/.test(t.inputMode) || t.type === 'number')) return;
+  const sel = () => { try { if (document.activeElement === t) t.setSelectionRange(0, t.value.length); } catch (x) { try { t.select(); } catch (y) {} } };
+  sel(); setTimeout(sel, 0); setTimeout(sel, 60);
+});
 /* ===================== Événements ===================== */
 document.addEventListener('click', e => {
   const n = e.target.closest('[data-tab]');
