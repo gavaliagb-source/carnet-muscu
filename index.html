@@ -963,6 +963,13 @@ function previewPaste(rid) {
     return `<div class="preview"><b>${esc(x.name)}</b> <span class="tag">${exists ? 'mise à jour' : 'nouvelle'}</span>${fx ? ` <span class="tag">📁 ${esc(fx)}</span>` : ''}<br>${x.exercises.map(e => `${e.ss ? '⛓' + esc(e.ss) + ' ' : ''}${esc(e.name)} — ${e.sets}×${esc(e.reps)} · ${esc(fmtW(e.weight))}${e.rest ? ' · ⏱' + fmtRest(e.rest) : ''}`).join('<br>')}</div>`;
   }).join('') : '<p class="muted small">Aucun exercice reconnu pour l\'instant.</p>';
 }
+/* Charge « ? » : on reprend la meilleure charge de travail de ta dernière séance sur cet exercice */
+function ownW(e) {
+  if (!(e.nw && (e.weight === '' || e.weight == null))) return e;
+  const l = lastFull(e.name); if (!l) return e;
+  const ws = work(l).filter(s => s.u !== 's' && +s.w > 0); if (!ws.length) return e;
+  return {...e, weight: Math.max(...ws.map(s => +s.w)), nw: false};
+}
 function applyPaste(rid) {
   const r = S.routines.find(x => x.id === rid);
   const res = parseText($('#pasteTa').value, r && r.name);
@@ -975,9 +982,10 @@ function applyPaste(rid) {
     let t = S.routines.find(y => inF(y) && norm(y.name) === norm(x.name));
     if (!t && r && res.length === 1) t = r;
     if (t) {
-      x.exercises.forEach(ne => { const old = t.exercises.find(o => norm(o.name) === norm(ne.name)); if (old && old.rest && !ne.rest) ne.rest = old.rest; if (old && old.sl && +old.sets === +ne.sets && String(old.reps) === String(ne.reps) && String(old.weight ?? '') === String(ne.weight ?? '')) ne.sl = old.sl; });
+      x.exercises = x.exercises.map(ownW);
+      x.exercises.forEach(ne => { const old = t.exercises.find(o => norm(o.name) === norm(ne.name)); if (old && ne.nw && (ne.weight === '' || ne.weight == null) && old.weight !== '' && old.weight != null) { ne.weight = old.weight; ne.nw = false; } if (old && old.rest && !ne.rest) ne.rest = old.rest; if (old && old.sl && +old.sets === +ne.sets && String(old.reps) === String(ne.reps) && String(old.weight ?? '') === String(ne.weight ?? '')) ne.sl = old.sl; });
       t.name = x.name; t.exercises = x.exercises;
-    } else S.routines.push({id: uid(), name: x.name, folder: fx || DEF_FOLDER, exercises: x.exercises});
+    } else S.routines.push({id: uid(), name: x.name, folder: fx || DEF_FOLDER, exercises: x.exercises.map(ownW)});
   });
   save(); closeModal(); render();
   toast(`✅ ${res.length} routine${res.length > 1 ? 's' : ''} mise${res.length > 1 ? 's' : ''} à jour` + (newF.size ? T(` · 📁 dossier « ${[...newF].join(', ')} » créé`, ` · 📁 folder “${[...newF].join(', ')}” created`) : ''));
@@ -3477,7 +3485,7 @@ function vStretch() {
       <label>${T('Préparation entre deux étirements', 'Prep time between stretches')}</label>
       <select data-set="stPrep">${[3, 5, 10, 15].map(v => `<option value="${v}" ${stPrep() === v ? 'selected' : ''}>${v} s</option>`).join('')}</select></div>
     <p class="muted" style="margin:16px 0 8px">${T('Routines prêtes', 'Ready-made routines')}</p>${ST_PRESETS.map(rt => card(rt)).join('')}
-    <div class="row between" style="margin:16px 0 8px"><p class="muted" style="margin:0">${T('Mes routines d\'étirement', 'My stretching routines')}</p><button class="btn sm" data-act="st-new">＋ ${T('Créer', 'Create')}</button></div>
+    <div class="row between" style="margin:16px 0 8px"><p class="muted" style="margin:0">${T('Mes routines d\'étirement', 'My stretching routines')}</p><span class="row" style="gap:6px"><button class="btn sm" data-act="pcode" data-k="s">📥 ${T('Coller', 'Paste')}</button><button class="btn sm" data-act="st-new">＋ ${T('Créer', 'Create')}</button></span></div>
     ${(S.stretches || []).length ? S.stretches.map(rt => card(rt, true)).join('') : `<p class="muted small">${T('Crée ta propre routine, ou copie une routine prête avec son menu ⋯ pour la modifier.', 'Create your own routine, or copy a ready-made one with its ⋯ menu to edit it.')}</p>`}`;
 }
 /* ----- Éditeur ----- */
@@ -3618,7 +3626,7 @@ function tmCard(t) {
     <button class="btn primary" data-act="tm-go" data-id="${t.id}">▶ ${T('COMMENCER', 'START')}</button></div></div>`;
 }
 function vTimers() {
-  return `<div class="row between" style="margin:0 0 10px"><p class="muted" style="margin:0">${T('Minuteurs d\'intervalles : travail, repos, tempo, tabata…', 'Interval timers: work, rest, tempo, tabata…')}</p><button class="btn sm" data-act="tm-new">＋ ${T('Créer', 'Create')}</button></div>
+  return `<div class="row between" style="margin:0 0 10px"><p class="muted" style="margin:0">${T('Minuteurs d\'intervalles : travail, repos, tempo, tabata…', 'Interval timers: work, rest, tempo, tabata…')}</p><span class="row" style="gap:6px"><button class="btn sm" data-act="pcode" data-k="t">📥 ${T('Coller', 'Paste')}</button><button class="btn sm" data-act="tm-new">＋ ${T('Créer', 'Create')}</button></span></div>
     ${(S.timers || []).length ? `<p class="muted small" style="margin:0 0 6px">${T('Mes minuteurs', 'My timers')}</p>` + S.timers.map(tmCard).join('') : ''}
     <p class="muted small" style="margin:14px 0 6px">${T('Minuteurs prêts', 'Ready-made timers')}</p>${TM_PRESETS.map(tmCard).join('')}`;
 }
@@ -3732,18 +3740,21 @@ async function unpackShare(s) {
 const cleanRoutine = r => ({name: r.name, exercises: r.exercises.map(e => { const o = {...e}; delete o.target; return o; })});
 async function shareItem(kind, items, label, folder) {
   const who = (S.settings.name || '').trim();
-  const data = {v: 1, k: kind, from: who, f: folder || null, items};
-  const url = location.origin + location.pathname + '#imp=' + await packShare(data);
   const what = (who ? {r: T('sa routine', 'their routine'), f: T('son programme', 'their program'), t: T('son minuteur', 'their timer'), s: T('ses étirements', 'their stretching routine')} : {r: T('ma routine', 'my routine'), f: T('mon programme', 'my program'), t: T('mon minuteur', 'my timer'), s: T('mes étirements', 'my stretching routine')})[kind];
-  const txt = T(`💪 ${who ? who + ' t\'a partagé' : 'Je te partage'} ${what} « ${label} » sur Carnet Muscu.\n\nTouche le lien pour l'ajouter dans ton appli :\n${url}\n\n(Pas encore l'appli? Ouvre le lien dans Chrome, puis menu ⋮ → Installer l'application.)`,
-    `💪 ${who ? who + ' shared' : 'Here\'s'} ${what} “${label}” on Carnet Muscu.\n\nTap the link to add it to your app:\n${url}\n\n(Don't have the app yet? Open the link in Chrome, then menu ⋮ → Install app.)`);
+  const head = T(`💪 ${who ? who + ' te partage' : 'Je te partage'} ${what} « ${label} » (Carnet Muscu)`, `💪 ${who ? who + ' shared' : 'Here\'s'} ${what} “${label}” (Carnet Muscu)`);
+  let txt;
+  if (kind === 'r' || kind === 'f') {
+    txt = head + '\n\n' + (folder ? T('DOSSIER: ', 'FOLDER: ') + folder + '\n' : '') + items.map(routineToText).join('\n\n') +
+      T(`\n\n📥 Pour l'ajouter : dans Carnet Muscu, Programme IA → « Coller un programme », puis colle ce message au complet.\n(Ça marche aussi avec n'importe quelle IA ou appli : c'est juste la liste des exercices.)`,
+        `\n\n📥 To add it: in Carnet Muscu, AI program → “Paste a program”, then paste this whole message.\n(It also works with any AI or app: it's just the exercise list.)`);
+  } else {
+    const desc = kind === 't' ? items.map(t => tmText({...t, n: t.n}).replace(/\n— Carnet Muscu 💪$/, '')).join('\n') : items.map(rt => `🧘 ${T(rt.n[0], rt.n[1] || rt.n[0])}\n` + rt.items.map(it => `- ${stName(it)} : ${it.sec} s${it.sides ? T(' × 2 côtés', ' × 2 sides') : ''}`).join('\n')).join('\n\n');
+    txt = head + '\n\n' + desc + '\n\n' + T(`📥 Pour l'ajouter : dans Carnet Muscu, onglet ${kind === 't' ? 'Intervalles' : 'Étirements'} → « 📥 Coller », puis colle ce message au complet.`, `📥 To add it: in Carnet Muscu, ${kind === 't' ? 'Intervals' : 'Stretching'} tab → “📥 Paste”, then paste this whole message.`) +
+      '\nCARNET: ' + await packShare({v: 1, k: kind, from: who, items});
+  }
   shareText(txt);
 }
-async function checkImport() {
-  const m = location.hash.match(/#imp=([A-Za-z0-9_-]+)/); if (!m) return;
-  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
-  let d; try { d = await unpackShare(m[1]); } catch (e) { toast(T('⚠️ Lien de partage invalide ou incomplet', '⚠️ Invalid or incomplete share link')); return; }
-  if (!d || !Array.isArray(d.items) || !d.items.length) return;
+function showImport(d) {
   window._imp = d;
   const from = d.from ? esc(d.from) : T('Un ami', 'A friend');
   let list = '';
@@ -3752,10 +3763,27 @@ async function checkImport() {
   else if (d.k === 's') list = d.items.map(rt => `<div class="preview"><b>🧘 ${esc(T(rt.n[0], rt.n[1] || rt.n[0]))}</b><br><span class="small muted">${rt.items.map(it => esc(stName(it))).join(', ')}</span></div>`).join('');
   const defF = d.f || T(`Partagé par ${d.from || 'un ami'}`, `Shared by ${d.from || 'a friend'}`);
   modal(`<h2>📩 ${T(`${from} te partage :`, `${from} shared with you:`)}</h2>${list}
-    ${d.k === 'r' || d.k === 'f' ? `<label>${T('Ajouter dans le dossier', 'Add to folder')}</label><input id="impf" value="${esc(defF)}">
-      <p class="muted small">${T('Les charges viennent de ton ami : ajuste-les à ta première séance.', 'Weights come from your friend: adjust them at your first workout.')}</p>` : ''}
+    ${d.k === 'r' || d.k === 'f' ? `<label>${T('Ajouter dans le dossier', 'Add to folder')}</label><input id="impf" value="${esc(defF)}">` : ''}
     <button class="btn primary block" data-act="imp-ok" style="margin-top:10px">⬇ ${T('Ajouter dans mon appli', 'Add to my app')}</button>
     <button class="btn block" data-act="close" style="margin-top:8px">${T('Non merci', 'No thanks')}</button>`);
+}
+function openPasteCode(kind) {
+  modal(`<div class="row between"><h2>📥 ${T('Coller un partage', 'Paste a share')}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <p class="muted small">${T('Colle le message reçu de ton ami au complet (avec la ligne CARNET:).', 'Paste the whole message from your friend (with the CARNET: line).')}</p>
+    <textarea id="pcode" class="short" style="min-height:140px"></textarea>
+    <div class="row" style="margin-top:10px"><button class="btn" data-act="pcode-clip">📋 ${T('Coller', 'Paste')}</button><button class="btn primary" style="flex:1" data-act="pcode-ok" data-k="${kind}">${T('Ajouter', 'Add')}</button></div>`);
+}
+async function pasteCodeOk() {
+  const m = (($('#pcode') || {}).value || '').match(/CARNET:\s*([A-Za-z0-9_-]+)/);
+  if (!m) { toast(T('⚠️ Code introuvable : colle le message au complet', '⚠️ Code not found: paste the whole message')); return; }
+  try { const d = await unpackShare(m[1]); closeModal(); showImport(d); } catch (e) { toast(T('⚠️ Code incomplet ou abîmé', '⚠️ Incomplete or damaged code')); }
+}
+async function checkImport() {
+  const m = location.hash.match(/#imp=([A-Za-z0-9_-]+)/); if (!m) return;
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  let d; try { d = await unpackShare(m[1]); } catch (e) { toast(T('⚠️ Lien de partage invalide ou incomplet', '⚠️ Invalid or incomplete share link')); return; }
+  if (!d || !Array.isArray(d.items) || !d.items.length) return;
+  showImport(d);
 }
 function doImport() {
   const d = window._imp; if (!d) return; let msg = '';
@@ -4018,10 +4046,20 @@ document.addEventListener('click', e => {
     case 'fix-import': { const bad = new Set(brokenImports()); S.history = S.history.filter(x => !bad.has(x)); save(); closeAll(); render(); toast(`🧹 ${bad.size} séances retirées — choisis ton fichier CSV Hevy`); $('#fileIn').click(); break; }
     case 'go': if (b.dataset.v === 'settings' && b.closest('.nag, .card') && !cloudOn() && /Activer|Turn on/.test(b.textContent)) secOpen.add('cloud'); go(b.dataset.v, {n: b.dataset.n, rid: b.dataset.rid}); break;
     case 'start-empty': startEmpty(); break;
-    case 'share-r': { const r2 = S.routines.find(x => x.id === b.dataset.rid); closeAll(); if (r2) shareItem('r', [cleanRoutine(r2)], r2.name, r2.folder && r2.folder !== DEF_FOLDER ? r2.folder : null); break; }
-    case 'share-f': { const f = b.dataset.f, rs = S.routines.filter(x => (x.folder || DEF_FOLDER) === f); closeAll(); if (rs.length) shareItem('f', rs.map(cleanRoutine), f, f); break; }
+    case 'share-r': case 'share-f': { closeAll(); const ds = b.dataset.rid ? `data-rid="${b.dataset.rid}"` : `data-f="${esc(b.dataset.f)}"`;
+      modal(`<h2>📤 ${T('Partager', 'Share')}</h2><p class="muted small">${T('Ton ami a sûrement ses propres charges. Sans tes charges, chaque exercice arrive avec « ? » et son appli reprend ses propres poids s\'il a déjà fait l\'exercice.', 'Your friend probably has their own weights. Without yours, each exercise comes with “?” and their app uses their own weights if they did the exercise before.')}</p>
+        <div class="menu"><button class="btn primary block" data-act="share-go" data-w="0" ${ds}>${T('Sans mes charges (recommandé)', 'Without my weights (recommended)')}</button>
+        <button class="btn block" data-act="share-go" data-w="1" ${ds}>${T('Avec mes charges', 'With my weights')}</button></div>`); break; }
+    case 'share-go': { closeAll(); const keepW = b.dataset.w === '1';
+      const prep = r => { const c = cleanRoutine(r); if (!keepW) c.exercises = c.exercises.map(e => { const o = {...e}; delete o.sl; if (o.weight !== '' && o.weight != null) { o.weight = ''; o.nw = true; } return o; }); return c; };
+      if (b.dataset.rid) { const r2 = S.routines.find(x => x.id === b.dataset.rid); if (r2) shareItem('r', [prep(r2)], r2.name, r2.folder && r2.folder !== DEF_FOLDER ? r2.folder : null); }
+      else { const f = b.dataset.f, rs = S.routines.filter(x => (x.folder || DEF_FOLDER) === f); if (rs.length) shareItem('f', rs.map(prep), f, f); }
+      break; }
     case 'st-share': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); if (rt) { const c = JSON.parse(JSON.stringify(rt)); delete c.id; shareItem('s', [c], T(rt.n[0], rt.n[1] || rt.n[0])); } break; }
     case 'imp-ok': doImport(); break;
+    case 'pcode': openPasteCode(b.dataset.k); break;
+    case 'pcode-ok': pasteCodeOk(); break;
+    case 'pcode-clip': navigator.clipboard.readText().then(t => { $('#pcode').value = t; }).catch(() => toast(T('Colle avec un appui long dans la case', 'Long-press the box to paste'))); break;
     case 'tm-go': startTimerRun(b.dataset.id); break;
     case 'tm-new': openTmEdit(null); break;
     case 'tm-share': { const t = tmAll().find(x => x.id === b.dataset.id); if (t) { const c = JSON.parse(JSON.stringify(t)); c.n = tmN(t); c.blocks = JSON.parse(JSON.stringify(tmBlocks(t))); ['prep', 'rounds', 'steps', 'skipLast', 'cool'].forEach(k => delete c[k]); delete c.id; shareItem('t', [c], c.n); } break; }
