@@ -2067,6 +2067,7 @@ function openFolderMenu(f) {
     <button class="btn block" data-act="ai-fresh">✨ ${T("Nouveau programme à partir de zéro (IA)", 'New program from scratch (AI)')}</button>
     <button class="btn block" data-act="paste-folder" data-f="${esc(f)}">📥 ${T("Coller la réponse de l'IA dans ce dossier", "Paste the AI's answer into this folder")}</button>
     <p class="muted small" style="margin:2px 0 6px">${T("Le collage touche seulement les routines de ce dossier : les autres dossiers ne changent pas.", 'Pasting only touches the routines in this folder: other folders stay unchanged.')}</p>
+    ${n ? `<button class="btn block" data-act="share-f" data-f="${esc(f)}">📤 ${T('Partager le dossier à un ami', 'Share the folder with a friend')}</button>` : ''}
     <button class="btn block" data-act="rename-folder" data-f="${esc(f)}">✏️ Renommer</button>
     <button class="btn danger block" data-act="del-folder" data-f="${esc(f)}">Supprimer le dossier</button>
     <button class="btn block" data-act="close">Annuler</button></div>
@@ -2537,7 +2538,8 @@ function openRoutineMenu(rid) {
       <button class="btn block" data-act="edit-routine" data-rid="${rid}">✏️ Modifier la routine</button>
       <button class="btn block" data-act="ai-copy" data-rid="${rid}">🤖 Envoyer à l'IA</button>
       <button class="btn block" data-act="paste" data-rid="${rid}">📥 Coller la version de l'IA</button>
-      <button class="btn block" data-act="ai-share" data-rid="${rid}">↗ Partager</button>
+      <button class="btn block" data-act="share-r" data-rid="${rid}">📤 ${T('Partager à un ami', 'Share with a friend')}</button>
+      <button class="btn block" data-act="ai-share" data-rid="${rid}">↗ ${T('Partager le texte (IA)', 'Share as text (AI)')}</button>
       <button class="btn block" data-act="edit" data-rid="${rid}">📝 Modifier en texte</button>
       <button class="btn block" data-act="dup-routine" data-rid="${rid}">⧉ Dupliquer</button>
     </div>
@@ -3711,6 +3713,61 @@ function tmFinish() {
 }
 function tmText(t) { return `⏱ ${tmN(t)} (${mmss(tmTotal(t))})\n` + tmBlocks(t).map(b => `${b.reps} × [ ${b.steps.map(s => `${tmN(s)} ${s.mode === 'reps' ? s.reps + ' ' + T('réps', 'reps') : mmss(s.sec)}`).join(' → ')} ]`).join('\n') + '\n— Carnet Muscu 💪'; }
 
+
+/* ===================== Partager avec un ami (lien d'import) ===================== */
+const b64u = u8 => { let s = ''; u8.forEach(c => s += String.fromCharCode(c)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+const ub64u = s => { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+async function packShare(obj) {
+  const raw = new TextEncoder().encode(JSON.stringify(obj));
+  try { if ('CompressionStream' in window) { const cs = new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate-raw')); return 'z' + b64u(new Uint8Array(await new Response(cs).arrayBuffer())); } } catch (e) {}
+  return 'j' + b64u(raw);
+}
+async function unpackShare(s) {
+  const u = ub64u(s.slice(1));
+  if (s[0] === 'z') { const ds = new Blob([u]).stream().pipeThrough(new DecompressionStream('deflate-raw')); return JSON.parse(await new Response(ds).text()); }
+  return JSON.parse(new TextDecoder().decode(u));
+}
+const cleanRoutine = r => ({name: r.name, exercises: r.exercises.map(e => { const o = {...e}; delete o.target; return o; })});
+async function shareItem(kind, items, label, folder) {
+  const who = (S.settings.name || '').trim();
+  const data = {v: 1, k: kind, from: who, f: folder || null, items};
+  const url = location.origin + location.pathname + '#imp=' + await packShare(data);
+  const what = (who ? {r: T('sa routine', 'their routine'), f: T('son programme', 'their program'), t: T('son minuteur', 'their timer'), s: T('ses étirements', 'their stretching routine')} : {r: T('ma routine', 'my routine'), f: T('mon programme', 'my program'), t: T('mon minuteur', 'my timer'), s: T('mes étirements', 'my stretching routine')})[kind];
+  const txt = T(`💪 ${who ? who + ' t\'a partagé' : 'Je te partage'} ${what} « ${label} » sur Carnet Muscu.\n\nTouche le lien pour l'ajouter dans ton appli :\n${url}\n\n(Pas encore l'appli? Ouvre le lien dans Chrome, puis menu ⋮ → Installer l'application.)`,
+    `💪 ${who ? who + ' shared' : 'Here\'s'} ${what} “${label}” on Carnet Muscu.\n\nTap the link to add it to your app:\n${url}\n\n(Don't have the app yet? Open the link in Chrome, then menu ⋮ → Install app.)`);
+  shareText(txt);
+}
+async function checkImport() {
+  const m = location.hash.match(/#imp=([A-Za-z0-9_-]+)/); if (!m) return;
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  let d; try { d = await unpackShare(m[1]); } catch (e) { toast(T('⚠️ Lien de partage invalide ou incomplet', '⚠️ Invalid or incomplete share link')); return; }
+  if (!d || !Array.isArray(d.items) || !d.items.length) return;
+  window._imp = d;
+  const from = d.from ? esc(d.from) : T('Un ami', 'A friend');
+  let list = '';
+  if (d.k === 'r' || d.k === 'f') list = d.items.map(r => `<div class="preview"><b>${esc(r.name)}</b><br><span class="small muted">${r.exercises.map(e => `${esc(e.name)} — ${e.sets}×${esc(e.reps)}`).join('<br>')}</span></div>`).join('');
+  else if (d.k === 't') list = d.items.map(t => `<div class="preview"><b>⏱ ${esc(tmN(t))}</b> · ${mmss(tmTotal(t))}</div>`).join('');
+  else if (d.k === 's') list = d.items.map(rt => `<div class="preview"><b>🧘 ${esc(T(rt.n[0], rt.n[1] || rt.n[0]))}</b><br><span class="small muted">${rt.items.map(it => esc(stName(it))).join(', ')}</span></div>`).join('');
+  const defF = d.f || T(`Partagé par ${d.from || 'un ami'}`, `Shared by ${d.from || 'a friend'}`);
+  modal(`<h2>📩 ${T(`${from} te partage :`, `${from} shared with you:`)}</h2>${list}
+    ${d.k === 'r' || d.k === 'f' ? `<label>${T('Ajouter dans le dossier', 'Add to folder')}</label><input id="impf" value="${esc(defF)}">
+      <p class="muted small">${T('Les charges viennent de ton ami : ajuste-les à ta première séance.', 'Weights come from your friend: adjust them at your first workout.')}</p>` : ''}
+    <button class="btn primary block" data-act="imp-ok" style="margin-top:10px">⬇ ${T('Ajouter dans mon appli', 'Add to my app')}</button>
+    <button class="btn block" data-act="close" style="margin-top:8px">${T('Non merci', 'No thanks')}</button>`);
+}
+function doImport() {
+  const d = window._imp; if (!d) return; let msg = '';
+  if (d.k === 'r' || d.k === 'f') {
+    const f = (($('#impf') || {}).value || '').trim() || DEF_FOLDER;
+    if (!S.folders.includes(f)) S.folders.push(f);
+    d.items.forEach(r => S.routines.push({id: uid(), name: r.name, folder: f, exercises: r.exercises}));
+    msg = T(`✅ ${d.items.length} routine${d.items.length > 1 ? 's' : ''} ajoutée${d.items.length > 1 ? 's' : ''} dans « ${f} »`, `✅ ${d.items.length} routine${d.items.length > 1 ? 's' : ''} added to “${f}”`);
+    setRoot('train');
+  } else if (d.k === 't') { S.timers = S.timers || []; d.items.forEach(t => S.timers.unshift({...t, id: 'tm' + uid()})); msg = T('✅ Minuteur ajouté', '✅ Timer added'); setRoot('timers'); }
+  else if (d.k === 's') { S.stretches = S.stretches || []; d.items.forEach(rt => S.stretches.push({...rt, id: 's' + uid()})); msg = T('✅ Routine d\'étirement ajoutée', '✅ Stretching routine added'); setRoot('stretch'); }
+  window._imp = null; save(); closeAll(); render(); toast(msg);
+}
+
 /* ---------- Calendrier façon Hevy ---------- */
 let calMonths = 6;
 function vCal2() {
@@ -3952,9 +4009,13 @@ document.addEventListener('click', e => {
     case 'fix-import': { const bad = new Set(brokenImports()); S.history = S.history.filter(x => !bad.has(x)); save(); closeAll(); render(); toast(`🧹 ${bad.size} séances retirées — choisis ton fichier CSV Hevy`); $('#fileIn').click(); break; }
     case 'go': if (b.dataset.v === 'settings' && b.closest('.nag, .card') && !cloudOn() && /Activer|Turn on/.test(b.textContent)) secOpen.add('cloud'); go(b.dataset.v, {n: b.dataset.n, rid: b.dataset.rid}); break;
     case 'start-empty': startEmpty(); break;
+    case 'share-r': { const r2 = S.routines.find(x => x.id === b.dataset.rid); closeAll(); if (r2) shareItem('r', [cleanRoutine(r2)], r2.name, r2.folder && r2.folder !== DEF_FOLDER ? r2.folder : null); break; }
+    case 'share-f': { const f = b.dataset.f, rs = S.routines.filter(x => (x.folder || DEF_FOLDER) === f); closeAll(); if (rs.length) shareItem('f', rs.map(cleanRoutine), f, f); break; }
+    case 'st-share': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); if (rt) { const c = JSON.parse(JSON.stringify(rt)); delete c.id; shareItem('s', [c], T(rt.n[0], rt.n[1] || rt.n[0])); } break; }
+    case 'imp-ok': doImport(); break;
     case 'tm-go': startTimerRun(b.dataset.id); break;
     case 'tm-new': openTmEdit(null); break;
-    case 'tm-share': { const t = tmAll().find(x => x.id === b.dataset.id); if (t) shareText(tmText(t)); break; }
+    case 'tm-share': { const t = tmAll().find(x => x.id === b.dataset.id); if (t) { const c = JSON.parse(JSON.stringify(t)); c.n = tmN(t); c.blocks = JSON.parse(JSON.stringify(tmBlocks(t))); ['prep', 'rounds', 'steps', 'skipLast', 'cool'].forEach(k => delete c[k]); delete c.id; shareItem('t', [c], c.n); } break; }
     case 'tm-menu': { const t = tmAll().find(x => x.id === b.dataset.id), own = (S.timers || []).some(x => x.id === t.id);
       modal(`<h2>⏱ ${esc(tmN(t))}</h2><div class="menu">${own ? `<button class="btn block" data-act="tm-edit" data-id="${t.id}">✏️ ${T('Modifier', 'Edit')}</button>` : ''}
         <button class="btn block" data-act="tm-copy" data-id="${t.id}">⧉ ${own ? T('Dupliquer', 'Duplicate') : T('Copier et modifier', 'Copy and edit')}</button>
@@ -3999,6 +4060,7 @@ document.addEventListener('click', e => {
     case 'st-menu': { const rt = stAll().find(x => x.id === b.dataset.id), own = (S.stretches || []).some(x => x.id === rt.id);
       modal(`<h2>🧘 ${esc(T(rt.n[0], rt.n[1] || rt.n[0]))}</h2><div class="menu">${own ? `<button class="btn block" data-act="st-edit" data-id="${rt.id}">✏️ ${T('Modifier', 'Edit')}</button>` : ''}
         <button class="btn block" data-act="st-copy" data-id="${rt.id}">⧉ ${own ? T('Dupliquer', 'Duplicate') : T('Copier et modifier', 'Copy and edit')}</button>
+        <button class="btn block" data-act="st-share" data-id="${rt.id}">📤 ${T('Partager à un ami', 'Share with a friend')}</button>
         ${own ? `<button class="btn danger block" data-act="str-del" data-id="${rt.id}">${T('Supprimer', 'Delete')}</button>` : ''}<button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`); break; }
     case 'st-edit': { const rt = (S.stretches || []).find(x => x.id === b.dataset.id); closeAll(); openStEdit(rt); break; }
     case 'st-copy': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); const c = JSON.parse(JSON.stringify(rt)); c.id = 's' + uid(); c.n = [c.n[0] + T(' (copie)', ' (copy)'), (c.n[1] || c.n[0]) + ' (copy)']; delete c.d; openStEdit(c); break; }
@@ -4345,9 +4407,11 @@ function openWelcome() {
     <label>${T('Unité', 'Unit')}</label><div class="seg"><button class="${U() === 'lb' ? 'on' : ''}" data-act="wl-unit" data-v="lb">lb</button><button class="${U() === 'kg' ? 'on' : ''}" data-act="wl-unit" data-v="kg">kg</button></div>
     <label>${T('Comment fais-tu tes séries?', 'How do you train your sets?')}</label>
     <div class="menu">${EFFORTS().map(([k, l]) => `<button class="btn block ${(S.settings.effort || 'normal') === k ? 'on' : ''}" data-act="wl-eff" data-v="${k}" style="text-align:left">${l}</button>`).join('')}</div>
-    <button class="btn primary block" data-act="wl-ok" style="margin-top:14px">${T('C\'est parti!', 'Let\'s go!')}</button>`, {id: 'welcome', onclose: () => { S.settings.onboarded = true; save(); }});
+    <button class="btn primary block" data-act="wl-ok" style="margin-top:14px">${T('C\'est parti!', 'Let\'s go!')}</button>`, {id: 'welcome', onclose: () => { S.settings.onboarded = true; save(); setTimeout(checkImport, 250); }});
 }
 if (!S.settings.onboarded) setTimeout(openWelcome, 300);
+if (S.settings.onboarded) setTimeout(checkImport, 450);
+window.addEventListener('hashchange', checkImport);
 { const bad = brokenImports(); if (bad.length) modal(`<h2>🛠️ Dates de séances à réparer</h2>
   <p>J'ai trouvé <b>${bad.length} séances importées de Hevy</b> qui ont toutes reçu la même date à cause d'un bug de l'import (les mois en français comme « août » ou « juil. » n'étaient pas reconnus). C'est corrigé.</p>
   <p class="muted small">Pour les récupérer avec les bonnes dates : supprime-les, puis réimporte ton fichier CSV de Hevy (Hevy → Profil → Réglages → Exporter les données). Les séances déjà correctes ne seront pas dupliquées.</p>
