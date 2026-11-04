@@ -814,12 +814,14 @@ function routineToText(r) {
   }).join('\n');
 }
 function parseText(txt, defaultName) {
-  const out = []; let cur = null;
+  const out = []; let cur = null, curF = null;
   String(txt).split(/\r?\n/).forEach(raw => {
     let l = raw.replace(/[`*]/g, '').trim();
     if (!l) return;
+    const fm = l.match(/^#*\s*(?:DOSSIER|FOLDER|PROGRAMME|PROGRAM)\s*:\s*(.+)$/i);
+    if (fm) { curF = fm[1].trim(); return; }
     const m = l.match(/^#*\s*ROUTINE\s*:\s*(.+)$/i);
-    if (m) { cur = {name: m[1].trim(), exercises: []}; out.push(cur); return; }
+    if (m) { cur = {name: m[1].trim(), exercises: []}; if (curF) cur.folder = curF; out.push(cur); return; }
     if (!l.includes('|')) return;
     if (!cur) { if (!defaultName) return; cur = {name: defaultName, exercises: []}; out.push(cur); }
     l = l.replace(/^(?:[-•–]|\d+[.)])\s*/, '');
@@ -859,13 +861,13 @@ function aiPrompt(routines) {
   }).join('\n\n');
   if (isEN()) return `Here is my workout ${routines.length > 1 ? 'program' : 'routine'} (weights in ${U()}${S.settings.failDefault ? ', all my sets are taken to failure' : ''}).\n\n${blocks}${routines.length > 1 ? schedTxt() : ''}\n\n` +
     `Reply with the modified version in EXACTLY this format, one exercise per line:\n` +
-    `ROUTINE: Routine name\n- Exercise | sets x reps | weight ${U()} | note (optional) | R:90 (rest in seconds, optional) | SS:A (optional) | TIMED (optional, if reps are seconds)\n` +
-    `Write BW for bodyweight (“?” = weight to be determined: suggest a starting weight). Keep my R:… (rest in seconds) values, or adjust them if relevant. For a superset, put the same SS:A (or SS:B…) on consecutive exercises done together. ` +
+    `ROUTINE: Routine name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note (optional) | R:90 (rest in seconds, optional) | SS:A (optional) | TIMED (optional, if reps are seconds)\n` +
+    `ALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. Write BW for bodyweight (“?” = weight to be determined: suggest a starting weight). Keep my R:… (rest in seconds) values, or adjust them if relevant. For a superset, put the same SS:A (or SS:B…) on consecutive exercises done together. ` +
     `Keep the same routine name so my app replaces it.\n\nMy request: `;
   return `Voici ${routines.length > 1 ? 'mon programme' : 'ma routine'} d'entraînement (charges en ${U()}${S.settings.failDefault ? ", toutes mes séries sont faites à l'échec" : ''}).\n\n${blocks}${routines.length > 1 ? schedTxt() : ''}\n\n` +
     `Réponds avec la version modifiée dans EXACTEMENT ce format, un exercice par ligne :\n` +
-    `ROUTINE: Nom de la routine\n- Exercice | séries x reps | charge ${U()} | note (optionnelle) | R:90 (repos en secondes, optionnel) | SS:A (optionnel) | DURÉE (optionnel, si les reps sont des secondes)\n` +
-    `Écris PDC pour le poids du corps (« ? » = charge à déterminer : propose une charge de départ). Garde les R:… (repos en secondes) de mes exercices, ou ajuste-les si c'est pertinent. Pour un superset, mets le même SS:A (ou SS:B…) sur les exercices consécutifs faits ensemble. ` +
+    `ROUTINE: Nom de la routine\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note (optionnelle) | R:90 (repos en secondes, optionnel) | SS:A (optionnel) | DURÉE (optionnel, si les reps sont des secondes)\n` +
+    `Donne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. Écris PDC pour le poids du corps (« ? » = charge à déterminer : propose une charge de départ). Garde les R:… (repos en secondes) de mes exercices, ou ajuste-les si c'est pertinent. Pour un superset, mets le même SS:A (ou SS:B…) sur les exercices consécutifs faits ensemble. ` +
     `Garde le même nom de routine pour que mon appli la remplace.\n\nMa demande : `;
 }
 function freshPrompt() {
@@ -880,14 +882,14 @@ function freshPrompt() {
     `Choose the exercises and structure freely: do NOT base it on my old routines, new exercises are welcome. ` +
     (perf ? `To help you estimate starting weights, here are my best recent sets (last 90 days):\n${perf}\n\n` : '\n') +
     `Reply in EXACTLY this format, one ROUTINE: line per workout day, one exercise per line:\n` +
-    `ROUTINE: Routine name\n- Exercise | sets x reps | weight ${U()} | note (optional) | R:90 (rest in seconds) | SS:A (optional, superset) | TIMED (optional, if reps are seconds)\n` +
-    `Write BW for bodyweight. Give each routine a new, clear name (e.g. Push A, Pull A, Legs A).\n\nMy request (number of days per week, split, goals…): `;
+    `FOLDER: Program name\nROUTINE: Routine name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note (optional) | R:90 (rest in seconds) | SS:A (optional, superset) | TIMED (optional, if reps are seconds)\n` +
+    `ALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. Write BW for bodyweight. Start with a FOLDER: line with a short program name (e.g. FOLDER: PPL 5 days), then give each routine a new, clear name (e.g. Push A, Pull A, Legs A).\n\nMy request (number of days per week, split, goals…): `;
   return `Crée-moi un NOUVEAU programme d'entraînement à partir de zéro (charges en ${U()}${S.settings.failDefault ? ", je fais mes séries à l'échec" : ''}). ` +
     `Choisis librement les exercices et la structure : ne te base PAS sur mes anciennes routines, tu peux proposer de nouveaux exercices. ` +
     (perf ? `Pour t'aider à estimer mes charges de départ, voici mes meilleures séries récentes (90 derniers jours) :\n${perf}\n\n` : '\n') +
     `Réponds dans EXACTEMENT ce format, une ligne ROUTINE: par séance, un exercice par ligne :\n` +
-    `ROUTINE: Nom de la routine\n- Exercice | séries x reps | charge ${U()} | note (optionnelle) | R:90 (repos en secondes) | SS:A (optionnel, superset) | DURÉE (optionnel, si les reps sont des secondes)\n` +
-    `Écris PDC pour le poids du corps. Donne à chaque routine un nouveau nom clair (ex. Push A, Pull A, Jambes A).\n\nMa demande (nombre de jours par semaine, split, objectifs…) : `;
+    `DOSSIER: Nom du programme\nROUTINE: Nom de la routine\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note (optionnelle) | R:90 (repos en secondes) | SS:A (optionnel, superset) | DURÉE (optionnel, si les reps sont des secondes)\n` +
+    `Donne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. Écris PDC pour le poids du corps. Commence par une ligne DOSSIER: avec un nom court pour le programme (ex. DOSSIER: PPL 5 jours), puis donne à chaque routine un nouveau nom clair (ex. Push A, Pull A, Jambes A).\n\nMa demande (nombre de jours par semaine, split, objectifs…) : `;
 }
 async function copy(t) {
   try { await navigator.clipboard.writeText(t); toast('✅ Copié! Colle-le dans ton IA'); return; } catch (e) {}
@@ -921,25 +923,29 @@ function previewPaste(rid) {
   const r = S.routines.find(x => x.id === rid);
   const res = parseText($('#pasteTa').value, r && r.name);
   $('#pv').innerHTML = res.length ? res.map(x => {
-    const exists = S.routines.some(y => (!pasteFolder || (y.folder || DEF_FOLDER) === pasteFolder) && norm(y.name) === norm(x.name)) || (r && res.length === 1);
-    return `<div class="preview"><b>${esc(x.name)}</b> <span class="tag">${exists ? 'mise à jour' : 'nouvelle'}</span><br>${x.exercises.map(e => `${e.ss ? '⛓' + esc(e.ss) + ' ' : ''}${esc(e.name)} — ${e.sets}×${esc(e.reps)} · ${esc(fmtW(e.weight))}${e.rest ? ' · ⏱' + fmtRest(e.rest) : ''}`).join('<br>')}</div>`;
+    const fx = pasteFolder || x.folder || null;
+    const exists = S.routines.some(y => (!fx || (y.folder || DEF_FOLDER) === fx) && norm(y.name) === norm(x.name)) || (r && res.length === 1);
+    return `<div class="preview"><b>${esc(x.name)}</b> <span class="tag">${exists ? 'mise à jour' : 'nouvelle'}</span>${fx ? ` <span class="tag">📁 ${esc(fx)}</span>` : ''}<br>${x.exercises.map(e => `${e.ss ? '⛓' + esc(e.ss) + ' ' : ''}${esc(e.name)} — ${e.sets}×${esc(e.reps)} · ${esc(fmtW(e.weight))}${e.rest ? ' · ⏱' + fmtRest(e.rest) : ''}`).join('<br>')}</div>`;
   }).join('') : '<p class="muted small">Aucun exercice reconnu pour l\'instant.</p>';
 }
 function applyPaste(rid) {
   const r = S.routines.find(x => x.id === rid);
   const res = parseText($('#pasteTa').value, r && r.name);
   if (!res.length) { toast('Aucun exercice reconnu'); return; }
-  const inF = y => !pasteFolder || (y.folder || DEF_FOLDER) === pasteFolder;
+  const newF = new Set();
   res.forEach(x => {
+    const fx = pasteFolder || x.folder || null;
+    if (fx && !folders().includes(fx)) { S.folders.push(fx); newF.add(fx); }
+    const inF = y => !fx || (y.folder || DEF_FOLDER) === fx;
     let t = S.routines.find(y => inF(y) && norm(y.name) === norm(x.name));
     if (!t && r && res.length === 1) t = r;
     if (t) {
       x.exercises.forEach(ne => { const old = t.exercises.find(o => norm(o.name) === norm(ne.name)); if (old && old.rest && !ne.rest) ne.rest = old.rest; if (old && old.sl && +old.sets === +ne.sets && String(old.reps) === String(ne.reps) && String(old.weight ?? '') === String(ne.weight ?? '')) ne.sl = old.sl; });
       t.name = x.name; t.exercises = x.exercises;
-    } else S.routines.push({id: uid(), name: x.name, folder: pasteFolder || DEF_FOLDER, exercises: x.exercises});
+    } else S.routines.push({id: uid(), name: x.name, folder: fx || DEF_FOLDER, exercises: x.exercises});
   });
   save(); closeModal(); render();
-  toast(`✅ ${res.length} routine${res.length > 1 ? 's' : ''} mise${res.length > 1 ? 's' : ''} à jour`);
+  toast(`✅ ${res.length} routine${res.length > 1 ? 's' : ''} mise${res.length > 1 ? 's' : ''} à jour` + (newF.size ? T(` · 📁 dossier « ${[...newF].join(', ')} » créé`, ` · 📁 folder “${[...newF].join(', ')}” created`) : ''));
 }
 let editName = 'Nouvelle routine';
 function openEdit(rid) {
@@ -1938,12 +1944,12 @@ function historyPrompt() {
     hs.map(h => `${new Date(h.date).toLocaleDateString('en-CA')} — ${h.routineName} (${h.duration} min)\n` +
       h.exercises.map(e => `  ${e.name}: ${e.sets.map(s => fmtSet(s, false).replace(' (échec)', '')).join(', ')}${e.note ? ' — note: ' + e.note : ''}`).join('\n')).join('\n\n') +
     `\n\nMy current routines:\n\n${S.routines.map(routineToText).join('\n\n')}\n\n` +
-    `If you suggest routine changes, give them in EXACTLY this format so I can paste them into my app:\nROUTINE: Name\n- Exercise | sets x reps | weight ${U()} | note | R:90 (rest in s, optional) | SS:A (optional, for a superset)\n\nMy question: `;
+    `If you suggest routine changes, give them in EXACTLY this format so I can paste them into my app:\nROUTINE: Name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note | R:90 (rest in s, optional) | SS:A (optional, for a superset)\nALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. \n\nMy question: `;
   return `Voici mes séances d'entraînement des 30 derniers jours (charges en ${U()}, format charge×reps${S.settings.failDefault ? ", séries faites à l'échec sauf indication" : ''}) :\n\n` +
     hs.map(h => `${new Date(h.date).toLocaleDateString(LOC())} — ${h.routineName} (${h.duration} min)\n` +
       h.exercises.map(e => `  ${e.name} : ${e.sets.map(s => fmtSet(s, false).replace(' (échec)', '')).join(', ')}${e.note ? ' — note : ' + e.note : ''}`).join('\n')).join('\n\n') +
     `\n\nMes routines actuelles :\n\n${S.routines.map(routineToText).join('\n\n')}\n\n` +
-    `Si tu proposes des changements de routines, donne-les dans EXACTEMENT ce format pour que je puisse les coller dans mon appli :\nROUTINE: Nom\n- Exercice | séries x reps | charge ${U()} | note | R:90 (repos en s, optionnel) | SS:A (optionnel pour un superset)\n\nMa question : `;
+    `Si tu proposes des changements de routines, donne-les dans EXACTEMENT ce format pour que je puisse les coller dans mon appli :\nROUTINE: Nom\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note | R:90 (repos en s, optionnel) | SS:A (optionnel pour un superset)\nDonne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. \n\nMa question : `;
 }
 
 /* ===================== Graphique ===================== */
@@ -2989,8 +2995,8 @@ function openStag(name, ei) {
 function stagPrompt(name) {
   const st = stagnation(name);
   const lines = st.last.map(({h: hh, e}) => `${new Date(hh.date).toLocaleDateString(LOC())} : ${work(e.sets).map(s => `${s.w === '' || s.w == null ? BWL() : s.w}×${s.r}`).join(', ')}`).join('\n');
-  return T(`Je stagne sur « ${name} » depuis ${st.k} séances (${st.wk} semaines) (charges en ${U()}${S.settings.failDefault ? ", séries à l'échec" : ''}). Mes dernières séances :\n${lines}\n\nQue me conseilles-tu (plage de reps, deload, variante, volume)? Si tu modifies ma routine, donne-la dans ce format :\nROUTINE: Nom\n- Exercice | séries x reps | charge ${U()} | note | R:90\n\nMa question : `,
-    `I've stalled on “${name}” for ${st.k} workouts (${st.wk} weeks) (weights in ${U()}${S.settings.failDefault ? ', sets to failure' : ''}). My latest workouts:\n${lines}\n\nWhat do you suggest (rep range, deload, variation, volume)? If you change my routine, give it in this format:\nROUTINE: Name\n- Exercise | sets x reps | weight ${U()} | note | R:90\n\nMy question: `);
+  return T(`Je stagne sur « ${name} » depuis ${st.k} séances (${st.wk} semaines) (charges en ${U()}${S.settings.failDefault ? ", séries à l'échec" : ''}). Mes dernières séances :\n${lines}\n\nQue me conseilles-tu (plage de reps, deload, variante, volume)? Si tu modifies ma routine, donne-la dans ce format :\nROUTINE: Nom\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note | R:90\n\nMa question : `,
+    `I've stalled on “${name}” for ${st.k} workouts (${st.wk} weeks) (weights in ${U()}${S.settings.failDefault ? ', sets to failure' : ''}). My latest workouts:\n${lines}\n\nWhat do you suggest (rep range, deload, variation, volume)? If you change my routine, give it in this format:\nROUTINE: Name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note | R:90\n\nMy question: `);
 }
 function stagCard() {
   const names = [...new Set(S.routines.flatMap(r => r.exercises.map(e => e.name)))].filter(n => stagnation(n));
@@ -3835,7 +3841,7 @@ document.addEventListener('click', e => {
     case 'ai-share': shareText(aiPrompt([r])); break;
     case 'ai-all': copy(aiPrompt(S.routines)); break;
     case 'ai-fresh': closeModal(); copy(freshPrompt()); break;
-    case 'ai-folder': { const rs = S.routines.filter(x => (x.folder || DEF_FOLDER) === b.dataset.f); closeModal(); if (rs.length) copy(aiPrompt(rs)); break; }
+    case 'ai-folder': { const rs = S.routines.filter(x => (x.folder || DEF_FOLDER) === b.dataset.f); closeModal(); if (rs.length) copy(aiPrompt(rs).replace(/^/, T(`(Programme du dossier « ${b.dataset.f} ». Commence ta réponse par la ligne DOSSIER: ${b.dataset.f} — ou un nouveau nom si tu changes le programme.)\n\n`, `(Program from folder “${b.dataset.f}”. Start your answer with the line FOLDER: ${b.dataset.f} — or a new name if you change the program.)\n\n`))); break; }
     case 'paste-folder': { const f = b.dataset.f; closeModal(); openPaste('', f); break; }
     case 'ai-history': { const t = historyPrompt(); t ? copy(t) : toast('Aucune séance dans les 30 derniers jours'); break; }
     case 'paste': openPaste(rid); break;
