@@ -250,6 +250,29 @@ button.chip{cursor:pointer}
 .setsec .secb{padding:0 16px 16px;border-top:1px solid var(--line)}.setsec .secb>.card{background:var(--card2);margin:12px 0 0}
 .stgif{width:min(70vw,260px);aspect-ratio:1;margin:0 auto;border-radius:16px;overflow:hidden;background:#fff}.stgif img{width:100%;height:100%;object-fit:contain}
 .stside{font-weight:700;color:var(--accent);min-height:20px}
+.tmstrip{display:flex;gap:4px;margin:12px 0 4px;overflow:hidden;border-radius:8px}.tmb{color:#fff;padding:8px 6px;text-align:center;min-width:0;border-radius:6px}.tmb span{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase;opacity:.95}.tmb b{font-size:15px;font-variant-numeric:tabular-nums}
+.tmx{background:var(--line);color:var(--text);display:flex;align-items:center;padding:0 8px;font-weight:700;border-radius:6px}
+.btn.ghost{background:none;border-color:transparent}
+.tmc{width:22px;height:22px;border-radius:50%;border:2px solid transparent;padding:0}.tmc.on{border-color:var(--text)}
+.tmblock{background:var(--card2);border-radius:14px;overflow:hidden;margin-top:14px;border:1px solid var(--line)}
+.tmbh{position:relative;text-align:center;padding:10px 8px}.tmbm{position:absolute;right:6px;top:10px;font-size:20px}
+.tmpm{width:40px;height:40px;border-radius:8px;border:0;background:var(--text);color:var(--bg);font-size:24px;font-weight:800;line-height:1}
+.tmsteps .reo.tmstep{display:block;color:#fff;border-bottom:0;padding:14px 16px 8px;margin:0}
+.tmstep input{background:transparent;border:0;border-bottom:2px solid #ffffffb0;border-radius:0;color:#fff;font-size:20px;padding:6px 2px;flex:1}.tmstep input::placeholder{color:#ffffffa0}
+.tmmode{display:flex;gap:16px;margin:12px 0 4px}.tmmode button{background:none;border:0;color:#ffffff90;font-weight:800;font-size:17px;padding:4px 0}.tmmode button.on{color:#fff}
+.tmval{display:flex;align-items:center;justify-content:center;gap:22px;margin:4px 0 8px}.tmval button{width:38px;height:38px;border:0;border-radius:6px;background:#ffffffd0;color:#333;font-size:24px;font-weight:800;line-height:1}
+.tmv{font-size:44px;font-weight:800;font-variant-numeric:tabular-nums;min-width:150px;text-align:center;cursor:pointer}
+.tmacts{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #ffffff30;padding-top:6px}.tmacts button{background:none;border:0;color:#fff;font-weight:800;font-size:16px;padding:8px 6px}
+.tmbf{display:flex;align-items:center;justify-content:space-between;padding:10px 14px}.tmbf>*{flex:1}.tmbf b{text-align:right;font-size:20px}
+.tmadd{flex:0 0 56px!important;height:56px;border-radius:50%;border:0;background:var(--bg);color:var(--text);font-size:30px}
+.tmdone{display:block;margin:10px auto;background:#fff;color:#111;border:0;font-size:22px;font-weight:800;padding:16px 40px;border-radius:40px}
+.durin input{width:56px;text-align:center;padding:8px 4px}
+#tmplayer{color:#fff;min-height:92vh;transition:background .25s}#tmplayer .muted{color:#ffffffcc}
+.tmplay{display:flex;flex-direction:column;min-height:86vh}.tmph{font-size:34px;font-weight:800;text-align:center;margin-top:7vh;text-transform:uppercase;letter-spacing:.5px}
+.tmrd{text-align:center;font-size:18px;opacity:.9;margin-top:4px}.tmbig{font-size:min(28vw,150px);font-weight:800;text-align:center;font-variant-numeric:tabular-nums;line-height:1.1;margin:4vh 0 2vh}
+.tmbar{height:10px;background:#0003;border-radius:5px;overflow:hidden}.tmbar>div{height:100%;background:#fff;border-radius:5px;width:0}
+.tmbtn{background:#0003;border:0;color:#fff;font-size:24px;width:64px;height:64px;border-radius:50%;padding:0}.tmmain{width:84px;height:84px;font-size:32px;background:#fff;color:#111}
+.toolt{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:14px}.toolt .ico{color:var(--accent);margin:0 0 2px}
 .chrono{font-variant-numeric:tabular-nums;font-weight:700;color:var(--accent);font-size:15px}
 .cday .dl{font-size:10px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
 </style>
@@ -612,12 +635,12 @@ const libEntry = name => { const id = libId(name); return id ? LIBMAP[id] : null
 
 /* ===================== État ===================== */
 const DEF_FOLDER = 'Mes routines';
-function ex(name, sets, reps, weight = '', note = '') { return {name, sets, reps, weight, note}; }
+function ex(name, sets, reps, weight = '', note = '') { const o = {name, sets, reps, weight, note}; if (weight === '' && !/traction|dips/i.test(name)) o.nw = true; return o; }
 function seed() {
   const r = (name, exs) => ({id: uid(), name, exercises: exs});
   return {
     version: 2,
-    settings: {unit: 'lb', rest: 150, failDefault: true},
+    settings: {unit: 'lb', rest: 150, failDefault: false, onboarded: false},
     routines: [
       r('Upper A', [ex('Développé couché', 2, '6-10'), ex('Rowing barre', 2, '8-12'), ex('Développé militaire haltères', 2, '8-12'), ex('Tirage vertical', 2, '8-12'), ex('Curl haltères', 2, '10-15'), ex('Extension triceps poulie', 2, '10-15')]),
       r('Lower A', [ex('Squat', 2, '6-10'), ex('Soulevé de terre roumain', 2, '8-12'), ex('Presse à cuisses', 2, '10-15'), ex('Leg curl', 2, '10-15'), ex('Mollets debout', 2, '10-15')]),
@@ -631,7 +654,9 @@ function seed() {
 function migrate(s) {
   s.version = 3;
   if (!Array.isArray(s.folders) || !s.folders.length) s.folders = [DEF_FOLDER];
-  s.settings = Object.assign({unit: 'lb', rest: 150, failDefault: true, theme: 'noir', sound: true, wake: true}, s.settings || {});
+  s.settings = Object.assign({unit: 'lb', rest: 150, failDefault: false, theme: 'noir', sound: true, wake: true}, s.settings || {});
+  if (!s.settings.effort) s.settings.effort = s.settings.failDefault ? 'fail' : 'normal';
+  if (s.settings.onboarded == null) s.settings.onboarded = s.history.length > 0 || s.routines.some(r => r.folder && r.folder !== DEF_FOLDER);
   if (!Array.isArray(s.history)) s.history = [];
   if (!Array.isArray(s.body)) s.body = [];
   if (!s.links || typeof s.links !== 'object') s.links = {};
@@ -851,6 +876,14 @@ function parseText(txt, defaultName) {
   out.forEach(r => fixSS(r.exercises));
   return out.filter(r => r.exercises.length);
 }
+/* Intensité des séries (pour l'IA) : à l'échec / 1-2 reps en réserve / normal */
+const EFFORTS = () => [['fail', T('À l\'échec (0 rep en réserve)', 'To failure (0 reps in reserve)')], ['rir', T('Proche de l\'échec (1-2 reps en réserve)', 'Close to failure (1-2 reps in reserve)')], ['normal', T('Normal / je ne sais pas', 'Normal / not sure')]];
+function effTxt() {
+  const e = S.settings.effort || (S.settings.failDefault ? 'fail' : 'normal');
+  if (e === 'fail') return T(", toutes mes séries de travail sont faites à l'échec", ', all my working sets are taken to failure');
+  if (e === 'rir') return T(', je garde environ 1-2 reps en réserve (RIR 1-2)', ', I keep about 1-2 reps in reserve (RIR 1-2)');
+  return '';
+}
 function aiPrompt(routines) {
   const blocks = routines.map(r => {
     const perf = r.exercises.map(e => {
@@ -859,12 +892,12 @@ function aiPrompt(routines) {
     }).filter(Boolean);
     return routineToText(r) + (perf.length ? T('\nMes dernières performances :\n', '\nMy latest performances:\n') + perf.join('\n') : '');
   }).join('\n\n');
-  if (isEN()) return `Here is my workout ${routines.length > 1 ? 'program' : 'routine'} (weights in ${U()}${S.settings.failDefault ? ', all my sets are taken to failure' : ''}).\n\n${blocks}${routines.length > 1 ? schedTxt() : ''}\n\n` +
+  if (isEN()) return `Here is my workout ${routines.length > 1 ? 'program' : 'routine'} (weights in ${U()}${effTxt()}).\n\n${blocks}${routines.length > 1 ? schedTxt() : ''}\n\n` +
     `Reply with the modified version in EXACTLY this format, one exercise per line:\n` +
     `ROUTINE: Routine name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note (optional) | R:90 (rest in seconds, optional) | SS:A (optional) | TIMED (optional, if reps are seconds)\n` +
     `ALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. Write BW for bodyweight (“?” = weight to be determined: suggest a starting weight). Keep my R:… (rest in seconds) values, or adjust them if relevant. For a superset, put the same SS:A (or SS:B…) on consecutive exercises done together. ` +
     `Keep the same routine name so my app replaces it.\n\nMy request: `;
-  return `Voici ${routines.length > 1 ? 'mon programme' : 'ma routine'} d'entraînement (charges en ${U()}${S.settings.failDefault ? ", toutes mes séries sont faites à l'échec" : ''}).\n\n${blocks}${routines.length > 1 ? schedTxt() : ''}\n\n` +
+  return `Voici ${routines.length > 1 ? 'mon programme' : 'ma routine'} d'entraînement (charges en ${U()}${effTxt()}).\n\n${blocks}${routines.length > 1 ? schedTxt() : ''}\n\n` +
     `Réponds avec la version modifiée dans EXACTEMENT ce format, un exercice par ligne :\n` +
     `ROUTINE: Nom de la routine\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note (optionnelle) | R:90 (repos en secondes, optionnel) | SS:A (optionnel) | DURÉE (optionnel, si les reps sont des secondes)\n` +
     `Donne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. Écris PDC pour le poids du corps (« ? » = charge à déterminer : propose une charge de départ). Garde les R:… (repos en secondes) de mes exercices, ou ajuste-les si c'est pertinent. Pour un superset, mets le même SS:A (ou SS:B…) sur les exercices consécutifs faits ensemble. ` +
@@ -878,13 +911,13 @@ function freshPrompt() {
   }));
   const ks = Object.keys(best).sort((a, b) => cnt[b] - cnt[a]).slice(0, 30);
   const perf = ks.map(k => `${k} : ${best[k].w === '' || best[k].w == null ? BWL() : best[k].w}×${best[k].r}`).join('\n');
-  if (isEN()) return `Create a NEW workout program for me from scratch (weights in ${U()}${S.settings.failDefault ? ', I take my sets to failure' : ''}). ` +
+  if (isEN()) return `Create a NEW workout program for me from scratch (weights in ${U()}${effTxt()}). ` +
     `Choose the exercises and structure freely: do NOT base it on my old routines, new exercises are welcome. ` +
     (perf ? `To help you estimate starting weights, here are my best recent sets (last 90 days):\n${perf}\n\n` : '\n') +
     `Reply in EXACTLY this format, one ROUTINE: line per workout day, one exercise per line:\n` +
     `FOLDER: Program name\nROUTINE: Routine name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note (optional) | R:90 (rest in seconds) | SS:A (optional, superset) | TIMED (optional, if reps are seconds)\n` +
     `ALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. Write BW for bodyweight. Start with a FOLDER: line with a short program name (e.g. FOLDER: PPL 5 days), then give each routine a new, clear name (e.g. Push A, Pull A, Legs A).\n\nMy request (number of days per week, split, goals…): `;
-  return `Crée-moi un NOUVEAU programme d'entraînement à partir de zéro (charges en ${U()}${S.settings.failDefault ? ", je fais mes séries à l'échec" : ''}). ` +
+  return `Crée-moi un NOUVEAU programme d'entraînement à partir de zéro (charges en ${U()}${effTxt()}). ` +
     `Choisis librement les exercices et la structure : ne te base PAS sur mes anciennes routines, tu peux proposer de nouveaux exercices. ` +
     (perf ? `Pour t'aider à estimer mes charges de départ, voici mes meilleures séries récentes (90 derniers jours) :\n${perf}\n\n` : '\n') +
     `Réponds dans EXACTEMENT ce format, une ligne ROUTINE: par séance, un exercice par ligne :\n` +
@@ -1702,7 +1735,9 @@ function vSettings() {
       <label>${T('Barre par défaut', 'Default bar')}</label>
       <select data-set="bar">${(U() === 'kg' ? [20, 15, 10, 0] : [45, 35, 25, 15, 0]).map(b => `<option value="${b}" ${(S.settings.bar != null ? +S.settings.bar : (U() === 'kg' ? 20 : 45)) === b ? 'selected' : ''}>${b ? b + ' ' + U() : T('Aucune (machine)', 'None (machine)')}</option>`).join('')}</select>
       <p class="muted small" style="margin:2px 0 0">${T('Épaules et bras : +2,5 lb par défaut. Change-le par exercice avec ⚙️ dans la séance.', 'Shoulders and arms: +2.5 lb by default. Change it per exercise with ⚙️ during the workout.')}</p>
-      <label class="row" style="margin-top:14px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="failDefault" ${S.settings.failDefault ? 'checked' : ''}> Séries à l'échec par défaut</label>
+      <label>${T('Intensité de tes séries', 'How hard you train your sets')}</label>
+      <select data-set="effort">${EFFORTS().map(([k, l]) => `<option value="${k}" ${(S.settings.effort || 'normal') === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <p class="muted small" style="margin:2px 0 0">${T('« À l\'échec » marque tes séries F par défaut. L\'IA en tient compte dans ses conseils.', '“To failure” marks your sets F by default. The AI takes it into account.')}</p>
       <label class="row" style="margin:10px 0 4px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="stagOn" ${S.settings.stagOff ? '' : 'checked'}> ⚠️ ${T('Alertes de plateau', 'Plateau alerts')}</label>
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="autoScroll" ${S.settings.autoScroll !== false ? 'checked' : ''}> ${T('↓ Aller à l\'exercice suivant après la dernière série (et alterner en superset)', '↓ Jump to the next exercise after the last set (and alternate in supersets)')}</label>
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="wake" ${S.settings.wake === true ? 'checked' : ''}> <span>📱 Garder l'écran allumé pendant la séance<br><span class="muted small">Consomme de la batterie, pas nécessaire pour le bip.</span></span></label>
@@ -1940,12 +1975,12 @@ function historyPrompt() {
   const since = Date.now() - 30 * 864e5;
   const hs = S.history.filter(h => new Date(h.date) >= since);
   if (!hs.length) return null;
-  if (isEN()) return `Here are my workouts from the last 30 days (weights in ${U()}, weight×reps format${S.settings.failDefault ? ', sets taken to failure unless noted' : ''}):\n\n` +
+  if (isEN()) return `Here are my workouts from the last 30 days (weights in ${U()}, weight×reps format${effTxt()}):\n\n` +
     hs.map(h => `${new Date(h.date).toLocaleDateString('en-CA')} — ${h.routineName} (${h.duration} min)\n` +
       h.exercises.map(e => `  ${e.name}: ${e.sets.map(s => fmtSet(s, false).replace(' (échec)', '')).join(', ')}${e.note ? ' — note: ' + e.note : ''}`).join('\n')).join('\n\n') +
     `\n\nMy current routines:\n\n${S.routines.map(routineToText).join('\n\n')}\n\n` +
     `If you suggest routine changes, give them in EXACTLY this format so I can paste them into my app:\nROUTINE: Name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note | R:90 (rest in s, optional) | SS:A (optional, for a superset)\nALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. \n\nMy question: `;
-  return `Voici mes séances d'entraînement des 30 derniers jours (charges en ${U()}, format charge×reps${S.settings.failDefault ? ", séries faites à l'échec sauf indication" : ''}) :\n\n` +
+  return `Voici mes séances d'entraînement des 30 derniers jours (charges en ${U()}, format charge×reps${effTxt()}) :\n\n` +
     hs.map(h => `${new Date(h.date).toLocaleDateString(LOC())} — ${h.routineName} (${h.duration} min)\n` +
       h.exercises.map(e => `  ${e.name} : ${e.sets.map(s => fmtSet(s, false).replace(' (échec)', '')).join(', ')}${e.note ? ' — note : ' + e.note : ''}`).join('\n')).join('\n\n') +
     `\n\nMes routines actuelles :\n\n${S.routines.map(routineToText).join('\n\n')}\n\n` +
@@ -2477,7 +2512,7 @@ function vTrain() {
   h += weekGoal();
   h += cloudNag();
   if (deloadOn()) h += `<div class="card" style="border-color:var(--warm)"><div class="row between"><div><b>🪶 Semaine de récupération</b><br><span class="muted small">Charges −${S.settings.deload.pct} % jusqu'au ${new Date(S.settings.deload.until + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'long'})}</span></div><button class="btn sm" data-act="deload-off">Arrêter</button></div></div>`;
-  h += `<div class="row trow" style="gap:8px"><button class="btn big" style="flex:1;margin:0" data-act="start-empty">${IC('plus', '＋')} ${T('Entraînement vide', 'Empty workout')}</button><button class="btn big" style="flex:1;margin:0" data-act="go" data-v="stretch">${IC('yoga', '🧘')} ${T('Étirements', 'Stretching')}</button></div>
+  h += `<button class="btn block big" data-act="start-empty">${IC('plus', '＋')} ${T('Démarrer un entraînement vide', 'Start an empty workout')}</button>
     <div class="row between" style="margin:18px 0 8px"><h2 style="margin:0">Routines</h2><button class="btn sm" data-act="new-folder" aria-label="Nouveau dossier">${IC('folderp', '📁＋')}</button></div>
     <div class="row trow" style="margin-bottom:12px;gap:8px"><button class="btn" style="flex:1" data-act="new-routine">${IC('clip', '📋')} ${T('Nouv. routine', 'New routine')}</button><button class="btn" style="flex:1" data-act="ai-menu">${IC('spark', '🤖')} ${T('Programme IA', 'AI program')}</button><button class="btn" data-act="train-more" aria-label="${T('Plus', 'More')}">${IC('more', '⋯')}</button></div>`;
   folders().forEach(f => {
@@ -2995,8 +3030,8 @@ function openStag(name, ei) {
 function stagPrompt(name) {
   const st = stagnation(name);
   const lines = st.last.map(({h: hh, e}) => `${new Date(hh.date).toLocaleDateString(LOC())} : ${work(e.sets).map(s => `${s.w === '' || s.w == null ? BWL() : s.w}×${s.r}`).join(', ')}`).join('\n');
-  return T(`Je stagne sur « ${name} » depuis ${st.k} séances (${st.wk} semaines) (charges en ${U()}${S.settings.failDefault ? ", séries à l'échec" : ''}). Mes dernières séances :\n${lines}\n\nQue me conseilles-tu (plage de reps, deload, variante, volume)? Si tu modifies ma routine, donne-la dans ce format :\nROUTINE: Nom\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note | R:90\n\nMa question : `,
-    `I've stalled on “${name}” for ${st.k} workouts (${st.wk} weeks) (weights in ${U()}${S.settings.failDefault ? ', sets to failure' : ''}). My latest workouts:\n${lines}\n\nWhat do you suggest (rep range, deload, variation, volume)? If you change my routine, give it in this format:\nROUTINE: Name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note | R:90\n\nMy question: `);
+  return T(`Je stagne sur « ${name} » depuis ${st.k} séances (${st.wk} semaines) (charges en ${U()}${effTxt()}). Mes dernières séances :\n${lines}\n\nQue me conseilles-tu (plage de reps, deload, variante, volume)? Si tu modifies ma routine, donne-la dans ce format :\nROUTINE: Nom\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note | R:90\n\nMa question : `,
+    `I've stalled on “${name}” for ${st.k} workouts (${st.wk} weeks) (weights in ${U()}${effTxt()}). My latest workouts:\n${lines}\n\nWhat do you suggest (rep range, deload, variation, volume)? If you change my routine, give it in this format:\nROUTINE: Name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note | R:90\n\nMy question: `);
 }
 function stagCard() {
   const names = [...new Set(S.routines.flatMap(r => r.exercises.map(e => e.name)))].filter(n => stagnation(n));
@@ -3534,6 +3569,148 @@ function stSuggest(h) {
   return lo > up ? 'p_lower' : 'p_upper';
 }
 
+
+/* ===================== Minuteurs d'intervalles (style « Interval Timer ») ===================== */
+const TM_COL = ['#0a8f45', '#1e7ad3', '#c85000', '#c0392b', '#8e44ad', '#c99a06', '#13917e', '#5b6470'];
+const TMS = (n, sec, c) => ({n, sec, c});
+const TM_PRESETS = [
+  {id: 't_3x', n: ['3 séries · 1 min / 2 min de repos', '3 sets · 1 min / 2 min rest'], prep: 10, rounds: 3, skipLast: true, cool: 0, steps: [TMS(['Travail', 'Work'], 60, '#0a8f45'), TMS(['Repos', 'Rest'], 120, '#1e7ad3')]},
+  {id: 't_tabata', n: ['Tabata 20 s / 10 s × 8', 'Tabata 20 s / 10 s × 8'], prep: 10, rounds: 8, skipLast: true, cool: 0, steps: [TMS(['Travail', 'Work'], 20, '#c0392b'), TMS(['Repos', 'Rest'], 10, '#1e7ad3')]},
+  {id: 't_hiit', n: ['HIIT 40 s / 20 s × 10', 'HIIT 40 s / 20 s × 10'], prep: 10, rounds: 10, skipLast: true, cool: 0, steps: [TMS(['Travail', 'Work'], 40, '#0a8f45'), TMS(['Repos', 'Rest'], 20, '#1e7ad3')]},
+  {id: 't_emom', n: ['EMOM 10 min', 'EMOM 10 min'], prep: 10, rounds: 10, skipLast: false, cool: 0, steps: [TMS(['Chaque minute', 'Every minute'], 60, '#8e44ad')]},
+  {id: 't_tempo', n: ['Tempo : 4 s descente × 12', 'Tempo: 4 s down × 12'], prep: 5, rounds: 12, skipLast: false, cool: 0, steps: [TMS(['Descends', 'Lower'], 4, '#0a8f45'), TMS(['Monte', 'Lift'], 1, '#c99a06')]},
+  {id: 't_plank', n: ['Gainage 3 × 45 s', 'Plank 3 × 45 s'], prep: 10, rounds: 3, skipLast: true, cool: 0, steps: [TMS(['Gainage', 'Plank'], 45, '#13917e'), TMS(['Repos', 'Rest'], 30, '#1e7ad3')]}];
+const tmAll = () => [...(S.timers || []), ...TM_PRESETS];
+const tmN = x => Array.isArray(x.n) ? T(x.n[0], x.n[1] || x.n[0]) : x.n;
+/* Un minuteur = des blocs. Chaque bloc a un nombre de répétitions et des étapes (en temps ou en réps). */
+function tmBlocks(t) {
+  if (t.blocks) return t.blocks;
+  const b = [];
+  if (+t.prep > 0) b.push({reps: 1, steps: [TMS(['Préparer', 'Get ready'], +t.prep, '#c85000')]});
+  b.push({reps: Math.max(1, +t.rounds || 1), skipLast: !!t.skipLast, steps: t.steps});
+  if (+t.cool > 0) b.push({reps: 1, steps: [TMS(['Récupération', 'Cool down'], +t.cool, '#5b6470')]});
+  return b;
+}
+function tmSeq(t) {
+  const out = [];
+  tmBlocks(t).forEach(b => {
+    const R = Math.max(1, +b.reps || 1), part = [];
+    for (let r = 1; r <= R; r++) b.steps.forEach(s => part.push({n: tmN(s), sec: +s.sec || 0, reps: s.mode === 'reps' ? Math.max(1, +s.reps || 1) : 0, c: s.c, r: R > 1 ? r : 0, R}));
+    if (b.skipLast && b.steps.length > 1 && part.length) part.pop();
+    out.push(...part);
+  });
+  return out.filter(x => x.reps || x.sec > 0);
+}
+const tmTotal = t => tmSeq(t).reduce((a, x) => a + (x.reps ? 0 : x.sec), 0);
+const tmHasReps = t => tmSeq(t).some(x => x.reps);
+const blkTotal = b => tmTotal({blocks: [b]});
+const mmss = s => `${pad2(Math.floor(s / 60))}:${pad2(Math.round(s % 60))}`;
+function tmCard(t) {
+  const own = (S.timers || []).some(x => x.id === t.id);
+  const blk = (n, sec, c, flex) => `<div class="tmb" style="background:${c};flex:${flex}"><span>${esc(n)}</span><b>${mmss(sec)}</b></div>`;
+  return `<div class="card tmcard"><div class="row between" style="align-items:flex-start"><h3 style="margin:0;flex:1;min-width:0">${esc(tmN(t))}</h3><b class="muted" style="margin-left:10px">${mmss(tmTotal(t))}${tmHasReps(t) ? '+' : ''}</b></div>
+    <div class="tmstrip">${tmBlocks(t).map(b => (+b.reps > 1 ? `<div class="tmx">${b.reps}×</div>` : '') + b.steps.map(s => s.mode === 'reps' ? `<div class="tmb" style="background:${s.c};flex:1.2"><span>${esc(tmN(s))}</span><b>${s.reps} ${T('réps', 'reps')}</b></div>` : blk(tmN(s), s.sec, s.c, 1.2)).join('')).join('')}</div>
+    <div class="row between" style="margin-top:6px"><span class="row" style="gap:4px"><button class="btn sm ghost" data-act="tm-menu" data-id="${t.id}" aria-label="Options">⋯</button><button class="btn sm ghost" data-act="tm-share" data-id="${t.id}" aria-label="${T('Partager', 'Share')}">${IC('share', '📤', 18)}</button>${own ? '' : `<span class="tag" style="align-self:center">${T('prêt', 'preset')}</span>`}</span>
+    <button class="btn primary" data-act="tm-go" data-id="${t.id}">▶ ${T('COMMENCER', 'START')}</button></div></div>`;
+}
+function vTimers() {
+  return `<div class="row between" style="margin:0 0 10px"><p class="muted" style="margin:0">${T('Minuteurs d\'intervalles : travail, repos, tempo, tabata…', 'Interval timers: work, rest, tempo, tabata…')}</p><button class="btn sm" data-act="tm-new">＋ ${T('Créer', 'Create')}</button></div>
+    ${(S.timers || []).length ? `<p class="muted small" style="margin:0 0 6px">${T('Mes minuteurs', 'My timers')}</p>` + S.timers.map(tmCard).join('') : ''}
+    <p class="muted small" style="margin:14px 0 6px">${T('Minuteurs prêts', 'Ready-made timers')}</p>${TM_PRESETS.map(tmCard).join('')}`;
+}
+/* ----- Éditeur ----- */
+let tmDraft = null;
+function openTmEdit(t) {
+  const src = t ? JSON.parse(JSON.stringify(t)) : null;
+  tmDraft = src ? {id: src.id, n: tmN(src), blocks: JSON.parse(JSON.stringify(tmBlocks(src)))} : {id: 'tm' + uid(), n: T('Mon minuteur', 'My timer'), blocks: [
+    {reps: 1, steps: [TMS(T('Préparer', 'Get ready'), 10, '#c85000')]},
+    {reps: 3, skipLast: true, steps: [TMS(T('Travail', 'Work'), 60, '#0a8f45'), TMS(T('Repos', 'Rest'), 90, '#1e7ad3')]}]};
+  tmDraft.blocks.forEach(b => b.steps.forEach(s => { s.n = tmN(s); if (!s.mode) s.mode = 'time'; if (!s.reps) s.reps = 10; }));
+  modal(`<div class="row between"><h2>⏱ ${T('Minuteur', 'Timer')}</h2><span class="row" style="gap:6px"><button class="btn primary sm" data-act="tm-save">${T('Enregistrer', 'Save')}</button><button class="btn sm" data-act="close">✕</button></span></div><div id="tmedbox"></div>`, {id: 'tmedit'});
+  renderTmEdit();
+}
+function tmStepCard(s, bi, i) {
+  const val = s.mode === 'reps' ? `<b class="tmv" data-act="tm-type" data-b="${bi}" data-i="${i}">${s.reps}</b>` : `<b class="tmv" data-act="tm-type" data-b="${bi}" data-i="${i}">${mmss(+s.sec)}</b>`;
+  return `<div class="reo tmstep" data-i="${i}" style="background:${s.c}">
+    <div class="row" style="gap:8px"><input data-tmn="${bi}-${i}" value="${esc(s.n)}" placeholder="${T('Nom de l\'étape', 'Step name')}"><span class="handle" style="color:#fff">≡</span></div>
+    <div class="tmmode"><button class="${s.mode !== 'reps' ? 'on' : ''}" data-act="tm-mode" data-b="${bi}" data-i="${i}" data-v="time">${T('TEMPS', 'TIME')}</button><button class="${s.mode === 'reps' ? 'on' : ''}" data-act="tm-mode" data-b="${bi}" data-i="${i}" data-v="reps">${T('RÉPS', 'REPS')}</button></div>
+    <div class="tmval"><button data-act="tm-step" data-b="${bi}" data-i="${i}" data-d="-1" aria-label="moins">−</button>${val}<button data-act="tm-step" data-b="${bi}" data-i="${i}" data-d="1" aria-label="plus">+</button></div>
+    <div class="tmacts"><button data-act="tm-colmenu" data-b="${bi}" data-i="${i}">🎨 ${T('COULEUR', 'COLOR')}</button><button data-act="tm-dup" data-b="${bi}" data-i="${i}" aria-label="${T('Dupliquer', 'Duplicate')}">⧉</button><button data-act="tm-rm" data-b="${bi}" data-i="${i}" aria-label="${T('Supprimer', 'Delete')}">🗑</button></div></div>`;
+}
+function renderTmEdit() {
+  const box = $('#tmedbox'), d = tmDraft; if (!box || !d) return;
+  const sc = box.closest('.sheet'), y = sc ? sc.scrollTop : 0;
+  box.innerHTML = `<label>${T('Nom', 'Name')}</label><input data-tmf="n" value="${esc(d.n)}">
+    ${d.blocks.map((b, bi) => `<div class="tmblock">
+      <div class="tmbh"><span class="small">${T('RÉPÉTITIONS', 'REPETITIONS')}</span>
+        <div class="row" style="gap:14px;justify-content:center"><button class="tmpm" data-act="tm-breps" data-b="${bi}" data-d="-1">−</button><b style="font-size:26px;min-width:40px;text-align:center">${b.reps}</b><button class="tmpm" data-act="tm-breps" data-b="${bi}" data-d="1">+</button></div>
+        <button class="btn sm ghost tmbm" data-act="tm-bmenu" data-b="${bi}" aria-label="Options">⋮</button></div>
+      <div class="tmsteps" data-b="${bi}">${b.steps.map((s, i) => tmStepCard(s, bi, i)).join('')}</div>
+      <div class="tmbf"><span class="small muted">${b.skipLast && b.steps.length > 1 && b.reps > 0 ? T('Sans la dernière étape à la fin', 'Without the last step at the end') : ''}</span><button class="tmadd" data-act="tm-add" data-b="${bi}" aria-label="${T('Ajouter une étape', 'Add a step')}">＋</button><b>${mmss(blkTotal(b))}${b.steps.some(s => s.mode === 'reps') ? '+' : ''}</b></div></div>`).join('')}
+    <button class="btn block" data-act="tm-addblock" style="margin-top:12px">＋ ${T('Ajouter un bloc (répétitions)', 'Add a block (repetitions)')}</button>
+    <p class="muted" style="margin:14px 0 4px">${T('Durée totale', 'Total time')} : <b style="color:var(--text)" id="tmtot">${mmss(tmTotal(d))}${tmHasReps(d) ? ' + ' + T('étapes en réps', 'rep steps') : ''}</b></p>
+    <p class="muted small">${T('Astuce : touche le temps pour l\'écrire. Une étape en RÉPS attend que tu touches « Fait » pendant le minuteur.', 'Tip: tap the time to type it. A REPS step waits for you to tap “Done” during the timer.')}</p>`;
+  box.querySelectorAll('.tmsteps').forEach(el => { const bi = +el.dataset.b; makeSortable(el, sc, order => { d.blocks[bi].steps = order.map(i => d.blocks[bi].steps[i]); renderTmEdit(); }); });
+  if (sc) sc.scrollTop = y;
+}
+/* ----- Lecteur plein écran ----- */
+let tmp = null, tmWake = null;
+function startTimerRun(id) {
+  const t = tmAll().find(x => x.id === id); if (!t) return; const seq = tmSeq(t); if (!seq.length) return;
+  closeAll(); ensureAudio();
+  tmp = {t, seq, i: 0, end: Date.now() + (seq[0].reps ? 864e5 : seq[0].sec * 1000), paused: null, last: -1, t0: Date.now()};
+  modal(`<div id="tmpl"></div>`, {id: 'tmplayer', onclose: stopTimerRun});
+  try { if ('wakeLock' in navigator) navigator.wakeLock.request('screen').then(w => tmWake = w).catch(() => {}); } catch (e) {}
+  tmDraw(true); tmp.int = setInterval(tmTick, 150); try { if (S.settings.sound !== false) playSnd(false, actx.currentTime, false); } catch (e) {}
+}
+function stopTimerRun() { if (tmp) clearInterval(tmp.int); tmp = null; try { if (tmWake) tmWake.release(); } catch (e) {} tmWake = null; const sh = $('#tmplayer'); if (sh) sh.style.background = ''; }
+function tmDraw(full) {
+  const box = $('#tmpl'); if (!box || !tmp) return;
+  const ph = tmp.seq[tmp.i], nx = tmp.seq[tmp.i + 1], sheet = $('#tmplayer');
+  const left = ph.reps ? 0 : Math.max(0, tmp.paused != null ? tmp.paused / 1000 : (tmp.end - Date.now()) / 1000);
+  const remain = left + tmp.seq.slice(tmp.i + 1).reduce((a, x) => a + (x.reps ? 0 : x.sec), 0);
+  if (sheet) { sheet.style.background = ph.c; sheet.style.borderColor = ph.c; }
+  if (full) box.innerHTML = `<div class="tmplay">
+    <div class="row between small" style="opacity:.85"><span>${esc(tmN(tmp.t))}</span><button class="btn sm" data-act="close" style="background:#0003;border:0;color:#fff">✕</button></div>
+    <div class="tmph">${esc(ph.n)}</div>
+    ${ph.r ? `<div class="tmrd">${T('Tour', 'Round')} ${ph.r} / ${ph.R}</div>` : '<div class="tmrd">&nbsp;</div>'}
+    ${ph.reps ? `<div class="tmbig">${ph.reps}<span style="font-size:.3em"> ${T('réps', 'reps')}</span></div><button class="btn tmdone" data-act="tm-done">✓ ${T('Fait', 'Done')}</button>` : `<div class="tmbig" id="tmbig">${mmss(Math.ceil(left))}</div>
+    <div class="tmbar"><div id="tmbarf"></div></div>`}
+    <div class="row between small" style="margin-top:6px;opacity:.9"><span>${nx ? T('Ensuite : ', 'Next: ') + esc(nx.n) + ' · ' + (nx.reps ? nx.reps + ' ' + T('réps', 'reps') : mmss(nx.sec)) : T('Dernière étape!', 'Last step!')}</span><span id="tmrem">${T('Reste', 'Left')} ${mmss(Math.ceil(remain))}</span></div>
+    <div class="row" style="gap:10px;justify-content:center;margin-top:22px"><button class="btn tmbtn" data-act="tm-prev" aria-label="${T('Précédent', 'Previous')}">⏮</button><button class="btn tmbtn tmmain" data-act="tm-pause">${tmp.paused != null ? '▶' : '⏸'}</button><button class="btn tmbtn" data-act="tm-next" aria-label="${T('Suivant', 'Next')}">⏭</button></div></div>`;
+  const big = $('#tmbig'), bf = $('#tmbarf'), rm = $('#tmrem');
+  if (big) big.textContent = mmss(Math.ceil(left));
+  if (bf) bf.style.width = `${(1 - left / Math.max(0.001, ph.sec)) * 100}%`;
+  if (rm) rm.textContent = `${T('Reste', 'Left')} ${mmss(Math.ceil(remain))}`;
+}
+function tmGoto(i) { tmp.i = i; tmp.end = Date.now() + (tmp.seq[i].reps ? 864e5 : tmp.seq[i].sec * 1000); tmp.last = -1; if (tmp.paused != null) tmp.paused = tmp.seq[i].sec * 1000; tmDraw(true); }
+function tmTick() {
+  if (!tmp || tmp.paused != null || tmp.seq[tmp.i].reps) return;
+  const left = (tmp.end - Date.now()) / 1000, s = Math.ceil(left);
+  if (s !== tmp.last && s <= 3 && s >= 1 && tmp.seq[tmp.i].sec > 3 && S.settings.sound !== false) { try { playSnd(false, actx.currentTime, false); } catch (e) {} }
+  tmp.last = s;
+  if (left <= 0) {
+    if (tmp.i + 1 >= tmp.seq.length) { tmFinish(); return; }
+    tmGoto(tmp.i + 1);
+    const ph = tmp.seq[tmp.i];
+    try { if (S.settings.sound !== false) playSnd(true, actx.currentTime, false); } catch (e) {}
+    if (navigator.vibrate) navigator.vibrate(ph.sec > 3 ? [200, 80, 200] : 60);
+    if ((ph.reps || ph.sec >= 10) && typeof notifOn === 'function' && notifOn()) notify(`⏱ ${ph.n} · ${ph.reps ? ph.reps + ' ' + T('réps', 'reps') : mmss(ph.sec)}`, ph.r ? `${T('Tour', 'Round')} ${ph.r}/${ph.R}` : tmN(tmp.t));
+    return;
+  }
+  tmDraw(false);
+}
+function tmFinish() {
+  const sec = Math.round((Date.now() - tmp.t0) / 1000); clearInterval(tmp.int);
+  try { if (S.settings.sound !== false) playSnd(true, actx.currentTime, false); } catch (e) {}
+  if (navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 500]);
+  const sh = $('#tmplayer'); if (sh) sh.style.background = '';
+  $('#tmpl').innerHTML = `<div style="text-align:center;padding:20px 0"><div style="font-size:54px">✅</div><h2>${T('Terminé!', 'Done!')}</h2><p class="muted">${esc(tmN(tmp.t))} · ${mmss(sec)}</p>
+    <button class="btn block" data-act="tm-go" data-id="${tmp.t.id}" style="margin-bottom:8px">↻ ${T('Recommencer', 'Restart')}</button><button class="btn primary block" data-act="close">OK</button></div>`;
+  confetti(60);
+}
+function tmText(t) { return `⏱ ${tmN(t)} (${mmss(tmTotal(t))})\n` + tmBlocks(t).map(b => `${b.reps} × [ ${b.steps.map(s => `${tmN(s)} ${s.mode === 'reps' ? s.reps + ' ' + T('réps', 'reps') : mmss(s.sec)}`).join(' → ')} ]`).join('\n') + '\n— Carnet Muscu 💪'; }
+
 /* ---------- Calendrier façon Hevy ---------- */
 let calMonths = 6;
 function vCal2() {
@@ -3565,7 +3742,7 @@ const VIEWS = {
   stats: ['Statistiques', () => vStats()], 'st-vol': ['Séries par muscle', () => vVolume()], 'st-radar': ['Répartition musculaire', () => vRadar()],
   'st-body': ['Carte des muscles', () => vBodyMap()], 'st-top': ['Principaux exercices', () => vTopEx()], 'st-rec': ['Records personnels', () => vRecords()],
   'st-month': ['Rapport mensuel', () => vMonth()], exercises: ['Exercices', () => vExList()], exdetail: ['Exercice', () => vExDetail()],
-  measures: ['Mesures', () => vBody()], stretch: ['Étirements', () => vStretch()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()]
+  measures: ['Mesures', () => vBody()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()]
 };
 function headerRight(v) {
   if (v === 'profile') return `<button class="hbtn" data-act="go" data-v="settings" aria-label="Réglages">${IC('gear', '⚙️', 24)}</button>`;
@@ -3692,7 +3869,7 @@ const iconsOn = () => S.settings.icons !== false;
 const ic = (k, sz = 20) => `<svg class="ico" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICP[k] || ''}</svg>`;
 const IC = (k, emo, sz) => iconsOn() ? ic(k, sz) : emo;
 function renderChrome() {
-  const nav = $('#nav'); if (nav) nav.innerHTML = `<button data-tab="train"><span class="ic">${IC('dumbbell', '🏋️', 22)}</span>${T('Entraînement', 'Workout')}</button><button data-tab="profile"><span class="ic">${IC('user', '👤', 22)}</span>${T('Profil', 'Profile')}</button>`;
+  const nav = $('#nav'); if (nav) nav.innerHTML = `<button data-tab="train"><span class="ic">${IC('dumbbell', '🏋️', 22)}</span>${T('Entraînement', 'Workout')}</button><button data-tab="stretch"><span class="ic">${IC('yoga', '🧘', 22)}</span>${T('Étirements', 'Stretch')}</button><button data-tab="timers"><span class="ic">${IC('timer', '⏱', 22)}</span>${T('Intervalles', 'Intervals')}</button><button data-tab="profile"><span class="ic">${IC('user', '👤', 22)}</span>${T('Profil', 'Profile')}</button>`;
   const bk = $('#back'); if (bk) bk.innerHTML = IC('back', '←', 22);
 }
 
@@ -3701,10 +3878,9 @@ function renderChrome() {
 let swp = null;
 function swipeTarget(dx) {
   if (stack.length > 1) return dx > 0 ? 'back' : null;
-  const v = stack[0].v;
-  if (v === 'train' && dx < 0) return 'profile';
-  if (v === 'profile' && dx > 0) return 'train';
-  return null;
+  const TABS = ['train', 'stretch', 'timers', 'profile'], i = TABS.indexOf(stack[0].v);
+  if (i < 0) return null;
+  return dx < 0 ? (TABS[i + 1] || null) : (TABS[i - 1] || null);
 }
 document.addEventListener('touchstart', e => {
   swp = null;
@@ -3776,6 +3952,48 @@ document.addEventListener('click', e => {
     case 'fix-import': { const bad = new Set(brokenImports()); S.history = S.history.filter(x => !bad.has(x)); save(); closeAll(); render(); toast(`🧹 ${bad.size} séances retirées — choisis ton fichier CSV Hevy`); $('#fileIn').click(); break; }
     case 'go': if (b.dataset.v === 'settings' && b.closest('.nag, .card') && !cloudOn() && /Activer|Turn on/.test(b.textContent)) secOpen.add('cloud'); go(b.dataset.v, {n: b.dataset.n, rid: b.dataset.rid}); break;
     case 'start-empty': startEmpty(); break;
+    case 'tm-go': startTimerRun(b.dataset.id); break;
+    case 'tm-new': openTmEdit(null); break;
+    case 'tm-share': { const t = tmAll().find(x => x.id === b.dataset.id); if (t) shareText(tmText(t)); break; }
+    case 'tm-menu': { const t = tmAll().find(x => x.id === b.dataset.id), own = (S.timers || []).some(x => x.id === t.id);
+      modal(`<h2>⏱ ${esc(tmN(t))}</h2><div class="menu">${own ? `<button class="btn block" data-act="tm-edit" data-id="${t.id}">✏️ ${T('Modifier', 'Edit')}</button>` : ''}
+        <button class="btn block" data-act="tm-copy" data-id="${t.id}">⧉ ${own ? T('Dupliquer', 'Duplicate') : T('Copier et modifier', 'Copy and edit')}</button>
+        ${own ? `<button class="btn danger block" data-act="tm-del" data-id="${t.id}">${T('Supprimer', 'Delete')}</button>` : ''}<button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`); break; }
+    case 'tm-edit': { const t = (S.timers || []).find(x => x.id === b.dataset.id); closeAll(); openTmEdit(t); break; }
+    case 'tm-copy': { const t = JSON.parse(JSON.stringify(tmAll().find(x => x.id === b.dataset.id))); t.id = 'tm' + uid(); t.n = tmN(t) + T(' (copie)', ' (copy)'); t.blocks = JSON.parse(JSON.stringify(tmBlocks(t))); closeAll(); openTmEdit(t); break; }
+    case 'tm-del': { snap(); S.timers = (S.timers || []).filter(x => x.id !== b.dataset.id); save(); closeAll(); render(); undoToast(T('Minuteur supprimé', 'Timer deleted')); break; }
+    case 'tm-mode': { const s = tmDraft.blocks[+b.dataset.b].steps[+b.dataset.i]; s.mode = b.dataset.v; renderTmEdit(); break; }
+    case 'tm-step': { const s = tmDraft.blocks[+b.dataset.b].steps[+b.dataset.i], d = +b.dataset.d;
+      if (s.mode === 'reps') s.reps = Math.max(1, (+s.reps || 1) + d); else { const st = +s.sec >= 120 ? 15 : +s.sec >= 30 ? 5 : 1; s.sec = Math.max(1, (+s.sec || 0) + d * st); } renderTmEdit(); break; }
+    case 'tm-type': { const s = tmDraft.blocks[+b.dataset.b].steps[+b.dataset.i];
+      if (s.mode === 'reps') { const v = parseInt(prompt(T('Nombre de réps :', 'Number of reps:'), s.reps), 10); if (v > 0) s.reps = v; }
+      else { const v = (prompt(T('Durée (min:s, ex. 1:30) :', 'Duration (min:s, e.g. 1:30):'), mmss(+s.sec)) || '').trim(); const m = v.match(/^(\d+)(?::(\d{1,2}))?$/); if (m) s.sec = Math.max(1, m[2] != null ? +m[1] * 60 + +m[2] : +m[1]); }
+      renderTmEdit(); break; }
+    case 'tm-colmenu': { const bi = b.dataset.b, i = b.dataset.i; modal(`<h2>🎨 ${T('Couleur', 'Color')}</h2><div class="chips">${TM_COL.concat(['#d81b60', '#2e7d32', '#37474f', '#000000']).map(c => `<button class="chip" data-act="tm-col" data-b="${bi}" data-i="${i}" data-c="${c}" style="background:${c};width:44px;height:44px;padding:0;border:2px solid #fff3"></button>`).join('')}</div>`); break; }
+    case 'tm-col': tmDraft.blocks[+b.dataset.b].steps[+b.dataset.i].c = b.dataset.c; closeModal(); renderTmEdit(); break;
+    case 'tm-dup': { const st = tmDraft.blocks[+b.dataset.b].steps; st.splice(+b.dataset.i + 1, 0, JSON.parse(JSON.stringify(st[+b.dataset.i]))); renderTmEdit(); break; }
+    case 'tm-rm': { const bl = tmDraft.blocks[+b.dataset.b]; bl.steps.splice(+b.dataset.i, 1); if (!bl.steps.length && tmDraft.blocks.length > 1) tmDraft.blocks.splice(+b.dataset.b, 1); else if (!bl.steps.length) bl.steps.push(TMS(T('Travail', 'Work'), 30, '#0a8f45')); renderTmEdit(); break; }
+    case 'tm-add': { const st = tmDraft.blocks[+b.dataset.b].steps; st.push(Object.assign(TMS(T('Étape', 'Step') + ' ' + (st.length + 1), 30, TM_COL[st.length % TM_COL.length]), {mode: 'time', reps: 10})); renderTmEdit(); break; }
+    case 'tm-breps': { const bl = tmDraft.blocks[+b.dataset.b]; bl.reps = Math.max(1, Math.min(99, (+bl.reps || 1) + +b.dataset.d)); renderTmEdit(); break; }
+    case 'tm-addblock': tmDraft.blocks.push({reps: 1, steps: [Object.assign(TMS(T('Récupération', 'Cool down'), 60, '#5b6470'), {mode: 'time', reps: 10})]}); renderTmEdit(); break;
+    case 'tm-bmenu': { const bi = +b.dataset.b, bl = tmDraft.blocks[bi]; modal(`<h2>${T('Bloc', 'Block')} ${bi + 1}</h2><div class="menu">
+      <button class="btn block" data-act="tm-bskip" data-b="${bi}">${bl.skipLast ? '☑' : '☐'} ${T('Ne pas faire la dernière étape à la fin du bloc (ex. le dernier repos)', 'Skip the last step at the end of the block (e.g. last rest)')}</button>
+      <button class="btn block" data-act="tm-bdup" data-b="${bi}">⧉ ${T('Dupliquer le bloc', 'Duplicate block')}</button>
+      ${bi > 0 ? `<button class="btn block" data-act="tm-bmove" data-b="${bi}" data-d="-1">↑ ${T('Monter le bloc', 'Move block up')}</button>` : ''}${bi < tmDraft.blocks.length - 1 ? `<button class="btn block" data-act="tm-bmove" data-b="${bi}" data-d="1">↓ ${T('Descendre le bloc', 'Move block down')}</button>` : ''}
+      ${tmDraft.blocks.length > 1 ? `<button class="btn danger block" data-act="tm-bdel" data-b="${bi}">${T('Supprimer le bloc', 'Delete block')}</button>` : ''}<button class="btn block" data-act="close">${T('Fermer', 'Close')}</button></div>`); break; }
+    case 'tm-bskip': { const bl = tmDraft.blocks[+b.dataset.b]; bl.skipLast = !bl.skipLast; closeModal(); renderTmEdit(); break; }
+    case 'tm-bdup': { const bi = +b.dataset.b; tmDraft.blocks.splice(bi + 1, 0, JSON.parse(JSON.stringify(tmDraft.blocks[bi]))); closeModal(); renderTmEdit(); break; }
+    case 'tm-bmove': { const bi = +b.dataset.b, j = bi + +b.dataset.d, B = tmDraft.blocks; [B[bi], B[j]] = [B[j], B[bi]]; closeModal(); renderTmEdit(); break; }
+    case 'tm-bdel': tmDraft.blocks.splice(+b.dataset.b, 1); closeModal(); renderTmEdit(); break;
+    case 'tm-done': if (tmp) { try { if (S.settings.sound !== false) playSnd(true, actx.currentTime, false); } catch (e) {} if (tmp.i + 1 >= tmp.seq.length) tmFinish(); else tmGoto(tmp.i + 1); } break;
+    case 'tm-save': { if (!$('#tmedbox')) break; ['prep', 'rounds', 'steps', 'skipLast', 'cool'].forEach(k => delete tmDraft[k]); S.timers = S.timers || []; const i = S.timers.findIndex(x => x.id === tmDraft.id); if (i >= 0) S.timers[i] = tmDraft; else S.timers.unshift(tmDraft); save(); tmDraft = null; closeAll(); render(); toast(T('⏱ Minuteur enregistré', '⏱ Timer saved')); break; }
+    case 'tm-pause': if (tmp) { if (tmp.paused != null) { tmp.end = Date.now() + tmp.paused; tmp.paused = null; } else tmp.paused = Math.max(0, tmp.end - Date.now()); tmDraw(true); } break;
+    case 'tm-next': if (tmp) { if (tmp.i + 1 >= tmp.seq.length) tmFinish(); else tmGoto(tmp.i + 1); } break;
+    case 'tm-prev': if (tmp) tmGoto(Math.max(0, (tmp.end - Date.now()) / 1000 < tmp.seq[tmp.i].sec - 2 ? tmp.i : tmp.i - 1)); break;
+    case 'wl-lang': if (b.dataset.v !== (isEN() ? 'en' : 'fr')) { S.settings.lang = b.dataset.v; save(); location.reload(); } break;
+    case 'wl-unit': S.settings.unit = b.dataset.v; save(); b.parentElement.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); break;
+    case 'wl-eff': S.settings.effort = b.dataset.v; S.settings.failDefault = b.dataset.v === 'fail'; save(); b.parentElement.querySelectorAll('.btn').forEach(x => x.classList.toggle('on', x === b)); break;
+    case 'wl-ok': { const n = (($('#wlname') || {}).value || '').trim(); if (n) S.settings.name = n; S.settings.onboarded = true; save(); closeAll(); render(); toast(T(`👋 Bienvenue ${n}!`, `👋 Welcome ${n}!`).replace(' !', '!')); break; }
     case 'st-go': startStretch(b.dataset.id); break;
     case 'st-new': openStEdit(null); break;
     case 'st-menu': { const rt = stAll().find(x => x.id === b.dataset.id), own = (S.stretches || []).some(x => x.id === rt.id);
@@ -4045,6 +4263,7 @@ document.addEventListener('input', e => {
   if (t.dataset.stnote !== undefined && setCtx) { const s = setCtx.sets[setCtx.si]; if (t.value.trim()) s.n = t.value; else delete s.n; }
   if (t.dataset.exnote !== undefined && S.active) { S.active.exercises[+t.dataset.exnote].note = t.value; }
   if (t.dataset.set) {
+    if (t.dataset.set === 'effort') { S.settings.effort = t.value; S.settings.failDefault = t.value === 'fail'; save(); return; }
     if (t.dataset.set === 'stagOn') S.settings.stagOff = !t.checked;
     else if (t.dataset.set === 'notif') { if (t.checked) { askNotif().then(ok => { S.settings.notif = ok; save(); render(); if (ok) toast(T('⌚ Notifications activées', '⌚ Notifications on')); }); return; } S.settings.notif = false; save(); render(); return; }
     else if (t.type === 'checkbox') { S.settings[t.dataset.set] = t.checked; if (t.dataset.set === 'wake') syncWake(); }
@@ -4086,6 +4305,8 @@ document.addEventListener('change', e => {
   if (t.dataset.pf === 'range') { pfWeeks = +t.value; pfSel = null; render(); }
   if (t.id === 'pltb') { S.settings.bar = +t.value; save(); renderPlates(); }
   if (t.dataset.sched !== undefined) { S.schedule[+t.dataset.sched] = t.value; save(); }
+  if (tmDraft && t.dataset.tmf === 'n') tmDraft.n = t.value;
+  if (tmDraft && t.dataset.tmn) { const [bi, i] = t.dataset.tmn.split('-').map(Number); tmDraft.blocks[bi].steps[i].n = t.value; }
   if (t.dataset.stsec !== undefined && stDraft) { stDraft.items[+t.dataset.stsec].sec = +t.value; renderStEdit(); }
   if (t.dataset.cycfold !== undefined && t.value) { const c = cyc(); S.routines.filter(r => (r.folder || DEF_FOLDER) === t.value).forEach(r => { if (!c.order.includes(r.id)) c.order.push(r.id); }); save(); renderSched(); }
   if (t.dataset.cycadd !== undefined && t.value) { const c = cyc(); if (!c.order.includes(t.value)) c.order.push(t.value); save(); renderSched(); }
@@ -4117,6 +4338,16 @@ $('#fileIn').addEventListener('change', e => { const f = e.target.files[0]; if (
 window.addEventListener('resize', () => afterRender(cur()));
 
 render();
+function openWelcome() {
+  modal(`<div style="text-align:center"><div style="font-size:46px">💪</div><h2 style="margin:4px 0">${T('Bienvenue dans Carnet Muscu!', 'Welcome to Carnet Muscu!')}</h2><p class="muted small">${T('3 questions et c\'est parti. Tu pourras tout changer dans les Réglages.', '3 quick questions and you\'re set. You can change everything later in Settings.')}</p></div>
+    <label>Langue / Language</label><div class="seg"><button class="${isEN() ? '' : 'on'}" data-act="wl-lang" data-v="fr">Français</button><button class="${isEN() ? 'on' : ''}" data-act="wl-lang" data-v="en">English</button></div>
+    <label>${T('Ton prénom', 'Your first name')}</label><input id="wlname" value="${esc(S.settings.name || '')}" placeholder="${T('Ex. : Alex', 'E.g. Alex')}">
+    <label>${T('Unité', 'Unit')}</label><div class="seg"><button class="${U() === 'lb' ? 'on' : ''}" data-act="wl-unit" data-v="lb">lb</button><button class="${U() === 'kg' ? 'on' : ''}" data-act="wl-unit" data-v="kg">kg</button></div>
+    <label>${T('Comment fais-tu tes séries?', 'How do you train your sets?')}</label>
+    <div class="menu">${EFFORTS().map(([k, l]) => `<button class="btn block ${(S.settings.effort || 'normal') === k ? 'on' : ''}" data-act="wl-eff" data-v="${k}" style="text-align:left">${l}</button>`).join('')}</div>
+    <button class="btn primary block" data-act="wl-ok" style="margin-top:14px">${T('C\'est parti!', 'Let\'s go!')}</button>`, {id: 'welcome', onclose: () => { S.settings.onboarded = true; save(); }});
+}
+if (!S.settings.onboarded) setTimeout(openWelcome, 300);
 { const bad = brokenImports(); if (bad.length) modal(`<h2>🛠️ Dates de séances à réparer</h2>
   <p>J'ai trouvé <b>${bad.length} séances importées de Hevy</b> qui ont toutes reçu la même date à cause d'un bug de l'import (les mois en français comme « août » ou « juil. » n'étaient pas reconnus). C'est corrigé.</p>
   <p class="muted small">Pour les récupérer avec les bonnes dates : supprime-les, puis réimporte ton fichier CSV de Hevy (Hevy → Profil → Réglages → Exporter les données). Les séances déjà correctes ne seront pas dupliquées.</p>
