@@ -1335,6 +1335,17 @@ async function notify(title, body, opts = {}) {
       vibrate: opts.silent ? undefined : [300, 120, 300], timestamp: opts.ts || Date.now(), requireInteraction: false, data: {go: 'workout'}});
   } catch (e) { try { if (!opts.silent) new Notification(title, {body, tag: 'carnet-rest', icon: 'icon-192.png'}); } catch (x) {} }
 }
+/* La fin du repos est confiée au service worker : il envoie la notification à l'heure même si Chrome
+   met la page en pause quand l'écran est éteint (c'est ce qui permet à la montre de la recevoir). */
+function restSW(at) {
+  try {
+    const c = navigator.serviceWorker && navigator.serviceWorker.controller; if (!c) return false;
+    if (!at) { c.postMessage({type: 'rest-cancel'}); return true; }
+    if (!notifOn()) return false;
+    c.postMessage({type: 'rest-at', at, title: T('✅ Repos terminé', '✅ Rest over'), body: T('À toi : ', 'Your turn: ') + nextSetInfo()});
+    return true;
+  } catch (e) { return false; }
+}
 async function clearNotif() { try { const reg = await navigator.serviceWorker.ready; (await reg.getNotifications({tag: 'carnet-rest'})).forEach(n => n.close()); } catch (e) {} }
 async function askNotif() {
   if (!('Notification' in window)) { toast(T('Notifications non disponibles sur ce navigateur', 'Notifications not available in this browser')); return false; }
@@ -1364,7 +1375,9 @@ function timerBtns() {
 }
 function timerDone() {
   clearInterval(timerInt); sched = [];
-  notify(T('✅ Repos terminé', '✅ Rest over'), T('À toi : ', 'Your turn: ') + nextSetInfo());
+  const swc = navigator.serviceWorker && navigator.serviceWorker.controller;
+  if (swc && notifOn()) swc.postMessage({type: 'rest-fire', at: timerEnd, title: T('✅ Repos terminé', '✅ Rest over'), body: T('À toi : ', 'Your turn: ') + nextSetInfo()});
+  else notify(T('✅ Repos terminé', '✅ Rest over'), T('À toi : ', 'Your turn: ') + nextSetInfo());
   const el = $('#timer'); el.classList.add('show', 'fin');
   $('#tlab').textContent = T('✅ Repos terminé', '✅ Rest over'); $('#tval').textContent = '';
   const onWo = cur().v === 'workout';
@@ -1377,7 +1390,7 @@ function startTimer(sec) {
   timerBtns();
   if (notifOn() && S.settings.notifStart !== false) { const t = new Date(timerEnd); notify(T(`⏱ Repos ${fmtRest(Math.round(sec))} — fin à ${t.getHours()}:${pad2(t.getMinutes())}`, `⏱ Rest ${fmtRest(Math.round(sec))} — ends at ${t.getHours()}:${pad2(t.getMinutes())}`), T('Ensuite : ', 'Next: ') + nextSetInfo(), {silent: true, ts: timerEnd}); }
   $('#timer').classList.add('show');
-  scheduleBeeps(sec);
+  scheduleBeeps(sec); restSW(timerEnd);
   clearInterval(timerInt); tickTimer(); timerInt = setInterval(tickTimer, 250);
 }
 /* Les bips sont programmés d'avance dans le moteur audio du téléphone : ils sonnent à l'heure même si l'écran
@@ -1408,7 +1421,7 @@ function tickTimer() {
   $('#tval').textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
   if (left <= 0) timerDone();
 }
-function stopTimer() { clearInterval(timerInt); cancelBeeps(); clearNotif(); clearTimeout(timerFinT); $('#timer').classList.remove('show', 'fin'); }
+function stopTimer() { clearInterval(timerInt); cancelBeeps(); restSW(0); clearNotif(); clearTimeout(timerFinT); $('#timer').classList.remove('show', 'fin'); }
 
 /* ===================== Vues ===================== */
 const exl = n => `<span class="exlink" data-act="exo" data-n="${esc(n)}">${esc(n)}</span>`;
@@ -1757,13 +1770,20 @@ function vSettings() {
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="sound" ${S.settings.sound !== false ? 'checked' : ''}> 🔔 Bip à la fin du repos (3-2-1 puis bip final)</label>
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="notif" ${S.settings.notif === true ? 'checked' : ''}> <span>⌚ ${T('Notifications pour ma montre', 'Notifications for my watch')}<br><span class="muted small">${T('Fin du repos + prochaine série. Ta Galaxy Watch vibre et affiche la notification.', 'End of rest + next set. Your Galaxy Watch vibrates and shows the notification.')}</span></span></label>
       ${S.settings.notif === true ? `<label class="row" style="margin-top:6px;color:var(--text);font-size:14px;padding-left:32px"><input type="checkbox" style="width:20px;height:20px" data-set="notifStart" ${S.settings.notifStart !== false ? 'checked' : ''}> ${T('Aussi au début du repos (silencieuse, avec l\'heure de fin)', 'Also at the start of rest (silent, with end time)')}</label>
-      <button class="btn sm" data-act="test-notif" style="margin-top:8px">⌚ ${T('Tester la notification (5 s)', 'Test the notification (5 s)')}</button>` : ''}
+      <button class="btn sm" data-act="test-notif" style="margin-top:8px">⌚ ${T('Tester la notification (8 s, écran éteint)', 'Test the notification (8 s, screen off)')}</button>
+      <details class="muted small" style="margin-top:8px"><summary>${T('La montre ne reçoit rien?', 'Watch gets nothing?')}</summary><ol style="margin:6px 0 0;padding-left:18px">
+        <li>${T('App <b>Galaxy Wearable</b> → Paramètres de la montre → Notifications → Paramètres des notifications de l\'application : active <b>Chrome</b>.', '<b>Galaxy Wearable</b> app → Watch settings → Notifications → App notification settings: turn on <b>Chrome</b>.')}</li>
+        <li>${T('Même écran : « Afficher les notifications du téléphone sur la montre » → choisis <b>Toujours</b>. Sinon, la montre n\'en reçoit que quand l\'écran du cell est éteint.', 'Same screen: “Show phone notifications on watch” → choose <b>Always</b>. Otherwise the watch only gets them when the phone screen is off.')}</li>
+        <li>${T('Réglages du téléphone → Applications → Chrome → Notifications : permises, et la catégorie du site Carnet Muscu permise.', 'Phone Settings → Apps → Chrome → Notifications: allowed, including the Carnet Muscu site category.')}</li>
+        <li>${T('Pas de mode <b>Ne pas déranger</b> ni de mode Sommeil sur la montre ou le cell.', 'No <b>Do not disturb</b> or Sleep mode on the watch or phone.')}</li></ol></details>` : ''}
       <label>${T('Son du bip', 'Beep sound')}</label>
       <select data-set="beepSnd">${Object.entries(SOUNDS).map(([k, s]) => `<option value="${k}" ${(S.settings.beepSnd || 'classique') === k ? 'selected' : ''}>${T(s.fr, s.en)}</option>`).join('')}</select>
       <label>${T('Volume du bip', 'Beep volume')} : <b id="bvl">${S.settings.beepVol ?? 70} %</b></label>
       <input type="range" min="0" max="100" step="5" value="${S.settings.beepVol ?? 70}" data-bvol="1" style="--p:${S.settings.beepVol ?? 70}%">
       <p class="muted small" style="margin:2px 0 0">${T('Le volume dépend aussi du volume « média » de ton téléphone.', 'Volume also depends on your phone’s media volume.')}</p>
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="haptic" ${S.settings.haptic !== false ? 'checked' : ''}> ${T('📳 Petite vibration quand je coche une série', '📳 Small vibration when I check a set')}</label>
+      <button class="btn sm" data-act="test-vib" style="margin-top:8px">📳 ${T('Tester la vibration', 'Test vibration')}</button>
+      <p class="muted small" style="margin:4px 0 0">${T('Rien senti? Le cell ne doit pas être en mode <b>Muet</b> (haut-parleur barré) : mets-le en mode Vibreur ou Son. Vérifie aussi Réglages → Sons et vibrations → Intensité des vibrations → « Retour tactile ».', 'Felt nothing? The phone must not be on <b>Mute</b> (crossed speaker): use Vibrate or Sound mode. Also check Settings → Sounds and vibration → Vibration intensity → “Touch feedback”.')}</p>
       <div class="row wrap" style="margin-top:10px"><button class="btn sm" data-act="test-beep">🔊 Tester le son</button><button class="btn sm" data-act="test-lock">🔒 Test écran éteint (10 s)</button></div>`) +
   setSec('look', 'palette', '🎨', T('Apparence', 'Appearance'), T('Thème, couleurs, fond, icônes', 'Theme, colors, background, icons'), `<p class="muted small" style="margin:4px 0 0">Thèmes prêts à utiliser :</p>
       <div class="grid2" style="margin-top:10px">${THEMES.map(([k, l, c]) => `<button class="btn sm ${(S.settings.theme || 'noir') === k ? 'on' : ''}" style="text-align:left" data-act="theme" data-t="${k}"><span class="sw" style="background:${c}"></span>${l}</button>`).join('')}</div>
@@ -3815,8 +3835,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '7.4';
+const APP_VERSION = '7.5';
 const CHANGELOG = [
+  {v: '7.5', d: '2026-11-05', fr: ['La notification de fin de repos part maintenant même quand l\'écran est éteint : ta montre la reçoit à l\'heure.', 'Vibration plus forte quand tu coches une série, et bouton « Tester la vibration » dans Réglages → Minuteur et son.', 'Conseils dans les réglages si ta montre ou la vibration ne marche pas.'],
+   en: ['The end-of-rest notification now fires even with the screen off, so your watch gets it on time.', 'Stronger vibration when you check a set, plus a “Test vibration” button in Settings → Timer and sound.', 'Tips in settings if your watch or vibration doesn\'t work.']},
   {v: '7.4', d: '2026-11-04', fr: ['Tu peux maintenant supprimer les minuteurs prêts et les routines d\'étirement prêtes (menu ⋯ → Supprimer). Un bouton en bas permet de les remettre.', 'Change l\'ordre de tes dossiers en glissant ≡ : menu ⋯ d\'un dossier → Changer l\'ordre des dossiers.'],
    en: ['You can now delete ready-made timers and stretching routines (⋯ menu → Delete). A button at the bottom brings them back.', 'Reorder your folders by dragging ≡: a folder\'s ⋯ menu → Reorder folders.']},
   {v: '7.3', d: '2026-11-04', fr: ['🆕 Ce message! À chaque mise à jour, l\'appli te montre ce qui a changé.', 'Tu peux revoir toutes les nouveautés dans Réglages → Général → Nouveautés.'],
@@ -4071,7 +4093,8 @@ document.addEventListener('click', e => {
   switch (act) {
     case 'start': startWorkout(rid); break;
     case 'back': back(); break;
-    case 'test-notif': { toast(T('⌚ Notification dans 5 s : éteins l\'écran ou regarde ta montre', '⌚ Notification in 5 s: turn off the screen or look at your watch')); setTimeout(() => notify(T('✅ Repos terminé (test)', '✅ Rest over (test)'), T('À toi : Développé couché · 185 lb × 8 (série 2/3)', 'Your turn: Bench press · 185 lb × 8 (set 2/3)')), 5000); break; }
+    case 'test-vib': if (navigator.vibrate) { const ok = navigator.vibrate([200, 100, 200]); toast(ok ? T('📳 Vibration envoyée. Rien senti? Vois les conseils plus bas.', '📳 Vibration sent. Felt nothing? See the tips below.') : T('⚠️ Le téléphone a refusé la vibration', '⚠️ The phone refused the vibration')); } else toast(T('⚠️ Vibration non disponible dans ce navigateur', '⚠️ Vibration not available in this browser')); break;
+    case 'test-notif': { const swc = navigator.serviceWorker && navigator.serviceWorker.controller; if (notifOn() && swc) { swc.postMessage({type: 'rest-at', at: Date.now() + 8000, title: T('✅ Repos terminé (test)', '✅ Rest over (test)'), body: T('À toi : Développé couché · 185 lb × 8 (série 2/3)', 'Your turn: Bench press · 185 lb × 8 (set 2/3)')}); toast(T('⌚ Notification dans 8 s : éteins l\'écran maintenant et regarde ta montre', '⌚ Notification in 8 s: turn off the screen now and look at your watch')); break; } toast(T('⌚ Notification dans 5 s : éteins l\'écran ou regarde ta montre', '⌚ Notification in 5 s: turn off the screen or look at your watch')); setTimeout(() => notify(T('✅ Repos terminé (test)', '✅ Rest over (test)'), T('À toi : Développé couché · 185 lb × 8 (série 2/3)', 'Your turn: Bench press · 185 lb × 8 (set 2/3)')), 5000); break; }
     case 'test-beep': ensureAudio(); setTimeout(() => beep(true), 60); break;
     case 'test-lock': ensureAudio(); startTimer(10); toast('🔒 Éteins l\'écran maintenant : bip dans 10 s'); break;
     case 'ss-pick': { const {list, ei: i0, onDone} = ssCtx; const nl = ssJoin(list, i0, +b.dataset.j); closeModal(); onDone(nl); toast('⛓ Superset créé'); break; }
@@ -4257,7 +4280,7 @@ document.addEventListener('click', e => {
       s.done = !s.done;
       if (s.done && s.r === '') s.r = s.ph;
       s.pr = s.done && livePR(ei, si);
-      if (s.done) { justChk = ei + '-' + si; if (navigator.vibrate && S.settings.haptic !== false) navigator.vibrate(18); }
+      if (s.done) { justChk = ei + '-' + si; if (navigator.vibrate && S.settings.haptic !== false) navigator.vibrate([45]); }
       if (s.done) autoNext(ei);
       if (!s.pr) delete s.pr;
       save(); render();
@@ -4335,9 +4358,9 @@ document.addEventListener('click', e => {
       e.mach = {u: U() === 'lb' ? 'kg' : 'lb', v: +$('#convin').value.replace(',', '.')};
       save(); closeModal(); render(); toast(`⚖️ ${$('#convin') ? '' : ''}${dec1(v)} ${U()}`); break;
     }
-    case 'timer-sub': timerEnd = Math.max(Date.now() + 1000, timerEnd - 15000); scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); tickTimer(); break;
+    case 'timer-sub': timerEnd = Math.max(Date.now() + 1000, timerEnd - 15000); scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); restSW(timerEnd); tickTimer(); break;
     case 'timer-stop-big': closeModal(); stopTimer(); break;
-    case 'timer-add': timerTot += 30; timerEnd += 30000; scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); tickTimer(); break;
+    case 'timer-add': timerTot += 30; timerEnd += 30000; scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); restSW(timerEnd); tickTimer(); break;
     case 'timer-stop': stopTimer(); break;
     case 'timer-big': openBigTimer(); break;
     case 'timer-go': if (!S.active) break; if (cur().v === 'workout' && $('#timer').classList.contains('show') && !$('#timer').classList.contains('fin')) { openBigTimer(); break; } if ($('#timer').classList.contains('fin')) stopTimer(); if (cur().v !== 'workout') { closeAll(); openWorkout(); } else scrollCur(); break;
