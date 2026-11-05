@@ -1283,7 +1283,7 @@ function finishWorkout() {
   setTimeout(() => queueCloud(1500), 0);
   S.active = null; save(); stopTimer(); clearNotif(); setRoot('profile'); render(); setTimeout(() => confetti(prs.length ? 160 : 90), 200);
   modal(`<h2>Séance enregistrée 💪</h2>
-    <div class="row" style="margin:10px 0"><div class="stat"><span class="muted small">Durée</span><b>${fmtDur(Date.now() - new Date(a.start))}</b></div><div class="stat"><span class="muted small">Exercices</span><b>${exercises.length}</b></div><div class="stat"><span class="muted small">Séries</span><b>${exercises.reduce((n, e) => n + work(e.sets).length, 0)}</b></div></div>
+    <div class="row" style="margin:10px 0"><div class="stat"><span class="muted small">Durée</span><b>${hm((Date.now() - new Date(a.start)) / 60000)}</b></div><div class="stat"><span class="muted small">Exercices</span><b>${exercises.length}</b></div><div class="stat"><span class="muted small">Séries</span><b>${exercises.reduce((n, e) => n + work(e.sets).length, 0)}</b></div></div>
     ${prs.length ? `<div class="pr" style="margin:10px 0 4px">🏆 ${prs.length > 1 ? prs.length + ' nouveaux records' : 'Nouveau record'}!</div>${prs.map(r => `<p style="margin:4px 0">${esc(r.name)} : <span class="muted">${esc(r.from)}</span> → <b class="pr">${esc(r.to)}</b></p>`).join('')}` : ''}
     ${(() => { if (!prevH) return ''; const nh = S.history[S.history.length - 1];
       const row = (l, nv, pv, f) => { const pc = pv ? Math.round((nv - pv) / pv * 100) : null; return `<div class="row between" style="padding:5px 0"><span class="muted">${l}</span><span><b>${f(nv)}</b> ${pc == null ? '' : `<span class="small" style="color:${pc >= 0 ? 'var(--ok)' : 'var(--danger)'}">${pc >= 0 ? '▲' : '▼'} ${Math.abs(pc)} %</span>`}</span></div>`; };
@@ -3835,8 +3835,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '7.5';
+const APP_VERSION = '7.5.1';
 const CHANGELOG = [
+  {v: '7.5.1', d: '2026-11-05', fr: ['Durée plus claire : « 1 h 07 » à la fin de la séance, et 1:07:45 dans le chrono.'], en: ['Clearer duration: “1 h 07” at the end of the workout, and 1:07:45 on the stopwatch.']},
   {v: '7.5', d: '2026-11-05', fr: ['La notification de fin de repos part maintenant même quand l\'écran est éteint : ta montre la reçoit à l\'heure.', 'Vibration plus forte quand tu coches une série, et bouton « Tester la vibration » dans Réglages → Minuteur et son.', 'Conseils dans les réglages si ta montre ou la vibration ne marche pas.'],
    en: ['The end-of-rest notification now fires even with the screen off, so your watch gets it on time.', 'Stronger vibration when you check a set, plus a “Test vibration” button in Settings → Timer and sound.', 'Tips in settings if your watch or vibration doesn\'t work.']},
   {v: '7.4', d: '2026-11-04', fr: ['Tu peux maintenant supprimer les minuteurs prêts et les routines d\'étirement prêtes (menu ⋯ → Supprimer). Un bouton en bas permet de les remettre.', 'Change l\'ordre de tes dossiers en glissant ≡ : menu ⋯ d\'un dossier → Changer l\'ordre des dossiers.'],
@@ -3934,7 +3935,7 @@ function afterRender(c) {
   if (c.v === 'measures') drawChart(bodySeries(bodyMetric).map(p => ({d: p.d + 'T12:00', v: +p.v})));
   if (c.v === 'calendar' && !c.scrolled) { c.scrolled = true; setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 0); }
 }
-const fmtDur = ms => { const s = Math.max(0, Math.floor(ms / 1000)), hh = Math.floor(s / 3600), mm = Math.floor(s / 60) % 60, ss = s % 60; return hh ? `${hh} h ${pad2(mm)}:${pad2(ss)}` : `${mm}:${pad2(ss)}`; };
+const fmtDur = ms => { const s = Math.max(0, Math.floor(ms / 1000)), hh = Math.floor(s / 3600), mm = Math.floor(s / 60) % 60, ss = s % 60; return hh ? `${hh}:${pad2(mm)}:${pad2(ss)}` : `${mm}:${pad2(ss)}`; };
 function woStats() { const a = S.active; let d = 0, n = 0; a.exercises.forEach(e => e.sets.forEach(s => { n++; if (s.done) d++; })); return {d, n}; }
 function updWobar() {
   const el = $('#wobar'); if (!el) return;
