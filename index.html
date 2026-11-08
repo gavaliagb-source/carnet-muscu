@@ -275,6 +275,17 @@ button.chip{cursor:pointer}
 .toolt{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:14px}.toolt .ico{color:var(--accent);margin:0 0 2px}
 .chrono{font-variant-numeric:tabular-nums;font-weight:700;color:var(--accent);font-size:15px}
 .cday .dl{font-size:10px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
+
+/* Visite guidée */
+#tour{position:fixed;inset:0;z-index:9000;touch-action:none}
+#tour .tspot{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.72);border:2px solid var(--accent);transition:all .3s ease;pointer-events:none}
+#tour .tspot.none{width:0!important;height:0!important;border:0;left:50%!important;top:40%!important}
+#tour .tbub{position:fixed;left:16px;right:16px;max-width:420px;margin:0 auto;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:16px;padding:16px 16px 12px;box-shadow:0 10px 40px rgba(0,0,0,.5);transition:top .3s ease}
+#tour .tbub h3{margin:0 0 6px;font-size:1.08em}
+#tour .tbub p{margin:0 0 12px;line-height:1.45}
+#tour .tdots{display:flex;gap:5px}
+#tour .tdots i{width:6px;height:6px;border-radius:3px;background:var(--line)}
+#tour .tdots i.on{background:var(--accent);width:16px}
 </style>
 </head>
 <body>
@@ -1729,7 +1740,8 @@ function vSettings() {
       <select data-set="fontScale">${[['sm', T('Petit', 'Small')], ['', T('Normal', 'Normal')], ['lg', T('Grand', 'Large')], ['xl', T('Très grand', 'Extra large')]].map(([v, l]) => `<option value="${v}" ${(S.settings.fontScale || '') === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
       <label>${T('Premier jour de la semaine', 'First day of the week')}</label>
       <select data-set="weekSun"><option value="" ${sunFirst() ? '' : 'selected'}>${T('Lundi', 'Monday')}</option><option value="1" ${sunFirst() ? 'selected' : ''}>${T('Dimanche', 'Sunday')}</option></select>
-      <button class="btn block" data-act="news" style="margin:12px 0 4px">🆕 ${T('Nouveautés', 'What\'s new')} <span class="muted small">· v${APP_VERSION}</span></button>
+      <button class="btn block" data-act="tour" style="margin:12px 0 4px">🎓 ${T('Revoir la visite guidée', 'Replay the guided tour')}</button>
+      <button class="btn block" data-act="news" style="margin:8px 0 4px">🆕 ${T('Nouveautés', 'What\'s new')} <span class="muted small">· v${APP_VERSION}</span></button>
       <label>Nom affiché sur le profil</label>
       <input data-set="name" value="${esc(S.settings.name || '')}" placeholder="Ton nom">
       <label>Langue / Language</label>
@@ -3835,8 +3847,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '7.5.1';
+const APP_VERSION = '7.6';
 const CHANGELOG = [
+  {v: '7.6', d: '2026-11-07', fr: ['Nouvelle visite guidée qui montre toutes les fonctions de l\'appli. Lance-la dans Réglages → Général → Revoir la visite guidée.', 'Pendant ta prochaine séance, quelques bulles t\'expliquent les trucs utiles (cocher, type de série, options…).'],
+   en: ['New guided tour showing every feature of the app. Start it in Settings → General → Replay the guided tour.', 'During your next workout, a few tips explain the useful tricks (checking, set type, options…).']},
   {v: '7.5.1', d: '2026-11-05', fr: ['Durée plus claire : « 1 h 07 » à la fin de la séance, et 1:07:45 dans le chrono.'], en: ['Clearer duration: “1 h 07” at the end of the workout, and 1:07:45 on the stopwatch.']},
   {v: '7.5', d: '2026-11-05', fr: ['La notification de fin de repos part maintenant même quand l\'écran est éteint : ta montre la reçoit à l\'heure.', 'Vibration plus forte quand tu coches une série, et bouton « Tester la vibration » dans Réglages → Minuteur et son.', 'Conseils dans les réglages si ta montre ou la vibration ne marche pas.'],
    en: ['The end-of-rest notification now fires even with the screen off, so your watch gets it on time.', 'Stronger vibration when you check a set, plus a “Test vibration” button in Settings → Timer and sound.', 'Tips in settings if your watch or vibration doesn\'t work.']},
@@ -3867,6 +3881,74 @@ function checkNews() {
   if (!S.settings.onboarded) { S.settings.seenVer = APP_VERSION; saveLocal(); return; }
   if (!S.settings.seenVer) { S.settings.seenVer = '7.2.1'; }
   if (verCmp(APP_VERSION, S.settings.seenVer) > 0) setTimeout(() => { if (!modals.length) openNews(false); else S.settings.seenVer = APP_VERSION; }, 700);
+}
+
+
+/* ===================== Visite guidée ===================== */
+const TOURS = {
+  main: [
+    {t: ['👋 Petite visite', '👋 Quick tour'], d: ['1 minute pour voir tout ce que Carnet Muscu peut faire. Tu peux passer quand tu veux.', 'One minute to see everything Carnet Muscu can do. You can skip anytime.']},
+    {tab: 'train', sel: '.card.today, [data-act="sched-edit"]', t: ['📅 Ton horaire', '📅 Your schedule'], d: ['Planifie ta semaine (lundi : Push, mardi : repos…) ou un cycle Push/Pull/Legs. La séance du jour s\'affiche ici, prête à lancer.', 'Plan your week (Monday: Push, Tuesday: rest…) or a Push/Pull/Legs cycle. Today\'s workout shows up here, ready to start.']},
+    {tab: 'train', sel: '[data-act="start-empty"]', t: ['➕ Séance libre', '➕ Free workout'], d: ['Commence sans routine et ajoute tes exercices au fur et à mesure.', 'Start without a routine and add exercises as you go.']},
+    {tab: 'train', sel: '[data-act="new-routine"]', t: ['📋 Tes routines', '📋 Your routines'], d: ['Crée une routine avec tes exercices, séries, reps, charges et temps de repos. Plus de 1 000 exercices avec leurs muscles.', 'Build a routine with your exercises, sets, reps, weights and rest times. Over 1,000 exercises with their muscles.']},
+    {tab: 'train', sel: '[data-act="ai-menu"]', t: ['✨ Programme IA', '✨ AI program'], d: ['Copie un message tout prêt pour ChatGPT ou Claude, colle sa réponse ici : tes routines sont créées toutes seules, dans le bon dossier.', 'Copy a ready-made message for ChatGPT or Claude, paste its answer here: your routines are created automatically, in the right folder.']},
+    {tab: 'train', sel: '.folder .fhead', t: ['📁 Dossiers', '📁 Folders'], d: ['Range tes routines par programme. Le menu ⋯ permet de renommer, réordonner, envoyer à l\'IA ou partager avec un ami.', 'Organize routines by program. The ⋯ menu lets you rename, reorder, send to AI or share with a friend.']},
+    {sel: 'nav [data-tab="stretch"]', t: ['🧘 Étirements', '🧘 Stretching'], d: ['Routines d\'étirement guidées avec minuteur et images, ou crée les tiennes.', 'Guided stretching routines with timer and pictures, or make your own.']},
+    {sel: 'nav [data-tab="timers"]', t: ['⏱ Intervalles', '⏱ Intervals'], d: ['Minuteurs Tabata, HIIT, EMOM ou sur mesure, avec bips et notifications.', 'Tabata, HIIT, EMOM or custom timers, with beeps and notifications.']},
+    {sel: 'nav [data-tab="profile"]', t: ['📈 Profil', '📈 Profile'], d: ['Ton historique, tes records, tes graphiques de progression, ton calendrier et tes mesures.', 'Your history, records, progress charts, calendar and body measurements.']},
+    {tab: 'profile', sel: '#hdr [data-v="settings"]', t: ['⚙️ Réglages', '⚙️ Settings'], d: ['Son, vibration, notifications sur la montre, couleurs, langue, sauvegarde… Tu peux revoir cette visite dans Réglages → Général.', 'Sound, vibration, watch notifications, colors, language, backup… You can replay this tour in Settings → General.']},
+    {tab: 'train', t: ['💪 C\'est à toi!', '💪 Your turn!'], d: ['Lance ta première séance : on te montrera les trucs utiles pendant l\'entraînement.', 'Start your first workout: we\'ll show you the useful tricks during the session.']}
+  ],
+  wo: [
+    {sel: '.setrow input[data-in="w"]', t: ['🏋️ Charge et reps', '🏋️ Weight and reps'], d: ['Entre ta charge et tes reps. La colonne « Précédent » montre ta dernière fois : touche-la pour la recopier.', 'Enter your weight and reps. The “Previous” column shows last time: tap it to copy it.']},
+    {sel: '.setrow .check', t: ['✓ Coche ta série', '✓ Check your set'], d: ['Le minuteur de repos démarre tout seul (avec bip et notification sur la montre) et la page descend vers la prochaine série.', 'The rest timer starts by itself (with a beep and a watch notification) and the page scrolls to your next set.']},
+    {sel: '.setrow .nb', t: ['🔢 Type de série', '🔢 Set type'], d: ['Touche le numéro pour en faire un échauffement, un drop set ou une série à l\'échec, ou pour ajouter un RIR et une note.', 'Tap the number to make it a warm-up, drop set or failure set, or to add RIR and a note.']},
+    {sel: '[data-act="ex-menu"]', t: ['⋯ Options de l\'exercice', '⋯ Exercise options'], d: ['Remplacer l\'exercice, faire un superset, changer le repos, convertir kg ↔ lb sur une machine…', 'Replace the exercise, make a superset, change rest, convert kg ↔ lb on a machine…']},
+    {sel: '#hdr [data-act="finish"]', t: ['🏁 Terminer', '🏁 Finish'], d: ['À la fin, touche Terminer : tu verras ta durée, tes records et une image à partager. Bon entraînement!', 'When done, tap Finish: you\'ll see your time, your records and an image to share. Have a great workout!']}
+  ]
+};
+let tourSt = null;
+function tourStart(k) {
+  if (tourSt) return;
+  S.settings.tour = S.settings.tour || {}; S.settings.tour[k] = 1; saveLocal();
+  tourSt = {k, i: 0};
+  const el = document.createElement('div'); el.id = 'tour';
+  el.innerHTML = '<div class="tspot none"></div><div class="tbub"></div>';
+  el.addEventListener('click', e => {
+    const a = e.target.closest('[data-tour]'); if (!a) return; e.stopPropagation();
+    if (a.dataset.tour === 'next') tourGo(tourSt.i + 1); else if (a.dataset.tour === 'prev') tourGo(tourSt.i - 1); else tourEnd();
+  });
+  document.body.appendChild(el); tourGo(0);
+}
+function tourEnd() { const el = $('#tour'); if (el) el.remove(); const k = tourSt && tourSt.k; tourSt = null; if (k === 'main' && cur().v !== 'train') { setRoot('train'); render(); window.scrollTo(0, 0); } }
+function tourGo(i) {
+  const L = TOURS[tourSt.k]; if (i >= L.length) return tourEnd(); if (i < 0) i = 0;
+  tourSt.i = i; const st = L[i];
+  if (st.tab && (stack.length > 1 || stack[0].v !== st.tab)) { setRoot(st.tab); render(); window.scrollTo(0, 0); }
+  const find = () => st.sel ? [...document.querySelectorAll(st.sel)].find(x => x.offsetParent !== null || getComputedStyle(x).position === 'fixed') : null;
+  const tg = find();
+  if (tg && !tg.closest('nav, header')) { const r = tg.getBoundingClientRect(); if (r.top < 70 || r.bottom > innerHeight - 220) tg.scrollIntoView({block: 'center'}); }
+  setTimeout(() => tourPlace(find()), tg ? 260 : 0);
+}
+function tourPlace(tg) {
+  const box = $('#tour'); if (!box || !tourSt) return;
+  const L = TOURS[tourSt.k], i = tourSt.i, st = L[i], sp = box.querySelector('.tspot'), bub = box.querySelector('.tbub');
+  bub.innerHTML = `<h3>${T(st.t[0], st.t[1])}</h3><p>${T(st.d[0], st.d[1])}</p>
+    <div class="row between"><div class="tdots">${L.map((_, j) => `<i class="${j === i ? 'on' : ''}"></i>`).join('')}</div>
+    <div class="row" style="gap:6px">${i < L.length - 1 ? `<button class="btn sm ghost" data-tour="skip">${T('Passer', 'Skip')}</button>` : ''}${i ? `<button class="btn sm" data-tour="prev">←</button>` : ''}<button class="btn sm primary" data-tour="next">${i < L.length - 1 ? T('Suivant', 'Next') : T('Terminé', 'Done')}</button></div></div>`;
+  if (!tg) { sp.className = 'tspot none'; bub.style.top = Math.max(80, innerHeight * .32) + 'px'; return; }
+  const r = tg.getBoundingClientRect(), pd = 6;
+  sp.className = 'tspot';
+  Object.assign(sp.style, {left: (r.left - pd) + 'px', top: (r.top - pd) + 'px', width: (r.width + pd * 2) + 'px', height: (r.height + pd * 2) + 'px'});
+  const bh = bub.offsetHeight || 170;
+  bub.style.top = (r.bottom + pd + 14 + bh < innerHeight - 10 ? r.bottom + pd + 14 : Math.max(10, r.top - pd - 14 - bh)) + 'px';
+}
+addEventListener('resize', () => { if (tourSt) tourGo(tourSt.i); });
+function maybeTourWo() {
+  if (tourSt || modals.length || !S.active || cur().v !== 'workout') return;
+  if (!S.settings.onboarded || (S.settings.tour || {}).wo) return;
+  if (!document.querySelector('.setrow .check')) return;
+  tourStart('wo');
 }
 
 /* ---------- Calendrier façon Hevy ---------- */
@@ -3923,6 +4005,7 @@ function render() {
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === stack[0].v));
   afterRender(c);
   try { iconize($('#app')); iconize($('#hdr')); } catch (e) {}
+  if (c.v === 'workout') setTimeout(maybeTourWo, 700);
   updWobar();
   updElapsed();
   justChk = null;
@@ -4129,6 +4212,7 @@ document.addEventListener('click', e => {
       break; }
     case 'st-share': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); if (rt) { const c = JSON.parse(JSON.stringify(rt)); delete c.id; shareItem('s', [c], T(rt.n[0], rt.n[1] || rt.n[0])); } break; }
     case 'imp-ok': doImport(); break;
+    case 'tour': S.settings.tour = S.settings.tour || {}; delete S.settings.tour.wo; tourStart('main'); break;
     case 'pre-restore': { const L = b.dataset.k === 't' ? TM_PRESETS : ST_PRESETS; S.settings.hidePre = hidPre().filter(id => !L.some(x => x.id === id)); save(); render(); toast(T('↺ Remis', '↺ Restored')); break; }
     case 'fold-reo': closeAll(); openFolderReo(); break;
     case 'news': openNews(true); break;
@@ -4530,7 +4614,7 @@ function openWelcome() {
     <label>${T('Unité', 'Unit')}</label><div class="seg"><button class="${U() === 'lb' ? 'on' : ''}" data-act="wl-unit" data-v="lb">lb</button><button class="${U() === 'kg' ? 'on' : ''}" data-act="wl-unit" data-v="kg">kg</button></div>
     <label>${T('Comment fais-tu tes séries?', 'How do you train your sets?')}</label>
     <div class="menu">${EFFORTS().map(([k, l]) => `<button class="btn block ${(S.settings.effort || 'normal') === k ? 'on' : ''}" data-act="wl-eff" data-v="${k}" style="text-align:left">${l}</button>`).join('')}</div>
-    <button class="btn primary block" data-act="wl-ok" style="margin-top:14px">${T('C\'est parti!', 'Let\'s go!')}</button>`, {id: 'welcome', onclose: () => { S.settings.onboarded = true; save(); setTimeout(checkImport, 250); }});
+    <button class="btn primary block" data-act="wl-ok" style="margin-top:14px">${T('C\'est parti!', 'Let\'s go!')}</button>`, {id: 'welcome', onclose: () => { S.settings.onboarded = true; save(); setTimeout(checkImport, 250); setTimeout(() => { if (!modals.length && !location.hash.includes('imp=')) tourStart('main'); }, 450); }});
 }
 if (!S.settings.onboarded) setTimeout(openWelcome, 300);
 checkNews();
