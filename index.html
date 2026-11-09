@@ -38,14 +38,17 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);
   font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+:root{--nb:max(4px, calc(env(safe-area-inset-bottom) - 18px))}
+body{padding-bottom:calc(76px + var(--nb))}
 header{position:sticky;top:0;z-index:5;background:var(--bg);
   padding:calc(12px + env(safe-area-inset-top)) 16px 10px;border-bottom:1px solid var(--line);
   display:flex;align-items:center;justify-content:space-between;gap:8px}
 header h1{font-size:19px;margin:0;letter-spacing:-.3px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 main{padding:16px 16px 90px;max-width:640px;margin:0 auto}
 nav{position:fixed;bottom:0;left:0;right:0;z-index:5;background:var(--card);
-  border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+  border-top:1px solid var(--line);display:flex;padding-bottom:var(--nb)}
+/* iPhone : le fond de la barre descend jusqu'en bas de l'écran, même sous la barre d'accueil */
+nav::after{content:'';position:absolute;left:0;right:0;top:100%;height:120px;background:var(--card)}
 nav button{flex:1;background:none;border:0;color:var(--muted);padding:10px 0 12px;font-size:12px;
   display:flex;flex-direction:column;align-items:center;gap:3px}
 nav button .ic{font-size:20px;line-height:1}
@@ -97,15 +100,15 @@ textarea.short{min-height:80px;font-family:inherit;font-size:16px}
 .colhead{display:grid;grid-template-columns:40px 1fr 1fr 52px;gap:8px;font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
 .last{font-size:13px;color:var(--muted);margin-top:4px}
 .pr{color:var(--accent);font-weight:700}
-#timer{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:6;
+#timer{position:fixed;left:12px;right:12px;bottom:calc(84px + var(--nb));z-index:6;
   background:var(--accent);color:var(--accent-ink);border-radius:14px;padding:10px 14px;
   display:none;align-items:center;justify-content:space-between;font-weight:700;box-shadow:0 8px 24px #0008}
 
-#wobar{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:6;display:none;align-items:center;gap:10px;
+#wobar{position:fixed;left:12px;right:12px;bottom:calc(76px + var(--nb));z-index:6;display:none;align-items:center;gap:10px;
   background:var(--card2);border:1px solid var(--accent);border-radius:14px;padding:10px 14px;box-shadow:0 8px 24px #0007;cursor:pointer}
 #wobar.show{display:flex}#wobar .wn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
 #wobar .wt{font-variant-numeric:tabular-nums;color:var(--accent);font-weight:700}
-body.wob #timer{bottom:calc(140px + env(safe-area-inset-bottom))}body.wob main{padding-bottom:150px}
+body.wob #timer{bottom:calc(140px + var(--nb))}body.wob main{padding-bottom:150px}
 .wprog{position:sticky;top:var(--hdrh,58px);z-index:3;background:var(--bg);margin:-6px -2px 10px;padding:6px 2px 8px}
 .pbar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:5px}.pbar>div{height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
 @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}.check.pop{animation:pop .3s ease}
@@ -301,7 +304,7 @@ button.chip{cursor:pointer}
 .aistep .c{flex:1;min-width:0}.aistep .c>b{display:block;margin:3px 0 4px}.aistep p{margin:0 0 8px;color:var(--muted);font-size:13.5px}
 .ailinks{display:flex;gap:6px;flex-wrap:wrap}.ailinks a{flex:1;min-width:90px;text-align:center;text-decoration:none}
 
-#selbar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:8;display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--accent);border-radius:16px;padding:10px 12px;box-shadow:0 8px 30px rgba(0,0,0,.45)}
+#selbar{position:fixed;left:12px;right:12px;bottom:calc(84px + var(--nb));z-index:8;display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--accent);border-radius:16px;padding:10px 12px;box-shadow:0 8px 30px rgba(0,0,0,.45)}
 #selbar span{flex:1}
 .selbox{width:26px;height:26px;border-radius:8px;border:2px solid var(--muted);display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:#111;flex:none}
 .selbox.on{background:var(--accent);border-color:var(--accent)}
@@ -4002,8 +4005,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.1.1';
+const APP_VERSION = '8.1.2';
 const CHANGELOG = [
+  {v: '8.1.2', d: '2026-11-09', fr: ['iPhone : la barre du bas (Entraînement, Étirements…) est mieux placée, moins haute.'], en: ['iPhone: the bottom bar (Workout, Stretching…) sits lower and better.']},
   {v: '8.1.1', d: '2026-11-09', fr: ['Fond clair : ta couleur de boutons garde maintenant sa vraie teinte (elle est juste un peu foncée pour rester lisible).'], en: ['Light background: your button color now keeps its real hue (only slightly darkened to stay readable).']},
   {v: '8.1', d: '2026-11-09', fr: ['Appuie longtemps sur une routine pour la sélectionner : coche-en d\'autres, puis déplace-les ou supprime-les d\'un coup. Glisse ≡ pour changer leur ordre.', 'Appuie longtemps sur un dossier pour changer l\'ordre des dossiers.'],
    en: ['Long-press a routine to select it: check others, then move or delete them at once. Drag ≡ to reorder them.', 'Long-press a folder to reorder folders.']},
