@@ -336,6 +336,12 @@ body.selon main{padding-bottom:170px}
 .sspill{display:inline-flex;align-items:center;gap:5px;background:color-mix(in srgb,var(--ss) 20%,transparent);color:var(--ss);font-weight:700;font-size:12px;letter-spacing:.3px;text-transform:uppercase;padding:3px 9px 3px 7px;border-radius:999px;line-height:1.3;vertical-align:1px}
 .sspill::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--ss)}
 .sspill.sm{font-size:10.5px;padding:2px 7px 2px 6px}
+
+.avatar{position:relative;cursor:pointer;border:0;padding:0;isolation:isolate}.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.avatar .cam{position:absolute;right:-2px;bottom:-2px;width:24px;height:24px;border-radius:50%;background:var(--card);border:2px solid var(--bg);font-size:12px;display:flex;align-items:center;justify-content:center}
+.phgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.phth{position:relative;padding:0;border:0;border-radius:12px;overflow:hidden;aspect-ratio:3/4;background:var(--card2);cursor:pointer}
+.phth img{width:100%;height:100%;object-fit:cover;display:block}.phth span{position:absolute;left:0;right:0;bottom:0;padding:4px 6px;font-size:11px;color:#fff;background:linear-gradient(transparent,#000a);text-align:left}
 </style>
 </head>
 <body>
@@ -474,6 +480,15 @@ const LIBBYNAME = Object.fromEntries(LIB.map(l => [l.key, l.id]));
 const HT_FR = ['Assieds-toi au sol, le haut du dos appuyé contre un banc, la charge posée sur les hanches (avec un coussin).', 'Pieds à plat, écartés à la largeur des hanches, tibias verticaux en haut du mouvement.', 'Pousse dans les talons et monte les hanches jusqu\'à ce que le corps soit aligné des épaules aux genoux. Serre les fessiers 1 seconde.', 'Redescends lentement les hanches sans toucher le sol, puis recommence.'];
 const HT_EN = ['Sit on the floor with your upper back against a bench and the weight resting on your hips (use a pad).', 'Feet flat, hip-width apart, shins vertical at the top of the movement.', 'Drive through your heels and lift your hips until your body is in line from shoulders to knees. Squeeze your glutes for 1 second.', 'Lower your hips slowly without touching the floor, then repeat.'];
 const EXTRA = [
+  ['x_cw', 'Tapis roulant (marche)', 'cardiovascular system', 'calves,quads', 'body weight', 'Walking On Incline Treadmill', 'cardio treadmill tapis roulant marche inclinaison incline walk', '', ''],
+  ['x_cr', 'Tapis roulant (course)', 'cardiovascular system', 'quads,calves', 'body weight', 'Run (Equipment)', 'cardio treadmill tapis roulant course jogging run', '', ''],
+  ['x_cb', 'Vélo stationnaire', 'cardiovascular system', 'quads,calves', 'stationary bike', 'Stationary Bike Walk', 'cardio velo bike spinning stationary bicycle', '', ''],
+  ['x_ce', 'Elliptique', 'cardiovascular system', 'quads,glutes', 'elliptical machine', 'Walk Elliptical Cross Trainer', 'cardio elliptique elliptical cross trainer', '', ''],
+  ['x_cs', 'Escaliers (StairMaster)', 'cardiovascular system', 'glutes,quads', 'stepmill machine', 'Walking On Stepmill', 'cardio escaliers stairmaster stepmill marches', '', ''],
+  ['x_cj', 'Corde à sauter', 'cardiovascular system', 'calves', 'rope', 'Jump Rope', 'cardio corde a sauter jump rope', '', ''],
+  ['x_co', 'Course extérieure', 'cardiovascular system', 'quads,calves', 'body weight', 'Run', 'cardio course jogging run outdoor dehors', '', ''],
+  ['x_cm', 'Marche extérieure', 'cardiovascular system', 'calves', 'body weight', 'Walking On Incline Treadmill', 'cardio marche walk outdoor dehors promenade', '', ''],
+  ['x_cv', 'Rameur', 'cardiovascular system', 'lats,quads', 'body weight', 'Push To Run', 'cardio rameur rowing machine ergometre aviron', '', ''],
   ['x_ht', 'Barbell Hip Thrust', 'glutes', 'hamstrings,quads', 'barbell', 'Barbell Glute Bridge', 'hip thrust pont fessier fessiers barre', HT_FR, HT_EN],
   ['x_htd', 'Dumbbell Hip Thrust', 'glutes', 'hamstrings,quads', 'dumbbell', 'Barbell Glute Bridge', 'hip thrust pont fessier fessiers haltere', HT_FR, HT_EN],
   ['x_htm', 'Machine Hip Thrust', 'glutes', 'hamstrings,quads', 'leverage machine', 'Barbell Glute Bridge', 'hip thrust pont fessier fessiers machine', HT_FR, HT_EN],
@@ -857,6 +872,7 @@ function lastFull(name) {
 }
 const isTimed = e => e.timed === false || (e.target && e.target.timed === false) ? false : !!(e.timed || (e.target && e.target.timed) || TIMED_RE.test(e.name) || ((lastFull(e.name) || []).some(s => s.u === 's')));
 function fmtSet(s, short) {
+  if (s.u === 'c') return [s.r ? s.r + ' min' : '', s.km ? dec1(s.km) + ' ' + kmU() : '', s.inc ? s.inc + (short ? '' : ' %') : '', !short && s.kc ? '≈' + s.kc + ' kcal' : ''].filter(Boolean).join(' · ');
   const bw = s.w === '' || s.w == null || +s.w === 0;
   let x = s.u === 's' ? (bw ? fmtSec(s.r) : `${s.w}×${fmtSec(s.r)}`) : `${bw ? BWL() : s.w}×${s.r}`;
   if (s.rir != null && s.rir !== '') x += ` RIR ${s.rir}`;
@@ -1326,7 +1342,9 @@ function finishWorkout() {
     const tm = isTimed(e);
     const o = {name: e.name, sets: e.sets.filter(s => s.done || (s.r !== '' && +s.r > 0)).map(s => {
       const x = {w: s.w === '' ? '' : +s.w, r: +s.r || +s.ph || 0};
-      if (s.t) x.t = s.t; if (s.n) x.n = s.n; if (s.rir != null && s.rir !== '') x.rir = +s.rir; if (tm) x.u = 's'; return x;
+      if (s.t) x.t = s.t; if (s.n) x.n = s.n; if (s.rir != null && s.rir !== '') x.rir = +s.rir; if (tm) x.u = 's';
+      if (isCardio(e)) { x.u = 'c'; x.w = ''; if (s.km !== '' && s.km != null) x.km = +s.km; if (s.inc !== '' && s.inc != null) x.inc = +s.inc; const c = cardioCalc(CARDIO_KIND(e.name), x.r, x.km, x.inc, bodyKg()); if (c) { x.kc = c.kcal; x.st = c.steps; } }
+      return x;
     })};
     if (e.note) o.note = e.note; if (e.ss) o.ss = e.ss; return o;
   }).filter(e => e.sets.length);
@@ -1334,7 +1352,7 @@ function finishWorkout() {
   const id = uid(), prs = [];
   const bestOf = sets => sets.reduce((b, s) => e1rm(s.w, s.r) > e1rm(b.w, b.r) ? s : b, sets[0]);
   exercises.forEach(e => {
-    const ws = work(e.sets); if (!ws.length) return;
+    const ws = work(e.sets); if (!ws.length || ws.some(s => s.u === 'c')) return;
     const prevSets = S.history.flatMap(h => h.exercises.filter(x => norm(x.name) === norm(e.name)).flatMap(x => work(x.sets)));
     if (!prevSets.length) return;
     const nb = bestOf(ws), pb = bestOf(prevSets);
@@ -1534,6 +1552,7 @@ function vWorkout() {
   return prog + (deloadOn() ? `<div class="card" style="border-color:var(--warm);padding:10px 14px"><span class="small">🪶 Semaine de récupération : charges −${S.settings.deload.pct} %</span></div>` : '') + a.exercises.map((e, ei) => {
     const last = lastFor(e.name), prev = prevFor(e.name), tm = isTimed(e);
     const mates = ssMates(a.exercises, e);
+    if (isCardio(e)) return cardioCard(e, ei, last, mates);
     let wi = 0, wu = 0;
     return `<div class="card ${e.ss ? 'ss' : ''}" id="wex${ei}" ${ssSty(e)}>
       ${mates.length ? `<div class="sshead"><span class="sspill">Superset</span><span class="muted small">${T('avec', 'with')} ${mates.map(x => esc(x.name)).join(', ')}</span></div>` : ''}
@@ -1565,11 +1584,33 @@ function vWorkout() {
       </div>
     </div>`;
   }).join('') + `
-    <button class="btn block" data-act="add-exo">＋ Ajouter un exercice</button>
+    <div class="row"><button class="btn" style="flex:2" data-act="add-exo">＋ Ajouter un exercice</button><button class="btn" style="flex:1" data-act="cardio-add">🏃 Cardio</button></div>
     <div class="gap"></div><div class="gap"></div>
     <button class="btn primary block" data-act="finish">✔ Terminer la séance</button>
     <div class="gap"></div>
     <button class="btn danger block" data-act="cancel-workout">Abandonner</button>`;
+}
+
+
+function cardioCard(e, ei, last, mates) {
+  const k = CARDIO_KIND(e.name), incL = k === 'walk' || k === 'run' ? T('Incl. %', 'Incl. %') : T('Niveau', 'Level');
+  const tot = e.sets.reduce((a, s) => { const c = cardioCalc(k, s.r || s.ph, s.km, s.inc, bodyKg()); return c && s.done ? {kcal: a.kcal + c.kcal, steps: a.steps + c.steps} : a; }, {kcal: 0, steps: 0});
+  return `<div class="card ${e.ss ? 'ss' : ''}" id="wex${ei}" ${ssSty(e)}>
+    ${mates.length ? `<div class="sshead"><span class="sspill">Superset</span><span class="muted small">${T('avec', 'with')} ${mates.map(x => esc(x.name)).join(', ')}</span></div>` : ''}
+    <div class="row between"><div class="row" style="gap:10px;min-width:0">${thumb(e.name, 40)}<div style="min-width:0"><h3>${exl(e.name)}</h3><span class="tag">🏃 Cardio</span></div></div><button class="btn sm" data-act="ex-menu" data-e="${ei}" aria-label="Options">⋯</button></div>
+    ${e.note ? `<div class="last">📝 ${esc(e.note)}</div>` : ''}
+    ${last ? `<div class="last">${T('Dernière fois', 'Last time')} : ${last.sets.map(s => fmtSet(s)).join(' · ')}</div>` : ''}
+    <div class="colhead w5"><span>#</span><span>Min</span><span>${kmU()}</span><span>${incL}</span><span></span></div>
+    ${e.sets.map((s, si) => { const ls = last && last.sets[si]; return `<div class="setrow w5 ${s.done ? 'done' : ''}">
+      <button class="nb" data-act="set-menu" data-e="${ei}" data-s="${si}">${si + 1}</button>
+      <input inputmode="decimal" value="${esc(s.r)}" placeholder="${esc(s.ph || (ls && ls.r) || '15')}" data-in="r" data-e="${ei}" data-s="${si}" aria-label="Minutes">
+      <input inputmode="decimal" value="${esc(s.km || '')}" placeholder="${ls && ls.km ? esc(ls.km) : '—'}" data-in="km" data-e="${ei}" data-s="${si}" aria-label="${kmU()}">
+      <input inputmode="decimal" value="${esc(s.inc || '')}" placeholder="${ls && ls.inc ? esc(ls.inc) : '—'}" data-in="inc" data-e="${ei}" data-s="${si}" aria-label="${incL}">
+      <button class="check ${justChk === ei + '-' + si ? 'pop' : ''}" data-act="done" data-e="${ei}" data-s="${si}" aria-label="${T('Valider', 'Done')}">✓</button>
+    </div><div class="last" id="cl${ei}_${si}">${cardioLine(e, s)}</div>`; }).join('')}
+    ${tot.kcal ? `<div class="sug"><span>🔥 ${T('Total', 'Total')} : ≈ <b>${tot.kcal} kcal</b> · 👣 ≈ <b>${tot.steps.toLocaleString(LOC())}</b> ${T('pas', 'steps')}</span></div>` : ''}
+    <div class="row wrap" style="margin-top:8px"><button class="btn sm" data-act="add-set" data-e="${ei}">＋ ${T('Intervalle', 'Interval')}</button>${e.sets.length > 1 ? `<button class="btn sm" data-act="rm-set" data-e="${ei}">− ${T('Intervalle', 'Interval')}</button>` : ''}<button class="btn sm" data-act="cardio-calc">👣 ${T('Convertir', 'Convert')}</button></div>
+  </div>`;
 }
 
 /* ----- Historique ----- */
@@ -1761,7 +1802,7 @@ function vBody() {
   const today = dkey(new Date());
   const lastEntry = S.body.slice().sort((a, b) => a.d.localeCompare(b.d)).pop();
   const nut = NUTRI.map(([k, l, u]) => { const pts = bodySeries(k).filter(x => Date.now() - new Date(x.d + 'T12:00') <= 7 * 864e5); return pts.length ? `<div class="stat"><span class="muted small">${l} · 7 j</span><b>${Math.round(pts.reduce((a, x) => a + +x.v, 0) / pts.length).toLocaleString(LOC())}</b><span class="muted small">${u}/jour</span></div>` : ''; }).join('');
-  return stats + (nut ? `<div class="row" style="margin-bottom:12px;align-items:stretch">${nut}</div>` : '') + `
+  return photosCard() + stats + (nut ? `<div class="row" style="margin-bottom:12px;align-items:stretch">${nut}</div>` : '') + `
     <select id="bodySel">${opts.map(([k, l]) => `<option value="${k}" ${k === bodyMetric ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
     <div class="card" style="margin-top:12px">${pts.length ? `<canvas id="chart"></canvas>` : '<div class="empty">Aucune donnée pour cette mesure.</div>'}</div>
     <div class="card"><h3>Nouvelle mesure</h3>
@@ -1813,6 +1854,8 @@ function vSettings() {
   setSec('wo', 'dumbbell', '🏋️', T('Séance', 'Workout'), T('Unité, repos, charges, alertes', 'Unit, rest, weights, alerts'), `
       <label>Unité</label>
       <select data-set="unit"><option value="lb" ${U() === 'lb' ? 'selected' : ''}>lb (mensurations en po)</option><option value="kg" ${U() === 'kg' ? 'selected' : ''}>kg (mensurations en cm)</option></select>
+      <label>${T('Distance (cardio)', 'Distance (cardio)')}</label>
+      <select data-set="dist"><option value="km" ${kmU() === 'km' ? 'selected' : ''}>km</option><option value="mi" ${kmU() === 'mi' ? 'selected' : ''}>${T('milles (mi)', 'miles (mi)')}</option></select>
       <label>Repos par défaut (secondes)</label>
       <input inputmode="numeric" data-set="rest" value="${S.settings.rest}">
       <div class="grid2"><div><label>${T('Après un échauffement', 'After a warm-up')}</label><select data-set="restWarm">${[30, 45, 60, 90, 120].map(v => `<option value="${v}" ${(+S.settings.restWarm || 45) === v ? 'selected' : ''}>${fmtRest(v)}</option>`).join('')}</select></div>
@@ -1975,7 +2018,7 @@ async function exportCsv() {
   toast(T(`✅ ${rows.length - 1} séries exportées`, `✅ ${rows.length - 1} sets exported`));
 }
 async function exportData() {
-  const data = JSON.stringify({...S, active: null, cloud: undefined, gd: undefined, exportedAt: new Date().toISOString()}, null, 1);
+  const data = JSON.stringify({...S, active: null, cloud: undefined, gd: undefined, photos: undefined, exportedAt: new Date().toISOString()}, null, 1);
   const name = `carnet-muscu-${new Date().toISOString().slice(0, 10)}.json`;
   const file = new File([data], name, {type: 'application/json'});
   const done = () => { S.settings.lastBackup = new Date().toISOString(); save(); if (cur().v === 'settings' || cur().v === 'train') render(); };
@@ -2300,7 +2343,7 @@ let cloudTimer = null, cloudBusy = false, cloudDirty = false;
 const ghTok = () => { try { return localStorage.getItem(TKEY) || ''; } catch (e) { return ''; } };
 const cloudOn = () => !!(ghTok() && S.cloud && S.cloud.gist);
 const strHash = s => { let x = 5381; for (let i = 0; i < s.length; i++) x = ((x << 5) + x + s.charCodeAt(i)) | 0; return s.length + ':' + x; };
-const backupBody = () => JSON.stringify({...S, active: null, cloud: undefined, gd: undefined});
+const backupBody = () => JSON.stringify({...S, active: null, cloud: undefined, gd: undefined, photos: undefined});
 async function gh(path, opt = {}) {
   const r = await fetch('https://api.github.com' + path, {...opt, headers: {'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + ghTok(), ...(opt.body ? {'Content-Type': 'application/json'} : {})}});
   if (!r.ok) { const err = new Error(r.status === 401 ? 'Clé GitHub invalide ou expirée' : r.status === 404 ? 'Sauvegarde introuvable' : r.status === 403 ? 'Accès refusé par GitHub (vérifie la case « gist »)' : 'Erreur GitHub ' + r.status); err.status = r.status; throw err; }
@@ -2327,7 +2370,7 @@ async function cloudFetch() {
   return JSON.parse(txt);
 }
 /* Remet TOUTES les données d'une sauvegarde (routines, historique, étirements, minuteurs, exercices perso, réglages…) */
-function restoreAll(d) { const keep = {cloud: S.cloud, gd: S.gd}; const x = {...d}; delete x.exportedAt; S = migrate({...x, active: null, cloud: keep.cloud, gd: keep.gd}); }
+function restoreAll(d) { const keep = {cloud: S.cloud, gd: S.gd, photos: S.photos}; const x = {...d}; delete x.exportedAt; S = migrate({...x, active: null, cloud: keep.cloud, gd: keep.gd, photos: keep.photos}); }
 function cloudRestoreData(d) {
   const c = S.cloud;
   restoreAll(d);
@@ -2861,7 +2904,7 @@ const bwMemo = new Map();
 function isBWEx(name) { const k = norm(name); if (!bwMemo.has(k)) { const L = libEntry(name); bwMemo.set(k, (L && ['body weight', 'weighted'].includes(L.eq)) || BW_RE.test(name)); } return bwMemo.get(k); }
 function bwAt(iso) { if (S.settings.bwVol === false || !S.body.length) return 0; const d = String(iso).slice(0, 10); let v = 0; for (const b of S.body.slice().sort((a, c) => a.d.localeCompare(c.d))) { if (b.d <= d && +b.w > 0) v = +b.w; } return v || (+S.body.filter(b => +b.w > 0).sort((a, c) => a.d.localeCompare(c.d))[0]?.w || 0); }
 const sessVol = h => { let bw = null; return h.exercises.reduce((t, e) => { const add = isBWEx(e.name) ? (bw ?? (bw = bwAt(h.date))) : 0; return t + work(e.sets).reduce((a, s) => a + (s.u === 's' ? 0 : ((+s.w || 0) + add) * (+s.r || 0)), 0); }, 0); };
-const sessReps = h => h.exercises.reduce((t, e) => t + work(e.sets).reduce((a, s) => a + (s.u === 's' ? 0 : (+s.r || 0)), 0), 0);
+const sessReps = h => h.exercises.reduce((t, e) => t + work(e.sets).reduce((a, s) => a + (s.u === 's' || s.u === 'c' ? 0 : (+s.r || 0)), 0), 0);
 function routinePoints(r) {
   return routineSessions(r).map(h => ({d: h.date, v: rtMetric === 'vol' ? sessVol(h) : rtMetric === 'reps' ? sessReps(h) : (+h.duration || 0)}));
 }
@@ -3058,10 +3101,10 @@ function vProfile() {
   const n0 = new Date();
   const month = S.history.filter(h => { const d = new Date(h.date); return d.getMonth() === n0.getMonth() && d.getFullYear() === n0.getFullYear(); }).length;
   const recent = S.history.slice().reverse().slice(0, 8);
-  return `<div class="row" style="gap:14px;margin-bottom:16px"><div class="avatar">${esc((nm.trim()[0] || '?').toUpperCase())}</div>
+  return `<div class="row" style="gap:14px;margin-bottom:16px"><button class="avatar" data-act="avatar" aria-label="${T('Photo de profil', 'Profile photo')}">${S.settings.avatar ? `<img src="${S.settings.avatar}" alt="">` : esc((nm.trim()[0] || '?').toUpperCase())}<span class="cam">📷</span></button>
       <div style="flex:1;min-width:0"><h2 style="font-size:20px">${esc(nm)}</h2>
       <div class="row" style="gap:18px;flex-wrap:wrap"><div><span class="muted small">Entraînements</span><br><b>${S.history.length}</b></div><div><span class="muted small">${T('Série', 'Streak')}</span><br><b>🔥 ${streakWeeks()} sem.</b></div><div><span class="muted small">Ce mois</span><br><b>${month}</b></div></div></div></div>
-    ${yearBanner()}${weekGoal()}${stagCard()}
+    ${bodyCard()}${yearBanner()}${weekGoal()}${stagCard()}
     <div class="row between"><span>${headline}</span><select style="width:auto" data-pf="range"><option value="12" ${pfWeeks === 12 ? 'selected' : ''}>3 derniers mois</option><option value="26" ${pfWeeks === 26 ? 'selected' : ''}>6 mois</option><option value="52" ${pfWeeks === 52 ? 'selected' : ''}>1 an</option><option value="0" ${pfWeeks === 0 ? 'selected' : ''}>Tout</option></select></div>
     <div class="card" style="padding:10px 6px 4px;margin-top:8px">${barsSVG(vals, labels, fmtV, window._chtips, pfSel)}<div class="chtip" id="chtip">${pfSel != null ? window._chtips[pfSel] : T('Touche une barre pour voir le détail · glisse pour voir avant', 'Tap a bar for details · swipe to see earlier weeks')}</div></div>
     <div class="chips">${[['dur', 'Durée'], ['vol', 'Volume'], ['reps', 'Réps']].map(([k, l]) => `<button class="chip ${pfMetric === k ? 'on' : ''}" data-act="pf-metric" data-m="${k}">${l}</button>`).join('')}</div>
@@ -3069,7 +3112,7 @@ function vProfile() {
     <div class="grid2">
       <button class="btn tile" data-act="go" data-v="stats">${IC('chart', '📈')} ${T('Statistiques', 'Statistics')}</button>
       <button class="btn tile" data-act="go" data-v="exercises">${IC('dumbbell', '🏋️')} ${T('Exercices', 'Exercises')}</button>
-      <button class="btn tile" data-act="go" data-v="measures">${IC('ruler', '🧍')} ${T('Mesures', 'Measures')}</button>
+      <button class="btn tile" data-act="go" data-v="measures">${IC('ruler', '🧍')} ${T('Corps et photos', 'Body & photos')}</button>
       <button class="btn tile" data-act="go" data-v="calendar">${IC('calendar', '📅')} ${T('Calendrier', 'Calendar')}</button>
       <button class="btn tile" data-act="go" data-v="medals">${IC('medal', '🏅')} ${T('Médailles', 'Medals')}</button>
       <button class="btn tile" data-act="go" data-v="recov">${IC('pulse', '💪')} ${T('Récupération', 'Recovery')}</button>
@@ -3906,7 +3949,7 @@ function tmCard(t) {
     <button class="btn primary" data-act="tm-go" data-id="${t.id}">▶ ${T('COMMENCER', 'START')}</button></div></div>`;
 }
 function vTimers() {
-  return `${selX ? '' : chrCard()}<div class="row between" style="margin:0 0 10px"><p class="muted" style="margin:0">${T('Minuteurs d\'intervalles : travail, repos, tempo, tabata…', 'Interval timers: work, rest, tempo, tabata…')}</p><span class="row" style="gap:6px"><button class="btn sm" data-act="pcode" data-k="t">📥 ${T('Coller', 'Paste')}</button><button class="btn sm" data-act="tm-new">＋ ${T('Créer', 'Create')}</button></span></div>
+  return `${selX ? '' : chrCard() + `<button class="btn block" data-act="cardio-calc" style="margin:-4px 0 12px">👣 ${T('Convertir du cardio en pas et calories', 'Convert cardio to steps & calories')}</button>`}<div class="row between" style="margin:0 0 10px"><p class="muted" style="margin:0">${T('Minuteurs d\'intervalles : travail, repos, tempo, tabata…', 'Interval timers: work, rest, tempo, tabata…')}</p><span class="row" style="gap:6px"><button class="btn sm" data-act="pcode" data-k="t">📥 ${T('Coller', 'Paste')}</button><button class="btn sm" data-act="tm-new">＋ ${T('Créer', 'Create')}</button></span></div>
     ${selX && selX.k === 't' ? selHint() : ''}
     ${(S.timers || []).length ? `<p class="muted small" style="margin:0 0 6px">${T('Mes minuteurs', 'My timers')}</p><div class="sellistx" data-k="t">` + S.timers.map(tmCard).join('') + '</div>' : ''}
     ${tmPre().length ? `<p class="muted small" style="margin:14px 0 6px">${T('Minuteurs prêts', 'Ready-made timers')}</p><div class="sellistx" data-k="tp">${tmPre().map(tmCard).join('')}</div>` : ''}
@@ -4082,8 +4125,11 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.5.1';
+const APP_VERSION = '8.6.1';
 const CHANGELOG = [
+  {v: '8.6.1', d: '2026-11-09', fr: ['Correction d\'affichage de la photo de profil.'], en: ['Profile photo display fix.']},
+  {v: '8.6', d: '2026-11-09', fr: ['Cardio dans tes séances : bouton « 🏃 Cardio » (tapis, vélo, elliptique, escaliers…), avec minutes, distance, inclinaison ou niveau, et les calories et pas estimés selon ton poids.', 'Calculateur « cardio → pas et calories » dans Intervalles.', 'Profil : photo de profil, carte Poids avec ta courbe, photos de progrès avec comparaison avant/après, et mensurations.', 'Google Drive : l\'appli retient ton compte, Google ne te le redemande plus à chaque séance.'],
+   en: ['Cardio in your workouts: “🏃 Cardio” button (treadmill, bike, elliptical, stairs…), with minutes, distance, incline or level, and estimated calories and steps based on your weight.', '“Cardio → steps & calories” calculator in Intervals.', 'Profile: profile photo, Weight card with your trend, progress photos with before/after compare, and measurements.', 'Google Drive: the app remembers your account, Google no longer asks after every workout.']},
   {v: '8.5.1', d: '2026-11-09', fr: ['Nouvelle section dans Réglages : « Importer d\'une autre appli » (Hevy, Strong…), avec les étapes pour exporter ton fichier.'], en: ['New Settings section: “Import from another app” (Hevy, Strong…), with steps to export your file.']},
   {v: '8.5', d: '2026-11-09', fr: ['Si tu changes ta séance (remplacer un exercice, en ajouter, faire un superset, changer les séries ou le repos), l\'appli te demande à la fin : mettre à jour la routine, ou garder la routine comme avant.', 'Nouveau look des supersets (pastille de couleur au lieu de la chaîne).', 'Lier deux exercices en superset ne les déplace plus : ils restent à leur place.'],
    en: ['If you change your workout (replace or add an exercise, make a superset, change sets or rest), the app asks at the end: update the routine, or keep it as it was.', 'New superset look (color pill instead of the chain).', 'Linking two exercises in a superset no longer moves them: they stay in place.']},
@@ -4247,7 +4293,7 @@ function iosHint() {
    Elle n'a accès à rien d'autre dans son Drive. Le jeton d'accès dure 1 h et reste seulement sur ce téléphone
    (jamais dans les exports ni les sauvegardes). */
 const GCLIENT = '554873199012-o85416v41ihc3vkqtuafdcuk68u04464.apps.googleusercontent.com'; // ← ID client OAuth Google (…apps.googleusercontent.com)
-const GSCOPE = 'https://www.googleapis.com/auth/drive.appdata', GDKEY = 'carnet-muscu-gtoken', GDFILE = 'carnet-muscu.json';
+const GSCOPE = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/userinfo.email', GDKEY = 'carnet-muscu-gtoken', GDFILE = 'carnet-muscu.json';
 const gdReady = () => !!GCLIENT;
 const gdOn = () => !!(S.gd && S.gd.on);
 let gdTokC = null, gdWait = null, gdBusy = false, gdTimer = null;
@@ -4265,7 +4311,13 @@ async function gdAuth(consent) {
     try { localStorage.setItem(GDKEY, JSON.stringify({v: r.access_token, exp: Date.now() + (r.expires_in || 3600) * 1000})); } catch (e) {}
     w.ok(r.access_token);
   }, error_callback: e => { const w = gdWait; gdWait = null; if (w) w.ko(new Error(e.type === 'popup_closed' ? T('Connexion annulée', 'Sign-in cancelled') : (e.message || e.type))); }});
-  return new Promise((ok, ko) => { gdWait = {ok, ko}; gdTokC.requestAccessToken({prompt: consent ? 'consent' : ''}); });
+  // Avec l'adresse du compte (hint), Google ne redemande pas quel compte choisir : la petite fenêtre se ferme toute seule.
+  const hint = S.gd && S.gd.email;
+  return new Promise((ok, ko) => { gdWait = {ok, ko}; gdTokC.requestAccessToken(consent ? {prompt: 'consent'} : {prompt: '', ...(hint ? {hint, login_hint: hint} : {})}); });
+}
+async function gdWho() { // retient l'adresse du compte pour les prochaines fois
+  if (!S.gd || S.gd.email || !gdTok()) return;
+  try { const r = await gdApi('https://www.googleapis.com/oauth2/v3/userinfo'); const j = await r.json(); if (j.email) { S.gd.email = j.email; saveLocal(); } } catch (e) {}
 }
 async function gdApi(url, opt = {}) {
   const r = await fetch(url, {...opt, headers: {Authorization: 'Bearer ' + gdTok(), ...(opt.headers || {})}});
@@ -4309,14 +4361,14 @@ function gdQueue(delay = 20000) { if (!gdOn()) return; clearTimeout(gdTimer); gd
 /* Appelé sur un toucher (Terminer la séance, Sauvegarder maintenant) : renouvelle l'accès si besoin, puis envoie. */
 async function gdSync(force) {
   if (!gdOn()) return;
-  try { if (!gdTok()) await gdAuth(false); await gdPush(force); }
+  try { if (!gdTok()) await gdAuth(false); gdWho(); await gdPush(force); }
   catch (e) { S.gd.err = e.message; S.gd.pending = true; saveLocal(); }
 }
 async function gdConnect() {
   try {
     toast(T('⏳ Connexion à Google…', '⏳ Connecting to Google…'));
     await gdAuth(true);
-    S.gd = {on: true}; saveLocal();
+    S.gd = {on: true}; saveLocal(); await gdWho();
     const f = await gdFind();
     if (f) {
       S.gd.file = f.id;
@@ -4351,12 +4403,13 @@ function gdCard() {
     <p class="small" style="margin:6px 0">${T('Connecte-toi une seule fois avec ton compte Google (Gmail). Ensuite, tes données sont sauvegardées <b>toutes seules</b> dans ton Google Drive à la fin de chaque séance. Sur un nouveau téléphone, reconnecte-toi et tout revient.', 'Sign in once with your Google account (Gmail). Then your data is backed up <b>automatically</b> to your Google Drive at the end of each workout. On a new phone, sign in again and everything comes back.')}</p>
     <p class="muted small" style="margin:6px 0">🔒 ${T('Gratuit. L\'appli a accès seulement à son propre dossier caché, pas à tes autres fichiers.', 'Free. The app only accesses its own hidden folder, not your other files.')}</p>
     <button class="btn primary block" data-act="gd-connect"><b>G</b>&nbsp; ${T('Se connecter avec Google', 'Sign in with Google')}</button></div>`;
-  return `<div class="card" style="border-color:var(--accent)"><h3>☁️ Google Drive</h3>
-    <p class="small" style="margin:6px 0">${g.err ? '⚠️ ' + esc(g.err) + '<br>' : ''}${g.last ? '✅ ' + T('Sauvegardé ', 'Backed up ') + ago(g.last) : '⏳ ' + T('Pas encore sauvegardé', 'Not backed up yet')}${g.pending ? '<br><span class="muted">' + T('Changements en attente : envoi à la fin de ta prochaine séance, ou touche « Sauvegarder maintenant ».', 'Pending changes: sent at the end of your next workout, or tap “Back up now”.') + '</span>' : ''}</p>
+  return `<div class="card" style="border-color:var(--accent)"><h3>☁️ Google Drive</h3>${g.email ? `<p class="muted small" style="margin:2px 0 0">${esc(g.email)}</p>` : ''}
+    <p class="small" style="margin:6px 0">${g.err ? '⚠️ ' + esc(g.err) + '<br>' : ''}${g.last ? '✅ ' + T('Sauvegardé ', 'Backed up ') + ago(g.last) : '⏳ ' + T('Pas encore sauvegardé', 'Not backed up yet')}${g.pending ? '<br><span class="muted">' + T('Changements en attente : ils partiront tout seuls à ta prochaine séance (au plus une fois par jour, une petite fenêtre Google peut s\'ouvrir et se fermer). Ou touche « Sauvegarder maintenant ».', 'Pending changes: they\'ll go out by themselves at your next workout (at most once a day, a small Google window may open and close). Or tap “Back up now”.') + '</span>' : ''}</p>
     <div class="grid2"><button class="btn sm" data-act="gd-push">⬆ ${T('Sauvegarder maintenant', 'Back up now')}</button><button class="btn sm" data-act="gd-restore">⬇ ${T('Restaurer', 'Restore')}</button></div>
     <button class="btn sm danger block" data-act="gd-off" style="margin-top:8px">${T('Déconnecter', 'Disconnect')}</button></div>`;
 }
 window.addEventListener('online', () => { if (gdOn() && S.gd.pending && gdTok()) gdPush(); });
+setTimeout(() => { if (gdOn() && S.gd.pending && gdTok()) gdPush(); }, 3000);
 
 
 /* ===================== Appui long : sélectionner / déplacer ===================== */
@@ -4633,6 +4686,153 @@ function applyRoutineUpdate() {
   const c = $('#rtupd'); if (c) c.innerHTML = `<b>✅ ${T('Routine mise à jour', 'Routine updated')}</b><p class="muted small" style="margin:4px 0 0">${T('Tes prochaines séances de « ' + esc(r.name) + ' » auront ces changements.', 'Your next “' + esc(r.name) + '” workouts will have these changes.')}</p>`;
 }
 
+
+/* ===================== Cardio : calories et pas ===================== */
+const CARDIO_RE = /tapis roulant|treadmill|v[ée]lo stationnaire|stationary bike|spinning|elliptique|elliptical|stairmaster|stepmill|escaliers \(|corde à sauter|jump rope|rameur|rowing machine|ergom|^course\b|^marche ext|^run\b|^walk(ing)?\b(?!.*lunge)|cardio/i;
+const isCardio = e => !!(e && (e.cardio || (e.target && e.target.cardio) || CARDIO_RE.test(e.name || '')));
+const CARDIO_KIND = n => /course|run|jog/i.test(n) && !/v[ée]lo|bike/i.test(n) ? 'run' : /tapis|treadmill|marche|walk/i.test(n) ? 'walk' : /v[ée]lo|bike|spin/i.test(n) ? 'bike' : /ellipti/i.test(n) ? 'ell' : /escalier|stair|step/i.test(n) ? 'stair' : /corde|rope/i.test(n) ? 'rope' : /rameur|row/i.test(n) ? 'row' : 'other';
+const CARDIO_MET = {bike: 7, ell: 5, stair: 9, rope: 11, row: 7, other: 6, walk: 3.5, run: 9};
+function bodyKg() { const L = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)).pop(); const w = L ? +L.w : (+S.settings.bwDefault || (U() === 'kg' ? 75 : 170)); return U() === 'kg' ? w : w / 2.20462; }
+const kmU = () => S.settings.dist || 'km';
+/* min = minutes, dist = km ou mi, inc = inclinaison (%) ou niveau, kg = poids du corps */
+function cardioCalc(kind, min, dist, inc, kg) {
+  min = +min || 0; if (!min) return null;
+  const km = (+dist || 0) * (kmU() === 'mi' ? 1.609 : 1);
+  let kcalMin;
+  if ((kind === 'walk' || kind === 'run') && km > 0) {
+    const v = km * 1000 / min, g = Math.max(0, +inc || 0) / 100; // m/min
+    const vo2 = v < 134 ? 0.1 * v + 1.8 * v * g + 3.5 : 0.2 * v + 0.9 * v * g + 3.5; // formules ACSM
+    kcalMin = vo2 * kg / 1000 * 5;
+  } else {
+    let met = CARDIO_MET[kind] || 6;
+    if (kind === 'walk' && inc) met += +inc * 0.35; // marche inclinée sans distance : approximation
+    if (['bike', 'ell', 'stair', 'row'].includes(kind) && inc) met *= 0.75 + Math.min(20, +inc) / 40; // niveau de la machine
+    kcalMin = met * 3.5 * kg / 200;
+  }
+  const kcal = kcalMin * min;
+  const stepsEq = Math.round(kcal / (0.00055 * kg)); // pas de marche qui dépenseraient autant
+  return {kcal: Math.round(kcal), steps: Math.round(stepsEq / 10) * 10};
+}
+const cardioLine = (e, s) => { const c = cardioCalc(CARDIO_KIND(e.name), s.r || s.ph, s.km, s.inc, bodyKg()); return c ? `🔥 ≈ ${c.kcal} kcal · 👣 ≈ ${c.steps.toLocaleString(LOC())} ${T('pas', 'steps')}` : ''; };
+function openCardioCalc() {
+  const kgv = Math.round(U() === 'kg' ? bodyKg() : bodyKg() * 2.20462);
+  modal(`<div class="row between"><h2 style="margin:0">👣 ${T('Cardio → pas et calories', 'Cardio → steps & calories')}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <p class="muted small">${T('Convertis ton cardio en pas équivalents (l\'effort que ça représenterait en marchant) et en calories, selon ton poids et l\'inclinaison.', 'Convert your cardio into equivalent steps (the same effort as walking) and calories, based on your weight and incline.')}</p>
+    <label>${T('Activité', 'Activity')}</label><select id="cc_k">${[['walk', T('Tapis / marche', 'Treadmill / walk')], ['run', T('Course', 'Run')], ['bike', T('Vélo', 'Bike')], ['ell', T('Elliptique', 'Elliptical')], ['stair', T('Escaliers', 'Stairs')], ['row', T('Rameur', 'Rower')], ['rope', T('Corde à sauter', 'Jump rope')]].map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select>
+    <div class="grid2"><div><label>${T('Durée (min)', 'Time (min)')}</label><input id="cc_m" inputmode="decimal" value="15"></div><div><label>${T('Ton poids', 'Your weight')} (${U()})</label><input id="cc_w" inputmode="decimal" value="${kgv}"></div>
+      <div><label>${T('Distance', 'Distance')} (${kmU()})</label><input id="cc_d" inputmode="decimal" placeholder="${T('facultatif', 'optional')}"></div><div><label id="cc_il">${T('Inclinaison (%)', 'Incline (%)')}</label><input id="cc_i" inputmode="decimal" placeholder="0"></div></div>
+    <div class="card" style="margin-top:12px;text-align:center" id="cc_out"></div>
+    <p class="muted small">${T('Estimations (formules ACSM et valeurs MET). Les montres et machines peuvent donner un peu différent.', 'Estimates (ACSM formulas and MET values). Watches and machines may differ a bit.')}</p>`);
+  const up = () => {
+    const k = $('#cc_k').value, wv = +($('#cc_w').value || '').replace(',', '.') || 0, kg = U() === 'kg' ? wv : wv / 2.20462;
+    $('#cc_il').textContent = ['walk', 'run'].includes(k) ? T('Inclinaison (%)', 'Incline (%)') : T('Niveau (1-20)', 'Level (1-20)');
+    const c = cardioCalc(k, ($('#cc_m').value || '').replace(',', '.'), ($('#cc_d').value || '').replace(',', '.'), ($('#cc_i').value || '').replace(',', '.'), kg);
+    $('#cc_out').innerHTML = c && kg ? `<div class="row" style="justify-content:space-around"><div><span class="muted small">${T('Calories', 'Calories')}</span><br><b style="font-size:26px">≈ ${c.kcal}</b></div><div><span class="muted small">${T('Pas équivalents', 'Equivalent steps')}</span><br><b style="font-size:26px">≈ ${c.steps.toLocaleString(LOC())}</b></div></div>` : `<span class="muted">${T('Entre une durée et ton poids', 'Enter a time and your weight')}</span>`;
+  };
+  ['#cc_k', '#cc_m', '#cc_w', '#cc_d', '#cc_i'].forEach(s => { $(s).addEventListener('input', up); $(s).addEventListener('change', up); }); up();
+}
+function openCardioAdd() {
+  const L = [['Tapis roulant (marche)', '🚶'], ['Tapis roulant (course)', '🏃'], ['Vélo stationnaire', '🚴'], ['Elliptique', '⛷️'], ['Escaliers (StairMaster)', '🪜'], ['Rameur', '🚣'], ['Corde à sauter', '🪢'], ['Course extérieure', '🏃'], ['Marche extérieure', '🚶']];
+  modal(`<div class="row between"><h2 style="margin:0">🏃 ${T('Ajouter du cardio', 'Add cardio')}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <label>${T('Durée prévue (min)', 'Planned time (min)')}</label><input id="cad_m" inputmode="numeric" value="15">
+    <div class="menu" style="margin-top:10px">${L.map(([n, i]) => `<button class="btn block" data-act="cardio-add-ok" data-n="${esc(n)}">${i} ${esc(n)}</button>`).join('')}</div>
+    <button class="btn ghost block" data-act="cardio-other" style="margin-top:6px">🔎 ${T('Autre (chercher)', 'Other (search)')}</button>`);
+}
+function addCardio(name, min) {
+  const a = S.active; if (!a) return;
+  min = String(+min || 15);
+  a.exercises.push({name, cardio: true, note: '', target: {name, sets: 1, reps: min, weight: '', note: '', cardio: true}, sets: [{w: '', r: '', ph: min, done: false}]});
+  save(); render(); toast(T('🏃 Cardio ajouté', '🏃 Cardio added'));
+  setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50);
+}
+
+
+/* ===================== Photos (profil et progrès) ===================== */
+/* La photo de profil est petite (dans les réglages). Les photos de progrès sont gardées dans une base locale du téléphone (IndexedDB) :
+   elles ne partent dans aucune sauvegarde, elles restent privées sur ce téléphone. */
+function shrinkImg(file, max, q) {
+  return new Promise((ok, ko) => {
+    const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(url); ok(c.toDataURL('image/jpeg', q)); };
+    im.onerror = () => { URL.revokeObjectURL(url); ko(new Error(T('Image illisible', 'Unreadable image'))); };
+    im.src = url;
+  });
+}
+function pickImage(cb) { const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*'; i.onchange = () => { if (i.files[0]) cb(i.files[0]); }; i.click(); }
+let phDB = null;
+function phOpen() { if (phDB) return Promise.resolve(phDB); return new Promise((ok, ko) => { const r = indexedDB.open('carnet-muscu-photos', 1); r.onupgradeneeded = () => r.result.createObjectStore('p'); r.onsuccess = () => { phDB = r.result; ok(phDB); }; r.onerror = () => ko(r.error); }); }
+const phTx = (mode, fn) => phOpen().then(db => new Promise((ok, ko) => { const t = db.transaction('p', mode), st = t.objectStore('p'), r = fn(st); t.oncomplete = () => ok(r && r.result); t.onerror = () => ko(t.error); }));
+const phPut = (id, data) => phTx('readwrite', st => st.put(data, id));
+const phGet = id => phTx('readonly', st => st.get(id));
+const phDel = id => phTx('readwrite', st => st.delete(id));
+const phCache = {};
+async function phSrc(id) { if (phCache[id]) return phCache[id]; try { const d = await phGet(id); if (d) phCache[id] = d; return d || ''; } catch (e) { return ''; } }
+function phFill() { document.querySelectorAll('img[data-ph]').forEach(async im => { if (!im.src || im.src === location.href) { const d = await phSrc(im.dataset.ph); if (d) im.src = d; } }); }
+async function addProgressPhoto() {
+  pickImage(async f => {
+    try {
+      toast(T('⏳ Ajout de la photo…', '⏳ Adding photo…'));
+      const d = await shrinkImg(f, 1280, .78), id = 'ph' + uid();
+      await phPut(id, d); phCache[id] = d;
+      S.photos = S.photos || []; S.photos.push({id, d: dkey(new Date())}); save(); render();
+      toast(T('📸 Photo ajoutée (gardée seulement sur ce téléphone)', '📸 Photo added (kept on this phone only)'));
+    } catch (e) { toast('⚠️ ' + e.message); }
+  });
+}
+function photoView(id) {
+  const p = (S.photos || []).find(x => x.id === id); if (!p) return;
+  const w = S.body.filter(b => b.w != null && b.d <= p.d).sort((a, b) => a.d.localeCompare(b.d)).pop();
+  modal(`<div class="row between"><b>${new Date(p.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'long', year: 'numeric'})}${w ? ` · ${w.w} ${U()}` : ''}</b><button class="btn sm" data-act="close">✕</button></div>
+    <img data-ph="${id}" alt="" style="width:100%;border-radius:14px;margin-top:10px;display:block;background:var(--card2);min-height:200px">
+    <label>${T('Date', 'Date')}</label><input type="date" value="${p.d}" data-phd="${id}">
+    <div class="row" style="margin-top:10px"><button class="btn" style="flex:1" data-act="ph-cmp" data-id="${id}">⇄ ${T('Comparer', 'Compare')}</button><button class="btn danger" style="flex:1" data-act="ph-del" data-id="${id}">🗑 ${T('Supprimer', 'Delete')}</button></div>`);
+  phFill();
+}
+function photoCompare(a) {
+  const L = (S.photos || []).slice().sort((x, y) => x.d.localeCompare(y.d)); if (L.length < 2) { toast(T('Ajoute au moins 2 photos pour comparer', 'Add at least 2 photos to compare')); return; }
+  const A = a ? L.find(x => x.id === a) : L[0], B = L.filter(x => x.id !== A.id).pop();
+  const lab = p => new Date(p.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'short', year: '2-digit'});
+  const opt = (sel, k) => `<select data-phc="${k}">${L.map(x => `<option value="${x.id}" ${x.id === sel.id ? 'selected' : ''}>${lab(x)}</option>`).join('')}</select>`;
+  closeAll();
+  modal(`<div class="row between"><h2 style="margin:0">⇄ ${T('Avant / après', 'Before / after')}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <div class="grid2" style="margin-top:10px"><div>${opt(A, 'a')}<img id="phca" data-ph="${A.id}" alt="" style="width:100%;border-radius:12px;margin-top:6px"></div><div>${opt(B, 'b')}<img id="phcb" data-ph="${B.id}" alt="" style="width:100%;border-radius:12px;margin-top:6px"></div></div>
+    <p class="muted small" style="text-align:center" id="phcd"></p>`);
+  const upd = async () => { for (const k of ['a', 'b']) { const id = document.querySelector(`[data-phc="${k}"]`).value, im = $('#phc' + k); im.dataset.ph = id; im.src = await phSrc(id); }
+    const pa = L.find(x => x.id === document.querySelector('[data-phc="a"]').value), pb = L.find(x => x.id === document.querySelector('[data-phc="b"]').value);
+    const days = Math.round(Math.abs(new Date(pb.d) - new Date(pa.d)) / 864e5), wOf = p => (S.body.filter(b => b.w != null && b.d <= p.d).sort((x, y) => x.d.localeCompare(y.d)).pop() || {}).w;
+    const wa = wOf(pa), wb = wOf(pb); $('#phcd').textContent = `${days} ${T('jours d\'écart', 'days apart')}${wa != null && wb != null ? ` · ${wb - wa > 0 ? '+' : ''}${dec1(wb - wa)} ${U()}` : ''}`; };
+  document.querySelectorAll('[data-phc]').forEach(s => s.addEventListener('change', upd)); upd();
+}
+function photosCard() {
+  const L = (S.photos || []).slice().sort((a, b) => b.d.localeCompare(a.d));
+  setTimeout(phFill, 0);
+  return `<div class="card"><div class="row between"><h3 style="margin:0">📸 ${T('Photos de progrès', 'Progress photos')}</h3>${L.length > 1 ? `<button class="btn sm" data-act="ph-cmp">⇄ ${T('Comparer', 'Compare')}</button>` : ''}</div>
+    ${L.length ? `<div class="phgrid">${L.map(p => `<button class="phth" data-act="ph-view" data-id="${p.id}"><img data-ph="${p.id}" alt=""><span>${new Date(p.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'short'})}</span></button>`).join('')}</div>` : `<p class="muted small" style="margin:6px 0 0">${T('Prends une photo toutes les 2 à 4 semaines, même pose et même lumière : c\'est la meilleure façon de voir tes progrès.', 'Take a photo every 2–4 weeks, same pose and lighting: it\'s the best way to see your progress.')}</p>`}
+    <button class="btn primary block" data-act="ph-add" style="margin-top:10px">📸 ${T('Ajouter une photo', 'Add a photo')}</button>
+    <p class="muted small" style="margin:6px 0 0">🔒 ${T('Tes photos restent seulement sur ce téléphone (pas dans les sauvegardes).', 'Your photos stay on this phone only (not in backups).')}</p></div>`;
+}
+/* Carte « Corps » sur le profil */
+function bodyCard() {
+  const ws = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)), last = ws[ws.length - 1];
+  const m30 = last && ws.filter(b => new Date(last.d) - new Date(b.d) <= 30 * 864e5)[0];
+  const diff = last && m30 && m30 !== last ? last.w - m30.w : null;
+  const pts = ws.slice(-20).map(b => +b.w), mn = Math.min(...pts), mx = Math.max(...pts);
+  const spark = pts.length > 1 ? `<svg viewBox="0 0 100 30" preserveAspectRatio="none" style="width:100%;height:38px;display:block;margin-top:6px"><polyline fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" points="${pts.map((v, i) => `${i / (pts.length - 1) * 100},${mx === mn ? 15 : 28 - (v - mn) / (mx - mn) * 26}`).join(' ')}"/></svg>` : '';
+  const nPh = (S.photos || []).length;
+  return `<div class="card"><div class="row between"><div><span class="muted small">⚖️ ${T('Poids', 'Weight')}</span><br>${last ? `<b style="font-size:22px">${dec1(last.w)} ${U()}</b>${diff != null ? ` <span class="small" style="color:${diff > 0 ? 'var(--warm)' : 'var(--ok, #4ade80)'}">${diff > 0 ? '+' : ''}${dec1(diff)} ${T('en 30 j', 'in 30 d')}</span>` : ''}` : `<span class="muted">${T('Pas encore entré', 'Not entered yet')}</span>`}</div>
+    <button class="btn sm primary" data-act="bw-quick">＋ ${T('Poids', 'Weight')}</button></div>${spark}
+    <div class="row" style="margin-top:10px"><button class="btn sm" style="flex:1" data-act="go" data-v="measures">📏 ${T('Mensurations', 'Measurements')}</button><button class="btn sm" style="flex:1" data-act="go" data-v="measures" data-ph="1">📸 ${T('Photos', 'Photos')}${nPh ? ' (' + nPh + ')' : ''}</button></div></div>`;
+}
+function bwQuick() {
+  const ws = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)), last = ws[ws.length - 1];
+  modal(`<h2>⚖️ ${T('Ajouter mon poids', 'Add my weight')}</h2>
+    <label>${T('Poids', 'Weight')} (${U()})</label><input id="bwq" inputmode="decimal" placeholder="${last ? esc(last.w) : ''}" autofocus>
+    <label>Date</label><input type="date" id="bwqd" value="${dkey(new Date())}">
+    <button class="btn primary block" data-act="bw-quick-ok" style="margin-top:14px">${T('Enregistrer', 'Save')}</button>`);
+  setTimeout(() => { const i = $('#bwq'); if (i) i.focus(); }, 80);
+}
+
 /* ---------- Calendrier façon Hevy ---------- */
 let calMonths = 6;
 function vCal2() {
@@ -4664,7 +4864,7 @@ const VIEWS = {
   stats: ['Statistiques', () => vStats()], 'st-vol': ['Séries par muscle', () => vVolume()], 'st-radar': ['Répartition musculaire', () => vRadar()],
   'st-body': ['Carte des muscles', () => vBodyMap()], 'st-top': ['Principaux exercices', () => vTopEx()], 'st-rec': ['Records personnels', () => vRecords()],
   'st-month': ['Rapport mensuel', () => vMonth()], exercises: ['Exercices', () => vExList()], exdetail: ['Exercice', () => vExDetail()],
-  measures: ['Mesures', () => vBody()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()]
+  measures: ['Corps et progrès', () => vBody()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()]
 };
 function headerRight(v) {
   if (v === 'profile') return `<button class="hbtn" data-act="go" data-v="settings" aria-label="Réglages">${IC('gear', '⚙️', 24)}</button>`;
@@ -4900,6 +5100,19 @@ document.addEventListener('click', e => {
       break; }
     case 'st-share': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); if (rt) { const c = JSON.parse(JSON.stringify(rt)); delete c.id; shareItem('s', [c], T(rt.n[0], rt.n[1] || rt.n[0])); } break; }
     case 'imp-ok': doImport(); break;
+    case 'avatar': if (S.settings.avatar) { modal(`<h2>${T('Photo de profil', 'Profile photo')}</h2><div class="menu"><button class="btn block" data-act="avatar-new">📷 ${T('Changer la photo', 'Change photo')}</button><button class="btn danger block" data-act="avatar-del">${T('Retirer la photo', 'Remove photo')}</button><button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`); break; } // sinon : choisir tout de suite
+    case 'avatar-new': closeAll(); pickImage(async f => { try { S.settings.avatar = await shrinkImg(f, 240, .82); save(); render(); } catch (e) { toast('⚠️ ' + e.message); } }); break;
+    case 'avatar-del': delete S.settings.avatar; save(); closeAll(); render(); break;
+    case 'bw-quick': bwQuick(); break;
+    case 'bw-quick-ok': { const v = ($('#bwq').value || '').replace(',', '.').trim(), d = $('#bwqd').value || dkey(new Date()); if (!v || isNaN(v)) { toast(T('Entre ton poids', 'Enter your weight')); break; } let e2 = S.body.find(x => x.d === d); if (!e2) { e2 = {id: uid(), d, w: null, m: {}}; S.body.push(e2); } e2.w = +v; save(); closeAll(); render(); toast(T('✅ Poids enregistré', '✅ Weight saved')); break; }
+    case 'ph-add': addProgressPhoto(); break;
+    case 'ph-view': photoView(b.dataset.id); break;
+    case 'ph-cmp': photoCompare(b.dataset.id); break;
+    case 'ph-del': { if (!confirm(T('Supprimer cette photo?', 'Delete this photo?'))) break; const id = b.dataset.id; S.photos = (S.photos || []).filter(x => x.id !== id); phDel(id).catch(() => {}); delete phCache[id]; save(); closeAll(); render(); break; }
+    case 'cardio-add': openCardioAdd(); break;
+    case 'cardio-add-ok': { const m = ($('#cad_m') || {}).value; closeModal(); addCardio(b.dataset.n, m); break; }
+    case 'cardio-other': closeModal(); openPicker({title: T('Ajouter du cardio', 'Add cardio'), cb: p => addCardio(p.name, 15)}); break;
+    case 'cardio-calc': openCardioCalc(); break;
     case 'rt-upd': applyRoutineUpdate(); break;
     case 'rt-keep': { window._rtUpd = null; const c = $('#rtupd'); if (c) c.innerHTML = `<span class="small muted">👍 ${T('Routine gardée comme avant. Les changements restent dans cette séance seulement.', 'Routine kept as it was. The changes stay in this workout only.')}</span>`; break; }
     case 'h2r': h2rModal([b.dataset.hid]); break;
@@ -5109,7 +5322,7 @@ document.addEventListener('click', e => {
         const grp = e.ss ? A.exercises.map((x, i) => x.ss === e.ss ? i : -1).filter(i => i >= 0) : [];
         const inSS = grp.length > 1 && ei !== grp[grp.length - 1];
         if (inSS) { if (+S.settings.restSS > 0) startTimer(+S.settings.restSS); }
-        else if (+e.rest !== -1) startTimer(s.t === 'W' ? (+S.settings.restWarm > 0 ? +S.settings.restWarm : 45) : s.t === 'D' && +S.settings.restDrop > 0 ? +S.settings.restDrop : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)));
+        else if (+e.rest !== -1 && !isCardio(e)) startTimer(s.t === 'W' ? (+S.settings.restWarm > 0 ? +S.settings.restWarm : 45) : s.t === 'D' && +S.settings.restDrop > 0 ? +S.settings.restDrop : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)));
       }
       break;
     }
@@ -5163,7 +5376,7 @@ document.addEventListener('click', e => {
     }
     case 'ex-del': { snap(); const nm = A.exercises[ei].name; A.exercises.splice(ei, 1); fixSS(A.exercises); save(); closeModal(); undoToast(T(`« ${nm} » retiré`, `“${nm}” removed`)); break; }
     case 'add-exo': openPicker({title: 'Ajouter un exercice', cb: addExercise}); break;
-    case 'finish': finishWorkout(); if (gdOn() && !S.active) gdSync(); break;
+    case 'finish': finishWorkout(); if (gdOn() && !S.active) { if (gdTok()) gdPush(); else if (!S.gd.last || Date.now() - new Date(S.gd.last) > 20 * 3600e3) gdSync(); else { S.gd.pending = true; saveLocal(); } } break;
     case 'cancel-workout': if (confirm('Abandonner cette séance sans l\'enregistrer?')) { S.active = null; save(); stopTimer(); setRoot('train'); render(); } break;
     case 'inc-set': { S.incs = S.incs || {}; S.incs[norm(b.dataset.n)] = +b.dataset.v; save(); b.parentElement.querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === b)); if (!b.closest('.sheet .chips[data-ret]')) {} break; }
     case 'inc-menu': { const e = A.exercises[ei]; modal(`<h2>${T('Augmentation suggérée', 'Suggested increase')}</h2><p class="muted small">${esc(e.name)} · ${T("Quand tu atteins le haut de ta plage de reps, l'appli propose d'ajouter ce poids.", 'When you reach the top of your rep range, the app suggests adding this weight.')}</p>
@@ -5254,9 +5467,11 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('input', e => {
   const t = e.target;
+  if (t.dataset.phd) { const p = (S.photos || []).find(x => x.id === t.dataset.phd); if (p && t.value) { p.d = t.value; save(); } }
   if (t.dataset.in && S.active) {
     const s = S.active.exercises[+t.dataset.e].sets[+t.dataset.s];
     s[t.dataset.in] = t.value.replace(',', '.'); save();
+    const ce = S.active.exercises[+t.dataset.e]; if (isCardio(ce)) { const l = document.getElementById('cl' + t.dataset.e + '_' + t.dataset.s); if (l) l.innerHTML = cardioLine(ce, s); }
   }
   if (t.dataset.edw && draft) { draft.exercises[+t.dataset.e].sets[+t.dataset.s][t.dataset.edw] = t.value.replace(',', '.'); }
   if (t.dataset.edm && draft) {
@@ -5298,7 +5513,7 @@ document.addEventListener('change', e => {
   if (t.id === 'exSel') { progEx = t.value; render(); }
   if (t.id === 'bodySel') { bodyMetric = t.value; render(); }
   if (t.dataset.set === 'stPrep') { S.settings.stPrep = +t.value; save(); render(); }
-  if (['unit', 'icons', 'weekSun', 'prevMode', 'bwVol'].includes(t.dataset.set)) { bwMemo.clear(); render(); }
+  if (['unit', 'dist', 'icons', 'weekSun', 'prevMode', 'bwVol'].includes(t.dataset.set)) { bwMemo.clear(); render(); }
   if (t.dataset.rd === 'folder' && rdraft) {
     if (t.value === '__new') { const nf = (prompt('Nom du nouveau dossier :') || '').trim(); if (nf) { if (!S.folders.includes(nf)) S.folders.push(nf); rdraft.folder = nf; } render(); }
     else rdraft.folder = t.value;
