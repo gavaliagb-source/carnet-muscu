@@ -306,6 +306,9 @@ button.chip{cursor:pointer}
 .selbox{width:26px;height:26px;border-radius:8px;border:2px solid var(--muted);display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:#111;flex:none}
 .selbox.on{background:var(--accent);border-color:var(--accent)}
 .rcard.selc{padding:14px}.rcard.selc.on{border-color:var(--accent)}
+.rcard,.fhead{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.rcard.selc .handle{padding:0 4px 0 10px;margin-left:auto}
+body.selon main{padding-bottom:170px}
 </style>
 </head>
 <body>
@@ -730,7 +733,14 @@ function applyTheme() {
     de.style.setProperty('color-scheme', light ? 'light' : 'dark');
     if (light) {
       const acc = (S.settings.accent || getComputedStyle(de).getPropertyValue('--accent').trim() || '').toLowerCase();
-      if (/^#[0-9a-f]{6}$/.test(acc)) { const q = parseInt(acc.slice(1), 16); if ((0.299 * (q >> 16) + 0.587 * ((q >> 8) & 255) + 0.114 * (q & 255)) / 255 > 0.6) { de.style.setProperty('--accent', `color-mix(in srgb, ${acc} 55%, #000)`); de.style.setProperty('--accent-ink', '#ffffff'); } }
+      if (/^#[0-9a-f]{6}$/.test(acc)) {
+        // Fond clair : on fonce la couleur juste assez pour qu'elle reste lisible (contraste ≥ 3), sans changer sa teinte.
+        const rgb = h => [0, 2, 4].map(i => parseInt(h.slice(1 + i, 3 + i), 16)), lin = c => { c /= 255; return c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4); };
+        const L = c => .2126 * lin(c[0]) + .7152 * lin(c[1]) + .0722 * lin(c[2]), cr = (a, b) => (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
+        const lb = L(rgb(bg)), a0 = rgb(acc); let k = 1, c = a0;
+        while (k > .45 && cr(L(c), lb) < 3) { k -= .04; c = a0.map(v => Math.round(v * k)); }
+        if (k < 1) { const hx = '#' + c.map(v => v.toString(16).padStart(2, '0')).join(''); de.style.setProperty('--accent', hx); de.style.setProperty('--accent-ink', L(c) > .4 ? '#111111' : '#ffffff'); }
+      }
     }
   } else BGV.forEach(k => de.style.removeProperty(k));
   const m = document.querySelector('meta[name="theme-color"]');
@@ -2169,9 +2179,9 @@ function deleteFolder(f) {
 /* ---------- Sélection multiple de routines ---------- */
 var selR = null; // Set des routines cochées (mode sélection)
 function selStart(f) { selR = new Set(f ? S.routines.filter(r => inFolder(r, f)).map(r => r.id) : []); closeAll(); render(); selBar(); }
-function selEnd() { selR = null; const b = $('#selbar'); if (b) b.remove(); render(); }
+function selEnd() { selR = null; const b = $('#selbar'); if (b) b.remove(); document.body.classList.remove('selon'); render(); }
 function selBar() {
-  let b = $('#selbar'); if (!selR) { if (b) b.remove(); return; }
+  let b = $('#selbar'); document.body.classList.toggle('selon', !!selR); if (!selR) { if (b) b.remove(); return; }
   if (!b) { b = document.createElement('div'); b.id = 'selbar'; document.body.appendChild(b); }
   const n = selR.size;
   b.innerHTML = `<span><b>${n}</b> ${T(n > 1 ? 'sélectionnées' : 'sélectionnée', 'selected')}</span>
@@ -2640,6 +2650,7 @@ function vTrain() {
   h += `<button class="btn block big" data-act="start-empty">${IC('plus', '＋')} ${T('Démarrer un entraînement vide', 'Start an empty workout')}</button>
     <div class="row between" style="margin:18px 0 8px"><h2 style="margin:0">Routines</h2><button class="btn sm" data-act="new-folder" aria-label="Nouveau dossier">${IC('folderp', '📁＋')}</button></div>
     <div class="row trow" style="margin-bottom:12px;gap:8px"><button class="btn" style="flex:1" data-act="new-routine">${IC('clip', '📋')} ${T('Nouv. routine', 'New routine')}</button><button class="btn" style="flex:1" data-act="ai-menu">${IC('spark', '🤖')} ${T('Assistant IA', 'AI assistant')}</button><button class="btn" data-act="train-more" aria-label="${T('Plus', 'More')}">${IC('more', '⋯')}</button></div>`;
+  if (selR) h += `<p class="muted small" style="margin:0 0 10px">☑️ ${T('Touche pour cocher · glisse ≡ pour changer l\'ordre · « Déplacer » pour changer de dossier', 'Tap to select · drag ≡ to reorder · “Move” to change folder')}</p>`;
   if (!folders().length) h += `<p class="muted small" style="margin:4px 0 12px">${T('Aucune routine. Crée-en une, choisis un programme connu (⋯) ou utilise l\'Assistant IA.', 'No routines. Create one, pick a popular program (⋯) or use the AI assistant.')}</p>`;
   folders().forEach(f => {
     const rs = S.routines.filter(r => (r.folder || DEF_FOLDER) === f);
@@ -2647,7 +2658,7 @@ function vTrain() {
     if (selR) {
       const all = rs.length && rs.every(r => selR.has(r.id));
       h += `<div class="folder"><div class="row between fhead" data-act="sel-f" data-f="${esc(f)}"><span class="muted">${esc(f)} (${rs.length})</span><span class="selbox ${all ? 'on' : ''}">${all ? '✓' : ''}</span></div>`;
-      h += rs.map(r => `<div class="card rcard selc ${selR.has(r.id) ? 'on' : ''}" data-act="sel-r" data-rid="${r.id}"><div class="row between"><h3 style="margin:0">${esc(r.name)}</h3><span class="selbox ${selR.has(r.id) ? 'on' : ''}">${selR.has(r.id) ? '✓' : ''}</span></div></div>`).join('') + '</div>';
+      h += `<div class="sellist" data-f="${esc(f)}">` + rs.map(r => `<div class="card rcard selc reo ${selR.has(r.id) ? 'on' : ''}" data-act="sel-r" data-rid="${r.id}"><div class="row" style="gap:10px;width:100%"><span class="selbox ${selR.has(r.id) ? 'on' : ''}">${selR.has(r.id) ? '✓' : ''}</span><h3 style="margin:0;flex:1;min-width:0">${esc(r.name)}</h3><span class="handle" aria-label="${T('Glisser', 'Drag')}">≡</span></div></div>`).join('') + '</div></div>';
       return;
     }
     h += `<div class="folder"><div class="row between fhead" data-act="fold" data-f="${esc(f)}"><span class="muted">${closed ? '▸' : '▾'} ${esc(f)} (${rs.length})</span><button class="btn sm ghost" data-act="folder-menu" data-f="${esc(f)}" aria-label="Options du dossier">⋯</button></div>`;
@@ -3991,8 +4002,11 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.0';
+const APP_VERSION = '8.1.1';
 const CHANGELOG = [
+  {v: '8.1.1', d: '2026-11-09', fr: ['Fond clair : ta couleur de boutons garde maintenant sa vraie teinte (elle est juste un peu foncée pour rester lisible).'], en: ['Light background: your button color now keeps its real hue (only slightly darkened to stay readable).']},
+  {v: '8.1', d: '2026-11-09', fr: ['Appuie longtemps sur une routine pour la sélectionner : coche-en d\'autres, puis déplace-les ou supprime-les d\'un coup. Glisse ≡ pour changer leur ordre.', 'Appuie longtemps sur un dossier pour changer l\'ordre des dossiers.'],
+   en: ['Long-press a routine to select it: check others, then move or delete them at once. Drag ≡ to reorder them.', 'Long-press a folder to reorder folders.']},
   {v: '8.0', d: '2026-11-09', fr: ['Sauvegarde automatique dans Google Drive : connecte-toi une fois avec Google (Réglages → Sauvegarde), puis tout se sauvegarde tout seul à la fin de chaque séance.', 'Restaurer une sauvegarde remet maintenant aussi tes étirements, minuteurs et exercices perso.'],
    en: ['Automatic Google Drive backup: sign in once with Google (Settings → Backup), then everything backs up by itself at the end of each workout.', 'Restoring a backup now also brings back your stretches, timers and custom exercises.']},
   {v: '7.9', d: '2026-11-08', fr: ['Tu peux supprimer n\'importe quel dossier (même « Mes routines ») : avec ses routines, ou en les déplaçant ailleurs.', 'Sélection multiple : menu ⋯ → Sélectionner plusieurs routines, pour les supprimer ou les déplacer d\'un coup.', 'Nouvelle « Sauvegarde simple » : un fichier dans Google Drive, Fichiers ou ton courriel, avec un rappel chaque semaine. GitHub devient une option avancée.'],
@@ -4045,7 +4059,7 @@ const TOURS = {
     {tab: 'train', sel: '[data-act="start-empty"]', t: ['➕ Séance libre', '➕ Free workout'], d: ['Commence sans routine et ajoute tes exercices au fur et à mesure.', 'Start without a routine and add exercises as you go.']},
     {tab: 'train', sel: '[data-act="new-routine"]', t: ['📋 Tes routines', '📋 Your routines'], d: ['Crée une routine avec tes exercices, séries, reps, charges et temps de repos. Plus de 1 000 exercices avec leurs muscles.', 'Build a routine with your exercises, sets, reps, weights and rest times. Over 1,000 exercises with their muscles.']},
     {tab: 'train', sel: '[data-act="ai-menu"]', t: ['🤖 Assistant IA', '🤖 AI assistant'], d: ['Transfère tes routines d\'une autre appli, crée un nouveau programme ou fais-le améliorer. L\'appli te guide étape par étape avec ChatGPT, Claude ou Gemini.', 'Move your routines from another app, create a new program or improve yours. The app guides you step by step with ChatGPT, Claude or Gemini.']},
-    {tab: 'train', sel: '.folder .fhead', t: ['📁 Dossiers', '📁 Folders'], d: ['Range tes routines par programme. Le menu ⋯ permet de renommer, réordonner, envoyer à l\'IA ou partager avec un ami.', 'Organize routines by program. The ⋯ menu lets you rename, reorder, send to AI or share with a friend.']},
+    {tab: 'train', sel: '.folder .fhead', t: ['📁 Dossiers', '📁 Folders'], d: ['Range tes routines par programme. <b>Appuie longtemps</b> sur une routine pour en sélectionner plusieurs (déplacer, supprimer, changer l\'ordre), ou sur un dossier pour changer l\'ordre des dossiers. Le menu ⋯ a les autres options.', 'Organize routines by program. The ⋯ menu lets you rename, reorder, send to AI or share with a friend.']},
     {sel: 'nav [data-tab="stretch"]', t: ['🧘 Étirements', '🧘 Stretching'], d: ['Routines d\'étirement guidées avec minuteur et images, ou crée les tiennes.', 'Guided stretching routines with timer and pictures, or make your own.']},
     {sel: 'nav [data-tab="timers"]', t: ['⏱ Intervalles', '⏱ Intervals'], d: ['Minuteurs Tabata, HIIT, EMOM ou sur mesure, avec bips et notifications.', 'Tabata, HIIT, EMOM or custom timers, with beeps and notifications.']},
     {sel: 'nav [data-tab="profile"]', t: ['📈 Profil', '📈 Profile'], d: ['Ton historique, tes records, tes graphiques de progression, ton calendrier et tes mesures.', 'Your history, records, progress charts, calendar and body measurements.']},
@@ -4252,6 +4266,47 @@ function gdCard() {
 }
 window.addEventListener('online', () => { if (gdOn() && S.gd.pending && gdTok()) gdPush(); });
 
+
+/* ===================== Appui long : sélectionner / déplacer ===================== */
+const winScroller = {getBoundingClientRect: () => ({top: 0, bottom: innerHeight}), get scrollTop() { return scrollY; }, set scrollTop(v) { scrollTo(0, v); }};
+function selSortables() {
+  if (!selR) return;
+  document.querySelectorAll('#app .sellist').forEach(box => {
+    makeSortable(box, winScroller, order => {
+      const f = box.dataset.f, ids = S.routines.filter(r => inFolder(r, f)).map(r => r.id), now = order.map(i => ids[i]);
+      let k = 0; const byId = Object.fromEntries(S.routines.map(r => [r.id, r]));
+      S.routines = S.routines.map(r => inFolder(r, f) ? byId[now[k++]] : r);
+      save(); render(); selBar();
+    });
+  });
+}
+let lp = null, lpFired = 0;
+document.addEventListener('pointerdown', e => {
+  lpFired = 0;
+  if (modals.length || (e.pointerType === 'mouse' && e.button !== 0)) return;
+  const c = e.target.closest('#app .rcard[data-rid], #app .fhead[data-f]');
+  if (!c || e.target.closest('input, textarea, select, .handle') || cur().v !== 'train') return;
+  clearTimeout(lp && lp.t);
+  lp = {x: e.clientX, y: e.clientY, t: setTimeout(() => {
+    lp = null; lpFired = Date.now(); haptic(30);
+    if (c.classList.contains('rcard')) {
+      const id = c.dataset.rid;
+      if (!selR) selStart(); selR.add(id); render(); selBar();
+    } else {
+      const f = c.dataset.f;
+      if (selR) { const rs = S.routines.filter(r => inFolder(r, f)), all = rs.length && rs.every(r => selR.has(r.id)); rs.forEach(r => all ? selR.delete(r.id) : selR.add(r.id)); render(); selBar(); }
+      else if (folders().length > 1) openFolderReo(); else openFolderMenu(f);
+    }
+  }, 480)};
+}, {passive: true});
+const lpCancel = () => { if (lp) { clearTimeout(lp.t); lp = null; } };
+document.addEventListener('pointermove', e => { if (lp && Math.hypot(e.clientX - lp.x, e.clientY - lp.y) > 10) lpCancel(); }, {passive: true});
+['pointerup', 'pointercancel'].forEach(t => document.addEventListener(t, lpCancel, {passive: true}));
+addEventListener('scroll', lpCancel, {passive: true});
+// le « clic » qui suit un appui long ne doit pas ouvrir la routine
+document.addEventListener('click', e => { if (Date.now() - lpFired < 700) { e.stopPropagation(); e.preventDefault(); lpFired = 0; } }, true);
+document.addEventListener('contextmenu', e => { if (e.target.closest('#app .rcard, #app .fhead')) e.preventDefault(); });
+
 /* ---------- Calendrier façon Hevy ---------- */
 let calMonths = 6;
 function vCal2() {
@@ -4294,7 +4349,7 @@ function headerRight(v) {
 }
 let navAnim = false;
 function render() {
-  if (selR && cur().v !== 'train') { selR = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); }
+  if (selR && cur().v !== 'train') { selR = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
   applyLang();
   renderChrome();
   if (!VIEWS[cur().v]) setRoot('train');
@@ -4308,6 +4363,7 @@ function render() {
   afterRender(c);
   try { iconize($('#app')); iconize($('#hdr')); } catch (e) {}
   if (c.v === 'workout') setTimeout(maybeTourWo, 700);
+  if (c.v === 'train' && selR) selSortables();
   updWobar();
   updElapsed();
   justChk = null;
@@ -4525,7 +4581,7 @@ document.addEventListener('click', e => {
     case 'delf-move': { const f = b.dataset.f, to = $('#delf-to').value; snap(); S.routines.forEach(r => { if (inFolder(r, f)) r.folder = to; }); if (!(S.folders || []).includes(to)) S.folders.push(to); dropFolder(f); save(); closeAll(); render(); undoToast(T(`🗑 « ${f} » supprimé, routines dans « ${to} »`, `🗑 “${f}” deleted, routines moved to “${to}”`)); break; }
     case 'sel-start': selStart(b.dataset.f); break;
     case 'sel-end': selEnd(); break;
-    case 'sel-r': { const id = b.dataset.rid; selR.has(id) ? selR.delete(id) : selR.add(id); render(); selBar(); break; }
+    case 'sel-r': { if (e.target.closest('.handle')) break; const id = b.dataset.rid; selR.has(id) ? selR.delete(id) : selR.add(id); render(); selBar(); break; }
     case 'sel-f': { const rs = S.routines.filter(r => inFolder(r, b.dataset.f)), all = rs.every(r => selR.has(r.id)); rs.forEach(r => all ? selR.delete(r.id) : selR.add(r.id)); render(); selBar(); break; }
     case 'sel-del': selDelete(); break;
     case 'sel-move': selMove(); break;
