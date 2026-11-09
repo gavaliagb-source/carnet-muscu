@@ -331,6 +331,11 @@ body.selon main{padding-bottom:170px}
 .chlaps{margin-top:22px;max-height:38vh;overflow:auto;border-top:1px solid #ffffff33}.chlaps .row{padding:10px 4px;border-bottom:1px solid #ffffff22;font-variant-numeric:tabular-nums}
 .chlaps .row b small,.chlaps .row span small{font-size:.8em}.chlaps .best b{color:#7CFFB2}.chlaps .worst b{color:#FF9B9B}
 #chrplayer{color:#fff;min-height:92vh}#chrplayer .muted{color:#ffffffcc}
+
+.sshead{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.sspill{display:inline-flex;align-items:center;gap:5px;background:color-mix(in srgb,var(--ss) 20%,transparent);color:var(--ss);font-weight:700;font-size:12px;letter-spacing:.3px;text-transform:uppercase;padding:3px 9px 3px 7px;border-radius:999px;line-height:1.3;vertical-align:1px}
+.sspill::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--ss)}
+.sspill.sm{font-size:10.5px;padding:2px 7px 2px 6px}
 </style>
 </head>
 <body>
@@ -878,13 +883,11 @@ function mkSets(n, last, targetW, reps) {
     return o;
   });
 }
+/* Un superset garde son étiquette tant qu'au moins 2 exercices l'ont (même s'ils ne se suivent pas) */
 function fixSS(list) {
-  list.forEach((e, i) => {
-    if (!e.ss) return;
-    const p = list[i - 1], n = list[i + 1];
-    if (!((p && p.ss === e.ss) || (n && n.ss === e.ss))) delete e.ss;
-  });
+  list.forEach(e => { if (e.ss && list.filter(x => x.ss === e.ss).length < 2) delete e.ss; });
 }
+const ssMates = (list, e) => e.ss ? list.filter(x => x !== e && x.ss === e.ss) : [];
 function newSSTag(list) {
   const used = new Set(list.map(e => e.ss).filter(Boolean));
   for (const c of 'ABCDEFGH') if (!used.has(c)) return c;
@@ -1023,7 +1026,7 @@ function previewPaste(rid) {
   $('#pv').innerHTML = res.length ? res.map(x => {
     const fx = pasteFolder || x.folder || null;
     const exists = S.routines.some(y => (!fx || (y.folder || DEF_FOLDER) === fx) && norm(y.name) === norm(x.name)) || (r && res.length === 1);
-    return `<div class="preview"><b>${esc(x.name)}</b> <span class="tag">${exists ? 'mise à jour' : 'nouvelle'}</span>${fx ? ` <span class="tag">📁 ${esc(fx)}</span>` : ''}<br>${x.exercises.map(e => `${e.ss ? '⛓' + esc(e.ss) + ' ' : ''}${esc(e.name)} — ${e.sets}×${esc(e.reps)} · ${esc(fmtW(e.weight))}${e.rest ? ' · ⏱' + fmtRest(e.rest) : ''}`).join('<br>')}</div>`;
+    return `<div class="preview"><b>${esc(x.name)}</b> <span class="tag">${exists ? 'mise à jour' : 'nouvelle'}</span>${fx ? ` <span class="tag">📁 ${esc(fx)}</span>` : ''}<br>${x.exercises.map(e => `${e.ss ? '<span class="sspill sm" style="--ss:' + ssColor(e.ss) + '">SS</span> ' : ''}${esc(e.name)} — ${e.sets}×${esc(e.reps)} · ${esc(fmtW(e.weight))}${e.rest ? ' · ⏱' + fmtRest(e.rest) : ''}`).join('<br>')}</div>`;
   }).join('') : '<p class="muted small">Aucun exercice reconnu pour l\'instant.</p>';
 }
 /* Charge « ? » : on reprend la meilleure charge de travail de ta dernière séance sur cet exercice */
@@ -1265,7 +1268,7 @@ function startWorkout(rid) {
   if (S.active && !confirm('Une séance est déjà en cours. La remplacer?')) { openWorkout(); return; }
   const r = S.routines.find(x => x.id === rid); if (!r) return;
   S.active = {routineId: r.id, routineName: r.name, start: new Date().toISOString(),
-    exercises: r.exercises.map(e => ({name: e.name, ss: e.ss, rest: e.rest, note: '', target: {...e}, sets: mkSetsFromRoutine(e, lastFor(e.name))}))};
+    exercises: r.exercises.map(e => { const sets = mkSetsFromRoutine(e, lastFor(e.name)); return {name: e.name, orig: e.name, n0: sets.length, ss: e.ss, rest: e.rest, note: '', target: {...e}, sets}; })};
   save(); openWorkout();
 }
 function openWorkout() { stack = [{v: 'train'}, {v: 'workout'}]; try { history.pushState({}, ''); } catch (e) {} render(); window.scrollTo(0, 0); setTimeout(scrollCur, 30); }
@@ -1342,6 +1345,8 @@ function finishWorkout() {
   const medBefore = medalsEarned().got;
   S.history.push({id, routineId: a.routineId, routineName: a.routineName, date: a.start, duration: Math.round((Date.now() - new Date(a.start)) / 60000), exercises});
   const wasFree = !a.routineId;
+  const rtR = S.routines.find(x => x.id === a.routineId), rtCh = routineChanges(a, rtR);
+  window._rtUpd = rtCh.length ? {rid: a.routineId, ex: JSON.parse(JSON.stringify(a.exercises))} : null;
   const medDefs = medalDefs(), medNew = Object.keys(medalsEarned().got).filter(k => !medBefore[k]).map(k => medDefs.find(d => d.id === k)).filter(Boolean);
   setTimeout(() => queueCloud(1500), 0);
   S.active = null; save(); stopTimer(); clearNotif(); setRoot('profile'); render(); setTimeout(() => confetti(prs.length ? 160 : 90), 200);
@@ -1352,6 +1357,11 @@ function finishWorkout() {
       const row = (l, nv, pv, f) => { const pc = pv ? Math.round((nv - pv) / pv * 100) : null; return `<div class="row between" style="padding:5px 0"><span class="muted">${l}</span><span><b>${f(nv)}</b> ${pc == null ? '' : `<span class="small" style="color:${pc >= 0 ? 'var(--ok)' : 'var(--danger)'}">${pc >= 0 ? '▲' : '▼'} ${Math.abs(pc)} %</span>`}</span></div>`; };
       return `<div class="card" style="margin:8px 0"><b>Par rapport au ${dateFr(prevH.date)}</b>${row('Volume', sessVol(nh), sessVol(prevH), v => Math.round(v).toLocaleString(LOC()) + ' ' + U())}${row('Réps', sessReps(nh), sessReps(prevH), v => v)}${prevH.duration ? row('Durée', nh.duration, prevH.duration, v => hm(v)) : ''}</div>`; })()}
     ${medNew.length ? `<div class="card" style="border-color:var(--accent);margin:8px 0"><b>🏅 ${T(medNew.length > 1 ? 'Nouvelles médailles!' : 'Nouvelle médaille!', medNew.length > 1 ? 'New medals!' : 'New medal!')}</b>${medNew.map(d => `<div style="margin-top:4px">${d.ic} ${esc(d.t)}</div>`).join('')}</div>` : ''}
+    ${rtCh.length ? `<div class="card" id="rtupd" style="border-color:var(--accent);margin:8px 0"><b>✏️ ${T('Tu as modifié cette séance', 'You changed this workout')}</b>
+      <ul class="small" style="margin:6px 0 10px;padding-left:18px">${rtCh.slice(0, 6).map(c => `<li>${esc(c)}</li>`).join('')}${rtCh.length > 6 ? `<li>…</li>` : ''}</ul>
+      <button class="btn primary block" data-act="rt-upd">${T('Mettre à jour « ' + esc(rtR.name) + ' »', 'Update “' + esc(rtR.name) + '”')}</button>
+      <button class="btn block" data-act="rt-keep" style="margin-top:8px">${T('Garder la routine comme avant', 'Keep the routine as it was')}</button>
+      <p class="muted small" style="margin:6px 0 0">${T('« Garder » : les changements restent seulement dans cette séance.', '“Keep”: the changes stay only in this workout.')}</p></div>` : ''}
     ${wasFree ? `<button class="btn block" data-act="save-as-routine" data-hid="${id}" style="margin-bottom:8px">💾 Enregistrer comme routine</button>` : ''}
     <div class="grid2" style="margin-bottom:8px"><button class="btn" data-act="hist-img" data-hid="${id}">🖼️ ${T('Image', 'Image')}</button><button class="btn" data-act="hist-share" data-hid="${id}">📤 ${T('Texte', 'Text')}</button></div>
     <button class="btn block" data-act="st-go" data-id="${stSuggest(S.history[S.history.length - 1])}" style="margin-bottom:8px">🧘 ${T('Étirements', 'Stretching')} ${esc(T(ST_PRESETS.find(x => x.id === stSuggest(S.history[S.history.length - 1])).n[0], ST_PRESETS.find(x => x.id === stSuggest(S.history[S.history.length - 1])).n[1]).toLowerCase())} (≈ ${fmtMin(stDur(ST_PRESETS.find(x => x.id === stSuggest(S.history[S.history.length - 1]))))})</button>
@@ -1364,16 +1374,12 @@ function replaceExercise(ei, pick) {
   if (pick.lib) S.links[norm(pick.name)] = pick.lib;
   const last = lastFor(pick.name);
   e.sets.forEach((s, i) => { if (s.done) return; const ls = last && (last.sets[i] || last.sets[last.sets.length - 1]); s.w = ls && ls.w !== '' ? ls.w : ''; if (ls) s.ph = ls.r; });
-  const re = routineEx(S.active.routineId, old);
-  if (re && confirm(`Remplacer aussi « ${old} » par « ${pick.name} » dans la routine ${S.active.routineName}?`)) re.name = pick.name;
-  save(); render(); toast('🔄 Exercice remplacé');
+  save(); render(); toast(T('🔄 Exercice remplacé (tu choisiras à la fin si la routine change aussi)', '🔄 Exercise replaced (you\'ll choose at the end whether the routine changes too)'));
 }
 function addExercise(pick) {
   const a = S.active;
   if (pick.lib) S.links[norm(pick.name)] = pick.lib;
   a.exercises.push({name: pick.name, note: '', target: {name: pick.name, sets: 2, reps: '8-12', weight: '', note: ''}, sets: mkSets(2, lastFor(pick.name), '', '8-12')});
-  const r = S.routines.find(x => x.id === a.routineId);
-  if (r && !routineEx(a.routineId, pick.name) && confirm(`Ajouter aussi « ${pick.name} » à la routine ${a.routineName}?`)) r.exercises.push(ex(pick.name, 2, '8-12'));
   save(); render(); toast('＋ Exercice ajouté');
   setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50);
 }
@@ -1493,7 +1499,7 @@ function vRoutines() {
   return active + S.routines.map(r => `
     <div class="card">
       <div class="row between"><h2>${esc(r.name)}</h2><button class="btn sm" data-act="edit" data-rid="${r.id}">✏️</button></div>
-      <ul class="exlist">${r.exercises.map(e => `<li><span>${exl(e.name)}${e.ss ? ` <span class="tag">⛓${esc(e.ss)}</span>` : ''}</span><span class="tag">${e.sets}×${esc(e.reps)}${esc(tagW(e.weight))}${e.rest ? ' · ⏱' + esc(fmtRest(e.rest)) : ''}</span></li>`).join('')}</ul>
+      <ul class="exlist">${r.exercises.map(e => `<li><span>${exl(e.name)}${e.ss ? ` <span class="sspill sm" ${ssSty(e)}>Superset</span>` : ''}</span><span class="tag">${e.sets}×${esc(e.reps)}${esc(tagW(e.weight))}${e.rest ? ' · ⏱' + esc(fmtRest(e.rest)) : ''}</span></li>`).join('')}</ul>
       <button class="btn primary block" data-act="start" data-rid="${r.id}">▶ Démarrer</button>
       <div class="row" style="margin-top:8px">
         <button class="btn sm" style="flex:1" data-act="ai-copy" data-rid="${r.id}">🤖 Envoyer à l'IA</button>
@@ -1527,10 +1533,10 @@ function vWorkout() {
   const prog = `<div class="wprog"><div class="row between small"><span>${ce >= 0 ? T(`Exercice ${ce + 1}/${a.exercises.length}`, `Exercise ${ce + 1}/${a.exercises.length}`) : T('✅ Tout est fait!', '✅ All done!')}</span><span class="muted">${dS}/${nS} ${T('séries', 'sets')}</span></div><div class="pbar"><div style="width:${nS ? Math.round(dS / nS * 100) : 0}%"></div></div></div>`;
   return prog + (deloadOn() ? `<div class="card" style="border-color:var(--warm);padding:10px 14px"><span class="small">🪶 Semaine de récupération : charges −${S.settings.deload.pct} %</span></div>` : '') + a.exercises.map((e, ei) => {
     const last = lastFor(e.name), prev = prevFor(e.name), tm = isTimed(e);
-    const first = e.ss && !(a.exercises[ei - 1] && a.exercises[ei - 1].ss === e.ss);
+    const mates = ssMates(a.exercises, e);
     let wi = 0, wu = 0;
     return `<div class="card ${e.ss ? 'ss' : ''}" id="wex${ei}" ${ssSty(e)}>
-      ${first ? `<div class="small" style="color:var(--ss);margin-bottom:6px;font-weight:600">⛓ SUPERSET ${esc(e.ss)} <span class="muted" style="font-weight:400">— alterne, repos après le dernier</span></div>` : ''}
+      ${mates.length ? `<div class="sshead"><span class="sspill">Superset</span><span class="muted small">${T('avec', 'with')} ${mates.map(x => esc(x.name)).join(', ')}</span></div>` : ''}
       <div class="row between"><div class="row" style="gap:10px;min-width:0">${thumb(e.name, 40)}<h3>${exl(e.name)}</h3></div><span class="row"><span class="tag">${e.target.sets}×${esc(e.target.reps)}${tm ? ' s' : ''}${e.rest ? ' · ⏱' + esc(fmtRest(e.rest)) : ''}</span><button class="btn sm" data-act="ex-menu" data-e="${ei}" aria-label="Options">⋯</button></span></div>
       ${e.target.note ? `<div class="last">📋 ${esc(e.target.note)}</div>` : ''}
       ${e.note ? `<div class="last">📝 ${esc(e.note)}</div>` : ''}
@@ -1572,7 +1578,7 @@ function histCard(h, open) {
   return `<details class="card hist" data-hid="${h.id}" ${open ? 'open' : ''}><summary>
       <div class="row between"><div><h3>${esc(h.routineName)}</h3><span class="muted small">${new Date(h.date).toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long'})} · ${hm(h.duration)}</span></div><span class="tag">${h.exercises.length} exos ▾</span></div>
     </summary>
-    <ul class="exlist">${h.exercises.map(e => `<li><span class="row" style="gap:8px;align-items:flex-start">${thumb(e.name, 28)}<span>${exl(e.name)}${e.ss ? ` <span class="tag">⛓${esc(e.ss)}</span>` : ''}${e.note ? `<br><span class="small muted">📝 ${esc(e.note)}</span>` : ''}${e.sets.map((s, i) => s.n ? `<br><span class="small muted">Série ${i + 1} : ${esc(s.n)}</span>` : '').join('')}</span></span><span class="tag">${e.sets.map(s => fmtSet(s, true)).join(', ')}</span></li>`).join('')}</ul>
+    <ul class="exlist">${h.exercises.map(e => `<li><span class="row" style="gap:8px;align-items:flex-start">${thumb(e.name, 28)}<span>${exl(e.name)}${e.ss ? ` <span class="sspill sm" ${ssSty(e)}>Superset</span>` : ''}${e.note ? `<br><span class="small muted">📝 ${esc(e.note)}</span>` : ''}${e.sets.map((s, i) => s.n ? `<br><span class="small muted">Série ${i + 1} : ${esc(s.n)}</span>` : '').join('')}</span></span><span class="tag">${e.sets.map(s => fmtSet(s, true)).join(', ')}</span></li>`).join('')}</ul>
     <div class="row"><button class="btn sm" data-act="hist-edit" data-hid="${h.id}">✏️ Modifier</button>
     <button class="btn sm" data-act="hist-share" data-hid="${h.id}">📤 Partager</button>
     <button class="btn sm" data-act="hist-img" data-hid="${h.id}">🖼️ Image</button>
@@ -2635,7 +2641,7 @@ function openSSPicker(list, ei, onDone) {
     <p class="muted small" style="margin:2px 0 8px">Superset <b>${esc(c.name)}</b> avec…</p>
     ${list.map((x, j) => `<button class="ssrow" data-act="ss-pick" data-j="${j}" ${j === ei ? 'disabled' : ''}><span class="ssbar" style="background:${x.ss ? ssColor(x.ss) : 'transparent'}"></span>${thumb(x.name, 34)}<span style="flex:1;min-width:0">${esc(x.name)}</span>${j === ei ? '<span style="color:var(--accent);font-size:22px">✓</span>' : ''}</button>`).join('')}
     ${c.ss ? '<button class="btn danger block" data-act="ss-remove" style="margin-top:12px">Retirer du superset</button>' : ''}
-    <p class="muted small">Les exercices d'un même superset ont la même couleur. L'exercice choisi est placé juste à côté pour que tu les enchaînes.</p>`);
+    <p class="muted small">${T('Les exercices d\'un même superset ont la même couleur. Ils restent à leur place : pendant la séance, l\'appli t\'amène automatiquement de l\'un à l\'autre.', 'Exercises in the same superset share a color. They stay in place: during the workout, the app takes you from one to the other automatically.')}</p>`);
 }
 function regroupSS(list) {
   const out = [], seen = new Set();
@@ -2646,19 +2652,11 @@ function regroupSS(list) {
   });
   fixSS(out); return out;
 }
-function ssJoin(list, ei, j) {
+function ssJoin(list, ei, j) { // les exercices restent à leur place
   const a = list[ei], b = list[j];
   const tag = b.ss || a.ss || newSSTag(list);
-  if (a.ss && a.ss !== tag) delete a.ss;
   a.ss = tag; b.ss = tag;
-  const rest = list.filter(x => x !== a);
-  let last = -1; rest.forEach((x, i) => { if (x.ss === tag) last = i; });
-  rest.splice(last + 1, 0, a);
-  const first = rest.findIndex(x => x.ss === tag);
-  const members = rest.filter(x => x.ss === tag), others = rest.filter(x => x.ss !== tag);
-  others.splice(first, 0, ...members);
-  fixSS(others);
-  return others;
+  fixSS(list); return list;
 }
 
 /* ---------- Bip de fin de repos et écran allumé ---------- */
@@ -2877,7 +2875,7 @@ function vRoutineDetail() {
       <div class="chips" style="margin-bottom:0">${chips}</div></div>
     <div class="row between" style="margin:16px 0 0"><span class="muted">Exercices</span><button class="linkbtn" data-act="edit-routine" data-rid="${r.id}">Modifier la routine</button></div>
     ${r.exercises.map(e => `<div class="rex ${e.ss ? 'ssl' : ''}" ${ssSty(e)}>
-      <div class="row" style="gap:12px">${thumb(e.name, 48)}<span class="exlink acc" data-act="go" data-v="exdetail" data-n="${esc(e.name)}">${esc(e.name)}</span>${e.ss ? `<span class="tag" style="color:var(--ss)">⛓ ${esc(e.ss)}</span>` : ''}</div>
+      <div class="row" style="gap:12px">${thumb(e.name, 48)}<span class="exlink acc" data-act="go" data-v="exdetail" data-n="${esc(e.name)}">${esc(e.name)}</span>${e.ss ? ` <span class="sspill sm" ${ssSty(e)}>Superset</span>` : ''}</div>
       ${e.note ? `<div class="last">📋 ${esc(e.note)}</div>` : ''}
       ${stagBtn(e.name)}
       <div class="last" style="margin:8px 0">⏱ Minuteur de repos : ${e.rest ? fmtRest(e.rest) : 'par défaut (' + fmtRest(+S.settings.rest || 150) + ')'}</div>
@@ -2907,7 +2905,7 @@ function vRoutineEditor() {
       let n = 0;
       return `<div class="card ${e.ss ? 'ss' : ''}" ${ssSty(e)}>
       <div class="row between"><div class="row" style="gap:10px;min-width:0">${thumb(e.name, 44)}<span class="exlink acc" data-act="exo" data-n="${esc(e.name)}">${esc(e.name)}</span></div><button class="btn sm ghost" data-act="rd-ex-menu" data-e="${ei}" aria-label="Options de l'exercice">⋯</button></div>
-      ${e.ss ? `<span class="ssb">⛓ Superset ${esc(e.ss)}</span>` : ''}
+      ${e.ss ? `<span class="sspill" style="margin-top:8px">Superset</span>` : ''}
       <input class="ninput" data-rdnote="${ei}" placeholder="Ajouter une note pour cet exercice…" value="${esc(e.note || '')}">
       <div class="row between" style="margin-top:10px"><span class="small muted">⏱ Minuteur de repos</span><select style="width:170px" data-rdrest="${ei}">${RS.map(([v, l]) => `<option value="${v}" ${rv === String(v) ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
       <div class="colhead c3"><span>SÉRIE</span><span>${U().toUpperCase()}</span><span>${isTimed(e) ? 'DURÉE (SEC)' : 'PLAGE DE RÉPS'}</span><span></span></div>
@@ -4077,8 +4075,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.4';
+const APP_VERSION = '8.5';
 const CHANGELOG = [
+  {v: '8.5', d: '2026-11-09', fr: ['Si tu changes ta séance (remplacer un exercice, en ajouter, faire un superset, changer les séries ou le repos), l\'appli te demande à la fin : mettre à jour la routine, ou garder la routine comme avant.', 'Nouveau look des supersets (pastille de couleur au lieu de la chaîne).', 'Lier deux exercices en superset ne les déplace plus : ils restent à leur place.'],
+   en: ['If you change your workout (replace or add an exercise, make a superset, change sets or rest), the app asks at the end: update the routine, or keep it as it was.', 'New superset look (color pill instead of the chain).', 'Linking two exercises in a superset no longer moves them: they stay in place.']},
   {v: '8.4', d: '2026-11-09', fr: ['Une séance passée peut devenir une routine : bouton « 📁 En routine », choisis un dossier ou crées-en un nouveau.', 'Appui long sur une séance de ton historique : coches-en plusieurs pour les mettre ensemble dans un dossier, ou les supprimer.', 'Tu viens de Hevy, Strong ou une autre appli? Après l\'import de ton historique (CSV), un seul bouton recrée toutes tes routines à partir de tes dernières séances.'],
    en: ['A past workout can become a routine: “📁 As routine” button, pick a folder or create a new one.', 'Long-press a workout in your history: select several to put them together in a folder, or delete them.', 'Coming from Hevy, Strong or another app: after importing your history (CSV), one tap rebuilds all your routines from your latest workouts.']},
   {v: '8.3.1', d: '2026-11-09', fr: ['Tu peux aussi changer l\'ordre des minuteurs et des étirements « prêts » (appui long, puis glisse ≡).'], en: ['You can also reorder ready-made timers and stretches (long-press, then drag ≡).']},
@@ -4584,6 +4584,47 @@ function h2rApply() {
   toast(T(`📁 ${hs.length} routine${hs.length > 1 ? 's' : ''} ajoutée${hs.length > 1 ? 's' : ''} dans « ${f} »`, `📁 ${hs.length} routine${hs.length > 1 ? 's' : ''} added to “${f}”`));
 }
 
+
+/* ===================== Fin de séance : mettre la routine à jour? ===================== */
+function routineChanges(a, r) {
+  if (!r) return [];
+  const ch = [], key = x => norm(x.orig || x.name), RE = r.exercises, WE = a.exercises;
+  WE.forEach(x => { if (x.orig && norm(x.orig) !== norm(x.name)) ch.push(T(`« ${x.orig} » remplacé par « ${x.name} »`, `“${x.orig}” replaced with “${x.name}”`)); });
+  WE.forEach(x => { if (!x.orig) ch.push(T(`Ajouté : ${x.name}`, `Added: ${x.name}`)); });
+  RE.forEach(y => { if (!WE.some(x => x.orig && norm(x.orig) === norm(y.name))) ch.push(T(`Retiré : ${y.name}`, `Removed: ${y.name}`)); });
+  const ord = WE.filter(x => x.orig).map(x => norm(x.orig)), rord = RE.map(y => norm(y.name)).filter(n => ord.includes(n));
+  if (ord.join('|') !== rord.join('|')) ch.push(T('Ordre des exercices', 'Exercise order'));
+  const grp = (L, k) => { const m = {}; L.forEach(x => { if (x.ss) m[k(x)] = L.filter(y => y.ss === x.ss).map(k).sort().join('+'); }); return m; };
+  const g1 = grp(RE, y => norm(y.name)), g2 = grp(WE, x => key(x));
+  const ssDiff = [...new Set([...Object.keys(g1), ...Object.keys(g2)])].some(k => (g1[k] || '') !== (g2[k] || ''));
+  if (ssDiff) ch.push(T('Supersets', 'Supersets'));
+  WE.forEach(x => { if (x.orig && x.n0 != null && x.sets.length !== x.n0) ch.push(T(`${x.name} : ${x.n0} → ${x.sets.length} séries`, `${x.name}: ${x.n0} → ${x.sets.length} sets`)); });
+  WE.forEach(x => { const y = x.orig && RE.find(z => norm(z.name) === norm(x.orig)); if (y && (+x.rest || 0) !== (+y.rest || 0)) ch.push(T(`Repos de ${x.name}`, `${x.name} rest`)); });
+  return [...new Set(ch)];
+}
+function applyRoutineUpdate() {
+  const u = window._rtUpd; if (!u) return;
+  const r = S.routines.find(x => x.id === u.rid); if (!r) return;
+  const used = new Set();
+  r.exercises = u.ex.map(x => {
+    const base = x.orig && r.exercises.find((y, i) => !used.has(i) && norm(y.name) === norm(x.orig) && used.add(i));
+    const changedSets = !base || norm(x.orig) !== norm(x.name) || x.sets.length !== x.n0;
+    const o = base ? JSON.parse(JSON.stringify(base)) : {name: x.name, sets: 0, reps: '8-12', weight: '', note: ''};
+    o.name = x.name;
+    if (x.ss) o.ss = x.ss; else delete o.ss;
+    if (x.rest) o.rest = x.rest; else delete o.rest;
+    if (changedSets) {
+      if (base && Array.isArray(base.sl) && norm(x.orig) === norm(x.name)) { const L = base.sl; o.sl = x.sets.map((s, i) => ({...(L[i] || L[L.length - 1])})); }
+      else o.sl = x.sets.map(s => { const y = {w: s.w === '' || s.w == null ? '' : +s.w, r: String(s.r || s.ph || (base && base.reps) || '8-12')}; if (s.t === 'W' || s.t === 'D') y.t = s.t; return y; });
+      syncSummary(o);
+    }
+    return o;
+  });
+  fixSS(r.exercises);
+  window._rtUpd = null; save();
+  const c = $('#rtupd'); if (c) c.innerHTML = `<b>✅ ${T('Routine mise à jour', 'Routine updated')}</b><p class="muted small" style="margin:4px 0 0">${T('Tes prochaines séances de « ' + esc(r.name) + ' » auront ces changements.', 'Your next “' + esc(r.name) + '” workouts will have these changes.')}</p>`;
+}
+
 /* ---------- Calendrier façon Hevy ---------- */
 let calMonths = 6;
 function vCal2() {
@@ -4820,10 +4861,10 @@ document.addEventListener('click', e => {
     case 'test-notif': { const swc = navigator.serviceWorker && navigator.serviceWorker.controller; if (notifOn() && swc) { swc.postMessage({type: 'rest-at', at: Date.now() + 8000, title: T('✅ Repos terminé (test)', '✅ Rest over (test)'), body: T('À toi : Développé couché · 185 lb × 8 (série 2/3)', 'Your turn: Bench press · 185 lb × 8 (set 2/3)')}); toast(T('⌚ Notification dans 8 s : éteins l\'écran maintenant et regarde ta montre', '⌚ Notification in 8 s: turn off the screen now and look at your watch')); break; } toast(T('⌚ Notification dans 5 s : éteins l\'écran ou regarde ta montre', '⌚ Notification in 5 s: turn off the screen or look at your watch')); setTimeout(() => notify(T('✅ Repos terminé (test)', '✅ Rest over (test)'), T('À toi : Développé couché · 185 lb × 8 (série 2/3)', 'Your turn: Bench press · 185 lb × 8 (set 2/3)')), 5000); break; }
     case 'test-beep': ensureAudio(); setTimeout(() => beep(true), 60); break;
     case 'test-lock': ensureAudio(); startTimer(10); toast('🔒 Éteins l\'écran maintenant : bip dans 10 s'); break;
-    case 'ss-pick': { const {list, ei: i0, onDone} = ssCtx; const nl = ssJoin(list, i0, +b.dataset.j); closeModal(); onDone(nl); toast('⛓ Superset créé'); break; }
+    case 'ss-pick': { const {list, ei: i0, onDone} = ssCtx; const nl = ssJoin(list, i0, +b.dataset.j); closeModal(); onDone(nl); toast(T('✓ Superset créé', '✓ Superset created')); break; }
     case 'ss-remove': { const {list, ei: i0, onDone} = ssCtx; delete list[i0].ss; fixSS(list); closeModal(); onDone(list); break; }
     case 'rd-ss-pick': closeModal(); openSSPicker(rdraft.exercises, ei, nl => { rdraft.exercises = nl; rdirty = true; render(); }); break;
-    case 'wo-ss-pick': closeModal(); openSSPicker(A.exercises, ei, nl => { A.exercises = nl; nl.forEach(x => { const re = routineEx(A.routineId, x.name); if (re) { if (x.ss) re.ss = x.ss; else delete re.ss; } }); save(); render(); }); break;
+    case 'wo-ss-pick': closeModal(); openSSPicker(A.exercises, ei, nl => { A.exercises = nl; save(); render(); }); break;
     case 'sched-edit': closeAll(); openSched(); break;
     case 'sched-mode': cyc().on = b.dataset.m === '1'; save(); renderSched(); break;
     case 'cyc-day': { const c = cyc(), i = +b.dataset.i; c.days[i] = !c.days[i]; if (!c.days.some(Boolean)) c.days[i] = true; save(); renderSched(); break; }
@@ -4833,8 +4874,8 @@ document.addEventListener('click', e => {
     case 'bg-pick': S.settings.bg = b.dataset.c; save(); applyTheme(); render(); break;
     case 'bg-reset': delete S.settings.bg; save(); applyTheme(); render(); break;
     case 'accent-reset': delete S.settings.accent; save(); applyTheme(); render(); break;
-    case 'rd-reorder': if (b.closest('.sheet')) closeModal(); openReorder(rdraft.exercises, arr => { rdraft.exercises = regroupSS(arr); rdirty = true; render(); }); break;
-    case 'wo-reorder': closeModal(); openReorder(A.exercises, arr => { A.exercises = regroupSS(arr); save(); render(); }); break;
+    case 'rd-reorder': if (b.closest('.sheet')) closeModal(); openReorder(rdraft.exercises, arr => { rdraft.exercises = arr; fixSS(arr); rdirty = true; render(); }); break;
+    case 'wo-reorder': closeModal(); openReorder(A.exercises, arr => { A.exercises = arr; fixSS(arr); save(); render(); }); break;
     case 'reo-del': b.closest('.reo').remove(); break;
     case 'reo-done': { const idx = [...document.querySelectorAll('#reolist .reo')].map(x => +x.dataset.i); const arr = idx.map(i => reo.list[i]); const cb = reo.onDone; closeModal(); cb(arr); break; }
     case 'fix-import': { const bad = new Set(brokenImports()); S.history = S.history.filter(x => !bad.has(x)); save(); closeAll(); render(); toast(`🧹 ${bad.size} séances retirées — choisis ton fichier CSV Hevy`); $('#fileIn').click(); break; }
@@ -4851,6 +4892,8 @@ document.addEventListener('click', e => {
       break; }
     case 'st-share': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); if (rt) { const c = JSON.parse(JSON.stringify(rt)); delete c.id; shareItem('s', [c], T(rt.n[0], rt.n[1] || rt.n[0])); } break; }
     case 'imp-ok': doImport(); break;
+    case 'rt-upd': applyRoutineUpdate(); break;
+    case 'rt-keep': { window._rtUpd = null; const c = $('#rtupd'); if (c) c.innerHTML = `<span class="small muted">👍 ${T('Routine gardée comme avant. Les changements restent dans cette séance seulement.', 'Routine kept as it was. The changes stay in this workout only.')}</span>`; break; }
     case 'h2r': h2rModal([b.dataset.hid]); break;
     case 'h2r-sel': h2rModal([...selH]); break;
     case 'h2r-ok': h2rApply(); break;
@@ -5055,7 +5098,8 @@ document.addEventListener('click', e => {
       save(); render();
       if (s.pr) { confetti(); toast(T(`🏆 Nouveau record! ${s.w || BWL()}×${s.r}`, `🏆 New record! ${s.w || BWL()}×${s.r}`)); if (S.settings.sound !== false) { ensureAudio(); setTimeout(() => beep(true), 30); } haptic([80, 60, 80, 60, 200]); }
       if (s.done) {
-        const inSS = e.ss && A.exercises[ei + 1] && A.exercises[ei + 1].ss === e.ss;
+        const grp = e.ss ? A.exercises.map((x, i) => x.ss === e.ss ? i : -1).filter(i => i >= 0) : [];
+        const inSS = grp.length > 1 && ei !== grp[grp.length - 1];
         if (inSS) { if (+S.settings.restSS > 0) startTimer(+S.settings.restSS); }
         else if (+e.rest !== -1) startTimer(s.t === 'W' ? (+S.settings.restWarm > 0 ? +S.settings.restWarm : 45) : s.t === 'D' && +S.settings.restDrop > 0 ? +S.settings.restDrop : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)));
       }
@@ -5102,14 +5146,11 @@ document.addEventListener('click', e => {
     case 'ex-ss': {
       const list = A.exercises, e = list[ei], nx = list[ei + 1];
       const tag = e.ss || newSSTag(list); e.ss = tag; nx.ss = tag;
-      [e, nx].forEach(x => { const re = routineEx(A.routineId, x.name); if (re) re.ss = tag; });
-      save(); closeModal(); toast('⛓ Superset créé'); break;
+      save(); closeModal(); toast(T('✓ Superset créé', '✓ Superset created')); break;
     }
     case 'ex-ss-off': {
       const list = A.exercises, e = list[ei], tag = e.ss;
       delete e.ss; fixSS(list);
-      list.forEach(x => { const re = routineEx(A.routineId, x.name); if (re) { if (x.ss) re.ss = x.ss; else delete re.ss; } });
-      const re = routineEx(A.routineId, e.name); if (re) delete re.ss;
       save(); closeModal(); break;
     }
     case 'ex-del': { snap(); const nm = A.exercises[ei].name; A.exercises.splice(ei, 1); fixSS(A.exercises); save(); closeModal(); undoToast(T(`« ${nm} » retiré`, `“${nm}” removed`)); break; }
@@ -5286,7 +5327,6 @@ document.addEventListener('change', e => {
   }
   if (t.dataset.exrest !== undefined && S.active) {
     const x = S.active.exercises[+t.dataset.exrest]; x.rest = t.value ? +t.value : undefined;
-    const re = routineEx(S.active.routineId, x.name); if (re) { if (x.rest) re.rest = x.rest; else delete re.rest; }
     save();
   }
 });
