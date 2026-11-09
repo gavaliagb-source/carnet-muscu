@@ -81,7 +81,7 @@ input[type=range]::-moz-range-track{height:8px;border-radius:4px;background:var(
 input[type=range]::-moz-range-progress{height:8px;border-radius:4px;background:var(--accent)}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-8px;border-radius:50%;background:var(--accent);border:3px solid var(--card)}
 input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--accent);border:3px solid var(--card)}
-textarea{min-height:200px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px}
+textarea{min-height:200px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:16px}
 textarea.short{min-height:80px;font-family:inherit;font-size:16px}
 .setrow{display:grid;grid-template-columns:40px 1fr 1fr 52px;gap:8px;align-items:center;margin-top:8px}
 .setrow input{text-align:center;padding:10px 4px}
@@ -215,7 +215,8 @@ button.chip{cursor:pointer}
 .reo{transition:none;will-change:transform}
 .reo.dragging{background:var(--card2);box-shadow:0 10px 28px #000a;border-radius:12px;position:relative;z-index:5;opacity:.97}
 .reon{flex:1;min-width:0}
-.handle{font-size:26px;color:var(--muted);padding:4px 10px;touch-action:none;cursor:grab;user-select:none}
+.handle{font-size:26px;color:var(--muted);padding:4px 10px;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.btn,.chip,nav,.fhead,.setrow .nb,.check{-webkit-user-select:none;-webkit-touch-callout:none}
 .reodel{width:28px;height:28px;border-radius:50%;border:0;background:var(--danger);color:#fff;font-weight:800;font-size:18px;line-height:1;flex:0 0 auto}
 .ssrow{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;border-bottom:1px solid var(--line);color:var(--text);padding:12px 4px;text-align:left;font-size:16px;cursor:pointer}
 .ssrow:disabled{opacity:1;cursor:default}
@@ -286,6 +287,25 @@ button.chip{cursor:pointer}
 #tour .tdots{display:flex;gap:5px}
 #tour .tdots i{width:6px;height:6px;border-radius:3px;background:var(--line)}
 #tour .tdots i.on{background:var(--accent);width:16px}
+
+/* Assistant IA */
+.aiopt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;padding:12px 14px;margin:0 0 8px;background:var(--card2);border:1px solid var(--line);border-radius:14px;color:var(--text);font:inherit;cursor:pointer}
+.aiopt .ic{font-size:24px;line-height:1.1;flex:none;width:30px;text-align:center}
+.aiopt b{display:block;font-size:15px}.aiopt span{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.aiopt.main{border-color:var(--accent)}
+.aisteps{display:flex;gap:6px;margin:6px 0 14px}.aisteps div{flex:1;background:var(--card2);border-radius:10px;padding:8px 6px;text-align:center;font-size:12px;color:var(--muted);line-height:1.3}
+.aisteps b{display:block;color:var(--accent);font-size:15px}
+.aistep{display:flex;gap:12px;margin:0 0 14px}.aistep .n{flex:none;width:28px;height:28px;border-radius:14px;background:var(--accent);color:#111;font-weight:800;display:flex;align-items:center;justify-content:center}
+.aistep.dim{opacity:.6}
+.aistep.done .n{background:var(--line);color:var(--text)}
+.aistep .c{flex:1;min-width:0}.aistep .c>b{display:block;margin:3px 0 4px}.aistep p{margin:0 0 8px;color:var(--muted);font-size:13.5px}
+.ailinks{display:flex;gap:6px;flex-wrap:wrap}.ailinks a{flex:1;min-width:90px;text-align:center;text-decoration:none}
+
+#selbar{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:8;display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--accent);border-radius:16px;padding:10px 12px;box-shadow:0 8px 30px rgba(0,0,0,.45)}
+#selbar span{flex:1}
+.selbox{width:26px;height:26px;border-radius:8px;border:2px solid var(--muted);display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:#111;flex:none}
+.selbox.on{background:var(--accent);border-color:var(--accent)}
+.rcard.selc{padding:14px}.rcard.selc.on{border-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -666,7 +686,7 @@ function seed() {
 }
 function migrate(s) {
   s.version = 3;
-  if (!Array.isArray(s.folders) || !s.folders.length) s.folders = [DEF_FOLDER];
+  if (!Array.isArray(s.folders)) s.folders = [DEF_FOLDER];
   s.settings = Object.assign({unit: 'lb', rest: 150, failDefault: false, theme: 'noir', sound: true, wake: true}, s.settings || {});
   if (!s.settings.effort) s.settings.effort = s.settings.failDefault ? 'fail' : 'normal';
   if (s.settings.onboarded == null) s.settings.onboarded = s.history.length > 0 || s.routines.some(r => r.folder && r.folder !== DEF_FOLDER);
@@ -732,7 +752,7 @@ function incFor(name) {
 }
 const INC_OPTS = () => S.settings.unit === 'kg' ? [0.5, 1, 1.25, 2, 2.5, 5] : [1, 2.5, 5, 10];
 function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('⚠️ Sauvegarde impossible'); } }
-function save() { saveLocal(); if (typeof queueCloud === 'function') queueCloud(); }
+function save() { saveLocal(); if (typeof queueCloud === 'function') queueCloud(); if (typeof gdQueue === 'function') gdQueue(); }
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 
 /* ---------- Navigation façon Hevy (pile d'écrans) ---------- */
@@ -1359,7 +1379,7 @@ function restSW(at) {
 }
 async function clearNotif() { try { const reg = await navigator.serviceWorker.ready; (await reg.getNotifications({tag: 'carnet-rest'})).forEach(n => n.close()); } catch (e) {} }
 async function askNotif() {
-  if (!('Notification' in window)) { toast(T('Notifications non disponibles sur ce navigateur', 'Notifications not available in this browser')); return false; }
+  if (!('Notification' in window)) { if (isIOS && !isStandalone()) { S.settings.iosHintOff = false; iosHint(); } else toast(T('Notifications non disponibles sur ce navigateur', 'Notifications not available in this browser')); return false; }
   let p = Notification.permission; if (p !== 'granted') p = await Notification.requestPermission();
   if (p !== 'granted') { toast(T('⚠️ Autorise les notifications pour Carnet Muscu dans les réglages du téléphone', '⚠️ Allow notifications for Carnet Muscu in your phone settings')); return false; }
   return true;
@@ -1393,7 +1413,7 @@ function timerDone() {
   $('#tlab').textContent = T('✅ Repos terminé', '✅ Rest over'); $('#tval').textContent = '';
   const onWo = cur().v === 'workout';
   $('#tbtns').innerHTML = (onWo ? '' : `<button data-act="timer-go">↩ ${T('Retour à la séance', 'Back to workout')}</button>`) + `<button data-act="timer-stop">OK</button>`;
-  if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
+  haptic([300, 150, 300]);
   clearTimeout(timerFinT); timerFinT = setTimeout(() => { el.classList.remove('show', 'fin'); }, 20000);
 }
 function startTimer(sec) {
@@ -1740,6 +1760,7 @@ function vSettings() {
       <select data-set="fontScale">${[['sm', T('Petit', 'Small')], ['', T('Normal', 'Normal')], ['lg', T('Grand', 'Large')], ['xl', T('Très grand', 'Extra large')]].map(([v, l]) => `<option value="${v}" ${(S.settings.fontScale || '') === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
       <label>${T('Premier jour de la semaine', 'First day of the week')}</label>
       <select data-set="weekSun"><option value="" ${sunFirst() ? '' : 'selected'}>${T('Lundi', 'Monday')}</option><option value="1" ${sunFirst() ? 'selected' : ''}>${T('Dimanche', 'Sunday')}</option></select>
+      ${isIOS && !isStandalone() ? `<button class="btn block" data-act="ios-install" style="margin:12px 0 4px">📱 ${T('Installer sur l\'iPhone', 'Install on iPhone')}</button>` : ''}
       <button class="btn block" data-act="tour" style="margin:12px 0 4px">🎓 ${T('Revoir la visite guidée', 'Replay the guided tour')}</button>
       <button class="btn block" data-act="news" style="margin:8px 0 4px">🆕 ${T('Nouveautés', 'What\'s new')} <span class="muted small">· v${APP_VERSION}</span></button>
       <label>Nom affiché sur le profil</label>
@@ -1784,6 +1805,7 @@ function vSettings() {
       ${S.settings.notif === true ? `<label class="row" style="margin-top:6px;color:var(--text);font-size:14px;padding-left:32px"><input type="checkbox" style="width:20px;height:20px" data-set="notifStart" ${S.settings.notifStart !== false ? 'checked' : ''}> ${T('Aussi au début du repos (silencieuse, avec l\'heure de fin)', 'Also at the start of rest (silent, with end time)')}</label>
       <button class="btn sm" data-act="test-notif" style="margin-top:8px">⌚ ${T('Tester la notification (8 s, écran éteint)', 'Test the notification (8 s, screen off)')}</button>
       <details class="muted small" style="margin-top:8px"><summary>${T('La montre ne reçoit rien?', 'Watch gets nothing?')}</summary><ol style="margin:6px 0 0;padding-left:18px">
+        ${isIOS ? `<li>${T('<b>iPhone / Apple Watch</b> : l\'appli doit être installée sur l\'écran d\'accueil, et les notifications permises dans Réglages → Notifications → Carnet Muscu. La montre les reçoit quand le iPhone est verrouillé.', '<b>iPhone / Apple Watch</b>: the app must be installed on the home screen, with notifications allowed in Settings → Notifications → Carnet Muscu. The watch gets them when the iPhone is locked.')}</li>` : ''}
         <li>${T('App <b>Galaxy Wearable</b> → Paramètres de la montre → Notifications → Paramètres des notifications de l\'application : active <b>Chrome</b>.', '<b>Galaxy Wearable</b> app → Watch settings → Notifications → App notification settings: turn on <b>Chrome</b>.')}</li>
         <li>${T('Même écran : « Afficher les notifications du téléphone sur la montre » → choisis <b>Toujours</b>. Sinon, la montre n\'en reçoit que quand l\'écran du cell est éteint.', 'Same screen: “Show phone notifications on watch” → choose <b>Always</b>. Otherwise the watch only gets them when the phone screen is off.')}</li>
         <li>${T('Réglages du téléphone → Applications → Chrome → Notifications : permises, et la catégorie du site Carnet Muscu permise.', 'Phone Settings → Apps → Chrome → Notifications: allowed, including the Carnet Muscu site category.')}</li>
@@ -1794,6 +1816,7 @@ function vSettings() {
       <input type="range" min="0" max="100" step="5" value="${S.settings.beepVol ?? 70}" data-bvol="1" style="--p:${S.settings.beepVol ?? 70}%">
       <p class="muted small" style="margin:2px 0 0">${T('Le volume dépend aussi du volume « média » de ton téléphone.', 'Volume also depends on your phone’s media volume.')}</p>
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="haptic" ${S.settings.haptic !== false ? 'checked' : ''}> ${T('📳 Petite vibration quand je coche une série', '📳 Small vibration when I check a set')}</label>
+      ${isIOS ? `<p class="muted small" style="margin:6px 0 0">${T('iPhone : la vibration demande iOS 18 ou plus récent, et « Retour haptique système » activé (Réglages → Sons et vibrations).', 'iPhone: vibration needs iOS 18 or newer, with “System Haptics” on (Settings → Sounds & Haptics).')}</p>` : ''}
       <button class="btn sm" data-act="test-vib" style="margin-top:8px">📳 ${T('Tester la vibration', 'Test vibration')}</button>
       <p class="muted small" style="margin:4px 0 0">${T('Rien senti? Le cell ne doit pas être en mode <b>Muet</b> (haut-parleur barré) : mets-le en mode Vibreur ou Son. Vérifie aussi Réglages → Sons et vibrations → Intensité des vibrations → « Retour tactile ».', 'Felt nothing? The phone must not be on <b>Mute</b> (crossed speaker): use Vibrate or Sound mode. Also check Settings → Sounds and vibration → Vibration intensity → “Touch feedback”.')}</p>
       <div class="row wrap" style="margin-top:10px"><button class="btn sm" data-act="test-beep">🔊 Tester le son</button><button class="btn sm" data-act="test-lock">🔒 Test écran éteint (10 s)</button></div>`) +
@@ -1810,14 +1833,8 @@ function vSettings() {
       <div class="row" style="margin-top:6px"><input type="color" data-bgc="1" value="${S.settings.bg || getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0f1114'}" style="width:64px;height:44px;padding:4px" aria-label="${T('Choisir la couleur du fond', 'Pick the background color')}">
       <span class="small muted" style="flex:1">${S.settings.bg ? T('Fond perso : ', 'Custom background: ') + esc(S.settings.bg) : T('Fond du thème', 'Theme background')}</span>
       ${S.settings.bg ? `<button class="btn sm" data-act="bg-reset">${T('Remettre celui du thème', "Use the theme's")}</button>` : ''}</div>`) +
-  setSec('cloud', 'cloud', '☁️', T('Sauvegarde', 'Backup'), cloudOn() ? T('☁️ Automatique activée', '☁️ Automatic backup on') : T('⚠️ Automatique pas activée', '⚠️ Automatic backup off'), `${cloudCard()}
-    <h3 style="margin-top:14px">${T('Sauvegarde manuelle (fichier)', 'Manual backup (file)')}</h3>
-      <p class="muted small">Tes données restent sur ce téléphone. Exporte un fichier de temps en temps (et avant de changer de cell), puis importe-le sur le nouveau.</p>
-      <div class="row wrap">
-        <button class="btn primary" style="flex:1" data-act="export">⬇ Exporter</button>
-        <button class="btn" style="flex:1" data-act="import">⬆ Importer</button>
-      </div>
-      <p class="muted small" style="margin-bottom:0">Importer accepte aussi l'export CSV de Hevy.</p>
+  setSec('cloud', 'cloud', '💾', T('Sauvegarde', 'Backup'), gdOn() ? T('☁️ Google Drive activé', '☁️ Google Drive on') : cloudOn() ? T('☁️ Automatique activée', '☁️ Automatic backup on') : S.settings.lastBackup ? T('Dernière : ', 'Last: ') + ago(S.settings.lastBackup) : T('⚠️ Jamais sauvegardé', '⚠️ Never backed up'), `${gdCard()}${simpleBackupCard()}${cloudCard()}
+      <p class="muted small" style="margin:12px 0 0">${T('Importer accepte aussi l\'export CSV de Hevy.', 'Import also accepts Hevy\'s CSV export.')}</p>
       <button class="btn block" data-act="export-csv" style="margin-top:10px">📊 ${T('Exporter pour Excel / Google Sheets (CSV)', 'Export for Excel / Google Sheets (CSV)')}</button>`) +
   setSec('ai', 'spark', '🤖', T('IA et partage', 'AI and sharing'), T('Bilan pour l\'IA, envoyer l\'appli à un ami', 'AI summary, send the app to a friend'), `
       <h3>${T('Bilan pour l\'IA', 'AI summary')}</h3>
@@ -1911,12 +1928,14 @@ async function exportCsv() {
   toast(T(`✅ ${rows.length - 1} séries exportées`, `✅ ${rows.length - 1} sets exported`));
 }
 async function exportData() {
-  const data = JSON.stringify({...S, active: null, exportedAt: new Date().toISOString()}, null, 1);
+  const data = JSON.stringify({...S, active: null, cloud: undefined, gd: undefined, exportedAt: new Date().toISOString()}, null, 1);
   const name = `carnet-muscu-${new Date().toISOString().slice(0, 10)}.json`;
   const file = new File([data], name, {type: 'application/json'});
+  const done = () => { S.settings.lastBackup = new Date().toISOString(); save(); if (cur().v === 'settings' || cur().v === 'train') render(); };
   if (navigator.canShare && navigator.canShare({files: [file]})) {
-    try { await navigator.share({files: [file], title: name}); return; } catch (e) { if (e.name === 'AbortError') return; }
+    try { await navigator.share({files: [file], title: name}); done(); toast(T('✅ Sauvegarde envoyée', '✅ Backup sent')); return; } catch (e) { if (e.name === 'AbortError') return; }
   }
+  done();
   const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
   toast('✅ Fichier exporté');
@@ -2008,8 +2027,8 @@ function importFile(file) {
       const d = JSON.parse(txt);
       if (!d || !Array.isArray(d.routines) || !Array.isArray(d.history)) throw new Error('format');
       if (!confirm(`Remplacer tes données actuelles par ce fichier (${d.history.length} séances, ${d.routines.length} routines)?`)) return;
-      S = migrate({settings: d.settings, routines: d.routines, history: d.history, body: d.body, links: d.links, folders: d.folders, active: null});
-      save(); setRoot('train'); render(); toast('✅ Données importées');
+      restoreAll(d);
+      save(); applyTheme(); setRoot('train'); render(); toast('✅ Données importées');
     } catch (e) { toast('⚠️ Fichier non reconnu'); }
   };
   rd.readAsText(file);
@@ -2100,7 +2119,6 @@ function mkSetsFromRoutine(e, last) {
 function folders() {
   const f = [...(S.folders || [])];
   S.routines.forEach(r => { const n = r.folder || DEF_FOLDER; if (!f.includes(n)) f.push(n); });
-  if (!f.length) f.push(DEF_FOLDER);
   return f;
 }
 function openFolderMenu(f) {
@@ -2113,9 +2131,9 @@ function openFolderMenu(f) {
     ${n ? `<button class="btn block" data-act="share-f" data-f="${esc(f)}">📤 ${T('Partager le dossier à un ami', 'Share the folder with a friend')}</button>` : ''}
     <button class="btn block" data-act="rename-folder" data-f="${esc(f)}">✏️ Renommer</button>
     ${folders().length > 1 ? `<button class="btn block" data-act="fold-reo">↕ ${T('Changer l\'ordre des dossiers', 'Reorder folders')}</button>` : ''}
-    <button class="btn danger block" data-act="del-folder" data-f="${esc(f)}">Supprimer le dossier</button>
-    <button class="btn block" data-act="close">Annuler</button></div>
-    <p class="muted small">Supprimer un dossier déplace ses routines dans « ${DEF_FOLDER} ».</p>`);
+    ${n ? `<button class="btn block" data-act="sel-start" data-f="${esc(f)}">☑️ ${T('Sélectionner des routines', 'Select routines')}</button>` : ''}
+    <button class="btn danger block" data-act="del-folder" data-f="${esc(f)}">🗑 ${T('Supprimer le dossier', 'Delete folder')}</button>
+    <button class="btn block" data-act="close">Annuler</button></div>`);
 }
 function openFolderReo() {
   const fs = folders();
@@ -2134,12 +2152,49 @@ function renameFolder(f) {
   S.settings.folded[n] = S.settings.folded[f]; delete S.settings.folded[f];
   save(); closeAll(); render();
 }
+const inFolder = (r, f) => (r.folder || DEF_FOLDER) === f;
+function dropFolder(f) { S.folders = (S.folders || []).filter(x => x !== f); delete S.settings.folded[f]; }
 function deleteFolder(f) {
-  if (f === DEF_FOLDER) { toast('Le dossier principal ne peut pas être supprimé'); return; }
-  if (!confirm(`Supprimer le dossier « ${f} »? Ses routines iront dans « ${DEF_FOLDER} ».`)) return;
-  S.routines.forEach(r => { if (r.folder === f) r.folder = DEF_FOLDER; });
-  S.folders = S.folders.filter(x => x !== f); if (!S.folders.includes(DEF_FOLDER)) S.folders.unshift(DEF_FOLDER);
-  save(); closeAll(); render();
+  const rs = S.routines.filter(r => inFolder(r, f)), others = folders().filter(x => x !== f);
+  closeAll();
+  if (!rs.length) { snap(); dropFolder(f); save(); render(); undoToast(T(`🗑 Dossier « ${f} » supprimé`, `🗑 Folder “${f}” deleted`)); return; }
+  modal(`<h2>🗑 ${T('Supprimer', 'Delete')} « ${esc(f)} »</h2>
+    <p class="muted small">${T(`Ce dossier contient ${rs.length} routine${rs.length > 1 ? 's' : ''}. Ton historique de séances est toujours gardé.`, `This folder has ${rs.length} routine${rs.length > 1 ? 's' : ''}. Your workout history is always kept.`)}</p>
+    <button class="btn danger block" data-act="delf-all" data-f="${esc(f)}">${T(`Supprimer le dossier et ses ${rs.length} routine${rs.length > 1 ? 's' : ''}`, `Delete the folder and its ${rs.length} routine${rs.length > 1 ? 's' : ''}`)}</button>
+    ${others.length ? `<label style="margin-top:14px">${T('Ou garder les routines et les déplacer vers :', 'Or keep the routines and move them to:')}</label>
+      <select id="delf-to">${others.map(o => `<option>${esc(o)}</option>`).join('')}</select>
+      <button class="btn block" data-act="delf-move" data-f="${esc(f)}" style="margin-top:8px">${T('Déplacer les routines et supprimer le dossier', 'Move the routines and delete the folder')}</button>` : ''}
+    <button class="btn ghost block" data-act="close" style="margin-top:8px">${T('Annuler', 'Cancel')}</button>`);
+}
+/* ---------- Sélection multiple de routines ---------- */
+var selR = null; // Set des routines cochées (mode sélection)
+function selStart(f) { selR = new Set(f ? S.routines.filter(r => inFolder(r, f)).map(r => r.id) : []); closeAll(); render(); selBar(); }
+function selEnd() { selR = null; const b = $('#selbar'); if (b) b.remove(); render(); }
+function selBar() {
+  let b = $('#selbar'); if (!selR) { if (b) b.remove(); return; }
+  if (!b) { b = document.createElement('div'); b.id = 'selbar'; document.body.appendChild(b); }
+  const n = selR.size;
+  b.innerHTML = `<span><b>${n}</b> ${T(n > 1 ? 'sélectionnées' : 'sélectionnée', 'selected')}</span>
+    <button class="btn sm" data-act="sel-move" ${n ? '' : 'disabled'}>📁 ${T('Déplacer', 'Move')}</button>
+    <button class="btn sm danger" data-act="sel-del" ${n ? '' : 'disabled'}>🗑 ${T('Supprimer', 'Delete')}</button>
+    <button class="btn sm ghost" data-act="sel-end" aria-label="${T('Terminer', 'Done')}">✕</button>`;
+}
+function selDelete() {
+  const n = selR.size; if (!n) return;
+  if (!confirm(T(`Supprimer ${n} routine${n > 1 ? 's' : ''}? Ton historique de séances est gardé.`, `Delete ${n} routine${n > 1 ? 's' : ''}? Your workout history is kept.`))) return;
+  snap();
+  S.routines = S.routines.filter(r => !selR.has(r.id));
+  if (S.schedule) S.schedule = S.schedule.map(x => selR.has(x) ? '' : x);
+  save(); selEnd(); undoToast(T(`🗑 ${n} routine${n > 1 ? 's' : ''} supprimée${n > 1 ? 's' : ''}`, `🗑 ${n} routine${n > 1 ? 's' : ''} deleted`));
+}
+function selMove() {
+  modal(`<h2>📁 ${T('Déplacer vers…', 'Move to…')}</h2><div class="menu">${folders().map(f => `<button class="btn block" data-act="sel-move-to" data-f="${esc(f)}">📁 ${esc(f)}</button>`).join('')}
+    <button class="btn block" data-act="sel-move-new">＋ ${T('Nouveau dossier', 'New folder')}</button></div>`);
+}
+function selMoveTo(f) {
+  if (!f) return; if (!folders().includes(f)) { S.folders = S.folders || []; S.folders.push(f); }
+  S.routines.forEach(r => { if (selR.has(r.id)) r.folder = f; });
+  const n = selR.size; save(); closeAll(); selEnd(); toast(T(`📁 ${n} routine${n > 1 ? 's' : ''} déplacée${n > 1 ? 's' : ''} dans « ${f} »`, `📁 ${n} routine${n > 1 ? 's' : ''} moved to “${f}”`));
 }
 
 /* ---------- Sauvegarde automatique dans un Gist GitHub privé ---------- */
@@ -2151,7 +2206,7 @@ let cloudTimer = null, cloudBusy = false, cloudDirty = false;
 const ghTok = () => { try { return localStorage.getItem(TKEY) || ''; } catch (e) { return ''; } };
 const cloudOn = () => !!(ghTok() && S.cloud && S.cloud.gist);
 const strHash = s => { let x = 5381; for (let i = 0; i < s.length; i++) x = ((x << 5) + x + s.charCodeAt(i)) | 0; return s.length + ':' + x; };
-const backupBody = () => JSON.stringify({...S, active: null, cloud: undefined});
+const backupBody = () => JSON.stringify({...S, active: null, cloud: undefined, gd: undefined});
 async function gh(path, opt = {}) {
   const r = await fetch('https://api.github.com' + path, {...opt, headers: {'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + ghTok(), ...(opt.body ? {'Content-Type': 'application/json'} : {})}});
   if (!r.ok) { const err = new Error(r.status === 401 ? 'Clé GitHub invalide ou expirée' : r.status === 404 ? 'Sauvegarde introuvable' : r.status === 403 ? 'Accès refusé par GitHub (vérifie la case « gist »)' : 'Erreur GitHub ' + r.status); err.status = r.status; throw err; }
@@ -2177,9 +2232,11 @@ async function cloudFetch() {
   const txt = f.truncated ? await (await fetch(f.raw_url)).text() : f.content;
   return JSON.parse(txt);
 }
+/* Remet TOUTES les données d'une sauvegarde (routines, historique, étirements, minuteurs, exercices perso, réglages…) */
+function restoreAll(d) { const keep = {cloud: S.cloud, gd: S.gd}; const x = {...d}; delete x.exportedAt; S = migrate({...x, active: null, cloud: keep.cloud, gd: keep.gd}); }
 function cloudRestoreData(d) {
   const c = S.cloud;
-  S = migrate({settings: d.settings, routines: d.routines, history: d.history, body: d.body, links: d.links, folders: d.folders, schedule: d.schedule, active: null});
+  restoreAll(d);
   S.cloud = c; S.cloud.hash = strHash(backupBody());
   saveLocal(); applyTheme(); setRoot('train'); closeAll(); render();
   toast(`✅ ${S.history.length} séances et ${S.routines.length} routines restaurées`);
@@ -2233,9 +2290,17 @@ async function cloudNew() {
   await cloudPush(true); render(); toast(S.cloud.err ? '⚠️ ' + S.cloud.err : `☁️ Profil « ${S.cloud.profile} » créé et sauvegardé`);
 }
 const ago = iso => { const m = Math.round((Date.now() - new Date(iso)) / 60000); return isEN() ? (m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : 'on ' + dateFr(iso)) : m < 1 ? "à l'instant" : m < 60 ? `il y a ${m} min` : m < 1440 ? `il y a ${Math.round(m / 60)} h` : 'le ' + dateFr(iso); };
+function simpleBackupCard() {
+  const lb = S.settings.lastBackup, alt = gdReady();
+  return `<div class="card" style="${alt ? '' : 'border-color:var(--accent)'}"><h3>💾 ${T(alt ? 'Sauvegarde par fichier' : 'Sauvegarde simple', alt ? 'File backup' : 'Simple backup')} ${alt ? '' : `<span class="chip main" style="font-size:11px;padding:2px 8px">${T('recommandée', 'recommended')}</span>`}</h3>
+    <p class="small" style="margin:6px 0">${T('Crée un fichier avec toutes tes données et enregistre-le où tu veux : <b>Google Drive</b>, <b>Fichiers</b> (iCloud) ou par <b>courriel</b> à toi-même. Sur un nouveau téléphone, touche « Restaurer » et choisis ce fichier.', 'Creates a file with all your data and saves it wherever you want: <b>Google Drive</b>, <b>Files</b> (iCloud) or by <b>email</b> to yourself. On a new phone, tap “Restore” and pick that file.')}</p>
+    <p class="small" style="margin:6px 0">${lb ? '✅ ' + T('Dernière sauvegarde ', 'Last backup ') + ago(lb) : '⚠️ ' + T('Aucune sauvegarde pour l\'instant', 'No backup yet')}</p>
+    <div class="row wrap"><button class="btn ${gdOn() ? '' : 'primary'}" style="flex:1" data-act="export">💾 ${T(gdOn() ? 'Créer un fichier' : 'Sauvegarder maintenant', gdOn() ? 'Create a file' : 'Back up now')}</button><button class="btn" style="flex:1" data-act="import">⬆ ${T('Restaurer', 'Restore')}</button></div>
+    ${gdOn() ? '' : `<p class="muted small" style="margin:8px 0 0">${T('L\'appli te le rappelle une fois par semaine.', 'The app reminds you once a week.')}</p>`}</div>`;
+}
 function cloudCard() {
   const c = S.cloud || {};
-  if (!cloudOn()) return `<div class="card" style="border-color:var(--accent)"><h3>☁️ Sauvegarde automatique</h3>
+  if (!cloudOn()) return `<details class="card"><summary><b>☁️ ${T('Sauvegarde automatique (avancé, compte GitHub)', 'Automatic backup (advanced, GitHub account)')}</b></summary>
     <p class="small" style="margin:6px 0">Tes données sont copiées toutes seules dans ton compte GitHub (gratuit, privé) après chaque modification. Sur un nouveau téléphone, tu remets la même clé et tout revient. À faire une seule fois :</p>
     <ol class="small" style="padding-left:20px;margin:6px 0">
       <li>Pas de compte GitHub? <a href="https://github.com/signup" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700">Crée-en un gratuitement</a> (courriel + mot de passe), puis reviens ici.</li>
@@ -2247,14 +2312,18 @@ function cloudCard() {
     <label>Clé GitHub</label>
     <input id="ghtok" placeholder="ghp_…" autocomplete="off" autocapitalize="off" spellcheck="false">
     <p class="muted small" style="margin:6px 0 0">🔒 Ta clé donne accès à toutes les sauvegardes de ton compte : partage-la seulement avec une personne de confiance (ex. ta conjointe), qui écrit son prénom pour avoir son propre profil. Tes amis doivent créer <b>leur propre clé</b>.</p>
-    <button class="btn primary block" data-act="cloud-connect" style="margin-top:8px">Connecter</button><p class="small muted" id="cloudmsg" style="margin:6px 0 0"></p></div>`;
+    <button class="btn primary block" data-act="cloud-connect" style="margin-top:8px">Connecter</button><p class="small muted" id="cloudmsg" style="margin:6px 0 0"></p>
+    <p class="muted small" style="margin:10px 0 0">⚠️ ${T('GitHub affiche « Too many requests »? C\'est GitHub qui bloque les inscriptions faites trop vite ou depuis l\'appli. Attends 15 à 30 minutes, puis crée ton compte dans <b>Chrome ou Safari</b> (pas dans l\'appli) ou sur un <b>ordinateur</b>, sans VPN. Une fois le compte créé, reviens ici pour la clé. En attendant, utilise la sauvegarde simple.', 'GitHub says “Too many requests”? GitHub blocks sign-ups made too fast or from inside the app. Wait 15 to 30 minutes, then create your account in <b>Chrome or Safari</b> (not in the app) or on a <b>computer</b>, without a VPN. Once the account exists, come back here for the key. Meanwhile, use the simple backup.')}</p></details>`;
   return `<div class="card"><h3>☁️ Sauvegarde automatique</h3>
     <p class="small" style="margin:6px 0">${c.err ? '⚠️ ' + esc(c.err) : c.last ? '✅ Sauvegardé ' + ago(c.last) : '⏳ Première sauvegarde en cours…'}<br><span class="muted">Profil : <b>${esc(c.profile || profLabel(cfile()))}</b> · compte GitHub ${esc(c.user || '')}<br>Envoi automatique après chaque modification</span></p>
     <div class="grid2"><button class="btn sm" data-act="cloud-push">⬆ Sauvegarder maintenant</button><button class="btn sm" data-act="cloud-restore">⬇ Restaurer</button></div>
     <button class="btn sm danger block" data-act="cloud-off" style="margin-top:8px">Déconnecter</button></div>`;
 }
 function cloudNag() {
-  if (cloudOn() || !S.history.length || (S.settings.nagUntil && Date.now() < S.settings.nagUntil)) return '';
+  if (cloudOn() || (gdOn() && S.gd.last && Date.now() - new Date(S.gd.last) < 7 * 864e5) || !S.history.length || (S.settings.nagUntil && Date.now() < S.settings.nagUntil)) return '';
+  const lb = S.settings.lastBackup; if (lb && Date.now() - new Date(lb) < 7 * 864e5) return '';
+  return `<div class="card" style="border-style:dashed"><b>💾 ${lb ? T('Sauvegarde de la semaine', 'Weekly backup') : T('Protège tes données', 'Protect your data')}</b><p class="muted small" style="margin:4px 0 8px">${lb ? T('Ta dernière sauvegarde date de ', 'Your last backup was ') + ago(lb) + T('. Ça prend 10 secondes.', '. It takes 10 seconds.') : T('Si tu perds ou changes de téléphone, tes séances partent avec. Fais une sauvegarde (Google Drive, Fichiers ou courriel) : ça prend 10 secondes.', 'If you lose or change phones, your workouts go with it. Make a backup (Google Drive, Files or email): it takes 10 seconds.')}</p>
+    ${gdReady() && !gdOn() ? `<button class="btn primary sm block" data-act="gd-connect" style="margin-bottom:8px"><b>G</b>&nbsp; ${T('Sauvegarde automatique avec Google', 'Automatic backup with Google')}</button>` : ''}<div class="row"><button class="btn ${gdReady() && !gdOn() ? '' : 'primary'} sm" data-act="${gdOn() ? 'gd-push' : 'export'}">💾 ${T('Sauvegarder maintenant', 'Back up now')}</button><button class="btn sm" data-act="nag-later">${T('Plus tard', 'Later')}</button></div></div>`;
   return `<div class="card" style="border-style:dashed"><b>☁️ Protège tes données</b><p class="muted small" style="margin:4px 0 8px">Active la sauvegarde automatique pour ne rien perdre si tu changes de téléphone.</p>
     <div class="row"><button class="btn primary sm" data-act="go" data-v="settings">Activer (2 min)</button><button class="btn sm" data-act="nag-later">Plus tard</button></div></div>`;
 }
@@ -2415,7 +2484,7 @@ function openReorder(list, onDone) {
     items.forEach(x => { if (x !== item) x.style.transition = 'transform .18s ease'; });
     item.classList.add('dragging');
     try { hd.setPointerCapture(e.pointerId); } catch (x) {}
-    if (navigator.vibrate) navigator.vibrate(12);
+    haptic(12);
     e.preventDefault();
   });
   box.addEventListener('pointermove', e => {
@@ -2427,7 +2496,7 @@ function openReorder(list, onDone) {
     const c = d.rects[d.from].top + d.h / 2 + dy;
     let to = 0;
     d.rects.forEach((r, k) => { if (k !== d.from && c > r.top + r.height / 2) to++; });
-    if (to !== d.to) { d.to = to; shiftOthers(); if (navigator.vibrate) navigator.vibrate(5); }
+    if (to !== d.to) { d.to = to; shiftOthers(); haptic(5); }
     e.preventDefault();
   });
   const end = () => {
@@ -2451,7 +2520,7 @@ function makeSortable(box, scroller, onEnd) {
     d = {item, items, rects, from: items.indexOf(item), to: items.indexOf(item), y0: e.clientY, s0: scroller.scrollTop, h: rects[items.indexOf(item)].height};
     items.forEach(x => { if (x !== item) x.style.transition = 'transform .18s ease'; });
     item.classList.add('dragging'); try { hd.setPointerCapture(e.pointerId); } catch (x) {}
-    if (navigator.vibrate) navigator.vibrate(12); e.preventDefault();
+    haptic(12); e.preventDefault();
   });
   box.addEventListener('pointermove', e => {
     if (!d) return;
@@ -2461,7 +2530,7 @@ function makeSortable(box, scroller, onEnd) {
     d.item.style.transform = `translateY(${dy}px) scale(1.02)`;
     const c = d.rects[d.from].top + d.h / 2 + dy; let to = 0;
     d.rects.forEach((r, k) => { if (k !== d.from && c > r.top + r.height / 2) to++; });
-    if (to !== d.to) { d.to = to; shift(); if (navigator.vibrate) navigator.vibrate(5); }
+    if (to !== d.to) { d.to = to; shift(); haptic(5); }
     e.preventDefault();
   });
   const end = () => {
@@ -2516,10 +2585,12 @@ let actx = null, lastTick = -1, wakeLock = null;
 function ensureAudio() {
   try {
     if (!actx) { const C = window.AudioContext || window.webkitAudioContext; if (C) actx = new C(); }
-    if (actx && actx.state === 'suspended') actx.resume();
+    if (actx && actx.state !== 'running' && actx.state !== 'closed') actx.resume();
   } catch (e) {}
 }
 document.addEventListener('pointerdown', ensureAudio, {passive: true});
+document.addEventListener('touchend', ensureAudio, {passive: true});
+document.addEventListener('visibilitychange', () => { if (!document.hidden) ensureAudio(); });
 const SOUNDS = {
   classique: {fr: 'Classique', en: 'Classic', w: 'sine', tick: [660, 0.1], fin: [[880, 0, 0.18], [880, 0.25, 0.18], [1320, 0.5, 0.35]]},
   doux: {fr: 'Doux', en: 'Soft', w: 'triangle', tick: [520, 0.12], fin: [[660, 0, 0.3], [784, 0.3, 0.3], [988, 0.6, 0.6]]},
@@ -2565,12 +2636,20 @@ function vTrain() {
   h += weekGoal();
   h += cloudNag();
   if (deloadOn()) h += `<div class="card" style="border-color:var(--warm)"><div class="row between"><div><b>🪶 Semaine de récupération</b><br><span class="muted small">Charges −${S.settings.deload.pct} % jusqu'au ${new Date(S.settings.deload.until + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'long'})}</span></div><button class="btn sm" data-act="deload-off">Arrêter</button></div></div>`;
+  if (!S.history.length && !S.settings.xferHide) h += `<div class="card" style="border-color:var(--accent)"><div class="row between" style="align-items:flex-start"><div><b>📲 ${T('Tu viens d\'une autre appli?', 'Coming from another app?')}</b><br><span class="muted small">${T('Transfère tes routines en 2 minutes avec l\'IA : prends des captures d\'écran, l\'IA les recopie ici.', 'Move your routines in 2 minutes with AI: take screenshots, the AI copies them here.')}</span></div><button class="btn sm ghost" data-act="xfer-hide" aria-label="${T('Masquer', 'Hide')}">✕</button></div><button class="btn primary block" data-act="ai-guide" data-k="transfer" style="margin-top:10px">${T('Transférer mes routines', 'Move my routines')}</button></div>`;
   h += `<button class="btn block big" data-act="start-empty">${IC('plus', '＋')} ${T('Démarrer un entraînement vide', 'Start an empty workout')}</button>
     <div class="row between" style="margin:18px 0 8px"><h2 style="margin:0">Routines</h2><button class="btn sm" data-act="new-folder" aria-label="Nouveau dossier">${IC('folderp', '📁＋')}</button></div>
-    <div class="row trow" style="margin-bottom:12px;gap:8px"><button class="btn" style="flex:1" data-act="new-routine">${IC('clip', '📋')} ${T('Nouv. routine', 'New routine')}</button><button class="btn" style="flex:1" data-act="ai-menu">${IC('spark', '🤖')} ${T('Programme IA', 'AI program')}</button><button class="btn" data-act="train-more" aria-label="${T('Plus', 'More')}">${IC('more', '⋯')}</button></div>`;
+    <div class="row trow" style="margin-bottom:12px;gap:8px"><button class="btn" style="flex:1" data-act="new-routine">${IC('clip', '📋')} ${T('Nouv. routine', 'New routine')}</button><button class="btn" style="flex:1" data-act="ai-menu">${IC('spark', '🤖')} ${T('Assistant IA', 'AI assistant')}</button><button class="btn" data-act="train-more" aria-label="${T('Plus', 'More')}">${IC('more', '⋯')}</button></div>`;
+  if (!folders().length) h += `<p class="muted small" style="margin:4px 0 12px">${T('Aucune routine. Crée-en une, choisis un programme connu (⋯) ou utilise l\'Assistant IA.', 'No routines. Create one, pick a popular program (⋯) or use the AI assistant.')}</p>`;
   folders().forEach(f => {
     const rs = S.routines.filter(r => (r.folder || DEF_FOLDER) === f);
     const closed = !!S.settings.folded[f];
+    if (selR) {
+      const all = rs.length && rs.every(r => selR.has(r.id));
+      h += `<div class="folder"><div class="row between fhead" data-act="sel-f" data-f="${esc(f)}"><span class="muted">${esc(f)} (${rs.length})</span><span class="selbox ${all ? 'on' : ''}">${all ? '✓' : ''}</span></div>`;
+      h += rs.map(r => `<div class="card rcard selc ${selR.has(r.id) ? 'on' : ''}" data-act="sel-r" data-rid="${r.id}"><div class="row between"><h3 style="margin:0">${esc(r.name)}</h3><span class="selbox ${selR.has(r.id) ? 'on' : ''}">${selR.has(r.id) ? '✓' : ''}</span></div></div>`).join('') + '</div>';
+      return;
+    }
     h += `<div class="folder"><div class="row between fhead" data-act="fold" data-f="${esc(f)}"><span class="muted">${closed ? '▸' : '▾'} ${esc(f)} (${rs.length})</span><button class="btn sm ghost" data-act="folder-menu" data-f="${esc(f)}" aria-label="Options du dossier">⋯</button></div>`;
     if (!closed) h += rs.length ? rs.map(routineCard).join('') : '<p class="muted small" style="margin:0 0 12px">Dossier vide. Déplace une routine ici avec son menu ⋯.</p>';
     h += '</div>';
@@ -2598,7 +2677,72 @@ function openRoutineMenu(rid) {
     <label>Dossier</label><select data-move="${rid}">${folders().map(f => `<option ${f === (r.folder || DEF_FOLDER) ? 'selected' : ''}>${esc(f)}</option>`).join('')}<option value="__new">＋ Nouveau dossier…</option></select>
     <button class="btn danger block" data-act="del-routine" data-rid="${rid}" style="margin-top:14px">Supprimer la routine</button>`);
 }
+
+/* ===================== Assistant IA (guide pas à pas) ===================== */
+function transferPrompt() {
+  if (isEN()) return `I'm moving my workouts from another app to a new app. I will send you screenshots or text of my routines (right after this message).\n` +
+    `Convert them EXACTLY as they are: same routines, same exercises in the same order, same number of sets, same reps and same weights. Do NOT change, add or remove anything, and do not give advice.\n` +
+    `Use the usual exercise names (e.g. Barbell Bench Press, Lat Pulldown). Weights in ${U()}: convert if they're in another unit. If a weight is not shown, write ?. If only one rep number is shown, keep that number.\n\n` +
+    `Reply ONLY with this format, nothing before or after:\nFOLDER: Name of my program\nROUTINE: Routine name (keep the original name)\n- Exercise | sets x reps | weight ${U()} | note (optional) | R:90 (rest in seconds, if shown) | SS:A (only if it's a superset)\n\n` +
+    `Here are my routines:`;
+  return `Je change d'application d'entraînement. Je vais t'envoyer des captures d'écran ou le texte de mes routines (juste après ce message).\n` +
+    `Recopie-les EXACTEMENT telles quelles : mêmes routines, mêmes exercices dans le même ordre, même nombre de séries, mêmes reps et mêmes charges. Ne change RIEN, n'ajoute rien, n'enlève rien et ne donne pas de conseils.\n` +
+    `Utilise les noms d'exercices habituels (ex. Développé couché barre, Tirage vertical). Charges en ${U()} : convertis si elles sont dans une autre unité. Si une charge n'est pas indiquée, écris ?. S'il n'y a qu'un seul nombre de reps, garde ce nombre.\n\n` +
+    `Réponds UNIQUEMENT dans ce format, rien avant ni après :\nDOSSIER: Nom de mon programme\nROUTINE: Nom de la routine (garde le nom d'origine)\n- Exercice | séries x reps | charge ${U()} | note (optionnelle) | R:90 (repos en secondes, s'il est indiqué) | SS:A (seulement si c'est un superset)\n\n` +
+    `Voici mes routines :`;
+}
+const AI_KINDS = {
+  transfer: {ic: '📲', t: ['Transférer mes routines d\'une autre appli', 'Move my routines from another app'], folder: ['Importé', 'Imported'],
+    after: ['Dans l\'IA, colle le message, puis <b>ajoute tes captures d\'écran</b> de chaque routine (bouton 📎 ou +) ou colle le texte de tes routines. Envoie.', 'In the AI, paste the message, then <b>add screenshots</b> of each routine (📎 or + button) or paste your routines\' text. Send.'],
+    prompt: () => transferPrompt()},
+  fresh: {ic: '✨', t: ['Créer un nouveau programme', 'Create a new program'], folder: ['', ''],
+    after: ['Dans l\'IA, colle le message, puis <b>écris ta demande à la fin</b> : ex. « 4 jours par semaine, prise de masse, 1 h max ». Envoie.', 'In the AI, paste the message, then <b>write your request at the end</b>: e.g. “4 days a week, muscle gain, 1 h max”. Send.'],
+    prompt: () => freshPrompt()},
+  improve: {ic: '🔧', t: ['Améliorer mon programme actuel', 'Improve my current program'], folder: ['', ''],
+    after: ['Dans l\'IA, colle le message et <b>ajoute ce que tu veux changer</b> (ex. « plus de jambes », « 45 min max »). Envoie.', 'In the AI, paste the message and <b>add what you want changed</b> (e.g. “more legs”, “45 min max”). Send.'],
+    prompt: () => aiPrompt(S.routines)},
+  analyse: {ic: '📊', t: ['Analyser mes dernières séances', 'Analyze my recent workouts'], noPaste: true,
+    after: ['Dans l\'IA, colle le message et envoie. Elle te donnera des conseils sur tes 30 derniers jours.', 'In the AI, paste the message and send. It will give you advice on your last 30 days.'],
+    prompt: () => historyPrompt()}
+};
+let aiG = null;
 function openAiMenu() {
+  const hasR = S.routines.length > 0, hasH = S.history.length > 0, newbie = !hasH;
+  const opt = (act, ic, t, d, main) => `<button class="aiopt${main ? ' main' : ''}" ${act}><span class="ic">${ic}</span><span><b>${t}</b><span>${d}</span></span></button>`;
+  modal(`<div class="row between"><h2 style="margin:0">🤖 ${T('Assistant IA', 'AI assistant')}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <p class="muted small" style="margin:8px 0 4px">${T('Marche avec ChatGPT, Claude ou Gemini (version gratuite OK). Toujours 3 étapes :', 'Works with ChatGPT, Claude or Gemini (free version is fine). Always 3 steps:')}</p>
+    <div class="aisteps"><div><b>1</b>${T('Copier le message', 'Copy the message')}</div><div><b>2</b>${T('Le coller dans l\'IA', 'Paste it in the AI')}</div><div><b>3</b>${T('Coller sa réponse ici', 'Paste its answer here')}</div></div>
+    <p class="muted small" style="margin:0 0 8px">${T('Qu\'est-ce que tu veux faire?', 'What do you want to do?')}</p>
+    ${opt('data-act="ai-guide" data-k="transfer"', '📲', T('Transférer mes routines d\'une autre appli', 'Move my routines from another app'), T('Hevy, Strong, une feuille, des captures d\'écran… l\'IA les recopie ici.', 'Hevy, Strong, a sheet, screenshots… the AI copies them here.'), newbie)}
+    ${opt('data-act="ai-guide" data-k="fresh"', '✨', T('Créer un nouveau programme', 'Create a new program'), T('Dis tes objectifs et tes jours dispo, l\'IA choisit les exercices.', 'Give your goals and available days, the AI picks the exercises.'))}
+    ${hasR ? opt('data-act="ai-guide" data-k="improve"', '🔧', T('Améliorer mon programme actuel', 'Improve my current program'), T('L\'IA ajuste tes routines (charges, exercices, volume).', 'The AI adjusts your routines (weights, exercises, volume).')) : ''}
+    ${hasH ? opt('data-act="ai-guide" data-k="analyse"', '📊', T('Analyser mes dernières séances', 'Analyze my recent workouts'), T('Conseils sur tes 30 derniers jours.', 'Advice on your last 30 days.')) : ''}
+    ${opt('data-act="programs"', '📚', T('Choisir un programme connu', 'Pick a popular program'), T('PPL, Upper/Lower, PHUL… prêts tout de suite, sans IA.', 'PPL, Upper/Lower, PHUL… ready now, no AI needed.'))}
+    ${opt('data-act="paste" data-rid=""', '📥', T('J\'ai déjà la réponse de l\'IA', 'I already have the AI\'s answer'), T('Colle-la directement.', 'Paste it directly.'))}
+    ${newbie ? `<p class="muted small" style="margin:10px 0 0">💡 ${T('Tu viens de Hevy? Tu peux aussi importer tout ton <b>historique</b> (Réglages → Sauvegarde → Importer, avec le fichier CSV de Hevy).', 'Coming from Hevy? You can also import your whole <b>history</b> (Settings → Backup → Import, with Hevy\'s CSV file).')}</p>` : ''}`);
+}
+function aiGuide(k) {
+  const g = AI_KINDS[k]; if (!g) return;
+  aiG = {k, copied: false};
+  closeAll();
+  const m = modal(`<div class="row between"><h2 style="margin:0">${g.ic} ${T(g.t[0], g.t[1])}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <div style="margin-top:14px" id="aig">${aiGuideBody()}</div>`, {id: 'aiguide'});
+}
+function aiGuideBody() {
+  const g = AI_KINDS[aiG.k], c = aiG.copied;
+  return `<div class="aistep ${c ? 'done' : ''}"><div class="n">${c ? '✓' : '1'}</div><div class="c"><b>${T('Copie le message pour l\'IA', 'Copy the message for the AI')}</b>
+      <p>${T('Il explique à l\'IA quoi faire et comment répondre pour que l\'appli comprenne.', 'It tells the AI what to do and how to answer so the app understands.')}</p>
+      <button class="btn ${c ? '' : 'primary'} block" data-act="aig-copy">📋 ${c ? T('Copié! (copier encore)', 'Copied! (copy again)') : T('Copier le message', 'Copy the message')}</button></div></div>
+    <div class="aistep ${c ? '' : 'dim'}"><div class="n">2</div><div class="c"><b>${T('Ouvre ton IA et colle-le', 'Open your AI and paste it')}</b>
+      <p>${T(g.after[0], g.after[1])}</p>
+      <div class="ailinks"><a class="btn sm" href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPT</a><a class="btn sm" href="https://claude.ai/new" target="_blank" rel="noopener">Claude</a><a class="btn sm" href="https://gemini.google.com/app" target="_blank" rel="noopener">Gemini</a></div>
+      <p style="margin-top:8px">${T('Tu peux aussi utiliser l\'appli de l\'IA si tu l\'as.', 'You can also use the AI\'s own app if you have it.')}</p></div></div>
+    ${g.noPaste ? '' : `<div class="aistep"><div class="n">3</div><div class="c"><b>${T('Copie sa réponse et reviens ici', 'Copy its answer and come back here')}</b>
+      <p>${T('Dans l\'IA, touche « Copier » sous sa réponse, reviens dans Carnet Muscu et touche :', 'In the AI, tap “Copy” under its answer, come back to Carnet Muscu and tap:')}</p>
+      <button class="btn ${c ? 'primary' : ''} block" data-act="aig-paste">📥 ${T('Coller la réponse de l\'IA', 'Paste the AI\'s answer')}</button></div></div>`}`;
+}
+
+function openAiMenuOld() {
   modal(`<div class="row between"><h2>🤖 Programme IA</h2><button class="btn sm" data-act="close">✕</button></div>
     <p class="muted small">Envoie ton programme à n'importe quelle IA, puis colle sa réponse ici. Les routines du même nom sont mises à jour, les nouvelles sont créées.</p>
     <p class="muted small">✨ ${T("« À partir de zéro » : l'IA choisit de nouveaux exercices sans se baser sur tes routines, mais elle reçoit tes meilleures charges pour bien estimer les poids. Astuce : crée un dossier vide, puis colle sa réponse avec le menu ⋯ du dossier.", '“From scratch”: the AI picks new exercises without basing them on your routines, but it gets your best weights to estimate loads. Tip: create an empty folder, then paste its answer with the folder’s ⋯ menu.')}</p>
@@ -3601,11 +3745,11 @@ function stTick() {
   if (left <= 0) {
     if (stp.phase === 'prep') {
       const st = stp.steps[stp.i]; stp.phase = 'hold'; stp.dur = st.it.sec; stp.end = Date.now() + st.it.sec * 1000; stp.last = -1;
-      if (navigator.vibrate) navigator.vibrate(120);
+      haptic(120);
       if (typeof notifOn === 'function' && notifOn()) notify('🧘 ' + T('Tiens : ', 'Hold: ') + stName(st.it), (sideTxt(st.side) ? sideTxt(st.side) + ' · ' : '') + st.it.sec + ' s');
     } else {
       stp.held += stp.dur;
-      if (navigator.vibrate) navigator.vibrate([150, 80, 150]);
+      haptic([150, 80, 150]);
       try { if (S.settings.sound !== false) playSnd(true, actx.currentTime, false); } catch (e) {}
       if (stp.i + 1 >= stp.steps.length) { stFinish(); return; }
       stGoto(stp.i + 1); return;
@@ -3753,7 +3897,7 @@ function tmTick() {
     tmGoto(tmp.i + 1);
     const ph = tmp.seq[tmp.i];
     try { if (S.settings.sound !== false) playSnd(true, actx.currentTime, false); } catch (e) {}
-    if (navigator.vibrate) navigator.vibrate(ph.sec > 3 ? [200, 80, 200] : 60);
+    haptic(ph.sec > 3 ? [200, 80, 200] : 60);
     if ((ph.reps || ph.sec >= 10) && typeof notifOn === 'function' && notifOn()) notify(`⏱ ${ph.n} · ${ph.reps ? ph.reps + ' ' + T('réps', 'reps') : mmss(ph.sec)}`, ph.r ? `${T('Tour', 'Round')} ${ph.r}/${ph.R}` : tmN(tmp.t));
     return;
   }
@@ -3762,7 +3906,7 @@ function tmTick() {
 function tmFinish() {
   const sec = Math.round((Date.now() - tmp.t0) / 1000); clearInterval(tmp.int);
   try { if (S.settings.sound !== false) playSnd(true, actx.currentTime, false); } catch (e) {}
-  if (navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 500]);
+  haptic([300, 120, 300, 120, 500]);
   const sh = $('#tmplayer'); if (sh) sh.style.background = '';
   $('#tmpl').innerHTML = `<div style="text-align:center;padding:20px 0"><div style="font-size:54px">✅</div><h2>${T('Terminé!', 'Done!')}</h2><p class="muted">${esc(tmN(tmp.t))} · ${mmss(sec)}</p>
     <button class="btn block" data-act="tm-go" data-id="${tmp.t.id}" style="margin-bottom:8px">↻ ${T('Recommencer', 'Restart')}</button><button class="btn primary block" data-act="close">OK</button></div>`;
@@ -3847,8 +3991,17 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '7.6';
+const APP_VERSION = '8.0';
 const CHANGELOG = [
+  {v: '8.0', d: '2026-11-09', fr: ['Sauvegarde automatique dans Google Drive : connecte-toi une fois avec Google (Réglages → Sauvegarde), puis tout se sauvegarde tout seul à la fin de chaque séance.', 'Restaurer une sauvegarde remet maintenant aussi tes étirements, minuteurs et exercices perso.'],
+   en: ['Automatic Google Drive backup: sign in once with Google (Settings → Backup), then everything backs up by itself at the end of each workout.', 'Restoring a backup now also brings back your stretches, timers and custom exercises.']},
+  {v: '7.9', d: '2026-11-08', fr: ['Tu peux supprimer n\'importe quel dossier (même « Mes routines ») : avec ses routines, ou en les déplaçant ailleurs.', 'Sélection multiple : menu ⋯ → Sélectionner plusieurs routines, pour les supprimer ou les déplacer d\'un coup.', 'Nouvelle « Sauvegarde simple » : un fichier dans Google Drive, Fichiers ou ton courriel, avec un rappel chaque semaine. GitHub devient une option avancée.'],
+   en: ['You can delete any folder (even “My routines”): with its routines, or by moving them elsewhere.', 'Multi-select: ⋯ menu → Select several routines, to delete or move them at once.', 'New “Simple backup”: a file in Google Drive, Files or your email, with a weekly reminder. GitHub becomes an advanced option.']},
+  {v: '7.8', d: '2026-11-08', fr: ['Nouvel « Assistant IA » plus simple : tu choisis ce que tu veux faire, puis l\'appli te guide en 3 étapes (copier, coller dans l\'IA, coller la réponse).', 'Nouveau : transférer tes routines d\'une autre appli avec des captures d\'écran.'],
+   en: ['New, simpler “AI assistant”: pick what you want to do, then the app guides you in 3 steps (copy, paste in the AI, paste the answer).', 'New: move your routines from another app using screenshots.']},
+  {v: '7.7', d: '2026-11-08', fr: ['iPhone : vibration quand tu coches une série (iOS 18 et plus).', 'iPhone : le son des bips revient après un appel ou en revenant dans l\'appli.', 'iPhone : plus de zoom quand tu touches une zone de texte, et le glissement entre onglets ne bloque plus le geste « retour ».', 'iPhone : guide pour installer l\'appli sur l\'écran d\'accueil (garde tes données et permet les notifications sur l\'Apple Watch).'],
+   en: ['iPhone: vibration when you check a set (iOS 18 and up).', 'iPhone: beeps come back after a call or when returning to the app.', 'iPhone: no more zoom when tapping a text box, and swiping between tabs no longer blocks the “back” gesture.', 'iPhone: guide to install the app on the home screen (keeps your data and allows Apple Watch notifications).']},
+  {v: '7.6.1', d: '2026-11-08', fr: ['iPhone : le sélecteur de couleur personnalisée ne se ferme plus dès qu\'on le touche.'], en: ['iPhone: the custom color picker no longer closes as soon as you touch it.']},
   {v: '7.6', d: '2026-11-07', fr: ['Nouvelle visite guidée qui montre toutes les fonctions de l\'appli. Lance-la dans Réglages → Général → Revoir la visite guidée.', 'Pendant ta prochaine séance, quelques bulles t\'expliquent les trucs utiles (cocher, type de série, options…).'],
    en: ['New guided tour showing every feature of the app. Start it in Settings → General → Replay the guided tour.', 'During your next workout, a few tips explain the useful tricks (checking, set type, options…).']},
   {v: '7.5.1', d: '2026-11-05', fr: ['Durée plus claire : « 1 h 07 » à la fin de la séance, et 1:07:45 dans le chrono.'], en: ['Clearer duration: “1 h 07” at the end of the workout, and 1:07:45 on the stopwatch.']},
@@ -3891,12 +4044,13 @@ const TOURS = {
     {tab: 'train', sel: '.card.today, [data-act="sched-edit"]', t: ['📅 Ton horaire', '📅 Your schedule'], d: ['Planifie ta semaine (lundi : Push, mardi : repos…) ou un cycle Push/Pull/Legs. La séance du jour s\'affiche ici, prête à lancer.', 'Plan your week (Monday: Push, Tuesday: rest…) or a Push/Pull/Legs cycle. Today\'s workout shows up here, ready to start.']},
     {tab: 'train', sel: '[data-act="start-empty"]', t: ['➕ Séance libre', '➕ Free workout'], d: ['Commence sans routine et ajoute tes exercices au fur et à mesure.', 'Start without a routine and add exercises as you go.']},
     {tab: 'train', sel: '[data-act="new-routine"]', t: ['📋 Tes routines', '📋 Your routines'], d: ['Crée une routine avec tes exercices, séries, reps, charges et temps de repos. Plus de 1 000 exercices avec leurs muscles.', 'Build a routine with your exercises, sets, reps, weights and rest times. Over 1,000 exercises with their muscles.']},
-    {tab: 'train', sel: '[data-act="ai-menu"]', t: ['✨ Programme IA', '✨ AI program'], d: ['Copie un message tout prêt pour ChatGPT ou Claude, colle sa réponse ici : tes routines sont créées toutes seules, dans le bon dossier.', 'Copy a ready-made message for ChatGPT or Claude, paste its answer here: your routines are created automatically, in the right folder.']},
+    {tab: 'train', sel: '[data-act="ai-menu"]', t: ['🤖 Assistant IA', '🤖 AI assistant'], d: ['Transfère tes routines d\'une autre appli, crée un nouveau programme ou fais-le améliorer. L\'appli te guide étape par étape avec ChatGPT, Claude ou Gemini.', 'Move your routines from another app, create a new program or improve yours. The app guides you step by step with ChatGPT, Claude or Gemini.']},
     {tab: 'train', sel: '.folder .fhead', t: ['📁 Dossiers', '📁 Folders'], d: ['Range tes routines par programme. Le menu ⋯ permet de renommer, réordonner, envoyer à l\'IA ou partager avec un ami.', 'Organize routines by program. The ⋯ menu lets you rename, reorder, send to AI or share with a friend.']},
     {sel: 'nav [data-tab="stretch"]', t: ['🧘 Étirements', '🧘 Stretching'], d: ['Routines d\'étirement guidées avec minuteur et images, ou crée les tiennes.', 'Guided stretching routines with timer and pictures, or make your own.']},
     {sel: 'nav [data-tab="timers"]', t: ['⏱ Intervalles', '⏱ Intervals'], d: ['Minuteurs Tabata, HIIT, EMOM ou sur mesure, avec bips et notifications.', 'Tabata, HIIT, EMOM or custom timers, with beeps and notifications.']},
     {sel: 'nav [data-tab="profile"]', t: ['📈 Profil', '📈 Profile'], d: ['Ton historique, tes records, tes graphiques de progression, ton calendrier et tes mesures.', 'Your history, records, progress charts, calendar and body measurements.']},
     {tab: 'profile', sel: '#hdr [data-v="settings"]', t: ['⚙️ Réglages', '⚙️ Settings'], d: ['Son, vibration, notifications sur la montre, couleurs, langue, sauvegarde… Tu peux revoir cette visite dans Réglages → Général.', 'Sound, vibration, watch notifications, colors, language, backup… You can replay this tour in Settings → General.']},
+    {t: ['💾 Pense à sauvegarder', '💾 Remember to back up'], d: ['Tes données restent dans ton téléphone. Une fois par semaine, fais Réglages → Sauvegarde → <b>Sauvegarder maintenant</b> et garde le fichier dans Google Drive, Fichiers ou ton courriel. L\'appli te le rappellera.', 'Your data stays on your phone. Once a week, go to Settings → Backup → <b>Back up now</b> and keep the file in Google Drive, Files or your email. The app will remind you.']},
     {tab: 'train', t: ['💪 C\'est à toi!', '💪 Your turn!'], d: ['Lance ta première séance : on te montrera les trucs utiles pendant l\'entraînement.', 'Start your first workout: we\'ll show you the useful tricks during the session.']}
   ],
   wo: [
@@ -3951,6 +4105,153 @@ function maybeTourWo() {
   tourStart('wo');
 }
 
+/* ===================== iPhone ===================== */
+const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = () => window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+let hapEl = null;
+/* Safari sur iPhone n'a pas navigator.vibrate. Depuis iOS 18, toucher un interrupteur (<input switch>) fait une petite vibration :
+   on en cache un et on le « touche » quand il faut vibrer. */
+function haptic(pattern) {
+  if (navigator.vibrate) return navigator.vibrate(pattern);
+  if (!isIOS) return false;
+  try {
+    if (!hapEl) { hapEl = document.createElement('label'); hapEl.setAttribute('aria-hidden', 'true'); hapEl.style.cssText = 'position:fixed;left:-99px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none';
+      hapEl.innerHTML = '<input type="checkbox" switch tabindex="-1">'; document.body.appendChild(hapEl); }
+    const n = Array.isArray(pattern) ? Math.ceil(pattern.length / 2) : 1;
+    for (let i = 0; i < Math.min(n, 3); i++) setTimeout(() => hapEl.click(), i * 180);
+    return true;
+  } catch (e) { return false; }
+}
+function iosHint() {
+  if (!isIOS || isStandalone() || S.settings.iosHintOff) return;
+  modal(`<h2>📱 ${T('Installe l\'appli sur ton iPhone', 'Install the app on your iPhone')}</h2>
+    <p>${T('Sur iPhone, Safari peut <b>effacer tes données</b> si le site n\'est pas ouvert pendant 7 jours. Installée sur l\'écran d\'accueil, l\'appli garde tout, s\'ouvre en plein écran et peut envoyer les notifications de repos (aussi sur l\'Apple Watch).', 'On iPhone, Safari may <b>erase your data</b> if the site isn\'t opened for 7 days. Installed on the home screen, the app keeps everything, opens full screen and can send rest notifications (also to Apple Watch).')}</p>
+    <ol style="padding-left:20px;line-height:1.7">
+      <li>${T('Touche le bouton <b>Partager</b> (le carré avec la flèche ⬆️) en bas de Safari.', 'Tap the <b>Share</b> button (square with arrow ⬆️) at the bottom of Safari.')}</li>
+      <li>${T('Choisis <b>Sur l\'écran d\'accueil</b> (fais défiler si besoin).', 'Choose <b>Add to Home Screen</b> (scroll if needed).')}</li>
+      <li>${T('Touche <b>Ajouter</b>, puis ouvre Carnet Muscu depuis son icône.', 'Tap <b>Add</b>, then open Carnet Muscu from its icon.')}</li></ol>
+    <p class="muted small">${T('Tes séances déjà faites dans Safari ne passent pas toutes seules dans l\'appli installée : fais d\'abord Réglages → Sauvegarde → Exporter, puis importe le fichier dans l\'appli installée.', 'Workouts already logged in Safari don\'t carry over by themselves: first do Settings → Backup → Export, then import the file in the installed app.')}</p>
+    <button class="btn primary block" data-act="close">${T('Compris', 'Got it')}</button>
+    <button class="btn ghost block" data-act="ios-hint-off" style="margin-top:8px">${T('Ne plus afficher', 'Don\'t show again')}</button>`);
+}
+
+
+/* ===================== Sauvegarde automatique Google Drive =====================
+   L'appli écrit un seul fichier dans le dossier caché « appDataFolder » du Google Drive de l'utilisateur.
+   Elle n'a accès à rien d'autre dans son Drive. Le jeton d'accès dure 1 h et reste seulement sur ce téléphone
+   (jamais dans les exports ni les sauvegardes). */
+const GCLIENT = '554873199012-o85416v41ihc3vkqtuafdcuk68u04464.apps.googleusercontent.com'; // ← ID client OAuth Google (…apps.googleusercontent.com)
+const GSCOPE = 'https://www.googleapis.com/auth/drive.appdata', GDKEY = 'carnet-muscu-gtoken', GDFILE = 'carnet-muscu.json';
+const gdReady = () => !!GCLIENT;
+const gdOn = () => !!(S.gd && S.gd.on);
+let gdTokC = null, gdWait = null, gdBusy = false, gdTimer = null;
+function gdTok() { try { const t = JSON.parse(localStorage.getItem(GDKEY) || 'null'); return t && t.exp > Date.now() + 60000 ? t.v : ''; } catch (e) { return ''; } }
+function gdLoadLib() {
+  if (window.google && google.accounts && google.accounts.oauth2) return Promise.resolve();
+  return new Promise((ok, ko) => { const s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.async = true; s.onload = ok; s.onerror = () => ko(new Error(T('Impossible de joindre Google (connexion Internet?)', 'Can\'t reach Google (Internet connection?)'))); document.head.appendChild(s); });
+}
+/* Demande un jeton à Google. Doit partir d'un toucher (bouton) : sinon le navigateur bloque la petite fenêtre Google. */
+async function gdAuth(consent) {
+  await gdLoadLib();
+  if (!gdTokC) gdTokC = google.accounts.oauth2.initTokenClient({client_id: GCLIENT, scope: GSCOPE, callback: r => {
+    const w = gdWait; gdWait = null; if (!w) return;
+    if (r.error) return w.ko(new Error(r.error_description || r.error));
+    try { localStorage.setItem(GDKEY, JSON.stringify({v: r.access_token, exp: Date.now() + (r.expires_in || 3600) * 1000})); } catch (e) {}
+    w.ok(r.access_token);
+  }, error_callback: e => { const w = gdWait; gdWait = null; if (w) w.ko(new Error(e.type === 'popup_closed' ? T('Connexion annulée', 'Sign-in cancelled') : (e.message || e.type))); }});
+  return new Promise((ok, ko) => { gdWait = {ok, ko}; gdTokC.requestAccessToken({prompt: consent ? 'consent' : ''}); });
+}
+async function gdApi(url, opt = {}) {
+  const r = await fetch(url, {...opt, headers: {Authorization: 'Bearer ' + gdTok(), ...(opt.headers || {})}});
+  if (r.status === 401) { try { localStorage.removeItem(GDKEY); } catch (e) {} throw new Error('auth'); }
+  if (!r.ok) throw new Error('Google Drive ' + r.status);
+  return r;
+}
+async function gdFind() {
+  const q = encodeURIComponent(`name='${GDFILE}'`);
+  const r = await gdApi(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${q}&fields=files(id,modifiedTime,size)&pageSize=1`);
+  return ((await r.json()).files || [])[0] || null;
+}
+async function gdPush(force) {
+  if (!gdOn() || gdBusy) return;
+  if (!gdTok()) { S.gd.pending = true; saveLocal(); return; } // la prochaine fois qu'on touche « Terminer » ou « Sauvegarder », ça part
+  const body = backupBody(), hs = strHash(body);
+  if (!force && hs === S.gd.hash) return;
+  if (!navigator.onLine) { S.gd.pending = true; saveLocal(); return; }
+  gdBusy = true;
+  try {
+    let id = S.gd.file;
+    if (!id) { const f = await gdFind(); id = f && f.id; }
+    if (id) {
+      await gdApi(`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media`, {method: 'PATCH', headers: {'Content-Type': 'application/json'}, body});
+    } else {
+      const fd = new FormData();
+      fd.append('metadata', new Blob([JSON.stringify({name: GDFILE, parents: ['appDataFolder']})], {type: 'application/json'}));
+      fd.append('file', new Blob([body], {type: 'application/json'}));
+      const r = await gdApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {method: 'POST', body: fd});
+      id = (await r.json()).id;
+    }
+    Object.assign(S.gd, {file: id, hash: hs, last: new Date().toISOString(), err: '', pending: false});
+  } catch (e) {
+    if (e.message === 'auth') { S.gd.pending = true; S.gd.err = ''; }
+    else { S.gd.err = e.message; S.gd.pending = true; }
+  }
+  gdBusy = false; saveLocal();
+  if (cur().v === 'settings') render();
+}
+function gdQueue(delay = 20000) { if (!gdOn()) return; clearTimeout(gdTimer); gdTimer = setTimeout(() => gdPush(), delay); }
+/* Appelé sur un toucher (Terminer la séance, Sauvegarder maintenant) : renouvelle l'accès si besoin, puis envoie. */
+async function gdSync(force) {
+  if (!gdOn()) return;
+  try { if (!gdTok()) await gdAuth(false); await gdPush(force); }
+  catch (e) { S.gd.err = e.message; S.gd.pending = true; saveLocal(); }
+}
+async function gdConnect() {
+  try {
+    toast(T('⏳ Connexion à Google…', '⏳ Connecting to Google…'));
+    await gdAuth(true);
+    S.gd = {on: true}; saveLocal();
+    const f = await gdFind();
+    if (f) {
+      S.gd.file = f.id;
+      const r = await gdApi(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`), d = await r.json();
+      window._gdData = d;
+      const nh = (d.history || []).length, nr = (d.routines || []).length;
+      modal(`<h2>☁️ ${T('Sauvegarde trouvée', 'Backup found')}</h2>
+        <p>${T(`Ton Google Drive contient déjà une sauvegarde du <b>${dateFr(f.modifiedTime)}</b> : ${nh} séances et ${nr} routines.`, `Your Google Drive already has a backup from <b>${dateFr(f.modifiedTime)}</b>: ${nh} workouts and ${nr} routines.`)}</p>
+        <p class="muted small">${T(`Ce téléphone : ${S.history.length} séances et ${S.routines.length} routines.`, `This phone: ${S.history.length} workouts and ${S.routines.length} routines.`)}</p>
+        <button class="btn primary block" data-act="gd-restore-ok">⬇ ${T('Restaurer la sauvegarde sur ce téléphone', 'Restore the backup on this phone')}</button>
+        <button class="btn block" data-act="gd-keep" style="margin-top:8px">⬆ ${T('Garder ce téléphone (remplace la sauvegarde)', 'Keep this phone (replaces the backup)')}</button>`);
+    } else { await gdPush(true); render(); toast(T('☁️ Sauvegarde automatique activée', '☁️ Automatic backup on')); }
+  } catch (e) { if (!gdOn() || !S.gd.file) S.gd = {}; saveLocal(); toast('⚠️ ' + e.message); }
+}
+async function gdRestore() {
+  try {
+    if (!gdTok()) await gdAuth(false);
+    const f = await gdFind(); if (!f) { toast(T('Aucune sauvegarde dans Google Drive', 'No backup in Google Drive')); return; }
+    if (!confirm(T(`Remplacer les données de ce téléphone par la sauvegarde Google Drive du ${dateFr(f.modifiedTime)}?`, `Replace this phone's data with the Google Drive backup from ${dateFr(f.modifiedTime)}?`))) return;
+    const r = await gdApi(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`); gdRestoreData(await r.json());
+  } catch (e) { toast('⚠️ ' + e.message); }
+}
+function gdRestoreData(d) {
+  const g = S.gd; restoreAll(d); S.gd = g; S.gd.hash = strHash(backupBody());
+  saveLocal(); applyTheme(); setRoot('train'); closeAll(); render();
+  toast(T(`✅ ${S.history.length} séances et ${S.routines.length} routines restaurées`, `✅ ${S.history.length} workouts and ${S.routines.length} routines restored`));
+}
+function gdCard() {
+  if (!gdReady()) return '';
+  const g = S.gd || {};
+  if (!gdOn()) return `<div class="card" style="border-color:var(--accent)"><h3>☁️ ${T('Sauvegarde automatique Google Drive', 'Automatic Google Drive backup')}</h3>
+    <p class="small" style="margin:6px 0">${T('Connecte-toi une seule fois avec ton compte Google (Gmail). Ensuite, tes données sont sauvegardées <b>toutes seules</b> dans ton Google Drive à la fin de chaque séance. Sur un nouveau téléphone, reconnecte-toi et tout revient.', 'Sign in once with your Google account (Gmail). Then your data is backed up <b>automatically</b> to your Google Drive at the end of each workout. On a new phone, sign in again and everything comes back.')}</p>
+    <p class="muted small" style="margin:6px 0">🔒 ${T('Gratuit. L\'appli a accès seulement à son propre dossier caché, pas à tes autres fichiers.', 'Free. The app only accesses its own hidden folder, not your other files.')}</p>
+    <button class="btn primary block" data-act="gd-connect"><b>G</b>&nbsp; ${T('Se connecter avec Google', 'Sign in with Google')}</button></div>`;
+  return `<div class="card" style="border-color:var(--accent)"><h3>☁️ Google Drive</h3>
+    <p class="small" style="margin:6px 0">${g.err ? '⚠️ ' + esc(g.err) + '<br>' : ''}${g.last ? '✅ ' + T('Sauvegardé ', 'Backed up ') + ago(g.last) : '⏳ ' + T('Pas encore sauvegardé', 'Not backed up yet')}${g.pending ? '<br><span class="muted">' + T('Changements en attente : envoi à la fin de ta prochaine séance, ou touche « Sauvegarder maintenant ».', 'Pending changes: sent at the end of your next workout, or tap “Back up now”.') + '</span>' : ''}</p>
+    <div class="grid2"><button class="btn sm" data-act="gd-push">⬆ ${T('Sauvegarder maintenant', 'Back up now')}</button><button class="btn sm" data-act="gd-restore">⬇ ${T('Restaurer', 'Restore')}</button></div>
+    <button class="btn sm danger block" data-act="gd-off" style="margin-top:8px">${T('Déconnecter', 'Disconnect')}</button></div>`;
+}
+window.addEventListener('online', () => { if (gdOn() && S.gd.pending && gdTok()) gdPush(); });
+
 /* ---------- Calendrier façon Hevy ---------- */
 let calMonths = 6;
 function vCal2() {
@@ -3993,6 +4294,7 @@ function headerRight(v) {
 }
 let navAnim = false;
 function render() {
+  if (selR && cur().v !== 'train') { selR = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); }
   applyLang();
   renderChrome();
   if (!VIEWS[cur().v]) setRoot('train');
@@ -4128,7 +4430,8 @@ document.addEventListener('touchstart', e => {
   if (modals.length || e.touches.length > 1 || S.settings.swipe === false) return;
   const t = e.target;
   if (!t.closest('#app') || t.closest('input,textarea,select,button.check,.chs,.chips,.wstrip,.cycprev,.seg,.stbl,canvas,[data-noswipe]')) return;
-  const p = e.touches[0]; swp = {x: p.clientX, y: p.clientY, t: Date.now(), lock: null, dx: 0};
+  const p = e.touches[0]; if (isIOS && (p.clientX < 24 || p.clientX > innerWidth - 24)) return;
+  swp = {x: p.clientX, y: p.clientY, t: Date.now(), lock: null, dx: 0};
 }, {passive: true});
 document.addEventListener('touchmove', e => {
   if (!swp) return;
@@ -4177,7 +4480,7 @@ document.addEventListener('click', e => {
   switch (act) {
     case 'start': startWorkout(rid); break;
     case 'back': back(); break;
-    case 'test-vib': if (navigator.vibrate) { const ok = navigator.vibrate([200, 100, 200]); toast(ok ? T('📳 Vibration envoyée. Rien senti? Vois les conseils plus bas.', '📳 Vibration sent. Felt nothing? See the tips below.') : T('⚠️ Le téléphone a refusé la vibration', '⚠️ The phone refused the vibration')); } else toast(T('⚠️ Vibration non disponible dans ce navigateur', '⚠️ Vibration not available in this browser')); break;
+    case 'test-vib': if (navigator.vibrate || isIOS) { const ok = haptic([200, 100, 200]); toast(ok ? T('📳 Vibration envoyée. Rien senti? Vois les conseils plus bas.', '📳 Vibration sent. Felt nothing? See the tips below.') : T('⚠️ Le téléphone a refusé la vibration', '⚠️ The phone refused the vibration')); } else toast(T('⚠️ Vibration non disponible dans ce navigateur', '⚠️ Vibration not available in this browser')); break;
     case 'test-notif': { const swc = navigator.serviceWorker && navigator.serviceWorker.controller; if (notifOn() && swc) { swc.postMessage({type: 'rest-at', at: Date.now() + 8000, title: T('✅ Repos terminé (test)', '✅ Rest over (test)'), body: T('À toi : Développé couché · 185 lb × 8 (série 2/3)', 'Your turn: Bench press · 185 lb × 8 (set 2/3)')}); toast(T('⌚ Notification dans 8 s : éteins l\'écran maintenant et regarde ta montre', '⌚ Notification in 8 s: turn off the screen now and look at your watch')); break; } toast(T('⌚ Notification dans 5 s : éteins l\'écran ou regarde ta montre', '⌚ Notification in 5 s: turn off the screen or look at your watch')); setTimeout(() => notify(T('✅ Repos terminé (test)', '✅ Rest over (test)'), T('À toi : Développé couché · 185 lb × 8 (série 2/3)', 'Your turn: Bench press · 185 lb × 8 (set 2/3)')), 5000); break; }
     case 'test-beep': ensureAudio(); setTimeout(() => beep(true), 60); break;
     case 'test-lock': ensureAudio(); startTimer(10); toast('🔒 Éteins l\'écran maintenant : bip dans 10 s'); break;
@@ -4212,6 +4515,28 @@ document.addEventListener('click', e => {
       break; }
     case 'st-share': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); if (rt) { const c = JSON.parse(JSON.stringify(rt)); delete c.id; shareItem('s', [c], T(rt.n[0], rt.n[1] || rt.n[0])); } break; }
     case 'imp-ok': doImport(); break;
+    case 'gd-connect': gdConnect(); break;
+    case 'gd-push': gdSync(true).then(() => { render(); toast(S.gd && S.gd.err ? '⚠️ ' + S.gd.err : T('☁️ Sauvegardé dans Google Drive', '☁️ Saved to Google Drive')); }); break;
+    case 'gd-restore': gdRestore(); break;
+    case 'gd-restore-ok': gdRestoreData(window._gdData); break;
+    case 'gd-keep': closeAll(); gdPush(true).then(() => { render(); toast(T('☁️ Sauvegarde remplacée par ce téléphone', '☁️ Backup replaced with this phone')); }); break;
+    case 'gd-off': if (confirm(T('Arrêter la sauvegarde Google Drive sur ce téléphone? (la sauvegarde reste dans ton Drive)', 'Stop Google Drive backup on this phone? (the backup stays in your Drive)'))) { const t = gdTok(); try { localStorage.removeItem(GDKEY); if (t && window.google) google.accounts.oauth2.revoke(t, () => {}); } catch (e) {} S.gd = {}; saveLocal(); render(); } break;
+    case 'delf-all': { const f = b.dataset.f; snap(); const ids = new Set(S.routines.filter(r => inFolder(r, f)).map(r => r.id)); S.routines = S.routines.filter(r => !ids.has(r.id)); if (S.schedule) S.schedule = S.schedule.map(x => ids.has(x) ? '' : x); dropFolder(f); save(); closeAll(); render(); undoToast(T(`🗑 « ${f} » supprimé`, `🗑 “${f}” deleted`)); break; }
+    case 'delf-move': { const f = b.dataset.f, to = $('#delf-to').value; snap(); S.routines.forEach(r => { if (inFolder(r, f)) r.folder = to; }); if (!(S.folders || []).includes(to)) S.folders.push(to); dropFolder(f); save(); closeAll(); render(); undoToast(T(`🗑 « ${f} » supprimé, routines dans « ${to} »`, `🗑 “${f}” deleted, routines moved to “${to}”`)); break; }
+    case 'sel-start': selStart(b.dataset.f); break;
+    case 'sel-end': selEnd(); break;
+    case 'sel-r': { const id = b.dataset.rid; selR.has(id) ? selR.delete(id) : selR.add(id); render(); selBar(); break; }
+    case 'sel-f': { const rs = S.routines.filter(r => inFolder(r, b.dataset.f)), all = rs.every(r => selR.has(r.id)); rs.forEach(r => all ? selR.delete(r.id) : selR.add(r.id)); render(); selBar(); break; }
+    case 'sel-del': selDelete(); break;
+    case 'sel-move': selMove(); break;
+    case 'sel-move-to': selMoveTo(b.dataset.f); break;
+    case 'sel-move-new': { const nf = (prompt(T('Nom du nouveau dossier :', 'New folder name:')) || '').trim(); if (nf) selMoveTo(nf); break; }
+    case 'ai-guide': aiGuide(b.dataset.k); break;
+    case 'aig-copy': { const g = AI_KINDS[aiG && aiG.k]; if (!g) break; const t = g.prompt(); if (!t) { toast(T('Aucune séance dans les 30 derniers jours', 'No workouts in the last 30 days')); break; } copy(t); aiG.copied = true; const el = $('#aig'); if (el) el.innerHTML = aiGuideBody(); break; }
+    case 'aig-paste': { const g = AI_KINDS[aiG.k]; closeAll(); openPaste('', null); if (navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(t => { const ta = $('#pasteTa'); if (ta && t && /ROUTINE|DOSSIER|FOLDER/i.test(t)) { ta.value = t; ta.dispatchEvent(new Event('input')); } }).catch(() => {}); break; }
+    case 'xfer-hide': S.settings.xferHide = true; save(); render(); break;
+    case 'ios-hint-off': S.settings.iosHintOff = true; save(); closeAll(); break;
+    case 'ios-install': iosHint(); break;
     case 'tour': S.settings.tour = S.settings.tour || {}; delete S.settings.tour.wo; tourStart('main'); break;
     case 'pre-restore': { const L = b.dataset.k === 't' ? TM_PRESETS : ST_PRESETS; S.settings.hidePre = hidPre().filter(id => !L.some(x => x.id === id)); save(); render(); toast(T('↺ Remis', '↺ Restored')); break; }
     case 'fold-reo': closeAll(); openFolderReo(); break;
@@ -4365,11 +4690,11 @@ document.addEventListener('click', e => {
       s.done = !s.done;
       if (s.done && s.r === '') s.r = s.ph;
       s.pr = s.done && livePR(ei, si);
-      if (s.done) { justChk = ei + '-' + si; if (navigator.vibrate && S.settings.haptic !== false) navigator.vibrate([45]); }
+      if (s.done) { justChk = ei + '-' + si; if (S.settings.haptic !== false) haptic([45]); }
       if (s.done) autoNext(ei);
       if (!s.pr) delete s.pr;
       save(); render();
-      if (s.pr) { confetti(); toast(T(`🏆 Nouveau record! ${s.w || BWL()}×${s.r}`, `🏆 New record! ${s.w || BWL()}×${s.r}`)); if (S.settings.sound !== false) { ensureAudio(); setTimeout(() => beep(true), 30); } if (navigator.vibrate) navigator.vibrate([80, 60, 80, 60, 200]); }
+      if (s.pr) { confetti(); toast(T(`🏆 Nouveau record! ${s.w || BWL()}×${s.r}`, `🏆 New record! ${s.w || BWL()}×${s.r}`)); if (S.settings.sound !== false) { ensureAudio(); setTimeout(() => beep(true), 30); } haptic([80, 60, 80, 60, 200]); }
       if (s.done) {
         const inSS = e.ss && A.exercises[ei + 1] && A.exercises[ei + 1].ss === e.ss;
         if (inSS) { if (+S.settings.restSS > 0) startTimer(+S.settings.restSS); }
@@ -4398,8 +4723,8 @@ document.addEventListener('click', e => {
     case 'cloud-connect': cloudConnect(); break;
     case 'share-app': {
       const url = location.origin + location.pathname;
-      if (isEN()) { shareText(`💪 Carnet Muscu: my free workout app (routines, workouts, exercise GIFs, stats).\n\n1. Open this link in Chrome: ${url}\n2. Menu ⋮ → “Install app”.\n3. To never lose your data: in the app, Profile → ⚙️ Settings → Automatic backup, and follow the steps with YOUR OWN GitHub account (free).\n\nYour data stays on your phone, nobody else sees it.`); break; }
-      shareText(`💪 Carnet Muscu : mon appli d'entraînement gratuite (routines, séances, GIF des exercices, statistiques).\n\n1. Ouvre ce lien dans Chrome : ${url}\n2. Menu ⋮ → « Installer l'application ».\n3. Pour ne jamais perdre tes données : dans l'appli, Profil → ⚙️ Réglages → Sauvegarde automatique, et suis les étapes avec TON propre compte GitHub (gratuit).\n\nTes données restent sur ton téléphone, personne d'autre ne les voit.`);
+      if (isEN()) { shareText(`💪 Carnet Muscu: my free workout app (routines, workouts, exercise GIFs, stats).\n\n1. Open this link in Chrome: ${url}\n2. Menu ⋮ → “Install app”.\n   On iPhone: open the link in Safari → Share button ⬆️ → “Add to Home Screen”.\n3. To never lose your data: in the app, Profile → ⚙️ Settings → Automatic backup, and follow the steps with YOUR OWN GitHub account (free).\n\nYour data stays on your phone, nobody else sees it.`); break; }
+      shareText(`💪 Carnet Muscu : mon appli d'entraînement gratuite (routines, séances, GIF des exercices, statistiques).\n\n1. Ouvre ce lien dans Chrome : ${url}\n2. Menu ⋮ → « Installer l'application ».\n   Sur iPhone : ouvre le lien dans Safari → bouton Partager ⬆️ → « Sur l'écran d'accueil ».\n3. Pour ne jamais perdre tes données : dans l'appli, Profil → ⚙️ Réglages → Sauvegarde automatique, et suis les étapes avec TON propre compte GitHub (gratuit).\n\nTes données restent sur ton téléphone, personne d'autre ne les voit.`);
       break;
     }
     case 'cloud-pick': cloudPick(b.dataset.f); break;
@@ -4430,7 +4755,7 @@ document.addEventListener('click', e => {
     }
     case 'ex-del': { snap(); const nm = A.exercises[ei].name; A.exercises.splice(ei, 1); fixSS(A.exercises); save(); closeModal(); undoToast(T(`« ${nm} » retiré`, `“${nm}” removed`)); break; }
     case 'add-exo': openPicker({title: 'Ajouter un exercice', cb: addExercise}); break;
-    case 'finish': finishWorkout(); break;
+    case 'finish': finishWorkout(); if (gdOn() && !S.active) gdSync(); break;
     case 'cancel-workout': if (confirm('Abandonner cette séance sans l\'enregistrer?')) { S.active = null; save(); stopTimer(); setRoot('train'); render(); } break;
     case 'inc-set': { S.incs = S.incs || {}; S.incs[norm(b.dataset.n)] = +b.dataset.v; save(); b.parentElement.querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === b)); if (!b.closest('.sheet .chips[data-ret]')) {} break; }
     case 'inc-menu': { const e = A.exercises[ei]; modal(`<h2>${T('Augmentation suggérée', 'Suggested increase')}</h2><p class="muted small">${esc(e.name)} · ${T("Quand tu atteins le haut de ta plage de reps, l'appli propose d'ajouter ce poids.", 'When you reach the top of your rep range, the app suggests adding this weight.')}</p>
@@ -4473,6 +4798,7 @@ document.addEventListener('click', e => {
       ${deloadOn() ? '' : `<button class="btn block" data-act="deload-menu">${IC('feather', '🪶')} ${T('Semaine de récupération (deload)', 'Recovery week (deload)')}</button>`}
       <button class="btn block" data-act="sched-edit">${IC('calendar', '📅')} ${T('Mon horaire', 'My schedule')}</button>
       <button class="btn block" data-act="new-folder">${IC('folderp', '📁')} ${T('Nouveau dossier', 'New folder')}</button>
+      ${S.routines.length ? `<button class="btn block" data-act="sel-start">☑️ ${T('Sélectionner plusieurs routines', 'Select several routines')}</button>` : ''}
       ${folders().length > 1 ? `<button class="btn block" data-act="fold-reo">↕ ${T('Changer l\'ordre des dossiers', 'Reorder folders')}</button>` : ''}</div>`); break;
     case 'prog-add': addProgram(b.dataset.k); break;
     case 'yr': yrSel = +b.dataset.y; render(); break;
@@ -4555,8 +4881,8 @@ document.addEventListener('input', e => {
   if (t.dataset.rdr !== undefined && rdraft) { rdraft.exercises[+t.dataset.rdr].sl[+t.dataset.s].r = t.value.replace(/[–—]/g, '-'); rdirty = true; }
   if (t.id === 'exq') { exQ = t.value; $('#exlist').innerHTML = exListHtml(); }
   if (t.id === 'pltw') renderPlates();
-  if (t.dataset.accent !== undefined) { S.settings.accent = t.value; save(); applyTheme(); }
-  if (t.dataset.bgc !== undefined) { S.settings.bg = t.value; save(); applyTheme(); }
+  if (t.dataset.accent !== undefined) { S.settings.accent = t.value; saveLocal(); applyTheme(); }
+  if (t.dataset.bgc !== undefined) { S.settings.bg = t.value; saveLocal(); applyTheme(); }
   if (t.dataset.bvol !== undefined) { S.settings.beepVol = +t.value; const l = $('#bvl'); if (l) l.textContent = t.value + ' %'; t.style.setProperty('--p', t.value + '%'); save(); }
 });
 document.addEventListener('change', e => {
@@ -4580,7 +4906,9 @@ document.addEventListener('change', e => {
   if (t.dataset.cycfold !== undefined && t.value) { const c = cyc(); S.routines.filter(r => (r.folder || DEF_FOLDER) === t.value).forEach(r => { if (!c.order.includes(r.id)) c.order.push(r.id); }); save(); renderSched(); }
   if (t.dataset.cycadd !== undefined && t.value) { const c = cyc(); if (!c.order.includes(t.value)) c.order.push(t.value); save(); renderSched(); }
   if (t.dataset.cycnext !== undefined) { cyc().next = {rid: t.value, at: new Date().toISOString()}; save(); renderSched(); }
-  if (t.dataset.accent !== undefined || t.dataset.bgc !== undefined) render();
+  // Pas de render() ici : sur iPhone, l'événement « change » arrive dès qu'on touche le sélecteur de couleur,
+  // et redessiner la page fermait le sélecteur avec la première couleur touchée. La couleur s'applique déjà en direct.
+  if (t.dataset.accent !== undefined || t.dataset.bgc !== undefined) { save(); document.querySelectorAll('.chip.on[data-act="accent-pick"], .chip.on[data-act="bg-pick"]').forEach(c => c.classList.remove('on')); }
   if (t.dataset.bvol !== undefined) { ensureAudio(); setTimeout(() => beep(true), 30); }
   if (t.dataset.set === 'beepSnd') { ensureAudio(); setTimeout(() => beep(true), 30); }
   if (t.dataset.move !== undefined) {
@@ -4617,6 +4945,7 @@ function openWelcome() {
     <button class="btn primary block" data-act="wl-ok" style="margin-top:14px">${T('C\'est parti!', 'Let\'s go!')}</button>`, {id: 'welcome', onclose: () => { S.settings.onboarded = true; save(); setTimeout(checkImport, 250); setTimeout(() => { if (!modals.length && !location.hash.includes('imp=')) tourStart('main'); }, 450); }});
 }
 if (!S.settings.onboarded) setTimeout(openWelcome, 300);
+else if (isIOS && !isStandalone() && !S.settings.iosHintOff) setTimeout(() => { if (!modals.length) iosHint(); }, 1200);
 checkNews();
 if (S.settings.onboarded) setTimeout(checkImport, 450);
 window.addEventListener('hashchange', checkImport);
