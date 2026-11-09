@@ -38,6 +38,9 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);
   font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+/* iPhone (appli installée) : quand la page est plus courte que l'écran, iOS calcule le bas de l'écran trop haut
+   (il oublie la zone de l'heure en haut) et la barre du bas « flotte ». On rend la page toujours au moins aussi haute que l'écran. */
+html.ios{height:100%}html.ios body{min-height:calc(100% + env(safe-area-inset-top));box-sizing:border-box}
 :root{--nb:max(4px, calc(env(safe-area-inset-bottom) - 18px))}
 body{padding-bottom:calc(76px + var(--nb))}
 header{position:sticky;top:0;z-index:5;background:var(--bg);
@@ -4005,9 +4008,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.1.2';
+const APP_VERSION = '8.1.3';
 const CHANGELOG = [
-  {v: '8.1.2', d: '2026-11-09', fr: ['iPhone : la barre du bas (Entraînement, Étirements…) est mieux placée, moins haute.'], en: ['iPhone: the bottom bar (Workout, Stretching…) sits lower and better.']},
+  {v: '8.1.3', d: '2026-11-09', fr: ['iPhone : la barre du bas (Entraînement, Étirements…) reste collée en bas de l\'écran sur toutes les pages, même les pages courtes.'], en: ['iPhone: the bottom bar (Workout, Stretching…) stays at the bottom of the screen on every page, even short ones.']},
   {v: '8.1.1', d: '2026-11-09', fr: ['Fond clair : ta couleur de boutons garde maintenant sa vraie teinte (elle est juste un peu foncée pour rester lisible).'], en: ['Light background: your button color now keeps its real hue (only slightly darkened to stay readable).']},
   {v: '8.1', d: '2026-11-09', fr: ['Appuie longtemps sur une routine pour la sélectionner : coche-en d\'autres, puis déplace-les ou supprime-les d\'un coup. Glisse ≡ pour changer leur ordre.', 'Appuie longtemps sur un dossier pour changer l\'ordre des dossiers.'],
    en: ['Long-press a routine to select it: check others, then move or delete them at once. Drag ≡ to reorder them.', 'Long-press a folder to reorder folders.']},
@@ -4125,6 +4128,7 @@ function maybeTourWo() {
 
 /* ===================== iPhone ===================== */
 const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+if (isIOS) document.documentElement.classList.add('ios');
 const isStandalone = () => window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
 let hapEl = null;
 /* Safari sur iPhone n'a pas navigator.vibrate. Depuis iOS 18, toucher un interrupteur (<input switch>) fait une petite vibration :
