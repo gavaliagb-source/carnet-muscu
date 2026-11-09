@@ -313,7 +313,7 @@ button.chip{cursor:pointer}
 .selbox{width:26px;height:26px;border-radius:8px;border:2px solid var(--muted);display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:#111;flex:none}
 .selbox.on{background:var(--accent);border-color:var(--accent)}
 .rcard.selc{padding:14px}.rcard.selc.on{border-color:var(--accent)}
-.rcard,.fhead,[data-lp]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.rcard,.fhead,[data-lp],details.hist>summary{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .rcard.selc .handle{padding:0 4px 0 10px;margin-left:auto}
 body.selon main{padding-bottom:170px}
 
@@ -1568,13 +1568,15 @@ function vWorkout() {
 
 /* ----- Historique ----- */
 function histCard(h, open) {
-  return `<details class="card hist" ${open ? 'open' : ''}><summary>
+  if (selH) return `<div class="card rcard selc ${selH.has(h.id) ? 'on' : ''}" data-act="selh-t" data-hid="${h.id}"><div class="row" style="gap:10px;width:100%"><span class="selbox ${selH.has(h.id) ? 'on' : ''}">${selH.has(h.id) ? '✓' : ''}</span><div style="flex:1;min-width:0"><h3 style="margin:0">${esc(h.routineName)}</h3><span class="muted small">${new Date(h.date).toLocaleDateString(LOC(), {weekday: 'short', day: 'numeric', month: 'short'})} · ${h.exercises.length} exos</span></div></div></div>`;
+  return `<details class="card hist" data-hid="${h.id}" ${open ? 'open' : ''}><summary>
       <div class="row between"><div><h3>${esc(h.routineName)}</h3><span class="muted small">${new Date(h.date).toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long'})} · ${hm(h.duration)}</span></div><span class="tag">${h.exercises.length} exos ▾</span></div>
     </summary>
     <ul class="exlist">${h.exercises.map(e => `<li><span class="row" style="gap:8px;align-items:flex-start">${thumb(e.name, 28)}<span>${exl(e.name)}${e.ss ? ` <span class="tag">⛓${esc(e.ss)}</span>` : ''}${e.note ? `<br><span class="small muted">📝 ${esc(e.note)}</span>` : ''}${e.sets.map((s, i) => s.n ? `<br><span class="small muted">Série ${i + 1} : ${esc(s.n)}</span>` : '').join('')}</span></span><span class="tag">${e.sets.map(s => fmtSet(s, true)).join(', ')}</span></li>`).join('')}</ul>
     <div class="row"><button class="btn sm" data-act="hist-edit" data-hid="${h.id}">✏️ Modifier</button>
     <button class="btn sm" data-act="hist-share" data-hid="${h.id}">📤 Partager</button>
     <button class="btn sm" data-act="hist-img" data-hid="${h.id}">🖼️ Image</button>
+    <button class="btn sm" data-act="h2r" data-hid="${h.id}">📁 ${T('En routine', 'As routine')}</button>
     <button class="btn danger sm" data-act="del-hist" data-hid="${h.id}">Supprimer</button></div>
     </details>`;
 }
@@ -1599,7 +1601,7 @@ function workoutText(h) {
 }
 function vHistory() {
   const seg = `<div class="seg"><button class="${histMode === 'list' ? 'on' : ''}" data-act="hist-mode" data-m="list">Liste</button><button class="${histMode === 'cal' ? 'on' : ''}" data-act="hist-mode" data-m="cal">Calendrier</button></div>`;
-  const add = `<button class="btn sm block" data-act="hist-new" style="margin-bottom:12px">＋ Ajouter une séance oubliée</button>`;
+  const add = `<button class="btn sm block" data-act="hist-new" style="margin-bottom:8px">＋ Ajouter une séance oubliée</button>${S.history.length && !selH ? `<button class="btn sm block" data-act="h2r-latest" style="margin-bottom:12px">📁 ${T('Créer mes routines à partir de mes séances', 'Create my routines from my workouts')}</button><p class="muted small" style="margin:-4px 0 12px">💡 ${T('Ou appuie longtemps sur une séance pour en choisir quelques-unes.', 'Or long-press a workout to pick a few.')}</p>` : ''}`;
   if (histMode === 'cal') return seg + vCalendar() + add;
   if (!S.history.length) return seg + '<div class="empty">Aucune séance encore.<br>Lance une routine pour commencer!</div>' + add;
   return seg + add + S.history.slice().reverse().map(h => histCard(h)).join('');
@@ -1866,7 +1868,7 @@ function vSettings() {
       <span class="small muted" style="flex:1">${S.settings.bg ? T('Fond perso : ', 'Custom background: ') + esc(S.settings.bg) : T('Fond du thème', 'Theme background')}</span>
       ${S.settings.bg ? `<button class="btn sm" data-act="bg-reset">${T('Remettre celui du thème', "Use the theme's")}</button>` : ''}</div>`) +
   setSec('cloud', 'cloud', '💾', T('Sauvegarde', 'Backup'), gdOn() ? T('☁️ Google Drive activé', '☁️ Google Drive on') : cloudOn() ? T('☁️ Automatique activée', '☁️ Automatic backup on') : S.settings.lastBackup ? T('Dernière : ', 'Last: ') + ago(S.settings.lastBackup) : T('⚠️ Jamais sauvegardé', '⚠️ Never backed up'), `${gdCard()}${simpleBackupCard()}${cloudCard()}
-      <p class="muted small" style="margin:12px 0 0">${T('Importer accepte aussi l\'export CSV de Hevy.', 'Import also accepts Hevy\'s CSV export.')}</p>
+      <p class="muted small" style="margin:12px 0 0">${T('Importer accepte aussi l\'export CSV de Hevy, Strong et des autres applis (date, exercice, poids, reps).', 'Import also accepts CSV exports from Hevy, Strong and other apps (date, exercise, weight, reps).')}</p>
       <button class="btn block" data-act="export-csv" style="margin-top:10px">📊 ${T('Exporter pour Excel / Google Sheets (CSV)', 'Export for Excel / Google Sheets (CSV)')}</button>`) +
   setSec('ai', 'spark', '🤖', T('IA et partage', 'AI and sharing'), T('Bilan pour l\'IA, envoyer l\'appli à un ami', 'AI summary, send the app to a friend'), `
       <h3>${T('Bilan pour l\'IA', 'AI summary')}</h3>
@@ -2048,13 +2050,60 @@ function importHevyCsv(txt) {
   S.history.push(...add); S.history.sort((a, b) => a.date.localeCompare(b.date));
   return add.length;
 }
+/* Import CSV des autres applis (Strong, FitNotes, etc.) : on repère les colonnes par leur nom */
+function importOtherCsv(txt) {
+  txt = txt.replace(/^﻿/, '');
+  const first = txt.split(/\r?\n/)[0] || '', semi = (first.match(/;/g) || []).length > (first.match(/,/g) || []).length;
+  const rows = semi ? parseCsv(txt.replace(/;/g, '\u0001').replace(/,/g, '\u0002').replace(/\u0001/g, ',')).map(r => r.map(c => c.replace(/\u0002/g, ','))) : parseCsv(txt);
+  const hd = rows[0].map(x => norm(x.trim()));
+  const col = (...ns) => { for (const n of ns) { const i = hd.findIndex(x => x === n); if (i >= 0) return i; } for (const n of ns) { const i = hd.findIndex(x => x.startsWith(n)); if (i >= 0) return i; } return -1; };
+  const cD = col('date', 'start time', 'start_time', 'workout date'), cN = col('workout name', 'title', 'workout', 'routine', 'routine name'),
+        cX = col('exercise name', 'exercise', 'exercise_title', 'exercice'), cW = col('weight', 'poids', 'charge'), cWU = col('weight unit', 'unit'),
+        cR = col('reps', 'repetitions', 'repetition'), cSec = col('seconds', 'duration_seconds', 'time'), cO = col('set order', 'set'), cDur = col('duration', 'duree'),
+        cNote = col('notes', 'exercise notes', 'note');
+  if (cD < 0 || cX < 0 || cR < 0) throw new Error('format');
+  const unitOf = (r) => { const u = (cWU >= 0 ? r[cWU] : hd[cW] || '').toLowerCase(); return /kg/.test(u) ? 'kg' : /lb/.test(u) ? 'lb' : U(); };
+  const durMin = s => { s = String(s || '').toLowerCase().trim(); if (!s) return 0; if (/^\d+$/.test(s)) return +s > 600 ? Math.round(+s / 60) : +s;
+    const hh = (s.match(/(\d+)\s*h/) || [])[1] || 0, mm = (s.match(/(\d+)\s*m/) || [])[1] || 0; return (+hh) * 60 + (+mm); };
+  const map = new Map();
+  rows.slice(1).forEach(r => {
+    if (!r[cX] || !String(r[cX]).trim()) return;
+    const dRaw = String(r[cD] || '').trim(), name = cN >= 0 && r[cN] ? r[cN].trim() : T('Séance importée', 'Imported workout'), key = dRaw + '|' + name;
+    if (!map.has(key)) {
+      let d = /^\d{4}-\d{2}-\d{2}$/.test(dRaw) ? new Date(dRaw + 'T12:00') : parseHevyDate(dRaw);
+      map.set(key, {id: uid(), routineName: name, date: isNaN(d) ? null : d.toISOString(), duration: cDur >= 0 ? durMin(r[cDur]) : 0, exercises: []});
+    }
+    const s = map.get(key), xn = r[cX].trim();
+    let e = s.exercises.find(x => x.name === xn);
+    if (!e) { e = {name: xn, sets: []}; s.exercises.push(e); }
+    if (cNote >= 0 && r[cNote] && !e.note) e.note = r[cNote];
+    let w = cW >= 0 && r[cW] !== '' ? parseFloat(String(r[cW]).replace(',', '.')) : '';
+    if (w !== '' && !isNaN(w)) { const u = unitOf(r); if (u !== U()) w = u === 'kg' ? w * 2.20462 : w / 2.20462; w = Math.round(w * 2) / 2; } else w = '';
+    const sec = cSec >= 0 ? +r[cSec] || 0 : 0, reps = parseInt(r[cR]) || 0;
+    if (reps > 0 || sec > 0) {
+      const set = {w: w === 0 ? '' : w, r: reps || sec}; if (!reps && sec) set.u = 's';
+      const o = cO >= 0 ? String(r[cO]).toUpperCase() : ''; if (o === 'W') set.t = 'W'; else if (o === 'D') set.t = 'D'; else if (o === 'F') set.t = 'F';
+      e.sets.push(set);
+    }
+  });
+  const known = new Set(S.history.map(x => x.date.slice(0, 16)));
+  const all = [...map.values()]; importBad = all.filter(s => !s.date).length;
+  const add = all.filter(s => s.date && s.exercises.some(e => e.sets.length) && !known.has(s.date.slice(0, 16)));
+  add.forEach(s => s.exercises = s.exercises.filter(e => e.sets.length));
+  S.history.push(...add); S.history.sort((a, b) => a.date.localeCompare(b.date));
+  return add.length;
+}
 function importFile(file) {
   const rd = new FileReader();
   rd.onload = () => {
     const txt = String(rd.result);
     try {
       if (/\.csv$/i.test(file.name) || /^﻿?"?title"?,/i.test(txt)) {
-        const n = importHevyCsv(txt); save(); render(); toast(`✅ ${n} séances Hevy importées` + (importBad ? ` · ${importBad} ignorées (date illisible)` : '')); return;
+        const hevy = /exercise_title/i.test(txt.split(/\r?\n/)[0]);
+        const n = hevy ? importHevyCsv(txt) : importOtherCsv(txt); save(); render(); toast(T(`✅ ${n} séances importées`, `✅ ${n} workouts imported`) + (hevy ? ' (Hevy)' : '') + (importBad ? T(` · ${importBad} ignorées (date illisible)`, ` · ${importBad} skipped (unreadable date)`) : ''));
+        if (n) setTimeout(() => modal(`<h2>✅ ${T(`${n} séances importées`, `${n} workouts imported`)}</h2><p>${T('Veux-tu recréer tes routines à partir de tes dernières séances? Chaque séance différente (ex. Push, Pull, Legs) devient une routine avec tes dernières charges, prête à continuer.', 'Do you want to rebuild your routines from your latest workouts? Each different workout (e.g. Push, Pull, Legs) becomes a routine with your latest weights, ready to continue.')}</p>
+          <button class="btn primary block" data-act="h2r-after-import">📁 ${T('Oui, créer mes routines', 'Yes, create my routines')}</button><button class="btn block" data-act="close" style="margin-top:8px">${T('Plus tard', 'Later')}</button>`), 600);
+        return;
       }
       const d = JSON.parse(txt);
       if (!d || !Array.isArray(d.routines) || !Array.isArray(d.history)) throw new Error('format');
@@ -2200,7 +2249,7 @@ function deleteFolder(f) {
 }
 /* ---------- Sélection multiple de routines ---------- */
 var selR = null; // Set des routines cochées (mode sélection)
-function selStart(f) { selX = null; selR = new Set(f ? S.routines.filter(r => inFolder(r, f)).map(r => r.id) : []); closeAll(); render(); selBar(); }
+function selStart(f) { selX = null; selH = null; selR = new Set(f ? S.routines.filter(r => inFolder(r, f)).map(r => r.id) : []); closeAll(); render(); selBar(); }
 function selEnd() { selR = null; const b = $('#selbar'); if (b) b.remove(); document.body.classList.remove('selon'); render(); }
 function selBar() {
   let b = $('#selbar'); document.body.classList.toggle('selon', !!selR); if (!selR) { if (b) b.remove(); return; }
@@ -2752,7 +2801,7 @@ function openAiMenu() {
     ${hasH ? opt('data-act="ai-guide" data-k="analyse"', '📊', T('Analyser mes dernières séances', 'Analyze my recent workouts'), T('Conseils sur tes 30 derniers jours.', 'Advice on your last 30 days.')) : ''}
     ${opt('data-act="programs"', '📚', T('Choisir un programme connu', 'Pick a popular program'), T('PPL, Upper/Lower, PHUL… prêts tout de suite, sans IA.', 'PPL, Upper/Lower, PHUL… ready now, no AI needed.'))}
     ${opt('data-act="paste" data-rid=""', '📥', T('J\'ai déjà la réponse de l\'IA', 'I already have the AI\'s answer'), T('Colle-la directement.', 'Paste it directly.'))}
-    ${newbie ? `<p class="muted small" style="margin:10px 0 0">💡 ${T('Tu viens de Hevy? Tu peux aussi importer tout ton <b>historique</b> (Réglages → Sauvegarde → Importer, avec le fichier CSV de Hevy).', 'Coming from Hevy? You can also import your whole <b>history</b> (Settings → Backup → Import, with Hevy\'s CSV file).')}</p>` : ''}`);
+    ${newbie ? `<p class="muted small" style="margin:10px 0 0">💡 ${T('Tu viens de Hevy, Strong ou une autre appli qui exporte en CSV? Importe tout ton <b>historique</b> (Réglages → Sauvegarde → Restaurer, avec le fichier CSV). L\'appli te proposera ensuite de recréer tes routines.', 'Coming from Hevy, Strong or another app with CSV export? Import your whole <b>history</b> (Settings → Backup → Restore, with the CSV file). The app will then offer to rebuild your routines.')}</p>` : ''}`);
 }
 function aiGuide(k) {
   const g = AI_KINDS[k]; if (!g) return;
@@ -3691,7 +3740,9 @@ const ST_PRESETS = [
 const stLib = lib => { const id = LIBBYNAME[norm(lib)] || libId(lib); return id ? LIBMAP[id] : null; };
 const stName = it => T(it.n[0], it.n[1] || it.n[0]);
 const hidPre = () => (S.settings.hidePre = S.settings.hidePre || []);
-const stPre = () => ST_PRESETS.filter(x => !hidPre().includes(x.id));
+/* ordre perso des éléments « prêts » (glisser ≡ en mode sélection) */
+const preSort = (L, k) => { const o = ((S.settings.preOrder || {})[k]) || []; const ix = id => { const i = o.indexOf(id); return i < 0 ? 1e6 + L.findIndex(x => x.id === id) : i; }; return L.slice().sort((a, b) => ix(a.id) - ix(b.id)); };
+const stPre = () => preSort(ST_PRESETS.filter(x => !hidPre().includes(x.id)), 's');
 const stAll = () => [...ST_PRESETS, ...(S.stretches || [])];
 const stPrep = () => +S.settings.stPrep > 0 ? +S.settings.stPrep : 5;
 const stDur = rt => rt.items.reduce((t, it) => t + it.sec * (it.sides ? 2 : 1) + stPrep() + (it.sides ? 3 : 0), 0);
@@ -3705,7 +3756,7 @@ function vStretch() {
   return `${selX && selX.k === 's' ? selHint() : ''}<div class="card"><div class="row between"><span>🧘 ${T('Cette semaine', 'This week')}</span><b>${wk.length} ${T('séance' + (wk.length > 1 ? 's' : ''), 'session' + (wk.length !== 1 ? 's' : ''))} · ${fmtMin(wk.reduce((t, x) => t + (+x.sec || 0), 0))}</b></div>
       <label>${T('Préparation entre deux étirements', 'Prep time between stretches')}</label>
       <select data-set="stPrep">${[3, 5, 10, 15].map(v => `<option value="${v}" ${stPrep() === v ? 'selected' : ''}>${v} s</option>`).join('')}</select></div>
-    ${stPre().length ? `<p class="muted" style="margin:16px 0 8px">${T('Routines prêtes', 'Ready-made routines')}</p>${stPre().map(rt => card(rt)).join('')}` : ''}
+    ${stPre().length ? `<p class="muted" style="margin:16px 0 8px">${T('Routines prêtes', 'Ready-made routines')}</p><div class="sellistx" data-k="sp">${stPre().map(rt => card(rt)).join('')}</div>` : ''}
     <div class="row between" style="margin:16px 0 8px"><p class="muted" style="margin:0">${T('Mes routines d\'étirement', 'My stretching routines')}</p><span class="row" style="gap:6px"><button class="btn sm" data-act="pcode" data-k="s">📥 ${T('Coller', 'Paste')}</button><button class="btn sm" data-act="st-new">＋ ${T('Créer', 'Create')}</button></span></div>
     ${(S.stretches || []).length ? '<div class="sellistx" data-k="s">' + S.stretches.map(rt => card(rt, true)).join('') + '</div>' : `<p class="muted small">${T('Crée ta propre routine, ou copie une routine prête avec son menu ⋯ pour la modifier.', 'Create your own routine, or copy a ready-made one with its ⋯ menu to edit it.')}</p>`}
     ${stPre().length < ST_PRESETS.length ? `<button class="btn sm ghost block" data-act="pre-restore" data-k="s" style="margin-top:14px">↺ ${T('Remettre les routines prêtes supprimées', 'Restore deleted ready-made routines')}</button>` : ''}`;
@@ -3815,7 +3866,7 @@ const TM_PRESETS = [
   {id: 't_tempo', n: ['Tempo : 4 s descente × 12', 'Tempo: 4 s down × 12'], prep: 5, rounds: 12, skipLast: false, cool: 0, steps: [TMS(['Descends', 'Lower'], 4, '#0a8f45'), TMS(['Monte', 'Lift'], 1, '#c99a06')]},
   {id: 't_plank', n: ['Gainage 3 × 45 s', 'Plank 3 × 45 s'], prep: 10, rounds: 3, skipLast: true, cool: 0, steps: [TMS(['Gainage', 'Plank'], 45, '#13917e'), TMS(['Repos', 'Rest'], 30, '#1e7ad3')]}];
 const tmAll = () => [...(S.timers || []), ...TM_PRESETS];
-const tmPre = () => TM_PRESETS.filter(x => !hidPre().includes(x.id));
+const tmPre = () => preSort(TM_PRESETS.filter(x => !hidPre().includes(x.id)), 't');
 const tmN = x => Array.isArray(x.n) ? T(x.n[0], x.n[1] || x.n[0]) : x.n;
 /* Un minuteur = des blocs. Chaque bloc a un nombre de répétitions et des étapes (en temps ou en réps). */
 function tmBlocks(t) {
@@ -3853,7 +3904,7 @@ function vTimers() {
   return `${selX ? '' : chrCard()}<div class="row between" style="margin:0 0 10px"><p class="muted" style="margin:0">${T('Minuteurs d\'intervalles : travail, repos, tempo, tabata…', 'Interval timers: work, rest, tempo, tabata…')}</p><span class="row" style="gap:6px"><button class="btn sm" data-act="pcode" data-k="t">📥 ${T('Coller', 'Paste')}</button><button class="btn sm" data-act="tm-new">＋ ${T('Créer', 'Create')}</button></span></div>
     ${selX && selX.k === 't' ? selHint() : ''}
     ${(S.timers || []).length ? `<p class="muted small" style="margin:0 0 6px">${T('Mes minuteurs', 'My timers')}</p><div class="sellistx" data-k="t">` + S.timers.map(tmCard).join('') + '</div>' : ''}
-    ${tmPre().length ? `<p class="muted small" style="margin:14px 0 6px">${T('Minuteurs prêts', 'Ready-made timers')}</p>${tmPre().map(tmCard).join('')}` : ''}
+    ${tmPre().length ? `<p class="muted small" style="margin:14px 0 6px">${T('Minuteurs prêts', 'Ready-made timers')}</p><div class="sellistx" data-k="tp">${tmPre().map(tmCard).join('')}</div>` : ''}
     ${tmPre().length < TM_PRESETS.length ? `<button class="btn sm ghost block" data-act="pre-restore" data-k="t" style="margin-top:14px">↺ ${T('Remettre les minuteurs prêts supprimés', 'Restore deleted ready-made timers')}</button>` : ''}`;
 }
 /* ----- Éditeur ----- */
@@ -4026,8 +4077,11 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.3';
+const APP_VERSION = '8.4';
 const CHANGELOG = [
+  {v: '8.4', d: '2026-11-09', fr: ['Une séance passée peut devenir une routine : bouton « 📁 En routine », choisis un dossier ou crées-en un nouveau.', 'Appui long sur une séance de ton historique : coches-en plusieurs pour les mettre ensemble dans un dossier, ou les supprimer.', 'Tu viens de Hevy, Strong ou une autre appli? Après l\'import de ton historique (CSV), un seul bouton recrée toutes tes routines à partir de tes dernières séances.'],
+   en: ['A past workout can become a routine: “📁 As routine” button, pick a folder or create a new one.', 'Long-press a workout in your history: select several to put them together in a folder, or delete them.', 'Coming from Hevy, Strong or another app: after importing your history (CSV), one tap rebuilds all your routines from your latest workouts.']},
+  {v: '8.3.1', d: '2026-11-09', fr: ['Tu peux aussi changer l\'ordre des minuteurs et des étirements « prêts » (appui long, puis glisse ≡).'], en: ['You can also reorder ready-made timers and stretches (long-press, then drag ≡).']},
   {v: '8.3', d: '2026-11-09', fr: ['Appui long aussi sur les minuteurs et les étirements : sélectionne-en plusieurs pour les supprimer, ou glisse ≡ pour changer leur ordre.', 'Nouveau chronomètre dans Intervalles, avec des tours.', 'Nouveaux boutons lecture / pause, plus beaux.'],
    en: ['Long-press on timers and stretches too: select several to delete them, or drag ≡ to reorder.', 'New stopwatch in Intervals, with laps.', 'New, nicer play / pause buttons.']},
   {v: '8.2', d: '2026-11-09', fr: ['Nouveau sélecteur de couleur, pareil sur iPhone et Android : touche dans le carré, choisis la teinte, et l\'appli change en direct. Tes dernières couleurs sont gardées.'],
@@ -4314,11 +4368,12 @@ let lp = null, lpFired = 0;
 document.addEventListener('pointerdown', e => {
   lpFired = 0;
   if (modals.length || (e.pointerType === 'mouse' && e.button !== 0)) return;
-  const c = e.target.closest('#app .rcard[data-rid], #app .fhead[data-f], #app [data-lp][data-id]');
-  if (!c || e.target.closest('input, textarea, select, .handle') || !['train', 'timers', 'stretch'].includes(cur().v)) return;
+  const c = e.target.closest('#app .rcard[data-rid], #app .fhead[data-f], #app [data-lp][data-id], #app details.hist[data-hid]');
+  if (!c || e.target.closest('input, textarea, select, .handle') || !['train', 'timers', 'stretch', ...HVIEWS].includes(cur().v)) return;
   clearTimeout(lp && lp.t);
   lp = {x: e.clientX, y: e.clientY, t: setTimeout(() => {
     lp = null; lpFired = Date.now(); haptic(30);
+    if (c.matches('details.hist')) { if (!selH) selHStart(c.dataset.hid); else { selH.add(c.dataset.hid); render(); selHBar(); } return; }
     if (c.dataset.lp) { const k = c.dataset.lp; if (!selX || selX.k !== k) selXStart(k, c.dataset.id); else { selX.ids.add(c.dataset.id); render(); selXBar(); } return; }
     if (c.classList.contains('rcard')) {
       const id = c.dataset.rid;
@@ -4336,7 +4391,7 @@ document.addEventListener('pointermove', e => { if (lp && Math.hypot(e.clientX -
 addEventListener('scroll', lpCancel, {passive: true});
 // le « clic » qui suit un appui long ne doit pas ouvrir la routine
 document.addEventListener('click', e => { if (Date.now() - lpFired < 700) { e.stopPropagation(); e.preventDefault(); lpFired = 0; } }, true);
-document.addEventListener('contextmenu', e => { if (e.target.closest('#app .rcard, #app .fhead, #app [data-lp]')) e.preventDefault(); });
+document.addEventListener('contextmenu', e => { if (e.target.closest('#app .rcard, #app .fhead, #app [data-lp], #app details.hist > summary')) e.preventDefault(); });
 
 
 /* ===================== Sélecteur de couleur ===================== */
@@ -4405,9 +4460,9 @@ const PI = {
 /* ===================== Sélection multiple : minuteurs et étirements ===================== */
 var selX = null; // {k: 't' | 's', ids: Set}
 const selXView = k => k === 't' ? 'timers' : 'stretch';
-const selHint = () => `<p class="muted small" style="margin:0 0 10px">☑️ ${T('Touche pour cocher · glisse ≡ pour changer l\'ordre de tes propres éléments', 'Tap to select · drag ≡ to reorder your own items')}</p>`;
-const selCard = (id, name, own) => `<div class="card rcard selc ${own ? 'reo' : ''} ${selX.ids.has(id) ? 'on' : ''}" data-act="selx-t" data-id="${id}"><div class="row" style="gap:10px;width:100%"><span class="selbox ${selX.ids.has(id) ? 'on' : ''}">${selX.ids.has(id) ? '✓' : ''}</span><h3 style="margin:0;flex:1;min-width:0">${esc(name)}</h3>${own ? `<span class="handle" aria-label="${T('Glisser', 'Drag')}">≡</span>` : `<span class="tag">${T('prêt', 'ready')}</span>`}</div></div>`;
-function selXStart(k, id) { selR = null; selX = {k, ids: new Set(id ? [id] : [])}; render(); selXBar(); }
+const selHint = () => `<p class="muted small" style="margin:0 0 10px">☑️ ${T('Touche pour cocher · glisse ≡ pour changer l\'ordre', 'Tap to select · drag ≡ to reorder')}</p>`;
+const selCard = (id, name, own) => `<div class="card rcard selc reo ${selX.ids.has(id) ? 'on' : ''}" data-act="selx-t" data-id="${id}"><div class="row" style="gap:10px;width:100%"><span class="selbox ${selX.ids.has(id) ? 'on' : ''}">${selX.ids.has(id) ? '✓' : ''}</span><h3 style="margin:0;flex:1;min-width:0">${esc(name)}</h3>${own ? '' : `<span class="tag">${T('prêt', 'ready')}</span>`}<span class="handle" aria-label="${T('Glisser', 'Drag')}">≡</span></div></div>`;
+function selXStart(k, id) { selR = null; selH = null; selX = {k, ids: new Set(id ? [id] : [])}; render(); selXBar(); }
 function selXEnd() { selX = null; const b = $('#selbar'); if (b) b.remove(); document.body.classList.remove('selon'); render(); }
 function selXBar() {
   let b = $('#selbar'); document.body.classList.toggle('selon', !!selX); if (!selX) { if (b) b.remove(); return; }
@@ -4430,9 +4485,10 @@ function selXDelete() {
 }
 function selXSortables() {
   if (!selX) return;
-  const box = document.querySelector(`#app .sellistx[data-k="${selX.k}"]`); if (!box) return;
-  const key = selX.k === 't' ? 'timers' : 'stretches';
-  makeSortable(box, winScroller, order => { const L = S[key]; S[key] = order.map(i => L[i]); save(); render(); selXBar(); });
+  const k = selX.k, key = k === 't' ? 'timers' : 'stretches';
+  const own = document.querySelector(`#app .sellistx[data-k="${k}"]`), pre = document.querySelector(`#app .sellistx[data-k="${k}p"]`);
+  if (own) makeSortable(own, winScroller, order => { const L = S[key]; S[key] = order.map(i => L[i]); save(); render(); selXBar(); });
+  if (pre) makeSortable(pre, winScroller, order => { const L = k === 't' ? tmPre() : stPre(); S.settings.preOrder = S.settings.preOrder || {}; S.settings.preOrder[k] = order.map(i => L[i].id); save(); render(); selXBar(); });
 }
 
 /* ===================== Chronomètre ===================== */
@@ -4473,6 +4529,60 @@ function chrDraw(full) {
   const lp = $('#chrlap'); if (lp && laps.length) lp.innerHTML = T('Tour ', 'Lap ') + (laps.length + 1) + ' · ' + chrFmt(t - laps[laps.length - 1].t);
 }
 setInterval(() => { const m = $('#chrmini'); if (m && chr.start) m.innerHTML = '▶ ' + chrFmt(chrNow(), false) + (chr.laps.length ? ` · ${chr.laps.length} ${T('tours', 'laps')}` : ''); }, 1000);
+
+
+/* ===================== Séances passées → routines dans un dossier ===================== */
+var selH = null; // Set des séances cochées
+const HVIEWS = ['history', 'profile'];
+function selHStart(id) { selR = null; selX = null; selH = new Set(id ? [id] : []); render(); selHBar(); }
+function selHEnd() { selH = null; const b = $('#selbar'); if (b) b.remove(); document.body.classList.remove('selon'); render(); }
+function selHBar() {
+  let b = $('#selbar'); document.body.classList.toggle('selon', !!selH); if (!selH) { if (b) b.remove(); return; }
+  if (!b) { b = document.createElement('div'); b.id = 'selbar'; document.body.appendChild(b); }
+  const n = selH.size;
+  b.innerHTML = `<span><b>${n}</b> ${T(n > 1 ? 'séances' : 'séance', n > 1 ? 'workouts' : 'workout')}</span>
+    <button class="btn sm" data-act="h2r-sel" ${n ? '' : 'disabled'}>📁 ${T('En routines', 'As routines')}</button>
+    <button class="btn sm danger" data-act="selh-del" ${n ? '' : 'disabled'} aria-label="${T('Supprimer', 'Delete')}">🗑</button>
+    <button class="btn sm ghost" data-act="selh-end" aria-label="${T('Terminer', 'Done')}">✕</button>`;
+}
+/* Une séance par nom (la plus récente) : pour recréer ses routines après un import de Hevy */
+function h2rLatest() {
+  const m = new Map(); S.history.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(x => { const k = norm(x.routineName); if (!m.has(k)) m.set(k, x.id); });
+  selHStart(); [...m.values()].forEach(id => selH.add(id)); render(); selHBar(); h2rModal([...selH]);
+}
+function h2rModal(ids) {
+  const hs = ids.map(id => S.history.find(x => x.id === id)).filter(Boolean); if (!hs.length) return;
+  window._h2r = hs.map(x => x.id);
+  const one = hs.length === 1, fs = folders();
+  modal(`<div class="row between"><h2 style="margin:0">📁 ${one ? T('Créer une routine', 'Create a routine') : T(`Créer ${hs.length} routines`, `Create ${hs.length} routines`)}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <p class="muted small">${T('Les exercices, séries, reps et charges de ' + (one ? 'cette séance' : 'ces séances') + ' deviennent ' + (one ? 'une routine' : 'des routines') + ' prête' + (one ? '' : 's') + ' à relancer. Ton historique ne change pas.', 'The exercises, sets, reps and weights of ' + (one ? 'this workout become a routine' : 'these workouts become routines') + ' ready to run again. Your history does not change.')}</p>
+    ${one ? `<label>${T('Nom de la routine', 'Routine name')}</label><input id="h2n" value="${esc(hs[0].routineName)}">` : `<div class="small" style="margin:6px 0">${hs.map(x => '• ' + esc(x.routineName) + ` <span class="muted">(${dateFr(x.date)})</span>`).join('<br>')}</div>`}
+    <label>${T('Dans quel dossier?', 'Which folder?')}</label>
+    <select id="h2f">${fs.map(f => `<option>${esc(f)}</option>`).join('')}<option value="__new" ${fs.length ? '' : 'selected'}>＋ ${T('Nouveau dossier…', 'New folder…')}</option></select>
+    <input id="h2nf" placeholder="${T('Nom du nouveau dossier', 'New folder name')}" style="margin-top:8px;${fs.length ? 'display:none' : ''}">
+    <button class="btn primary block" data-act="h2r-ok" style="margin-top:14px">${T('Créer', 'Create')}</button>`);
+  const sel = $('#h2f'), nf = $('#h2nf');
+  sel.addEventListener('change', () => { nf.style.display = sel.value === '__new' ? '' : 'none'; if (sel.value === '__new') nf.focus(); });
+}
+function h2rApply() {
+  const sel = $('#h2f'); let f = sel.value === '__new' ? ($('#h2nf').value || '').trim() : sel.value;
+  if (!f) { toast(T('Écris le nom du nouveau dossier', 'Type the new folder name')); return; }
+  if (!folders().includes(f)) { S.folders = S.folders || []; S.folders.push(f); }
+  const hs = window._h2r.map(id => S.history.find(x => x.id === id)).filter(Boolean).sort((a, b) => new Date(a.date) - new Date(b.date));
+  const one = hs.length === 1, taken = new Set(S.routines.filter(r => inFolder(r, f)).map(r => norm(r.name)));
+  hs.forEach(hh => {
+    let n = one ? (($('#h2n') || {}).value || '').trim() || hh.routineName : hh.routineName, base = n, k = 2;
+    while (taken.has(norm(n))) n = `${base} (${k++})`;
+    taken.add(norm(n));
+    S.routines.push({id: uid(), name: n, folder: f, exercises: hh.exercises.map(e => {
+      const o = {name: e.name, sets: 0, reps: '', weight: '', note: '', sl: e.sets.map(s => { const x = {w: s.w, r: String(s.r)}; if (s.t === 'W' || s.t === 'D') x.t = s.t; if (s.u) x.u = s.u; return x; })};
+      if (e.ss) o.ss = e.ss; if (e.rest) o.rest = e.rest; return syncSummary(o);
+    })});
+  });
+  S.settings.folded = S.settings.folded || {}; delete S.settings.folded[f];
+  save(); closeAll(); if (selH) selHEnd(); else render();
+  toast(T(`📁 ${hs.length} routine${hs.length > 1 ? 's' : ''} ajoutée${hs.length > 1 ? 's' : ''} dans « ${f} »`, `📁 ${hs.length} routine${hs.length > 1 ? 's' : ''} added to “${f}”`));
+}
 
 /* ---------- Calendrier façon Hevy ---------- */
 let calMonths = 6;
@@ -4517,6 +4627,7 @@ function headerRight(v) {
 let navAnim = false;
 function render() {
   if (selR && cur().v !== 'train') { selR = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
+  if (selH && !HVIEWS.includes(cur().v)) { selH = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
   if (selX && cur().v !== selXView(selX.k)) { selX = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
   applyLang();
   renderChrome();
@@ -4740,6 +4851,14 @@ document.addEventListener('click', e => {
       break; }
     case 'st-share': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); if (rt) { const c = JSON.parse(JSON.stringify(rt)); delete c.id; shareItem('s', [c], T(rt.n[0], rt.n[1] || rt.n[0])); } break; }
     case 'imp-ok': doImport(); break;
+    case 'h2r': h2rModal([b.dataset.hid]); break;
+    case 'h2r-sel': h2rModal([...selH]); break;
+    case 'h2r-ok': h2rApply(); break;
+    case 'h2r-latest': h2rLatest(); break;
+    case 'h2r-after-import': closeAll(); go('history'); setTimeout(h2rLatest, 200); break;
+    case 'selh-t': { const id = b.dataset.hid; selH.has(id) ? selH.delete(id) : selH.add(id); render(); selHBar(); break; }
+    case 'selh-end': selHEnd(); break;
+    case 'selh-del': { const n = selH.size; if (!n || !confirm(T(`Supprimer ${n} séance${n > 1 ? 's' : ''} de ton historique?`, `Delete ${n} workout${n > 1 ? 's' : ''} from your history?`))) break; snap(); S.history = S.history.filter(x => !selH.has(x.id)); save(); selHEnd(); undoToast(T(`🗑 ${n} séance${n > 1 ? 's' : ''} supprimée${n > 1 ? 's' : ''}`, `🗑 ${n} workout${n > 1 ? 's' : ''} deleted`)); break; }
     case 'selx-start': closeAll(); selXStart(b.dataset.k, b.dataset.id); break;
     case 'selx-t': { if (e.target.closest('.handle')) break; const id = b.dataset.id; selX.ids.has(id) ? selX.ids.delete(id) : selX.ids.add(id); render(); selXBar(); break; }
     case 'selx-all': { const all = selXAll(); if (all.every(id => selX.ids.has(id))) selX.ids.clear(); else all.forEach(id => selX.ids.add(id)); render(); selXBar(); break; }
