@@ -315,6 +315,16 @@ button.chip{cursor:pointer}
 .rcard,.fhead{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .rcard.selc .handle{padding:0 4px 0 10px;margin-left:auto}
 body.selon main{padding-bottom:170px}
+
+/* Sélecteur de couleur maison (pareil sur iPhone et Android) */
+.cpbtn{width:64px;height:44px;padding:5px}.cpbtn span{display:block;width:100%;height:100%;border-radius:8px;border:1px solid #8885}
+.cp-sv{position:relative;height:190px;border-radius:14px;touch-action:none;cursor:crosshair;background-image:linear-gradient(to top,#000,transparent),linear-gradient(to right,#fff,transparent)}
+.cp-hue{position:relative;height:28px;border-radius:14px;margin-top:14px;touch-action:none;cursor:pointer;background:linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)}
+.cp-dot{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #0006,0 2px 8px #0008;pointer-events:none}
+.cp-hue .cp-dot{top:50%}
+.cp-row{display:flex;gap:10px;align-items:center;margin-top:14px}
+.cp-prev{width:52px;height:44px;border-radius:12px;border:1px solid var(--line);flex:none}
+.cp-sw{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.cp-sw button{width:32px;height:32px;border-radius:50%;border:2px solid #8886;padding:0}
 </style>
 </head>
 <body>
@@ -1840,13 +1850,13 @@ function vSettings() {
       <div class="grid2" style="margin-top:10px">${THEMES.map(([k, l, c]) => `<button class="btn sm ${(S.settings.theme || 'noir') === k ? 'on' : ''}" style="text-align:left" data-act="theme" data-t="${k}"><span class="sw" style="background:${c}"></span>${l}</button>`).join('')}</div>
       <label style="margin-top:16px">Couleur des boutons (personnalisée)</label>
       <div class="chips">${ACCENTS.map(c => `<button class="chip" data-act="accent-pick" data-c="${c}" style="background:${c};border-color:${S.settings.accent === c ? 'var(--text)' : c};width:34px;height:34px;padding:0" aria-label="Couleur ${c}"></button>`).join('')}</div>
-      <div class="row" style="margin-top:6px"><input type="color" data-accent="1" value="${S.settings.accent || getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c6f135'}" style="width:64px;height:44px;padding:4px" aria-label="Choisir une couleur">
+      <div class="row" style="margin-top:6px"><button class="btn cpbtn" data-act="cpick" data-k="accent" aria-label="${T('Choisir une couleur', 'Pick a color')}"><span style="background:${S.settings.accent || 'var(--accent)'}"></span></button>
       <span class="small muted" style="flex:1">${S.settings.accent ? 'Couleur perso : ' + esc(S.settings.accent) : 'Couleur du thème'}</span>
       ${S.settings.accent ? '<button class="btn sm" data-act="accent-reset">Remettre celle du thème</button>' : ''}</div>
       <label class="row" style="margin-top:14px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="icons" ${S.settings.icons !== false ? 'checked' : ''}> ${T('Icônes modernes (décoche pour garder les emojis)', 'Modern icons (uncheck to keep emojis)')}</label>
       <label style="margin-top:16px">${T('Couleur du fond (personnalisée)', 'Background color (custom)')}</label>
       <div class="chips">${BGS.map(c => `<button class="chip" data-act="bg-pick" data-c="${c}" style="background:${c};border-color:${S.settings.bg === c ? 'var(--accent)' : '#8886'};border-width:2px;width:34px;height:34px;padding:0" aria-label="${T('Fond', 'Background')} ${c}"></button>`).join('')}</div>
-      <div class="row" style="margin-top:6px"><input type="color" data-bgc="1" value="${S.settings.bg || getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0f1114'}" style="width:64px;height:44px;padding:4px" aria-label="${T('Choisir la couleur du fond', 'Pick the background color')}">
+      <div class="row" style="margin-top:6px"><button class="btn cpbtn" data-act="cpick" data-k="bg" aria-label="${T('Choisir la couleur du fond', 'Pick the background color')}"><span style="background:${S.settings.bg || 'var(--bg)'}"></span></button>
       <span class="small muted" style="flex:1">${S.settings.bg ? T('Fond perso : ', 'Custom background: ') + esc(S.settings.bg) : T('Fond du thème', 'Theme background')}</span>
       ${S.settings.bg ? `<button class="btn sm" data-act="bg-reset">${T('Remettre celui du thème', "Use the theme's")}</button>` : ''}</div>`) +
   setSec('cloud', 'cloud', '💾', T('Sauvegarde', 'Backup'), gdOn() ? T('☁️ Google Drive activé', '☁️ Google Drive on') : cloudOn() ? T('☁️ Automatique activée', '☁️ Automatic backup on') : S.settings.lastBackup ? T('Dernière : ', 'Last: ') + ago(S.settings.lastBackup) : T('⚠️ Jamais sauvegardé', '⚠️ Never backed up'), `${gdCard()}${simpleBackupCard()}${cloudCard()}
@@ -4008,8 +4018,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.1.3';
+const APP_VERSION = '8.2';
 const CHANGELOG = [
+  {v: '8.2', d: '2026-11-09', fr: ['Nouveau sélecteur de couleur, pareil sur iPhone et Android : touche dans le carré, choisis la teinte, et l\'appli change en direct. Tes dernières couleurs sont gardées.'],
+   en: ['New color picker, the same on iPhone and Android: tap in the square, pick the hue, and the app updates live. Your recent colors are kept.']},
   {v: '8.1.3', d: '2026-11-09', fr: ['iPhone : la barre du bas (Entraînement, Étirements…) reste collée en bas de l\'écran sur toutes les pages, même les pages courtes.'], en: ['iPhone: the bottom bar (Workout, Stretching…) stays at the bottom of the screen on every page, even short ones.']},
   {v: '8.1.1', d: '2026-11-09', fr: ['Fond clair : ta couleur de boutons garde maintenant sa vraie teinte (elle est juste un peu foncée pour rester lisible).'], en: ['Light background: your button color now keeps its real hue (only slightly darkened to stay readable).']},
   {v: '8.1', d: '2026-11-09', fr: ['Appuie longtemps sur une routine pour la sélectionner : coche-en d\'autres, puis déplace-les ou supprime-les d\'un coup. Glisse ≡ pour changer leur ordre.', 'Appuie longtemps sur un dossier pour changer l\'ordre des dossiers.'],
@@ -4315,6 +4327,60 @@ addEventListener('scroll', lpCancel, {passive: true});
 document.addEventListener('click', e => { if (Date.now() - lpFired < 700) { e.stopPropagation(); e.preventDefault(); lpFired = 0; } }, true);
 document.addEventListener('contextmenu', e => { if (e.target.closest('#app .rcard, #app .fhead')) e.preventDefault(); });
 
+
+/* ===================== Sélecteur de couleur ===================== */
+const hex2rgb = x => [1, 3, 5].map(i => parseInt(x.slice(i, i + 2), 16));
+const rgb2hex = c => '#' + c.map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
+function rgb2hsv([r, g, b]) { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; let hh = 0;
+  if (d) hh = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [(hh * 60 + 360) % 360, mx ? d / mx : 0, mx]; }
+function hsv2rgb(hh, s, v) { const f = n => { const k = (n + hh / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); }; return [f(5), f(3), f(1)].map(x => x * 255); }
+let cpS = null;
+function openColorPicker(k) {
+  const raw = (k === 'accent' ? S.settings.accent || getComputedStyle(document.documentElement).getPropertyValue('--accent') : S.settings.bg || getComputedStyle(document.documentElement).getPropertyValue('--bg')).trim();
+  const start = /^#[0-9a-f]{6}$/i.test(raw) ? raw.toLowerCase() : (k === 'accent' ? '#c6f135' : '#0f1114');
+  const [hh, s, v] = rgb2hsv(hex2rgb(start));
+  cpS = {k, old: S.settings[k], hh, s, v};
+  const rec = (S.settings.recentColors || {})[k] || [], base = k === 'accent' ? ACCENTS : BGS;
+  const m = modal(`<div class="row between"><h2 style="margin:0">🎨 ${k === 'accent' ? T('Couleur des boutons', 'Button color') : T('Couleur du fond', 'Background color')}</h2><button class="btn sm" data-act="cp-cancel">✕</button></div>
+    <p class="muted small" style="margin:6px 0 10px">${T('Touche ou glisse dans le carré, puis choisis la teinte en dessous. L\'appli change en direct.', 'Tap or drag in the square, then pick the hue below. The app updates live.')}</p>
+    <div class="cp-sv" id="cpsv"><div class="cp-dot" id="cpsvd"></div></div>
+    <div class="cp-hue" id="cphue"><div class="cp-dot" id="cphued"></div></div>
+    <div class="cp-row"><div class="cp-prev" id="cpprev"></div><input id="cphex" maxlength="7" autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1;font-family:ui-monospace,Menlo,monospace"></div>
+    ${rec.length ? `<p class="muted small" style="margin:12px 0 0">${T('Dernières couleurs', 'Recent colors')}</p><div class="cp-sw" style="margin-top:6px">${rec.map(c => `<button data-act="cp-set" data-c="${c}" style="background:${c}" aria-label="${c}"></button>`).join('')}</div>` : ''}
+    <p class="muted small" style="margin:12px 0 0">${T('Suggestions', 'Suggestions')}</p><div class="cp-sw" style="margin-top:6px">${base.map(c => `<button data-act="cp-set" data-c="${c}" style="background:${c}" aria-label="${c}"></button>`).join('')}</div>
+    <div class="row" style="margin-top:16px"><button class="btn" style="flex:1" data-act="cp-cancel">${T('Annuler', 'Cancel')}</button><button class="btn primary" style="flex:2" data-act="cp-ok">${T('Appliquer', 'Apply')}</button></div>`,
+    {onclose: () => { if (cpS) { cpRestore(); } }});
+  const sv = m.querySelector('#cpsv'), hue = m.querySelector('#cphue'), hx = m.querySelector('#cphex');
+  const drag = (el, fn) => {
+    const go = e => { const r = el.getBoundingClientRect(); fn(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), Math.max(0, Math.min(1, (e.clientY - r.top) / r.height))); };
+    el.addEventListener('pointerdown', e => { e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch (x) {} go(e); el._d = 1; });
+    el.addEventListener('pointermove', e => { if (el._d) { e.preventDefault(); go(e); } });
+    ['pointerup', 'pointercancel'].forEach(t => el.addEventListener(t, () => { el._d = 0; }));
+  };
+  drag(sv, (x, y) => { cpS.s = x; cpS.v = 1 - y; cpDraw(true); });
+  drag(hue, x => { cpS.hh = x * 359.9; if (cpS.s < .05 && cpS.v > .2) cpS.s = .8; cpDraw(true); });
+  hx.addEventListener('input', () => { let t = hx.value.trim(); if (t[0] !== '#') t = '#' + t; if (/^#[0-9a-f]{6}$/i.test(t)) { [cpS.hh, cpS.s, cpS.v] = rgb2hsv(hex2rgb(t)); cpDraw(false); } });
+  cpDraw(false);
+}
+function cpHex() { return rgb2hex(hsv2rgb(cpS.hh, cpS.s, cpS.v)); }
+function cpDraw(setHex) {
+  const c = cpHex(), m = modals[modals.length - 1]; if (!m) return;
+  const q = s => m.querySelector(s);
+  q('#cpsv').style.backgroundColor = `hsl(${cpS.hh},100%,50%)`;
+  Object.assign(q('#cpsvd').style, {left: cpS.s * 100 + '%', top: (1 - cpS.v) * 100 + '%', background: c});
+  Object.assign(q('#cphued').style, {left: cpS.hh / 360 * 100 + '%', background: `hsl(${cpS.hh},100%,50%)`});
+  q('#cpprev').style.background = c;
+  if (setHex !== false || document.activeElement !== q('#cphex')) q('#cphex').value = c;
+  S.settings[cpS.k] = c; applyTheme(); // aperçu en direct
+}
+function cpRestore() { if (!cpS) return; if (cpS.old === undefined) delete S.settings[cpS.k]; else S.settings[cpS.k] = cpS.old; cpS = null; applyTheme(); }
+function cpApply() {
+  const c = cpHex(), k = cpS.k; cpS = null;
+  S.settings[k] = c; const R = S.settings.recentColors = S.settings.recentColors || {};
+  R[k] = [c, ...(R[k] || []).filter(x => x !== c)].slice(0, 8);
+  save(); applyTheme(); closeAll(); render();
+}
+
 /* ---------- Calendrier façon Hevy ---------- */
 let calMonths = 6;
 function vCal2() {
@@ -4579,6 +4645,10 @@ document.addEventListener('click', e => {
       break; }
     case 'st-share': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); if (rt) { const c = JSON.parse(JSON.stringify(rt)); delete c.id; shareItem('s', [c], T(rt.n[0], rt.n[1] || rt.n[0])); } break; }
     case 'imp-ok': doImport(); break;
+    case 'cpick': openColorPicker(b.dataset.k); break;
+    case 'cp-set': { [cpS.hh, cpS.s, cpS.v] = rgb2hsv(hex2rgb(b.dataset.c)); cpDraw(true); break; }
+    case 'cp-ok': cpApply(); break;
+    case 'cp-cancel': cpRestore(); closeAll(); break;
     case 'gd-connect': gdConnect(); break;
     case 'gd-push': gdSync(true).then(() => { render(); toast(S.gd && S.gd.err ? '⚠️ ' + S.gd.err : T('☁️ Sauvegardé dans Google Drive', '☁️ Saved to Google Drive')); }); break;
     case 'gd-restore': gdRestore(); break;
