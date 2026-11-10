@@ -812,6 +812,48 @@ function applyTheme() {
   } else BGV.forEach(k => de.style.removeProperty(k));
   const m = document.querySelector('meta[name="theme-color"]');
   if (m) m.content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  if (typeof updAppIcon === 'function') updAppIcon();
+}
+
+/* ---------- Icône de l'appli aux couleurs choisies ----------
+   On dessine l'icône (haltère) avec la couleur d'accent et le fond, puis on la range dans le cache « carnet-user-icon ».
+   Le service worker sert ces versions à la place de icon-192.png, icon-512.png et manifest.json :
+   Android (Chrome) met l'icône de l'écran d'accueil à jour à sa prochaine vérification. iPhone : seulement à l'ajout sur l'écran d'accueil. */
+const cssColor = v => { const d = document.createElement('i'); d.style.color = v; d.style.display = 'none'; document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; };
+function drawAppIcon(sz, acc, bg) {
+  const c = document.createElement('canvas'); c.width = c.height = sz; const g = c.getContext('2d'), k = sz / 512;
+  g.fillStyle = bg; g.fillRect(0, 0, sz, sz); g.fillStyle = acc;
+  const rr = (x, y, w, hh, r) => { g.beginPath(); if (g.roundRect) g.roundRect(x * k, y * k, w * k, hh * k, r * k); else g.rect(x * k, y * k, w * k, hh * k); g.fill(); };
+  rr(110, 235, 292, 42, 8);                         // barre
+  rr(75, 197, 40, 118, 13); rr(397, 197, 40, 118, 13); // petits disques
+  rr(123, 165, 42, 182, 15); rr(347, 165, 42, 182, 15); // gros disques
+  return c;
+}
+let appIconT = null;
+function updAppIcon() { clearTimeout(appIconT); appIconT = setTimeout(updAppIconNow, 600); }
+async function updAppIconNow() {
+  try {
+    const de = getComputedStyle(document.documentElement);
+    const acc = cssColor(de.getPropertyValue('--accent').trim() || '#c6f135'), bg = cssColor(de.getPropertyValue('--bg').trim() || '#0f1114');
+    const hex = x => '#' + x.match(/\d+/g).slice(0, 3).map(n => (+n).toString(16).padStart(2, '0')).join(''), key = hex(acc).slice(1) + '-' + hex(bg).slice(1);
+    const c192 = drawAppIcon(192, acc, bg), url = c192.toDataURL('image/png');
+    document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]').forEach(l => { l.href = url; });
+    if (!('caches' in window) || S.settings.iconKey === key && await caches.has('carnet-user-icon')) return;
+    const blob = cv => new Promise(ok => cv.toBlob(ok, 'image/png'));
+    const [b192, b512] = await Promise.all([blob(c192), blob(drawAppIcon(512, acc, bg))]);
+    const base = new URL('./', location.href);
+    let man = null; try { man = await (await fetch('manifest.json', {cache: 'no-store'})).json(); } catch (e) {}
+    if (!man) return;
+    man.icons = [{src: 'icon-192.png?c=' + key, sizes: '192x192', type: 'image/png'}, {src: 'icon-512.png?c=' + key, sizes: '512x512', type: 'image/png', purpose: 'any maskable'}];
+    (man.shortcuts || []).forEach(s => s.icons = [{src: 'icon-192.png?c=' + key, sizes: '192x192', type: 'image/png'}]);
+    man.background_color = man.theme_color = hex(bg);
+    const cc = await caches.open('carnet-user-icon');
+    await Promise.all([
+      cc.put(new URL('icon-192.png', base).href, new Response(b192, {headers: {'Content-Type': 'image/png'}})),
+      cc.put(new URL('icon-512.png', base).href, new Response(b512, {headers: {'Content-Type': 'image/png'}})),
+      cc.put(new URL('manifest.json', base).href, new Response(JSON.stringify(man), {headers: {'Content-Type': 'application/manifest+json'}}))]);
+    S.settings.iconKey = key; saveLocal();
+  } catch (e) {}
 }
 applyTheme();
 try { matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => { if (S.settings.theme === 'auto') { applyTheme(); render(); } }); } catch (e) {}
@@ -1868,7 +1910,8 @@ function vSettings() {
       <label>${T('Premier jour de la semaine', 'First day of the week')}</label>
       <select data-set="weekSun"><option value="" ${sunFirst() ? '' : 'selected'}>${T('Lundi', 'Monday')}</option><option value="1" ${sunFirst() ? 'selected' : ''}>${T('Dimanche', 'Sunday')}</option></select>
       ${isIOS && !isStandalone() ? `<button class="btn block" data-act="ios-install" style="margin:12px 0 4px">📱 ${T('Installer sur l\'iPhone', 'Install on iPhone')}</button>` : ''}
-      <button class="btn block" data-act="tour" style="margin:12px 0 4px">🎓 ${T('Revoir la visite guidée', 'Replay the guided tour')}</button>
+      <details class="card" style="margin:12px 0 4px"><summary><b>🎓 ${T('Visites guidées', 'Guided tours')}</b></summary>
+        <div class="menu" style="margin-top:8px">${TOUR_LIST.map(([k, ic, n]) => `<button class="btn block" data-act="tour" data-k="${k}" style="text-align:left">${ic} ${T(n[0], n[1])}${(S.settings.tour || {})[k] ? '' : ` <span class="muted small">· ${T('pas encore vue', 'not seen yet')}</span>`}</button>`).join('')}</div></details>
       <button class="btn block" data-act="news" style="margin:8px 0 4px">🆕 ${T('Nouveautés', 'What\'s new')} <span class="muted small">· v${APP_VERSION}</span></button>
       <label>Nom affiché sur le profil</label>
       <input data-set="name" value="${esc(S.settings.name || '')}" placeholder="Ton nom">
@@ -1936,6 +1979,8 @@ function vSettings() {
       <div class="row" style="margin-top:6px"><button class="btn cpbtn" data-act="cpick" data-k="accent" aria-label="${T('Choisir une couleur', 'Pick a color')}"><span style="background:${S.settings.accent || 'var(--accent)'}"></span></button>
       <span class="small muted" style="flex:1">${S.settings.accent ? 'Couleur perso : ' + esc(S.settings.accent) : 'Couleur du thème'}</span>
       ${S.settings.accent ? '<button class="btn sm" data-act="accent-reset">Remettre celle du thème</button>' : ''}</div>
+      <div class="row" style="gap:12px;margin-top:14px;align-items:center"><img src="${(document.querySelector('link[rel=apple-touch-icon]') || {}).href || 'icon-192.png'}" alt="" style="width:52px;height:52px;border-radius:14px;flex:none;border:1px solid var(--line)">
+        <span class="small muted">${T('L\'icône de l\'appli prend tes couleurs. <b>Android</b> : elle change sur l\'écran d\'accueil toute seule dans les jours qui suivent (Chrome peut te demander de confirmer). <b>iPhone</b> : seulement quand tu ajoutes l\'appli à l\'écran d\'accueil.', 'The app icon uses your colors. <b>Android</b>: it updates on your home screen by itself within a few days (Chrome may ask you to confirm). <b>iPhone</b>: only when you add the app to your home screen.')}</span></div>
       <label class="row" style="margin-top:14px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="icons" ${S.settings.icons !== false ? 'checked' : ''}> ${T('Icônes modernes (décoche pour garder les emojis)', 'Modern icons (uncheck to keep emojis)')}</label>
       <label style="margin-top:16px">${T('Couleur du fond (personnalisée)', 'Background color (custom)')}</label>
       <div class="chips">${BGS.map(c => `<button class="chip" data-act="bg-pick" data-c="${c}" style="background:${c};border-color:${S.settings.bg === c ? 'var(--accent)' : '#8886'};border-width:2px;width:34px;height:34px;padding:0" aria-label="${T('Fond', 'Background')} ${c}"></button>`).join('')}</div>
@@ -2044,7 +2089,8 @@ async function exportCsv() {
   toast(T(`✅ ${rows.length - 1} séries exportées`, `✅ ${rows.length - 1} sets exported`));
 }
 async function exportData() {
-  const data = JSON.stringify({...S, active: null, cloud: undefined, gd: undefined, photos: undefined, exportedAt: new Date().toISOString()}, null, 1);
+  let photoData = {}; try { photoData = await phAll(); } catch (e) {}
+  const data = JSON.stringify({...S, active: null, cloud: undefined, gd: undefined, photoData, exportedAt: new Date().toISOString()});
   const name = `carnet-muscu-${new Date().toISOString().slice(0, 10)}.json`;
   const file = new File([data], name, {type: 'application/json'});
   const done = () => { S.settings.lastBackup = new Date().toISOString(); save(); if (cur().v === 'settings' || cur().v === 'train') render(); };
@@ -2192,6 +2238,7 @@ function importFile(file) {
       if (!confirm(`Remplacer tes données actuelles par ce fichier (${d.history.length} séances, ${d.routines.length} routines)?`)) return;
       restoreAll(d);
       save(); applyTheme(); setRoot('train'); render(); toast('✅ Données importées');
+      if (d.photoData) phRestore(d.photoData).then(n => { if (n) { render(); toast(T(`✅ Données et ${n} photo${n > 1 ? 's' : ''} importées`, `✅ Data and ${n} photo${n > 1 ? 's' : ''} imported`)); } });
     } catch (e) { toast('⚠️ Fichier non reconnu'); }
   };
   rd.readAsText(file);
@@ -2369,7 +2416,7 @@ let cloudTimer = null, cloudBusy = false, cloudDirty = false;
 const ghTok = () => { try { return localStorage.getItem(TKEY) || ''; } catch (e) { return ''; } };
 const cloudOn = () => !!(ghTok() && S.cloud && S.cloud.gist);
 const strHash = s => { let x = 5381; for (let i = 0; i < s.length; i++) x = ((x << 5) + x + s.charCodeAt(i)) | 0; return s.length + ':' + x; };
-const backupBody = () => JSON.stringify({...S, active: null, cloud: undefined, gd: undefined, photos: undefined});
+const backupBody = () => JSON.stringify({...S, active: null, cloud: undefined, gd: undefined});
 async function gh(path, opt = {}) {
   const r = await fetch('https://api.github.com' + path, {...opt, headers: {'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + ghTok(), ...(opt.body ? {'Content-Type': 'application/json'} : {})}});
   if (!r.ok) { const err = new Error(r.status === 401 ? 'Clé GitHub invalide ou expirée' : r.status === 404 ? 'Sauvegarde introuvable' : r.status === 403 ? 'Accès refusé par GitHub (vérifie la case « gist »)' : 'Erreur GitHub ' + r.status); err.status = r.status; throw err; }
@@ -2396,7 +2443,15 @@ async function cloudFetch() {
   return JSON.parse(txt);
 }
 /* Remet TOUTES les données d'une sauvegarde (routines, historique, étirements, minuteurs, exercices perso, réglages…) */
-function restoreAll(d) { const keep = {cloud: S.cloud, gd: S.gd, photos: S.photos}; const x = {...d}; delete x.exportedAt; S = migrate({...x, active: null, cloud: keep.cloud, gd: keep.gd, photos: keep.photos}); }
+function restoreAll(d) {
+  const keep = {cloud: S.cloud, gd: S.gd, photos: S.photos || []}; const x = {...d}; delete x.exportedAt; delete x.photoData;
+  const ph = [...(Array.isArray(d.photos) ? d.photos : [])]; keep.photos.forEach(p => { if (!ph.some(q => q.id === p.id)) ph.push(p); });
+  ph.sort((a, b) => (a.d || '').localeCompare(b.d || ''));
+  S = migrate({...x, active: null, cloud: keep.cloud, gd: keep.gd, photos: ph});
+}
+/* Photos de progrès : les images sont dans IndexedDB ; pour les sauvegardes on les regroupe {id: image} */
+async function phAll() { const out = {}; for (const p of (S.photos || [])) { try { const d = await phGet(p.id); if (d) out[p.id] = d; } catch (e) {} } return out; }
+async function phRestore(map) { let n = 0; for (const [id, d] of Object.entries(map || {})) { if (typeof d === 'string' && d.startsWith('data:image')) { try { await phPut(id, d); phCache[id] = d; n++; } catch (e) {} } } return n; }
 function cloudRestoreData(d) {
   const c = S.cloud;
   restoreAll(d);
@@ -4151,8 +4206,12 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.8.2';
+const APP_VERSION = '8.9.2';
 const CHANGELOG = [
+  {v: '8.9.2', d: '2026-11-10', fr: ['La sauvegarde garde maintenant tout, y compris tes photos de progrès (Google Drive et fichier exporté).'], en: ['Backups now keep everything, including your progress photos (Google Drive and exported file).']},
+  {v: '8.9.1', d: '2026-11-10', fr: ['L\'icône de l\'appli prend ta couleur et ton fond (Réglages → Apparence). Sur Android, l\'icône de l\'écran d\'accueil se met à jour toute seule.'], en: ['The app icon now uses your accent and background colors (Settings → Appearance). On Android, the home screen icon updates by itself.']},
+  {v: '8.9', d: '2026-11-10', fr: ['Visites guidées par onglet : la première visite montre seulement les bases, puis Étirements, Cardio, Intervalles, Profil, Amis et Mesures ont chacun leur petite visite la première fois que tu les ouvres.', 'Réglages → Général → Visites guidées : revois celle que tu veux.', 'Amis : bouton 📋 Coller, et aide quand un lien s\'ouvre dans le navigateur au lieu de l\'appli (iPhone).'],
+   en: ['Tours per tab: the first tour shows only the basics, then Stretching, Cardio, Intervals, Profile, Friends and Measures each have a short tour the first time you open them.', 'Settings → General → Guided tours: replay any of them.', 'Friends: 📋 Paste button, and help when a link opens in the browser instead of the app (iPhone).']},
   {v: '8.8', d: '2026-11-10', fr: ['Nouveau : 👥 Amis (Profil → Amis). Partage tes séances, ajoute tes amis avec leur code ou leur lien, vois leurs séances et réagis 🔥 💪 👏.', 'Tu choisis ce qui est partagé : cacher tes poids, rendre une séance privée, arrêter le partage. Ton poids corporel, tes mensurations et tes photos ne sont jamais partagés.'],
    en: ['New: 👥 Friends (Profile → Friends). Share your workouts, add buddies with their code or link, see their workouts and react 🔥 💪 👏.', 'You choose what is shared: hide weights, make a workout private, stop sharing. Body weight, measurements and photos are never shared.']},
   {v: '8.7', d: '2026-11-09', fr: ['Nouvel onglet ❤️ Cardio : entre tes pas sur tapis incliné (ex. 1 000 pas à 15 %) et vois l\'équivalent en pas à plat, en km et en calories. Marche aussi pour la course, le vélo, l\'elliptique, les escaliers, le rameur et la corde à sauter.', 'Profil → Mes infos : poids, grandeur, âge et sexe, pour des calculs précis.', 'Nouveau bouton « Ajouter du cardio » plus visible dans tes séances.', 'Photos : choisis entre prendre une photo ou l\'album.'],
@@ -4221,25 +4280,58 @@ function checkNews() {
 /* ===================== Visite guidée ===================== */
 const TOURS = {
   main: [
-    {t: ['👋 Petite visite', '👋 Quick tour'], d: ['1 minute pour voir tout ce que Carnet Muscu peut faire. Tu peux passer quand tu veux.', 'One minute to see everything Carnet Muscu can do. You can skip anytime.']},
+    {t: ['👋 Petite visite', '👋 Quick tour'], d: ['Les bases en 30 secondes. Les autres onglets ont leur propre petite visite, la première fois que tu les ouvres.', 'The basics in 30 seconds. The other tabs have their own short tour the first time you open them.']},
     {tab: 'train', sel: '.card.today, [data-act="sched-edit"]', t: ['📅 Ton horaire', '📅 Your schedule'], d: ['Planifie ta semaine (lundi : Push, mardi : repos…) ou un cycle Push/Pull/Legs. La séance du jour s\'affiche ici, prête à lancer.', 'Plan your week (Monday: Push, Tuesday: rest…) or a Push/Pull/Legs cycle. Today\'s workout shows up here, ready to start.']},
     {tab: 'train', sel: '[data-act="start-empty"]', t: ['➕ Séance libre', '➕ Free workout'], d: ['Commence sans routine et ajoute tes exercices au fur et à mesure.', 'Start without a routine and add exercises as you go.']},
     {tab: 'train', sel: '[data-act="new-routine"]', t: ['📋 Tes routines', '📋 Your routines'], d: ['Crée une routine avec tes exercices, séries, reps, charges et temps de repos. Plus de 1 000 exercices avec leurs muscles.', 'Build a routine with your exercises, sets, reps, weights and rest times. Over 1,000 exercises with their muscles.']},
-    {tab: 'train', sel: '[data-act="ai-menu"]', t: ['🤖 Assistant IA', '🤖 AI assistant'], d: ['Transfère tes routines d\'une autre appli, crée un nouveau programme ou fais-le améliorer. L\'appli te guide étape par étape avec ChatGPT, Claude ou Gemini.', 'Move your routines from another app, create a new program or improve yours. The app guides you step by step with ChatGPT, Claude or Gemini.']},
-    {tab: 'train', sel: '.folder .fhead', t: ['📁 Dossiers', '📁 Folders'], d: ['Range tes routines par programme. <b>Appuie longtemps</b> sur une routine pour en sélectionner plusieurs (déplacer, supprimer, changer l\'ordre), ou sur un dossier pour changer l\'ordre des dossiers. Le menu ⋯ a les autres options.', 'Organize routines by program. The ⋯ menu lets you rename, reorder, send to AI or share with a friend.']},
-    {sel: 'nav [data-tab="stretch"]', t: ['🧘 Étirements', '🧘 Stretching'], d: ['Routines d\'étirement guidées avec minuteur et images, ou crée les tiennes.', 'Guided stretching routines with timer and pictures, or make your own.']},
-    {sel: 'nav [data-tab="cardio"]', t: ['❤️ Cardio', '❤️ Cardio'], d: ['Convertis tes pas sur tapis incliné, ton vélo ou ton elliptique en pas équivalents, en km et en calories, selon ton poids, ta grandeur et ton âge.', 'Convert incline treadmill steps, bike or elliptical into equivalent steps, km and calories, based on your weight, height and age.']},
-    {sel: 'nav [data-tab="timers"]', t: ['⏱ Intervalles', '⏱ Intervals'], d: ['Minuteurs Tabata, HIIT, EMOM ou sur mesure, avec bips et notifications.', 'Tabata, HIIT, EMOM or custom timers, with beeps and notifications.']},
-    {sel: 'nav [data-tab="profile"]', t: ['📈 Profil', '📈 Profile'], d: ['Ton historique, tes records, tes graphiques de progression, ton calendrier et tes mesures.', 'Your history, records, progress charts, calendar and body measurements.']},
-    {tab: 'profile', sel: '#hdr [data-v="settings"]', t: ['⚙️ Réglages', '⚙️ Settings'], d: ['Son, vibration, notifications sur la montre, couleurs, langue, sauvegarde… Tu peux revoir cette visite dans Réglages → Général.', 'Sound, vibration, watch notifications, colors, language, backup… You can replay this tour in Settings → General.']},
-    {t: ['💾 Pense à sauvegarder', '💾 Remember to back up'], d: ['Tes données restent dans ton téléphone. Une fois par semaine, fais Réglages → Sauvegarde → <b>Sauvegarder maintenant</b> et garde le fichier dans Google Drive, Fichiers ou ton courriel. L\'appli te le rappellera.', 'Your data stays on your phone. Once a week, go to Settings → Backup → <b>Back up now</b> and keep the file in Google Drive, Files or your email. The app will remind you.']},
-    {tab: 'train', t: ['💪 C\'est à toi!', '💪 Your turn!'], d: ['Lance ta première séance : on te montrera les trucs utiles pendant l\'entraînement.', 'Start your first workout: we\'ll show you the useful tricks during the session.']}
+    {tab: 'train', sel: '[data-act="ai-menu"]', t: ['🤖 Assistant IA', '🤖 AI assistant'], d: ['Tu viens d\'une autre appli? Transfère tes routines, crée un programme ou fais-le améliorer. L\'appli te guide étape par étape avec ChatGPT, Claude ou Gemini.', 'Coming from another app? Move your routines, create a program or improve yours. The app guides you step by step with ChatGPT, Claude or Gemini.']},
+    {tab: 'train', sel: '.folder .fhead', t: ['📁 Dossiers', '📁 Folders'], d: ['Range tes routines par programme. <b>Appuie longtemps</b> sur une routine pour en sélectionner plusieurs (déplacer, supprimer, changer l\'ordre). Le menu ⋯ a les autres options.', 'Organize routines by program. <b>Long-press</b> a routine to select several (move, delete, reorder). The ⋯ menu has the other options.']},
+    {sel: 'nav', t: ['🧭 Les onglets', '🧭 The tabs'], d: ['Étirements, Cardio, Intervalles et Profil : ouvre-les quand tu veux, chacun te montrera ses trucs la première fois.', 'Stretching, Cardio, Intervals and Profile: open them anytime, each one will show you its tricks the first time.']},
+    {t: ['💾 Ta sauvegarde', '💾 Your backup'], d: ['Tes données restent dans ton téléphone. Le plus simple : Réglages → Sauvegarde → <b>Se connecter avec Google</b>, et tout se sauvegarde tout seul après chaque séance.', 'Your data stays on your phone. Easiest: Settings → Backup → <b>Sign in with Google</b>, and everything is saved automatically after each workout.']},
+    {tab: 'train', t: ['💪 C\'est à toi!', '💪 Your turn!'], d: ['Lance ta première séance : on te montrera les trucs utiles pendant l\'entraînement. Tu peux revoir toutes les visites dans Réglages → Général → Visites guidées.', 'Start your first workout: we\'ll show you the useful tricks during the session. Replay any tour in Settings → General → Guided tours.']}
+  ],
+  stretch: [
+    {sel: '[data-act="st-go"]', t: ['🧘 Étirements guidés', '🧘 Guided stretching'], d: ['Touche une routine pour la lancer : chaque étirement s\'affiche avec une image et un minuteur, avec un bip pour changer de côté.', 'Tap a routine to start it: each stretch shows with a picture and a timer, with a beep to switch sides.']},
+    {sel: '[data-act="st-menu"]', t: ['⋯ Options', '⋯ Options'], d: ['Modifier, dupliquer, partager avec un ami ou supprimer. <b>Appuie longtemps</b> sur une routine pour changer l\'ordre ou en sélectionner plusieurs.', 'Edit, duplicate, share with a friend or delete. <b>Long-press</b> a routine to reorder or select several.']},
+    {sel: '[data-act="st-new"]', t: ['➕ Ta propre routine', '➕ Your own routine'], d: ['Choisis tes étirements, leur durée et s\'ils se font des deux côtés.', 'Pick your stretches, their duration and whether they\'re done on both sides.']},
+    {sel: '[data-act="pcode"]', t: ['📥 Code reçu', '📥 Code received'], d: ['Un ami t\'a envoyé une routine? Colle son message ici pour l\'ajouter.', 'A friend sent you a routine? Paste their message here to add it.']}
+  ],
+  cardio: [
+    {sel: '[data-act="me-edit"]', t: ['👤 Tes infos', '👤 Your info'], d: ['Entre ton poids, ta grandeur, ton âge et ton sexe une seule fois : les calories et les pas sont calculés pour toi.', 'Enter your weight, height, age and sex once: calories and steps are calculated for you.']},
+    {sel: '.cvkinds', t: ['🚶 Ton activité', '🚶 Your activity'], d: ['Tapis, course, vélo, elliptique, escaliers, rameur ou corde. Glisse pour voir les autres.', 'Treadmill, run, bike, elliptical, stairs, rower or jump rope. Swipe to see the others.']},
+    {sel: '#cvin', t: ['👣 Tes chiffres', '👣 Your numbers'], d: ['Sur le tapis, entre tes pas et l\'inclinaison (ex. 1 000 pas à 15 %) : tu vois l\'équivalent en pas à plat, en km et en calories. Ou choisis « Temps et vitesse ».', 'On the treadmill, enter your steps and incline (e.g. 1,000 steps at 15%): you see the flat-ground equivalent in steps, km and calories. Or choose “Time & speed”.']},
+    {sel: '[data-act="cv-save"]', t: ['💾 Garde-le', '💾 Save it'], d: ['Ajoute-le à ton historique. Pendant une séance, le bouton « Ajouter du cardio » fait la même chose à la fin de ton entraînement.', 'Add it to your history. During a workout, the “Add cardio” button does the same at the end of your session.']}
+  ],
+  timers: [
+    {sel: '[data-act="chr-open"]', t: ['⏱ Chronomètre', '⏱ Stopwatch'], d: ['Un chrono simple, qui continue même si tu changes d\'onglet.', 'A simple stopwatch that keeps running even if you switch tabs.']},
+    {sel: '[data-act="tm-go"]', t: ['▶ Minuteurs', '▶ Timers'], d: ['Tabata, HIIT, EMOM… Touche ▶ pour lancer : bips, vibrations et notifications sur la montre à chaque changement.', 'Tabata, HIIT, EMOM… Tap ▶ to start: beeps, vibrations and watch notifications at each change.']},
+    {sel: '[data-act="tm-new"]', t: ['➕ Ton minuteur', '➕ Your timer'], d: ['Crée un minuteur sur mesure : temps d\'effort, de repos, nombre de tours et blocs.', 'Build a custom timer: work time, rest time, rounds and blocks.']},
+    {sel: '[data-act="tm-menu"]', t: ['⋯ Options', '⋯ Options'], d: ['Modifier, dupliquer, partager ou supprimer. <b>Appuie longtemps</b> pour changer l\'ordre ou en sélectionner plusieurs.', 'Edit, duplicate, share or delete. <b>Long-press</b> to reorder or select several.']}
+  ],
+  profile: [
+    {sel: '[data-act="avatar"]', t: ['📷 Ta photo', '📷 Your photo'], d: ['Ajoute une photo de profil, prise sur le moment ou dans ton album.', 'Add a profile photo, taken now or from your album.']},
+    {sel: '[data-act="bw-quick"]', t: ['⚖️ Ton poids', '⚖️ Your weight'], d: ['Note ton poids en 2 secondes et suis ta courbe. « Mesures et photos » garde tes mensurations et tes photos de progrès (incluses dans ta sauvegarde privée).', 'Log your weight in 2 seconds and follow your curve. “Measures & photos” keeps your measurements and progress photos (included in your private backup).']},
+    {sel: '.frcard', t: ['👥 Amis', '👥 Friends'], d: ['Suis les entraînements de tes amis et réagis à leurs séances. Une petite visite t\'attend là aussi.', 'Follow your friends\' workouts and react to their sessions. A short tour waits there too.']},
+    {sel: '[data-act="pf-metric"]', t: ['📈 Ta progression', '📈 Your progress'], d: ['Durée, volume ou reps par semaine. Touche une barre pour le détail, glisse pour voir avant.', 'Time, volume or reps per week. Tap a bar for details, swipe to see earlier.']},
+    {sel: '[data-act="go"][data-v="stats"]', t: ['📊 Tableau de bord', '📊 Dashboard'], d: ['Statistiques, records par exercice, calendrier, médailles et récupération musculaire.', 'Stats, records per exercise, calendar, medals and muscle recovery.']},
+    {sel: '[data-act="hist-new"]', t: ['🕓 Séance oubliée', '🕓 Forgotten workout'], d: ['Tu as oublié de noter une séance? Ajoute-la ici avec la bonne date. Plus bas, touche une séance de l\'historique pour la modifier ou la mettre dans un dossier.', 'Forgot to log a workout? Add it here with the right date. Below, tap a past workout to edit it or put it in a folder.']},
+    {sel: '#hdr [data-v="settings"]', t: ['⚙️ Réglages', '⚙️ Settings'], d: ['Sauvegarde Google, son, vibration, montre, couleurs, langue… et toutes les visites guidées.', 'Google backup, sound, vibration, watch, colors, language… and all the guided tours.']}
+  ],
+  friends: [
+    {sel: '[data-act="fr-start"], [data-act="fr-code"]', t: ['👥 Partage', '👥 Sharing'], d: ['Active le partage avec Google : tes amis verront tes séances, tes records et ta série 🔥. Ton poids corporel, tes mesures et tes photos ne sont jamais partagés.', 'Turn on sharing with Google: friends will see your workouts, records and 🔥 streak. Your body weight, measurements and photos are never shared.']},
+    {sel: '[data-act="fr-add"]', t: ['＋ Ajouter un ami', '＋ Add a friend'], d: ['Ton ami t\'envoie son message avec son code. <b>Copie-le</b>, puis touche Ajouter → <b>Coller</b>. (Sur iPhone, évite d\'ouvrir le lien : il s\'ouvre dans Safari et pas dans ton appli.)', 'Your friend sends you their message with their code. <b>Copy it</b>, then tap Add → <b>Paste</b>. (On iPhone, avoid opening the link: it opens in Safari, not in your app.)']},
+    {t: ['🔥 Le fil', '🔥 The feed'], d: ['Les séances de tes amis s\'affichent ici. Réagis avec 🔥 💪 👏 : ils le verront la prochaine fois qu\'ils ouvrent l\'appli. Dans « Ce que tes amis voient », tu peux cacher tes poids ou rendre une séance privée.', 'Your friends\' workouts show here. React with 🔥 💪 👏: they\'ll see it next time they open the app. In “What friends see”, you can hide your weights or make a workout private.']}
+  ],
+  body: [
+    {sel: '[data-act="ph-add"]', t: ['📸 Photos de progrès', '📸 Progress photos'], d: ['Une photo par semaine, prise sur le moment ou dans ton album. Compare deux dates côte à côte. Elles sont incluses dans ta sauvegarde privée, jamais partagées.', 'One photo a week, taken now or from your album. Compare two dates side by side. They are included in your private backup, never shared.']},
+    {sel: '[data-act="body-save"]', t: ['📏 Mensurations', '📏 Measurements'], d: ['Poids, tour de taille, bras, poitrine… Note-les de temps en temps pour voir tes courbes.', 'Weight, waist, arms, chest… Log them from time to time to see your curves.']}
   ],
   wo: [
     {sel: '.setrow input[data-in="w"]', t: ['🏋️ Charge et reps', '🏋️ Weight and reps'], d: ['Entre ta charge et tes reps. La colonne « Précédent » montre ta dernière fois : touche-la pour la recopier.', 'Enter your weight and reps. The “Previous” column shows last time: tap it to copy it.']},
     {sel: '.setrow .check', t: ['✓ Coche ta série', '✓ Check your set'], d: ['Le minuteur de repos démarre tout seul (avec bip et notification sur la montre) et la page descend vers la prochaine série.', 'The rest timer starts by itself (with a beep and a watch notification) and the page scrolls to your next set.']},
     {sel: '.setrow .nb', t: ['🔢 Type de série', '🔢 Set type'], d: ['Touche le numéro pour en faire un échauffement, un drop set ou une série à l\'échec, ou pour ajouter un RIR et une note.', 'Tap the number to make it a warm-up, drop set or failure set, or to add RIR and a note.']},
     {sel: '[data-act="ex-menu"]', t: ['⋯ Options de l\'exercice', '⋯ Exercise options'], d: ['Remplacer l\'exercice, faire un superset, changer le repos, convertir kg ↔ lb sur une machine…', 'Replace the exercise, make a superset, change rest, convert kg ↔ lb on a machine…']},
+    {sel: '.cardiobtn', t: ['🏃 Cardio', '🏃 Cardio'], d: ['Tapis, vélo ou elliptique à la fin? Ajoute-le ici : calories et pas équivalents sont calculés pour toi.', 'Treadmill, bike or elliptical at the end? Add it here: calories and equivalent steps are calculated for you.']},
     {sel: '#hdr [data-act="finish"]', t: ['🏁 Terminer', '🏁 Finish'], d: ['À la fin, touche Terminer : tu verras ta durée, tes records et une image à partager. Bon entraînement!', 'When done, tap Finish: you\'ll see your time, your records and an image to share. Have a great workout!']}
   ]
 };
@@ -4280,6 +4372,22 @@ function tourPlace(tg) {
   bub.style.top = (r.bottom + pd + 14 + bh < innerHeight - 10 ? r.bottom + pd + 14 : Math.max(10, r.top - pd - 14 - bh)) + 'px';
 }
 addEventListener('resize', () => { if (tourSt) tourGo(tourSt.i); });
+const TOUR_VIEW = {stretch: 'stretch', cardio: 'cardio', timers: 'timers', profile: 'profile', friends: 'friends', measures: 'body'};
+const TOUR_LIST = [['main', '🏋️', ['Les bases', 'The basics'], 'train'], ['wo', '✓', ['Pendant une séance', 'During a workout'], 'workout'], ['stretch', '🧘', ['Étirements', 'Stretching'], 'stretch'], ['cardio', '❤️', ['Cardio', 'Cardio'], 'cardio'], ['timers', '⏱', ['Intervalles et chrono', 'Intervals & stopwatch'], 'timers'], ['profile', '📈', ['Profil et progrès', 'Profile & progress'], 'profile'], ['body', '📸', ['Mesures et photos', 'Measures & photos'], 'measures'], ['friends', '👥', ['Amis', 'Friends'], 'friends']];
+function maybeTourView(v) {
+  const k = TOUR_VIEW[v];
+  if (!k || tourSt || modals.length || cur().v !== v || !S.settings.onboarded || (S.settings.tour || {})[k]) return;
+  if (k !== 'body' && k !== 'friends' && stack.length > 1) return;
+  tourStart(k);
+}
+function tourReplay(k) {
+  S.settings.tour = S.settings.tour || {}; delete S.settings.tour[k]; saveLocal(); closeAll();
+  if (k === 'main') return tourStart('main');
+  if (k === 'wo') { if (S.active) { go('workout'); setTimeout(maybeTourWo, 600); } else { setRoot('train'); render(); toast(T('▶ Lance une séance : la visite démarrera', '▶ Start a workout: the tour will begin')); } return; }
+  const v = TOUR_LIST.find(x => x[0] === k)[3];
+  if (['measures', 'friends'].includes(v)) { setRoot('profile'); go(v); } else { setRoot(v); render(); }
+  window.scrollTo(0, 0);
+}
 function maybeTourWo() {
   if (tourSt || modals.length || !S.active || cur().v !== 'workout') return;
   if (!S.settings.onboarded || (S.settings.tour || {}).wo) return;
@@ -4356,8 +4464,9 @@ async function gdApi(url, opt = {}) {
   if (!r.ok) throw new Error('Google Drive ' + r.status);
   return r;
 }
-async function gdFind() {
-  const q = encodeURIComponent(`name='${GDFILE}'`);
+const GDPHOTOS = 'carnet-muscu-photos.json';
+async function gdFind(name = GDFILE) {
+  const q = encodeURIComponent(`name='${name}'`);
   const r = await gdApi(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${q}&fields=files(id,modifiedTime,size)&pageSize=1`);
   return ((await r.json()).files || [])[0] || null;
 }
@@ -4381,12 +4490,39 @@ async function gdPush(force) {
       id = (await r.json()).id;
     }
     Object.assign(S.gd, {file: id, hash: hs, last: new Date().toISOString(), err: '', pending: false});
+    await gdPushPhotos();
   } catch (e) {
     if (e.message === 'auth') { S.gd.pending = true; S.gd.err = ''; }
     else { S.gd.err = e.message; S.gd.pending = true; }
   }
   gdBusy = false; saveLocal();
   if (cur().v === 'settings') render();
+}
+/* Les images des photos de progrès vont dans un 2e fichier du dossier caché (seulement quand la liste change). */
+async function gdPushPhotos() {
+  const list = S.photos || [], ph = list.map(p => p.id).join(',');
+  if (ph === (S.gd.phHash || '')) return;
+  const map = await phAll();
+  if (list.some(p => !map[p.id])) return; // une image manque sur ce téléphone : on n'écrase pas la copie complète du Drive
+  const body = JSON.stringify(map);
+  let id = S.gd.phFile;
+  if (!id) { const f = await gdFind(GDPHOTOS); id = f && f.id; }
+  if (id) await gdApi(`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media`, {method: 'PATCH', headers: {'Content-Type': 'application/json'}, body});
+  else {
+    const fd = new FormData();
+    fd.append('metadata', new Blob([JSON.stringify({name: GDPHOTOS, parents: ['appDataFolder']})], {type: 'application/json'}));
+    fd.append('file', new Blob([body], {type: 'application/json'}));
+    id = (await (await gdApi('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {method: 'POST', body: fd})).json()).id;
+  }
+  S.gd.phFile = id; S.gd.phHash = ph;
+}
+async function gdPullPhotos() {
+  try {
+    const f = await gdFind(GDPHOTOS); if (!f) return 0;
+    const n = await phRestore(await (await gdApi(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`)).json());
+    S.gd.phFile = f.id; saveLocal(); if (n) { render(); toast(T(`📸 ${n} photo${n > 1 ? 's' : ''} de progrès restaurée${n > 1 ? 's' : ''}`, `📸 ${n} progress photo${n > 1 ? 's' : ''} restored`)); }
+    return n;
+  } catch (e) { return 0; }
 }
 function gdQueue(delay = 20000) { if (!gdOn()) return; clearTimeout(gdTimer); gdTimer = setTimeout(() => gdPush(), delay); }
 /* Appelé sur un toucher (Terminer la séance, Sauvegarder maintenant) : renouvelle l'accès si besoin, puis envoie. */
@@ -4423,8 +4559,9 @@ async function gdRestore() {
   } catch (e) { toast('⚠️ ' + e.message); }
 }
 function gdRestoreData(d) {
-  const g = S.gd; restoreAll(d); S.gd = g; S.gd.hash = strHash(backupBody());
+  const g = S.gd; restoreAll(d); S.gd = g; S.gd.hash = strHash(backupBody()); S.gd.phHash = '';
   saveLocal(); applyTheme(); setRoot('train'); closeAll(); render();
+  setTimeout(gdPullPhotos, 400);
   toast(T(`✅ ${S.history.length} séances et ${S.routines.length} routines restaurées`, `✅ ${S.history.length} workouts and ${S.routines.length} routines restored`));
 }
 function gdCard() {
@@ -4832,7 +4969,7 @@ async function addProgressPhoto() {
       const d = await shrinkImg(f, 1280, .78), id = 'ph' + uid();
       await phPut(id, d); phCache[id] = d;
       S.photos = S.photos || []; S.photos.push({id, d: dkey(new Date())}); save(); render();
-      toast(T('📸 Photo ajoutée (gardée seulement sur ce téléphone)', '📸 Photo added (kept on this phone only)'));
+      toast(T('📸 Photo ajoutée', '📸 Photo added')); if (gdOn()) gdQueue(4000);
     } catch (e) { toast('⚠️ ' + e.message); }
   });
 }
@@ -4866,7 +5003,7 @@ function photosCard() {
   return `<div class="card"><div class="row between"><h3 style="margin:0">📸 ${T('Photos de progrès', 'Progress photos')}</h3>${L.length > 1 ? `<button class="btn sm" data-act="ph-cmp">⇄ ${T('Comparer', 'Compare')}</button>` : ''}</div>
     ${L.length ? `<div class="phgrid">${L.map(p => `<button class="phth" data-act="ph-view" data-id="${p.id}"><img data-ph="${p.id}" alt=""><span>${new Date(p.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'short'})}</span></button>`).join('')}</div>` : `<p class="muted small" style="margin:6px 0 0">${T('Prends une photo toutes les 2 à 4 semaines, même pose et même lumière : c\'est la meilleure façon de voir tes progrès.', 'Take a photo every 2–4 weeks, same pose and lighting: it\'s the best way to see your progress.')}</p>`}
     <button class="btn primary block" data-act="ph-add" style="margin-top:10px">📸 ${T('Ajouter une photo', 'Add a photo')}</button>
-    <p class="muted small" style="margin:6px 0 0">🔒 ${T('Tes photos restent seulement sur ce téléphone (pas dans les sauvegardes).', 'Your photos stay on this phone only (not in backups).')}</p></div>`;
+    <p class="muted small" style="margin:6px 0 0">🔒 ${T('Tes photos sont privées : elles vont seulement dans ta sauvegarde (ton Google Drive ou ton fichier), jamais dans la carte Amis.', 'Your photos are private: they only go into your backup (your Google Drive or your file), never into the Friends card.')}</p></div>`;
 }
 /* Carte « Corps » sur le profil */
 function bodyCard() {
@@ -4907,7 +5044,7 @@ function openMe() {
   const m = ME(), lb = U() !== 'kg', kgv = bodyKg(), wv = lb ? Math.round(kgv * 2.20462 * 10) / 10 : Math.round(kgv * 10) / 10;
   const ft = m.h ? Math.floor(m.h / 2.54 / 12) : '', inch = m.h ? Math.round(m.h / 2.54 % 12) : '';
   modal(`<div class="row between"><h2 style="margin:0">👤 ${T('Mes infos', 'My info')}</h2><button class="btn sm" data-act="close">✕</button></div>
-    <p class="muted small">${T('Servent à calculer tes calories, la longueur de ton pas et tes pas équivalents. Elles restent sur ton téléphone.', 'Used to compute your calories, stride length and equivalent steps. They stay on your phone.')}</p>
+    <p class="muted small">${T('Servent à calculer tes calories, la longueur de ton pas et tes pas équivalents. Elles restent privées.', 'Used to compute your calories, stride length and equivalent steps. They stay on your phone.')}</p>
     <label>${T('Poids', 'Weight')} (${U()})</label><input id="me_w" inputmode="decimal" value="${S.body.some(b => b.w != null) ? wv : ''}" placeholder="${wv}">
     <label>${T('Grandeur', 'Height')}</label>${lb ? `<div class="grid2"><div><input id="me_ft" inputmode="numeric" value="${ft}" placeholder="pi (ex. 5)"></div><div><input id="me_in" inputmode="numeric" value="${inch}" placeholder="po (ex. 10)"></div></div>` : `<input id="me_cm" inputmode="numeric" value="${m.h || ''}" placeholder="cm (ex. 176)">`}
     <label>${T('Âge', 'Age')}</label><input id="me_age" inputmode="numeric" value="${m.age || ''}">
@@ -5251,6 +5388,7 @@ function render() {
   afterRender(c);
   try { iconize($('#app')); iconize($('#hdr')); } catch (e) {}
   if (c.v === 'workout') setTimeout(maybeTourWo, 700);
+  else if (TOUR_VIEW[c.v]) setTimeout(() => maybeTourView(c.v), 700);
   if (c.v === 'train' && selR) selSortables();
   if (selX && c.v === selXView(selX.k)) selXSortables();
   updWobar();
@@ -5546,7 +5684,7 @@ document.addEventListener('click', e => {
     case 'xfer-hide': S.settings.xferHide = true; save(); render(); break;
     case 'ios-hint-off': S.settings.iosHintOff = true; save(); closeAll(); break;
     case 'ios-install': iosHint(); break;
-    case 'tour': S.settings.tour = S.settings.tour || {}; delete S.settings.tour.wo; tourStart('main'); break;
+    case 'tour': tourReplay(b.dataset.k || 'main'); break;
     case 'pre-restore': { const L = b.dataset.k === 't' ? TM_PRESETS : ST_PRESETS; S.settings.hidePre = hidPre().filter(id => !L.some(x => x.id === id)); save(); render(); toast(T('↺ Remis', '↺ Restored')); break; }
     case 'fold-reo': closeAll(); openFolderReo(); break;
     case 'news': openNews(true); break;
