@@ -367,6 +367,7 @@ nav button{font-size:11px}
 .frre{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:99px;padding:6px 12px;font:inherit;font-size:16px;cursor:pointer}
 .frre span{font-size:13px;font-weight:700}.frre.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 20%,var(--card2))}
 .frcode{font-family:ui-monospace,monospace;font-size:13px;word-break:break-all;padding:10px;border-radius:10px;background:var(--card2);text-align:center}
+.phth{position:relative}.phsh{position:absolute;top:6px;right:6px;font-style:normal;background:#000a;border-radius:99px;padding:2px 6px;font-size:12px}
 </style>
 </head>
 <body>
@@ -4206,8 +4207,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.9.2';
+const APP_VERSION = '8.9.4';
 const CHANGELOG = [
+  {v: '8.9.4', d: '2026-11-10', fr: ['Partage une photo de progrès avec tes amis (touche la photo → Partager avec mes amis). Tu choisis lesquelles.', 'Le code ami se partage sans lien (plus de bug sur iPhone) : ton ami copie ton message et touche Coller.'], en: ['Share a progress photo with your friends (tap the photo → Share with my friends). You choose which ones.', 'Friend codes are shared without a link (no more iPhone bug): your friend copies your message and taps Paste.']},
   {v: '8.9.2', d: '2026-11-10', fr: ['La sauvegarde garde maintenant tout, y compris tes photos de progrès (Google Drive et fichier exporté).'], en: ['Backups now keep everything, including your progress photos (Google Drive and exported file).']},
   {v: '8.9.1', d: '2026-11-10', fr: ['L\'icône de l\'appli prend ta couleur et ton fond (Réglages → Apparence). Sur Android, l\'icône de l\'écran d\'accueil se met à jour toute seule.'], en: ['The app icon now uses your accent and background colors (Settings → Appearance). On Android, the home screen icon updates by itself.']},
   {v: '8.9', d: '2026-11-10', fr: ['Visites guidées par onglet : la première visite montre seulement les bases, puis Étirements, Cardio, Intervalles, Profil, Amis et Mesures ont chacun leur petite visite la première fois que tu les ouvres.', 'Réglages → Général → Visites guidées : revois celle que tu veux.', 'Amis : bouton 📋 Coller, et aide quand un lien s\'ouvre dans le navigateur au lieu de l\'appli (iPhone).'],
@@ -4318,12 +4320,12 @@ const TOURS = {
     {sel: '#hdr [data-v="settings"]', t: ['⚙️ Réglages', '⚙️ Settings'], d: ['Sauvegarde Google, son, vibration, montre, couleurs, langue… et toutes les visites guidées.', 'Google backup, sound, vibration, watch, colors, language… and all the guided tours.']}
   ],
   friends: [
-    {sel: '[data-act="fr-start"], [data-act="fr-code"]', t: ['👥 Partage', '👥 Sharing'], d: ['Active le partage avec Google : tes amis verront tes séances, tes records et ta série 🔥. Ton poids corporel, tes mesures et tes photos ne sont jamais partagés.', 'Turn on sharing with Google: friends will see your workouts, records and 🔥 streak. Your body weight, measurements and photos are never shared.']},
-    {sel: '[data-act="fr-add"]', t: ['＋ Ajouter un ami', '＋ Add a friend'], d: ['Ton ami t\'envoie son message avec son code. <b>Copie-le</b>, puis touche Ajouter → <b>Coller</b>. (Sur iPhone, évite d\'ouvrir le lien : il s\'ouvre dans Safari et pas dans ton appli.)', 'Your friend sends you their message with their code. <b>Copy it</b>, then tap Add → <b>Paste</b>. (On iPhone, avoid opening the link: it opens in Safari, not in your app.)']},
+    {sel: '[data-act="fr-start"], [data-act="fr-code"]', t: ['👥 Partage', '👥 Sharing'], d: ['Active le partage avec Google : tes amis verront tes séances, tes records et ta série 🔥. Ton poids corporel et tes mesures ne sont jamais partagés, et tes photos seulement si tu le choisis.', 'Turn on sharing with Google: friends will see your workouts, records and 🔥 streak. Your body weight and measurements are never shared, and photos only if you choose.']},
+    {sel: '[data-act="fr-add"]', t: ['＋ Ajouter un ami', '＋ Add a friend'], d: ['Ton ami t\'envoie son message avec son code. <b>Copie-le</b>, puis touche Ajouter → <b>Coller</b>.', 'Your friend sends you their message with their code. <b>Copy it</b>, then tap Add → <b>Paste</b>.']},
     {t: ['🔥 Le fil', '🔥 The feed'], d: ['Les séances de tes amis s\'affichent ici. Réagis avec 🔥 💪 👏 : ils le verront la prochaine fois qu\'ils ouvrent l\'appli. Dans « Ce que tes amis voient », tu peux cacher tes poids ou rendre une séance privée.', 'Your friends\' workouts show here. React with 🔥 💪 👏: they\'ll see it next time they open the app. In “What friends see”, you can hide your weights or make a workout private.']}
   ],
   body: [
-    {sel: '[data-act="ph-add"]', t: ['📸 Photos de progrès', '📸 Progress photos'], d: ['Une photo par semaine, prise sur le moment ou dans ton album. Compare deux dates côte à côte. Elles sont incluses dans ta sauvegarde privée, jamais partagées.', 'One photo a week, taken now or from your album. Compare two dates side by side. They are included in your private backup, never shared.']},
+    {sel: '[data-act="ph-add"]', t: ['📸 Photos de progrès', '📸 Progress photos'], d: ['Une photo par semaine, prise sur le moment ou dans ton album. Compare deux dates côte à côte. Elles sont dans ta sauvegarde privée. Touche une photo pour la partager avec tes amis, si tu veux.', 'One photo a week, taken now or from your album. Compare two dates side by side. They are in your private backup. Tap a photo to share it with your friends, if you want.']},
     {sel: '[data-act="body-save"]', t: ['📏 Mensurations', '📏 Measurements'], d: ['Poids, tour de taille, bras, poitrine… Note-les de temps en temps pour voir tes courbes.', 'Weight, waist, arms, chest… Log them from time to time to see your curves.']}
   ],
   wo: [
@@ -4979,7 +4981,9 @@ function photoView(id) {
   modal(`<div class="row between"><b>${new Date(p.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'long', year: 'numeric'})}${w ? ` · ${w.w} ${U()}` : ''}</b><button class="btn sm" data-act="close">✕</button></div>
     <img data-ph="${id}" alt="" style="width:100%;border-radius:14px;margin-top:10px;display:block;background:var(--card2);min-height:200px">
     <label>${T('Date', 'Date')}</label><input type="date" value="${p.d}" data-phd="${id}">
-    <div class="row" style="margin-top:10px"><button class="btn" style="flex:1" data-act="ph-cmp" data-id="${id}">⇄ ${T('Comparer', 'Compare')}</button><button class="btn danger" style="flex:1" data-act="ph-del" data-id="${id}">🗑 ${T('Supprimer', 'Delete')}</button></div>`);
+    <div class="row" style="margin-top:10px"><button class="btn" style="flex:1" data-act="ph-cmp" data-id="${id}">⇄ ${T('Comparer', 'Compare')}</button><button class="btn danger" style="flex:1" data-act="ph-del" data-id="${id}">🗑 ${T('Supprimer', 'Delete')}</button></div>
+    ${frPhShared(id) ? `<button class="btn block" data-act="ph-share" data-id="${id}" style="margin-top:8px">🔒 ${T('Ne plus partager avec mes amis', 'Stop sharing with my friends')}</button><p class="muted small center" style="margin:6px 0 0">👥 ${T('Tes amis voient cette photo', 'Your friends see this photo')}</p>`
+      : `<button class="btn block" data-act="ph-share" data-id="${id}" style="margin-top:8px">👥 ${T('Partager avec mes amis', 'Share with my friends')}</button>`}`);
   phFill();
 }
 function photoCompare(a) {
@@ -5001,9 +5005,9 @@ function photosCard() {
   const L = (S.photos || []).slice().sort((a, b) => b.d.localeCompare(a.d));
   setTimeout(phFill, 0);
   return `<div class="card"><div class="row between"><h3 style="margin:0">📸 ${T('Photos de progrès', 'Progress photos')}</h3>${L.length > 1 ? `<button class="btn sm" data-act="ph-cmp">⇄ ${T('Comparer', 'Compare')}</button>` : ''}</div>
-    ${L.length ? `<div class="phgrid">${L.map(p => `<button class="phth" data-act="ph-view" data-id="${p.id}"><img data-ph="${p.id}" alt=""><span>${new Date(p.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'short'})}</span></button>`).join('')}</div>` : `<p class="muted small" style="margin:6px 0 0">${T('Prends une photo toutes les 2 à 4 semaines, même pose et même lumière : c\'est la meilleure façon de voir tes progrès.', 'Take a photo every 2–4 weeks, same pose and lighting: it\'s the best way to see your progress.')}</p>`}
+    ${L.length ? `<div class="phgrid">${L.map(p => `<button class="phth" data-act="ph-view" data-id="${p.id}"><img data-ph="${p.id}" alt="">${frPhShared(p.id) ? '<i class="phsh">👥</i>' : ''}<span>${new Date(p.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'short'})}</span></button>`).join('')}</div>` : `<p class="muted small" style="margin:6px 0 0">${T('Prends une photo toutes les 2 à 4 semaines, même pose et même lumière : c\'est la meilleure façon de voir tes progrès.', 'Take a photo every 2–4 weeks, same pose and lighting: it\'s the best way to see your progress.')}</p>`}
     <button class="btn primary block" data-act="ph-add" style="margin-top:10px">📸 ${T('Ajouter une photo', 'Add a photo')}</button>
-    <p class="muted small" style="margin:6px 0 0">🔒 ${T('Tes photos sont privées : elles vont seulement dans ta sauvegarde (ton Google Drive ou ton fichier), jamais dans la carte Amis.', 'Your photos are private: they only go into your backup (your Google Drive or your file), never into the Friends card.')}</p></div>`;
+    <p class="muted small" style="margin:6px 0 0">🔒 ${T('Tes photos sont privées. Touche une photo puis « Partager avec mes amis » pour la montrer à tes amis (👥 = partagée).', 'Your photos are private. Tap a photo, then “Share with my friends” to show it to your friends (👥 = shared).')}</p></div>`;
 }
 /* Carte « Corps » sur le profil */
 function bodyCard() {
@@ -5117,7 +5121,7 @@ const FRS = () => (S.settings.fr = S.settings.fr || {list: [], re: [], hide: []}
 const frOn = () => !!(S.settings.fr && S.settings.fr.on && S.settings.fr.file);
 const frTokOk = () => { try { const t = JSON.parse(localStorage.getItem(GDKEY) || 'null'); return !!(t && t.exp > Date.now() + 60000 && (t.sc || '').includes(FRSCOPE)); } catch (e) { return false; } };
 let frData = (() => { try { return JSON.parse(localStorage.getItem(FRCACHE) || '{}'); } catch (e) { return {}; } })(), frBusy = false, frPubT = null, frLastLoad = 0;
-const frMsg = () => T(`Ajoute-moi en ami dans Carnet Muscu 💪\nDans l'appli : Profil → Amis → Ajouter, puis colle ce message.\nCode ami : ${FRS().file}\n${frLink()}`, `Add me as a friend on Carnet Muscu 💪\nIn the app: Profile → Friends → Add, then paste this message.\nFriend code: ${FRS().file}\n${frLink()}`);
+const frMsg = () => T(`Ajoute-moi en ami dans Carnet Muscu 💪\nDans l'appli Carnet Muscu : Profil → Amis → Ajouter → Coller.\nCode ami : ${FRS().file}`, `Add me as a friend on Carnet Muscu 💪\nIn the Carnet Muscu app: Profile → Friends → Add → Paste.\nFriend code: ${FRS().file}`);
 const frLink = () => location.origin + location.pathname + '#ami=' + FRS().file;
 function frAgo(iso) {
   const m = Math.round((Date.now() - new Date(iso)) / 60000);
@@ -5148,11 +5152,18 @@ function frSess(hs, i) {
   }).filter(Boolean);
   return {id: hs.id, n: hs.routineName || T('Séance', 'Workout'), d: hs.date, dur: hs.duration || 0, ex, pr};
 }
+const frPhShared = id => !!(S.settings.fr && (S.settings.fr.ph || []).includes(id));
+function frSmall(src) { return new Promise(ok => { const im = new Image(); im.onload = () => { const k = Math.min(1, 640 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL('image/jpeg', .72)); }; im.onerror = () => ok(''); im.src = src; }); }
+async function frPhotos() {
+  const ids = (FRS().ph || []).filter(id => (S.photos || []).some(p => p.id === id)), out = [];
+  for (const p of (S.photos || []).filter(x => ids.includes(x.id)).slice(-8)) { const d = await phSrc(p.id); if (d) { const img = await frSmall(d); if (img) out.push({id: p.id, d: p.d, img}); } }
+  return out;
+}
 async function frCardBody() {
   const fr = FRS(), hide = new Set(fr.hide || []);
   const idx = S.history.map((x, i) => [x, i]).filter(([x]) => !hide.has(x.id) && new Date(x.date) > Date.now() - 45 * 864e5).slice(-15);
   return JSON.stringify({app: 'carnet-muscu', v: 1, name: (S.settings.name || '').trim() || T('Un ami', 'A friend'), av: await frAvatar(), wk: streakWeeks(), up: new Date().toISOString(),
-    s: idx.map(([x, i]) => frSess(x, i)), re: (fr.re || []).slice(-150)});
+    s: idx.map(([x, i]) => frSess(x, i)), p: await frPhotos(), re: (fr.re || []).slice(-150)});
 }
 async function frApi(url, opt = {}) {
   const r = await fetch(url, {...opt, headers: {Authorization: 'Bearer ' + gdTok(), ...(opt.headers || {})}});
@@ -5206,18 +5217,10 @@ function frShowCode() {
   const fr = FRS();
   modal(`<div class="row between"><h2 style="margin:0">👥 ${T('Mon code ami', 'My friend code')}</h2><button class="btn sm" data-act="close">✕</button></div>
     <p class="small">${T('Envoie ton code à tes amis. Dans leur appli : Profil → Amis → Ajouter, puis ils collent ton message. Ensuite, demande-leur le leur pour les voir aussi.', 'Send your code to your friends. In their app: Profile → Friends → Add, then they paste your message. Then ask for theirs to see them too.')}</p>
-    <div id="frqr" style="display:flex;justify-content:center;margin:10px 0;min-height:10px"></div>
-    <div class="frcode">${esc(fr.file)}</div>
-    <div class="row" style="margin-top:10px"><button class="btn primary" style="flex:1" data-act="fr-share">📤 ${T('Envoyer mon lien', 'Send my link')}</button><button class="btn" style="flex:1" data-act="fr-copy">📋 ${T('Copier', 'Copy')}</button></div>
-    <button class="btn block" data-act="fr-qr" style="margin-top:8px">🔳 ${T('Afficher le QR code', 'Show QR code')}</button>`);
+    <div class="frcode" style="margin-top:10px">${esc(fr.file)}</div>
+    <div class="row" style="margin-top:10px"><button class="btn primary" style="flex:1" data-act="fr-share">📤 ${T('Envoyer mon code', 'Send my code')}</button><button class="btn" style="flex:1" data-act="fr-copy">📋 ${T('Copier', 'Copy')}</button></div>`);
 }
-function frQR() {
-  const box = $('#frqr'); if (!box) return;
-  const draw = () => { box.innerHTML = '<div style="background:#fff;padding:10px;border-radius:12px"></div>'; new QRCode(box.firstChild, {text: frLink(), width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M}); };
-  if (window.QRCode) return draw();
-  const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; s.onload = draw; s.onerror = () => toast(T('⚠️ Pas de connexion Internet', '⚠️ No Internet connection')); document.head.appendChild(s);
-}
-const frCodeOf = t => { const m = String(t || '').match(/ami=([A-Za-z0-9_-]{20,})/) || String(t || '').trim().match(/^([A-Za-z0-9_-]{20,})$/); return m ? m[1] : ''; };
+const frCodeOf = t => { t = String(t || ''); const m = t.match(/ami=([A-Za-z0-9_-]{20,})/) || t.match(/(?:Code ami|Friend code)\s*:\s*([A-Za-z0-9_-]{20,})/i) || t.trim().match(/^([A-Za-z0-9_-]{20,})$/); return m ? m[1] : ''; };
 async function frFetch(code) {
   if (!GKEY) throw new Error(T('Fonction Amis pas encore configurée', 'Friends feature not configured yet'));
   const r = await fetch(`https://www.googleapis.com/drive/v3/files/${code}?alt=media&key=${GKEY}`);
@@ -5251,7 +5254,8 @@ async function frLoad(force) {
 /* fil : séances des amis, plus récentes d'abord */
 function frFeed() {
   const fr = FRS(), out = [];
-  fr.list.forEach(f => { const c = frData[f.c]; if (!c) return; (c.d.s || []).forEach(s => out.push({f, d: c.d, s})); });
+  fr.list.forEach(f => { const c = frData[f.c]; if (!c) return; (c.d.s || []).forEach(s => out.push({f, d: c.d, s}));
+    (c.d.p || []).forEach(ph => out.push({f, d: c.d, s: {id: ph.id, d: ph.d + 'T12:00:00', ph}})); });
   return out.sort((a, b) => b.s.d.localeCompare(a.s.d)).slice(0, 40);
 }
 /* réactions visibles sur une séance (celles de mes amis + la mienne) */
@@ -5264,7 +5268,7 @@ function frReacts(owner, sid) {
 }
 function frReceived() { // réactions reçues sur mes séances
   const fr = FRS(), out = []; if (!fr.file) return out;
-  fr.list.forEach(f => { const d = frData[f.c] && frData[f.c].d; (d && d.re || []).forEach(x => { if (x.to === fr.file) { const hs = S.history.find(y => y.id === x.s); if (hs) out.push({n: d.name, e: x.e, h: hs, d: x.d}); } }); });
+  fr.list.forEach(f => { const d = frData[f.c] && frData[f.c].d; (d && d.re || []).forEach(x => { if (x.to === fr.file) { const hs = S.history.find(y => y.id === x.s) || ((S.photos || []).find(y => y.id === x.s) ? {routineName: T('ta photo 📸', 'your photo 📸'), date: (S.photos.find(y => y.id === x.s).d) + 'T12:00'} : null); if (hs) out.push({n: d.name, e: x.e, h: hs, d: x.d}); } }); });
   return out.sort((a, b) => (b.d || '').localeCompare(a.d || '')).slice(0, 6);
 }
 function frExLine(o) {
@@ -5277,6 +5281,7 @@ function frExLine(o) {
 }
 const FR_EMO = ['🔥', '💪', '👏'];
 function frPost({f, d, s}) {
+  if (s.ph) return frPhotoPost({f, d, s});
   const r = frReacts(f.c, s.id), mine = (FRS().re || []).find(x => x.to === f.c && x.s === s.id);
   const ex = s.ex || [], more = ex.length - 5;
   return `<div class="card frpost"><div class="row" style="gap:10px;align-items:center">${d.av ? `<img class="frav" src="${d.av}" alt="">` : `<span class="frav">${esc((d.name || '?')[0].toUpperCase())}</span>`}
@@ -5285,13 +5290,24 @@ function frPost({f, d, s}) {
     <div class="row" style="gap:6px;margin-top:10px;flex-wrap:wrap">${FR_EMO.map(e => `<button class="frre ${mine && mine.e === e ? 'on' : ''}" data-act="fr-react" data-c="${f.c}" data-s="${esc(s.id)}" data-e="${e}">${e}${r[e] ? ` <span>${r[e].length}</span>` : ''}</button>`).join('')}
       ${Object.keys(r).length ? `<span class="muted small" style="align-self:center">${esc([...new Set(Object.values(r).flat())].join(', '))}</span>` : ''}</div></div>`;
 }
+function frReactRow(f, s) {
+  const r = frReacts(f.c, s.id), mine = (FRS().re || []).find(x => x.to === f.c && x.s === s.id);
+  return `<div class="row" style="gap:6px;margin-top:10px;flex-wrap:wrap">${FR_EMO.map(e => `<button class="frre ${mine && mine.e === e ? 'on' : ''}" data-act="fr-react" data-c="${f.c}" data-s="${esc(s.id)}" data-e="${e}">${e}${r[e] ? ` <span>${r[e].length}</span>` : ''}</button>`).join('')}
+    ${Object.keys(r).length ? `<span class="muted small" style="align-self:center">${esc([...new Set(Object.values(r).flat())].join(', '))}</span>` : ''}</div>`;
+}
+function frPhotoPost({f, d, s}) {
+  return `<div class="card frpost"><div class="row" style="gap:10px;align-items:center">${d.av ? `<img class="frav" src="${d.av}" alt="">` : `<span class="frav">${esc((d.name || '?')[0].toUpperCase())}</span>`}
+      <div style="flex:1;min-width:0"><b>${esc(d.name)}</b> <span class="muted small">· ${dateFr(s.d)}</span><br><span class="small">📸 ${T('a partagé une photo de progrès', 'shared a progress photo')}</span></div></div>
+    <img src="${s.ph.img}" alt="" data-act="fr-phbig" data-c="${f.c}" data-id="${esc(s.id)}" style="width:100%;max-height:55vh;object-fit:cover;border-radius:12px;margin-top:10px;display:block;cursor:zoom-in">
+    ${frReactRow(f, s)}</div>`;
+}
 function vFriends() {
   const fr = FRS(), feed = frFeed(), rec = frReceived();
   setTimeout(() => frLoad(), 50);
   if (feed[0] && feed[0].s.d > (fr.seen || '')) { fr.seen = feed[0].s.d; setTimeout(saveLocal, 0); }
   const meCard = frOn() ? `<div class="card"><div class="row between"><div><b>🟢 ${T('Tu partages tes séances', 'You share your workouts')}</b><br><span class="muted small">${fr.pending ? T('⏳ Mise à jour à la prochaine séance', '⏳ Update at next workout') : fr.last ? T('Carte à jour · ', 'Card updated · ') + frAgo(fr.last) : ''}${fr.err ? ' · ⚠️ ' + esc(fr.err) : ''}</span></div><button class="btn sm primary" data-act="fr-code">${T('Mon code', 'My code')}</button></div></div>`
     : `<div class="card" style="border-color:var(--accent)"><h3 style="margin:0 0 6px">👥 ${T('Partage tes séances avec tes amis', 'Share your workouts with friends')}</h3>
-      <p class="small" style="margin:0 0 10px">${T('Tes amis voient tes séances, tes records et ta série 🔥, et peuvent réagir. Ta carte est gardée dans <b>ton</b> Google Drive. Jamais partagés : ton poids corporel, tes mensurations et tes photos.', 'Friends see your workouts, records and 🔥 streak, and can react. Your card is kept in <b>your</b> Google Drive. Never shared: body weight, measurements and photos.')}</p>
+      <p class="small" style="margin:0 0 10px">${T('Tes amis voient tes séances, tes records et ta série 🔥, et peuvent réagir. Ta carte est gardée dans <b>ton</b> Google Drive. Jamais partagés : ton poids corporel et tes mensurations. Tes photos de progrès, seulement celles que tu choisis.', 'Friends see your workouts, records and 🔥 streak, and can react. Your card is kept in <b>your</b> Google Drive. Never shared: body weight and measurements. Progress photos: only the ones you choose.')}</p>
       <button class="btn primary block" data-act="fr-start">${T('Activer avec Google', 'Turn on with Google')}</button></div>`;
   const friends = fr.list.length ? `<div class="frlist">${fr.list.map(f => { const d = frData[f.c] && frData[f.c].d; return `<button class="frchip" data-act="fr-who" data-c="${f.c}">${d && d.av ? `<img class="frav sm" src="${d.av}" alt="">` : `<span class="frav sm">${esc((f.n || '?')[0].toUpperCase())}</span>`}<span>${esc(f.n || '…')}${d ? `<small>🔥 ${d.wk} ${T('sem.', 'wk')}</small>` : ''}${f.gone ? `<small>⚠️ ${T('partage arrêté', 'stopped')}</small>` : ''}</span></button>`; }).join('')}<button class="frchip add" data-act="fr-add"><span class="frav sm">＋</span><span>${T('Ajouter', 'Add')}</span></button></div>`
     : `<button class="btn block" data-act="fr-add" style="margin-bottom:12px">＋ ${T('Ajouter un ami', 'Add a friend')}</button>`;
@@ -5615,13 +5631,20 @@ document.addEventListener('click', e => {
     case 'fr-start': closeAll(); frStart(); break;
     case 'fr-stop': frStop(); break;
     case 'fr-code': frShowCode(); break;
-    case 'fr-qr': frQR(); b.remove(); break;
     case 'fr-copy': try { navigator.clipboard.writeText(frMsg()); toast(T('📋 Code copié : colle-le à ton ami', '📋 Code copied: paste it to your friend')); } catch (e) { toast(FRS().file); } break;
     case 'fr-share': shareText(frMsg()); break;
-    case 'fr-add': modal(`<div class="row between"><h2 style="margin:0">＋ ${T('Ajouter un ami', 'Add a friend')}</h2><button class="btn sm" data-act="close">✕</button></div><p class="small">${T('Colle le lien ou le code que ton ami t\'a envoyé (dans l\'appli : Profil → Amis → Mon code).', 'Paste the link or code your friend sent you (in the app: Profile → Friends → My code).')}</p><div class="row" style="gap:8px"><input id="frin" style="flex:1" placeholder="${T('Lien ou code ami', 'Link or friend code')}"><button class="btn" data-act="fr-paste" style="flex:none">📋 ${T('Coller', 'Paste')}</button></div><button class="btn primary block" data-act="fr-add-ok" style="margin-top:12px">${T('Ajouter', 'Add')}</button>`); setTimeout(() => { const i = $('#frin'); if (i) i.focus(); }, 80); break;
+    case 'fr-add': modal(`<div class="row between"><h2 style="margin:0">＋ ${T('Ajouter un ami', 'Add a friend')}</h2><button class="btn sm" data-act="close">✕</button></div><p class="small">${T('Colle le message ou le code que ton ami t\'a envoyé (dans l\'appli : Profil → Amis → Mon code).', 'Paste the message or code your friend sent you (in the app: Profile → Friends → My code).')}</p><div class="row" style="gap:8px"><input id="frin" style="flex:1" placeholder="${T('Code ami', 'Friend code')}"><button class="btn" data-act="fr-paste" style="flex:none">📋 ${T('Coller', 'Paste')}</button></div><button class="btn primary block" data-act="fr-add-ok" style="margin-top:12px">${T('Ajouter', 'Add')}</button>`); setTimeout(() => { const i = $('#frin'); if (i) i.focus(); }, 80); break;
     case 'fr-paste': (async () => { try { const t = await navigator.clipboard.readText(); const i = $('#frin'); if (i) i.value = t.trim(); if (frCodeOf(t)) frAdd(t); else toast(T('⚠️ Aucun code ami dans le presse-papiers', '⚠️ No friend code in clipboard')); } catch (e) { toast(T('Garde le doigt dans la case, puis « Coller »', 'Long-press the box, then “Paste”')); const i = $('#frin'); if (i) i.focus(); } })(); break;
     case 'frl-copy': try { navigator.clipboard.writeText(window._frPend); toast(T('📋 Code copié! Ouvre ton appli Carnet Muscu', '📋 Code copied! Open your Carnet Muscu app')); } catch (e) { toast(window._frPend); } break;
     case 'frl-here': closeModal(); frAdd(window._frPend); break;
+    case 'ph-share': { const id = b.dataset.id, fr = FRS(); fr.ph = fr.ph || [];
+      if (fr.ph.includes(id)) { fr.ph = fr.ph.filter(x => x !== id); save(); closeAll(); render(); toast(T('🔒 Photo retirée de ta carte Amis', '🔒 Photo removed from your Friends card')); if (frOn()) frPublish(true); break; }
+      if (!confirm(T('Partager cette photo avec tes amis? Toute personne qui a ton code ami pourra la voir. Tu peux arrêter quand tu veux.', 'Share this photo with your friends? Anyone with your friend code will be able to see it. You can stop anytime.'))) break;
+      fr.ph.push(id); save(); closeAll(); render();
+      if (frOn()) { frPublish(true); toast(T('👥 Photo partagée avec tes amis', '👥 Photo shared with your friends')); }
+      else modal(`<h2>👥 ${T('Active le partage', 'Turn on sharing')}</h2><p>${T('Ta photo sera visible par tes amis dès que tu actives le partage avec Google.', 'Your photo will be visible to your friends as soon as you turn on sharing with Google.')}</p><button class="btn primary block" data-act="fr-start">${T('Activer le partage', 'Turn on sharing')}</button><button class="btn block" data-act="close" style="margin-top:8px">${T('Plus tard', 'Later')}</button>`);
+      break; }
+    case 'fr-phbig': modal(`<div class="row between"><b>${esc((frData[b.dataset.c] || {d: {}}).d.name || '')}</b><button class="btn sm" data-act="close">✕</button></div><img src="${b.src}" alt="" style="width:100%;border-radius:14px;margin-top:10px;display:block">`); break;
     case 'fr-add-ok': frAdd(($('#frin') || {}).value); break;
     case 'fr-refresh': toast('↻'); frLoad(true); break;
     case 'fr-now': FRS().noW = b.checked; save(); frQueue(false); break;
