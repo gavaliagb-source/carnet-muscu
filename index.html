@@ -4151,7 +4151,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.8.1';
+const APP_VERSION = '8.8.2';
 const CHANGELOG = [
   {v: '8.8', d: '2026-11-10', fr: ['Nouveau : 👥 Amis (Profil → Amis). Partage tes séances, ajoute tes amis avec leur code ou leur lien, vois leurs séances et réagis 🔥 💪 👏.', 'Tu choisis ce qui est partagé : cacher tes poids, rendre une séance privée, arrêter le partage. Ton poids corporel, tes mensurations et tes photos ne sont jamais partagés.'],
    en: ['New: 👥 Friends (Profile → Friends). Share your workouts, add buddies with their code or link, see their workouts and react 🔥 💪 👏.', 'You choose what is shared: hide weights, make a workout private, stop sharing. Body weight, measurements and photos are never shared.']},
@@ -4980,6 +4980,7 @@ const FRS = () => (S.settings.fr = S.settings.fr || {list: [], re: [], hide: []}
 const frOn = () => !!(S.settings.fr && S.settings.fr.on && S.settings.fr.file);
 const frTokOk = () => { try { const t = JSON.parse(localStorage.getItem(GDKEY) || 'null'); return !!(t && t.exp > Date.now() + 60000 && (t.sc || '').includes(FRSCOPE)); } catch (e) { return false; } };
 let frData = (() => { try { return JSON.parse(localStorage.getItem(FRCACHE) || '{}'); } catch (e) { return {}; } })(), frBusy = false, frPubT = null, frLastLoad = 0;
+const frMsg = () => T(`Ajoute-moi en ami dans Carnet Muscu 💪\nDans l'appli : Profil → Amis → Ajouter, puis colle ce message.\nCode ami : ${FRS().file}\n${frLink()}`, `Add me as a friend on Carnet Muscu 💪\nIn the app: Profile → Friends → Add, then paste this message.\nFriend code: ${FRS().file}\n${frLink()}`);
 const frLink = () => location.origin + location.pathname + '#ami=' + FRS().file;
 function frAgo(iso) {
   const m = Math.round((Date.now() - new Date(iso)) / 60000);
@@ -5067,7 +5068,7 @@ async function frStop() {
 function frShowCode() {
   const fr = FRS();
   modal(`<div class="row between"><h2 style="margin:0">👥 ${T('Mon code ami', 'My friend code')}</h2><button class="btn sm" data-act="close">✕</button></div>
-    <p class="small">${T('Envoie ce lien à tes amis. En l\'ouvrant, ils t\'ajoutent dans leur appli. Ensuite, demande-leur le leur pour les voir aussi.', 'Send this link to your friends. Opening it adds you in their app. Then ask for theirs to see them too.')}</p>
+    <p class="small">${T('Envoie ton code à tes amis. Dans leur appli : Profil → Amis → Ajouter, puis ils collent ton message. Ensuite, demande-leur le leur pour les voir aussi.', 'Send your code to your friends. In their app: Profile → Friends → Add, then they paste your message. Then ask for theirs to see them too.')}</p>
     <div id="frqr" style="display:flex;justify-content:center;margin:10px 0;min-height:10px"></div>
     <div class="frcode">${esc(fr.file)}</div>
     <div class="row" style="margin-top:10px"><button class="btn primary" style="flex:1" data-act="fr-share">📤 ${T('Envoyer mon lien', 'Send my link')}</button><button class="btn" style="flex:1" data-act="fr-copy">📋 ${T('Copier', 'Copy')}</button></div>
@@ -5095,9 +5096,11 @@ async function frAdd(code) {
   toast(T('⏳ Recherche de ton ami…', '⏳ Looking for your friend…'));
   try {
     const d = await frFetch(code); frData[code] = {d, t: Date.now()}; frSaveCache();
-    fr.list.push({c: code, n: d.name, add: new Date().toISOString()}); save(); closeAll(); setRoot('friends'); render();
+    fr.list.push({c: code, n: d.name, add: new Date().toISOString()}); save();
+    if (S.settings.onboarded) { closeAll(); setRoot('friends'); } else if ($('#frin')) closeModal();
+    render();
     toast(T(`✅ ${d.name} ajouté à tes amis`, `✅ ${d.name} added to your friends`));
-    if (!frOn()) setTimeout(() => modal(`<h2>👥 ${T('Et toi?', 'And you?')}</h2><p>${T(`Pour que <b>${esc(d.name)}</b> voie aussi tes séances, active le partage et envoie-lui ton code.`, `For <b>${esc(d.name)}</b> to see your workouts too, turn on sharing and send your code.`)}</p><button class="btn primary block" data-act="fr-start">${T('Activer le partage', 'Turn on sharing')}</button><button class="btn block" data-act="close" style="margin-top:8px">${T('Plus tard', 'Later')}</button>`), 500);
+    if (!frOn() && S.settings.onboarded) setTimeout(() => modal(`<h2>👥 ${T('Et toi?', 'And you?')}</h2><p>${T(`Pour que <b>${esc(d.name)}</b> voie aussi tes séances, active le partage et envoie-lui ton code.`, `For <b>${esc(d.name)}</b> to see your workouts too, turn on sharing and send your code.`)}</p><button class="btn primary block" data-act="fr-start">${T('Activer le partage', 'Turn on sharing')}</button><button class="btn block" data-act="close" style="margin-top:8px">${T('Plus tard', 'Later')}</button>`), 500);
   } catch (e) { toast(e.message === 'gone' ? T('⚠️ Carte introuvable : vérifie le code (ou ton ami a arrêté le partage)', '⚠️ Card not found: check the code (or your friend stopped sharing)') : '⚠️ ' + e.message); }
 }
 function frSaveCache() { try { localStorage.setItem(FRCACHE, JSON.stringify(frData)); } catch (e) {} }
@@ -5175,7 +5178,19 @@ function friendsCard() {
 async function checkFriendLink() {
   const m = location.hash.match(/#ami=([A-Za-z0-9_-]{20,})/); if (!m) return;
   try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  // Lien ouvert dans le navigateur (Messenger, Safari…) au lieu de l'appli installée : c'est une copie vide de l'appli.
+  if (!isStandalone() && !S.history.length) return frLanding(m[1]);
   frAdd(m[1]);
+}
+async function frLanding(code) {
+  window._frPend = code;
+  let name = ''; try { name = (await frFetch(code)).name; } catch (e) {}
+  modal(`<div style="text-align:center"><div style="font-size:46px">👥</div><h2 style="margin:4px 0">${name ? T(`${esc(name)} veut t'ajouter en ami`, `${esc(name)} wants to be your friend`) : T('Invitation d\'un ami', 'Friend invitation')}</h2></div>
+    <p class="small">${T('Ce lien s\'est ouvert dans ton <b>navigateur</b>, pas dans ton appli Carnet Muscu. Ici, c\'est une copie vide de l\'appli : tes séances n\'y sont pas.', 'This link opened in your <b>browser</b>, not in your Carnet Muscu app. This is an empty copy of the app: your workouts aren\'t here.')}</p>
+    <div class="card" style="margin:10px 0"><b>${T('Si tu as déjà l\'appli :', 'If you already have the app:')}</b>
+      <div class="small" style="margin-top:6px;line-height:1.7">1. ${T('Touche « Copier le code » ci-dessous', 'Tap “Copy code” below')}<br>2. ${T('Ouvre <b>Carnet Muscu</b> depuis ton écran d\'accueil', 'Open <b>Carnet Muscu</b> from your home screen')}<br>3. ${T('Profil → Amis → Ajouter → <b>Coller</b>', 'Profile → Friends → Add → <b>Paste</b>')}</div>
+      <button class="btn primary block" data-act="frl-copy" style="margin-top:10px">📋 ${T('Copier le code', 'Copy code')}</button></div>
+    <button class="btn block" data-act="frl-here">${T('Je n\'ai pas encore l\'appli : continuer ici', 'I don\'t have the app yet: continue here')}</button>`, {id: 'frland'});
 }
 
 /* ---------- Calendrier façon Hevy ---------- */
@@ -5463,9 +5478,12 @@ document.addEventListener('click', e => {
     case 'fr-stop': frStop(); break;
     case 'fr-code': frShowCode(); break;
     case 'fr-qr': frQR(); b.remove(); break;
-    case 'fr-copy': try { navigator.clipboard.writeText(frLink()); toast(T('📋 Lien copié', '📋 Link copied')); } catch (e) { toast(frLink()); } break;
-    case 'fr-share': shareText(T(`Ajoute-moi dans Carnet Muscu 💪 : ${frLink()}`, `Add me on Carnet Muscu 💪: ${frLink()}`)); break;
-    case 'fr-add': modal(`<div class="row between"><h2 style="margin:0">＋ ${T('Ajouter un ami', 'Add a friend')}</h2><button class="btn sm" data-act="close">✕</button></div><p class="small">${T('Colle le lien ou le code que ton ami t\'a envoyé (dans l\'appli : Profil → Amis → Mon code).', 'Paste the link or code your friend sent you (in the app: Profile → Friends → My code).')}</p><input id="frin" placeholder="${T('Lien ou code ami', 'Link or friend code')}"><button class="btn primary block" data-act="fr-add-ok" style="margin-top:12px">${T('Ajouter', 'Add')}</button>`); setTimeout(() => { const i = $('#frin'); if (i) i.focus(); }, 80); break;
+    case 'fr-copy': try { navigator.clipboard.writeText(frMsg()); toast(T('📋 Code copié : colle-le à ton ami', '📋 Code copied: paste it to your friend')); } catch (e) { toast(FRS().file); } break;
+    case 'fr-share': shareText(frMsg()); break;
+    case 'fr-add': modal(`<div class="row between"><h2 style="margin:0">＋ ${T('Ajouter un ami', 'Add a friend')}</h2><button class="btn sm" data-act="close">✕</button></div><p class="small">${T('Colle le lien ou le code que ton ami t\'a envoyé (dans l\'appli : Profil → Amis → Mon code).', 'Paste the link or code your friend sent you (in the app: Profile → Friends → My code).')}</p><div class="row" style="gap:8px"><input id="frin" style="flex:1" placeholder="${T('Lien ou code ami', 'Link or friend code')}"><button class="btn" data-act="fr-paste" style="flex:none">📋 ${T('Coller', 'Paste')}</button></div><button class="btn primary block" data-act="fr-add-ok" style="margin-top:12px">${T('Ajouter', 'Add')}</button>`); setTimeout(() => { const i = $('#frin'); if (i) i.focus(); }, 80); break;
+    case 'fr-paste': (async () => { try { const t = await navigator.clipboard.readText(); const i = $('#frin'); if (i) i.value = t.trim(); if (frCodeOf(t)) frAdd(t); else toast(T('⚠️ Aucun code ami dans le presse-papiers', '⚠️ No friend code in clipboard')); } catch (e) { toast(T('Garde le doigt dans la case, puis « Coller »', 'Long-press the box, then “Paste”')); const i = $('#frin'); if (i) i.focus(); } })(); break;
+    case 'frl-copy': try { navigator.clipboard.writeText(window._frPend); toast(T('📋 Code copié! Ouvre ton appli Carnet Muscu', '📋 Code copied! Open your Carnet Muscu app')); } catch (e) { toast(window._frPend); } break;
+    case 'frl-here': closeModal(); frAdd(window._frPend); break;
     case 'fr-add-ok': frAdd(($('#frin') || {}).value); break;
     case 'fr-refresh': toast('↻'); frLoad(true); break;
     case 'fr-now': FRS().noW = b.checked; save(); frQueue(false); break;
