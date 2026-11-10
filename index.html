@@ -988,6 +988,7 @@ function routineToText(r) {
     if (e.timed) f.push(T('DURÉE', 'TIMED'));
     if (e.rest) f.push('R:' + (e.rest < 0 ? 0 : e.rest));
     if (e.ss) f.push('SS:' + e.ss);
+    if (Array.isArray(e.sl) && e.sl.some(s => s.t)) { const nw = e.sl.filter(s => s.t === 'W').length, nf = e.sl.filter(s => s.t === 'F').length; f.push('F:' + nf); if (nw) f.push('W:' + nw); }
     return '- ' + f.join(' | ');
   }).join('\n');
 }
@@ -1010,10 +1011,13 @@ function parseText(txt, defaultName) {
     sets = Math.max(1, Math.min(sets || 2, 10));
     const reps = sr ? sr[2].trim().replace(/[–—]/g, '-').replace(/\s*reps?$/i, '') : (p[1] || '8-12');
     const wm = (p[2] || '').replace(',', '.').match(/\d+(\.\d+)?/);
-    let ss = null, rest = null, timed = false; const notes = [];
+    let ss = null, rest = null, timed = false, fF = null, fW = 0; const notes = [];
     p.slice(3).forEach(f => {
       const sm = f.match(/^SS\s*:?\s*([A-Za-z0-9]+)$/i);
       const rm = f.match(/^(?:R|REPOS|REST)\s*:?\s*(\d+(?:[.,]\d+)?)\s*(s|sec|secondes?|m|min|minutes?)?$/i);
+      const fm2 = f.match(/^(?:F|ECHEC|ÉCHEC|FAIL(?:URE)?)\s*:\s*(\d+|all|toutes?|tout)$/i), wm2 = f.match(/^(?:W|É|ECH|ÉCH|WARM(?:UP)?|ÉCHAUF\w*)\s*:\s*(\d+)$/i);
+      if (fm2) { fF = /^\d+$/.test(fm2[1]) ? +fm2[1] : 99; return; }
+      if (wm2) { fW = Math.min(4, +wm2[1]); return; }
       if (/^(DUR[EÉ]E|TEMPS|TIMED|CHRONO|DURATION|TIME)$/i.test(f)) timed = true;
       else if (sm) ss = sm[1].toUpperCase();
       else if (rm) { const n = parseFloat(rm[1].replace(',', '.')); rest = Math.round(/^m/i.test(rm[2] || '') ? n * 60 : n); }
@@ -1024,6 +1028,10 @@ function parseText(txt, defaultName) {
     if (rest === 0) o.rest = -1; else if (rest >= 5 && rest <= 900) o.rest = rest;
     if (ss) o.ss = ss;
     if (timed || TIMED_RE.test(p[0])) o.timed = true;
+    if (fF != null || fW) { // séries planifiées : échauffements + dernières séries à l'échec
+      o.fplan = true; const nf = Math.min(sets, fF || 0);
+      o.sl = [...Array.from({length: fW}, () => ({w: '', r: '', t: 'W'})), ...Array.from({length: sets}, (_, i) => Object.assign({w: o.weight, r: String(reps)}, i >= sets - nf ? {t: 'F'} : {}))];
+    }
     out[out.length - 1].exercises.push(o);
   });
   out.forEach(r => fixSS(r.exercises));
@@ -1033,7 +1041,7 @@ function parseText(txt, defaultName) {
 const EFFORTS = () => [['fail', T('À l\'échec (0 rep en réserve)', 'To failure (0 reps in reserve)')], ['rir', T('Proche de l\'échec (1-2 reps en réserve)', 'Close to failure (1-2 reps in reserve)')], ['normal', T('Normal / je ne sais pas', 'Normal / not sure')]];
 function effTxt() {
   const e = S.settings.effort || (S.settings.failDefault ? 'fail' : 'normal');
-  if (e === 'fail') return T(", toutes mes séries de travail sont faites à l'échec", ', all my working sets are taken to failure');
+  if (e === 'fail') return T(", j'aime m'entraîner à l'échec : indique avec F: quelles séries le méritent", ', I like training to failure: use F: to say which sets are worth it');
   if (e === 'rir') return T(', je garde environ 1-2 reps en réserve (RIR 1-2)', ', I keep about 1-2 reps in reserve (RIR 1-2)');
   return '';
 }
@@ -1047,13 +1055,13 @@ function aiPrompt(routines) {
   }).join('\n\n');
   if (isEN()) return `Here is my workout ${routines.length > 1 ? 'program' : 'routine'} (weights in ${U()}${effTxt()}).\n\n${blocks}${routines.length > 1 ? schedTxt() : ''}\n\n` +
     `Reply with the modified version in EXACTLY this format, one exercise per line:\n` +
-    `ROUTINE: Routine name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note (optional) | R:90 (rest in seconds, optional) | SS:A (optional) | TIMED (optional, if reps are seconds)\n` +
-    `ALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. Write BW for bodyweight (“?” = weight to be determined: suggest a starting weight). Keep my R:… (rest in seconds) values, or adjust them if relevant. For a superset, put the same SS:A (or SS:B…) on consecutive exercises done together. ` +
+    `ROUTINE: Routine name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note (optional) | R:90 (rest in seconds, optional) | SS:A (optional) | F:1 (optional: number of last sets to take to failure) | W:2 (optional: warm-up sets) | TIMED (optional, if reps are seconds)\n` +
+    `ALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. For EACH exercise, decide what's best: put F:1 (or F:2) only where training to failure is useful (often the last set of isolation and machine exercises), and F:0 on heavy compound lifts (squat, deadlift, heavy bench…) where it's risky. Add W:1 to W:3 on the first heavy exercises that need a warm-up. Write BW for bodyweight (“?” = weight to be determined: suggest a starting weight). Keep my R:… (rest in seconds) values, or adjust them if relevant. For a superset, put the same SS:A (or SS:B…) on consecutive exercises done together. ` +
     `Keep the same routine name so my app replaces it.\n\nMy request: `;
   return `Voici ${routines.length > 1 ? 'mon programme' : 'ma routine'} d'entraînement (charges en ${U()}${effTxt()}).\n\n${blocks}${routines.length > 1 ? schedTxt() : ''}\n\n` +
     `Réponds avec la version modifiée dans EXACTEMENT ce format, un exercice par ligne :\n` +
-    `ROUTINE: Nom de la routine\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note (optionnelle) | R:90 (repos en secondes, optionnel) | SS:A (optionnel) | DURÉE (optionnel, si les reps sont des secondes)\n` +
-    `Donne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. Écris PDC pour le poids du corps (« ? » = charge à déterminer : propose une charge de départ). Garde les R:… (repos en secondes) de mes exercices, ou ajuste-les si c'est pertinent. Pour un superset, mets le même SS:A (ou SS:B…) sur les exercices consécutifs faits ensemble. ` +
+    `ROUTINE: Nom de la routine\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note (optionnelle) | R:90 (repos en secondes, optionnel) | SS:A (optionnel) | F:1 (optionnel : nombre de dernières séries à faire à l'échec) | W:2 (optionnel : séries d'échauffement) | DURÉE (optionnel, si les reps sont des secondes)\n` +
+    `Donne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. Pour CHAQUE exercice, décide ce qui est le mieux : mets F:1 (ou F:2) seulement là où aller à l'échec est utile (souvent la dernière série des exercices d'isolation et des machines), et F:0 sur les gros mouvements lourds (squat, soulevé de terre, développé couché lourd…) où c'est risqué. Ajoute W:1 à W:3 sur les premiers exercices lourds qui ont besoin d'échauffement. Écris PDC pour le poids du corps (« ? » = charge à déterminer : propose une charge de départ). Garde les R:… (repos en secondes) de mes exercices, ou ajuste-les si c'est pertinent. Pour un superset, mets le même SS:A (ou SS:B…) sur les exercices consécutifs faits ensemble. ` +
     `Garde le même nom de routine pour que mon appli la remplace.\n\nMa demande : `;
 }
 function freshPrompt() {
@@ -1068,14 +1076,14 @@ function freshPrompt() {
     `Choose the exercises and structure freely: do NOT base it on my old routines, new exercises are welcome. ` +
     (perf ? `To help you estimate starting weights, here are my best recent sets (last 90 days):\n${perf}\n\n` : '\n') +
     `Reply in EXACTLY this format, one ROUTINE: line per workout day, one exercise per line:\n` +
-    `FOLDER: Program name\nROUTINE: Routine name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note (optional) | R:90 (rest in seconds) | SS:A (optional, superset) | TIMED (optional, if reps are seconds)\n` +
-    `ALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. Write BW for bodyweight. Start with a FOLDER: line with a short program name (e.g. FOLDER: PPL 5 days), then give each routine a new, clear name (e.g. Push A, Pull A, Legs A).\n\nMy request (number of days per week, split, goals…): `;
+    `FOLDER: Program name\nROUTINE: Routine name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note (optional) | R:90 (rest in seconds) | SS:A (optional, superset) | F:1 (optional: number of last sets to take to failure) | W:2 (optional: warm-up sets) | TIMED (optional, if reps are seconds)\n` +
+    `ALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. For EACH exercise, decide what's best: put F:1 (or F:2) only where training to failure is useful (often the last set of isolation and machine exercises), and F:0 on heavy compound lifts (squat, deadlift, heavy bench…) where it's risky. Add W:1 to W:3 on the first heavy exercises that need a warm-up. Write BW for bodyweight. Start with a FOLDER: line with a short program name (e.g. FOLDER: PPL 5 days), then give each routine a new, clear name (e.g. Push A, Pull A, Legs A).\n\nMy request (number of days per week, split, goals…): `;
   return `Crée-moi un NOUVEAU programme d'entraînement à partir de zéro (charges en ${U()}${effTxt()}). ` +
     `Choisis librement les exercices et la structure : ne te base PAS sur mes anciennes routines, tu peux proposer de nouveaux exercices. ` +
     (perf ? `Pour t'aider à estimer mes charges de départ, voici mes meilleures séries récentes (90 derniers jours) :\n${perf}\n\n` : '\n') +
     `Réponds dans EXACTEMENT ce format, une ligne ROUTINE: par séance, un exercice par ligne :\n` +
-    `DOSSIER: Nom du programme\nROUTINE: Nom de la routine\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note (optionnelle) | R:90 (repos en secondes) | SS:A (optionnel, superset) | DURÉE (optionnel, si les reps sont des secondes)\n` +
-    `Donne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. Écris PDC pour le poids du corps. Commence par une ligne DOSSIER: avec un nom court pour le programme (ex. DOSSIER: PPL 5 jours), puis donne à chaque routine un nouveau nom clair (ex. Push A, Pull A, Jambes A).\n\nMa demande (nombre de jours par semaine, split, objectifs…) : `;
+    `DOSSIER: Nom du programme\nROUTINE: Nom de la routine\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note (optionnelle) | R:90 (repos en secondes) | SS:A (optionnel, superset) | F:1 (optionnel : nombre de dernières séries à faire à l'échec) | W:2 (optionnel : séries d'échauffement) | DURÉE (optionnel, si les reps sont des secondes)\n` +
+    `Donne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. Pour CHAQUE exercice, décide ce qui est le mieux : mets F:1 (ou F:2) seulement là où aller à l'échec est utile (souvent la dernière série des exercices d'isolation et des machines), et F:0 sur les gros mouvements lourds (squat, soulevé de terre, développé couché lourd…) où c'est risqué. Ajoute W:1 à W:3 sur les premiers exercices lourds qui ont besoin d'échauffement. Écris PDC pour le poids du corps. Commence par une ligne DOSSIER: avec un nom court pour le programme (ex. DOSSIER: PPL 5 jours), puis donne à chaque routine un nouveau nom clair (ex. Push A, Pull A, Jambes A).\n\nMa demande (nombre de jours par semaine, split, objectifs…) : `;
 }
 async function copy(t) {
   try { await navigator.clipboard.writeText(t); toast('✅ Copié! Colle-le dans ton IA'); return; } catch (e) {}
@@ -1111,7 +1119,7 @@ function previewPaste(rid) {
   $('#pv').innerHTML = res.length ? res.map(x => {
     const fx = pasteFolder || x.folder || null;
     const exists = S.routines.some(y => (!fx || (y.folder || DEF_FOLDER) === fx) && norm(y.name) === norm(x.name)) || (r && res.length === 1);
-    return `<div class="preview"><b>${esc(x.name)}</b> <span class="tag">${exists ? 'mise à jour' : 'nouvelle'}</span>${fx ? ` <span class="tag">📁 ${esc(fx)}</span>` : ''}<br>${x.exercises.map(e => `${e.ss ? '<span class="sspill sm" style="--ss:' + ssColor(e.ss) + '">SS</span> ' : ''}${esc(e.name)} — ${e.sets}×${esc(e.reps)} · ${esc(fmtW(e.weight))}${e.rest ? ' · ⏱' + fmtRest(e.rest) : ''}`).join('<br>')}</div>`;
+    return `<div class="preview"><b>${esc(x.name)}</b> <span class="tag">${exists ? 'mise à jour' : 'nouvelle'}</span>${fx ? ` <span class="tag">📁 ${esc(fx)}</span>` : ''}<br>${x.exercises.map(e => `${e.ss ? '<span class="sspill sm" style="--ss:' + ssColor(e.ss) + '">SS</span> ' : ''}${esc(e.name)} — ${e.sets}×${esc(e.reps)} · ${esc(fmtW(e.weight))}${e.rest ? ' · ⏱' + fmtRest(e.rest) : ''}${e.sl ? (() => { const nw = e.sl.filter(s => s.t === 'W').length, nf = e.sl.filter(s => s.t === 'F').length; return (nw ? ` · <span style="color:var(--warm)">${nw} ${T('échauf.', 'warm-up')}</span>` : '') + (nf ? ` · <span style="color:#ff9f43">${nf} ${T('à l\'échec', 'to failure')}</span>` : ''); })() : ''}`).join('<br>')}</div>`;
   }).join('') : '<p class="muted small">Aucun exercice reconnu pour l\'instant.</p>';
 }
 /* Charge « ? » : on reprend la meilleure charge de travail de ta dernière séance sur cet exercice */
@@ -1952,7 +1960,8 @@ function vSettings() {
       <p class="muted small" style="margin:2px 0 0">${T('Épaules et bras : +2,5 lb par défaut. Change-le par exercice avec ⚙️ dans la séance.', 'Shoulders and arms: +2.5 lb by default. Change it per exercise with ⚙️ during the workout.')}</p>
       <label>${T('Intensité de tes séries', 'How hard you train your sets')}</label>
       <select data-set="effort">${EFFORTS().map(([k, l]) => `<option value="${k}" ${(S.settings.effort || 'normal') === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
-      <p class="muted small" style="margin:2px 0 0">${T('« À l\'échec » marque tes séries F par défaut. L\'IA en tient compte dans ses conseils.', '“To failure” marks your sets F by default. The AI takes it into account.')}</p>
+      <p class="muted small" style="margin:2px 0 0">${T('« À l\'échec » : seulement la dernière série des exercices d\'isolation et des machines est marquée F. Les gros mouvements lourds (squat, soulevé de terre…) restent à 1-2 reps en réserve, c\'est plus sûr et aussi efficace. L\'IA suit la même logique.', '“To failure”: only the last set of isolation and machine exercises is marked F. Heavy compound lifts (squat, deadlift…) stay at 1-2 reps in reserve, which is safer and just as effective. The AI follows the same logic.')}</p>
+      <button class="btn sm" data-act="smart-all" style="margin-top:8px">⚡ ${T('Appliquer le plan auto à toutes mes routines', 'Apply the auto plan to all my routines')}</button>
       <label class="row" style="margin:10px 0 4px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="stagOn" ${S.settings.stagOff ? '' : 'checked'}> ⚠️ ${T('Alertes de plateau', 'Plateau alerts')}</label>
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="autoScroll" ${S.settings.autoScroll !== false ? 'checked' : ''}> ${T('↓ Aller à l\'exercice suivant après la dernière série (et alterner en superset)', '↓ Jump to the next exercise after the last set (and alternate in supersets)')}</label>
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="wake" ${S.settings.wake === true ? 'checked' : ''}> <span>📱 Garder l'écran allumé pendant la séance<br><span class="muted small">Consomme de la batterie, pas nécessaire pour le bip.</span></span></label>
@@ -2069,7 +2078,7 @@ function createPast() {
   draft = {id: uid(), isNew: true, routineId: r.id, routineName: r.name, date, duration: 60,
     exercises: r.exercises.map(e => {
       const l = lastFor(e.name);
-      const o = {name: e.name, sets: Array.from({length: e.sets}, (_, i) => { const ls = l && (l.sets[i] || l.sets[l.sets.length - 1]); const s = {w: ls && ls.w != null ? ls.w : (e.weight ?? ''), r: ''}; if (S.settings.failDefault) s.t = 'F'; return s; })};
+      const o = {name: e.name, sets: Array.from({length: e.sets}, (_, i) => { const ls = l && (l.sets[i] || l.sets[l.sets.length - 1]); const s = {w: ls && ls.w != null ? ls.w : (e.weight ?? ''), r: ''}; if (ls && ls.t === 'F') s.t = 'F'; return s; })};
       if (e.ss) o.ss = e.ss; return o;
     })};
   closeModal(); showEditor();
@@ -2257,12 +2266,12 @@ function historyPrompt() {
     hs.map(h => `${new Date(h.date).toLocaleDateString('en-CA')} — ${h.routineName} (${hm(h.duration)})\n` +
       h.exercises.map(e => `  ${e.name}: ${e.sets.map(s => fmtSet(s, false).replace(' (échec)', '')).join(', ')}${e.note ? ' — note: ' + e.note : ''}`).join('\n')).join('\n\n') +
     `\n\nMy current routines:\n\n${S.routines.map(routineToText).join('\n\n')}\n\n` +
-    `If you suggest routine changes, give them in EXACTLY this format so I can paste them into my app:\nROUTINE: Name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note | R:90 (rest in s, optional) | SS:A (optional, for a superset)\nALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. \n\nMy question: `;
+    `If you suggest routine changes, give them in EXACTLY this format so I can paste them into my app:\nROUTINE: Name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note | R:90 (rest in s, optional) | SS:A (optional, for a superset) | F:1 (optional: number of last sets to take to failure) | W:2 (optional: warm-up sets)\nALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. \n\nMy question: `;
   return `Voici mes séances d'entraînement des 30 derniers jours (charges en ${U()}, format charge×reps${effTxt()}) :\n\n` +
     hs.map(h => `${new Date(h.date).toLocaleDateString(LOC())} — ${h.routineName} (${hm(h.duration)})\n` +
       h.exercises.map(e => `  ${e.name} : ${e.sets.map(s => fmtSet(s, false).replace(' (échec)', '')).join(', ')}${e.note ? ' — note : ' + e.note : ''}`).join('\n')).join('\n\n') +
     `\n\nMes routines actuelles :\n\n${S.routines.map(routineToText).join('\n\n')}\n\n` +
-    `Si tu proposes des changements de routines, donne-les dans EXACTEMENT ce format pour que je puisse les coller dans mon appli :\nROUTINE: Nom\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note | R:90 (repos en s, optionnel) | SS:A (optionnel pour un superset)\nDonne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. \n\nMa question : `;
+    `Si tu proposes des changements de routines, donne-les dans EXACTEMENT ce format pour que je puisse les coller dans mon appli :\nROUTINE: Nom\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note | R:90 (repos en s, optionnel) | SS:A (optionnel pour un superset) | F:1 (optionnel : nombre de dernières séries à faire à l'échec) | W:2 (optionnel : séries d'échauffement)\nDonne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. \n\nMa question : `;
 }
 
 /* ===================== Graphique ===================== */
@@ -2318,14 +2327,46 @@ function syncSummary(e) {
   if (!e.sl.some(s => s.t) && e.sl.every(s => String(s.w) === String(f.w) && s.r === f.r)) delete e.sl;
   return e;
 }
+/* Plan d'intensité intelligent :
+   - isolation (curl, extensions, élévations, mollets…) et machines/poulies/poids du corps : dernière série à l'échec
+   - gros mouvements lourds en poids libre (squat, soulevé de terre, développé, rowing barre, fentes…) : pas d'échec (1-2 reps en réserve)
+   - échauffements : 2 sur le 1er exercice chargé de la séance, 1 sur les autres mouvements lourds */
+function exKind(name) {
+  const n = norm(name), l = libEntry(name), eq = (l && l.eq) || '';
+  if (TIMED_RE.test(name) || isCardio({name})) return 'skip';
+  if (/curl|extension|elevation|lateral|ecarte|fly|pec deck|butterfly|mollet|calf|kickback|shrug|haussement|face pull|crunch|abduct|adduct|pull ?over|oiseau|wrist|poignet|releve|raise|twist|gainage|planche|plank/.test(n)) return 'iso';
+  const mach = /machine|cable|lever|smith|sled|assisted/.test(eq) || /machine|poulie|cable|smith|presse a cuisses|leg press|hack|guide|assiste/.test(n);
+  if (eq === 'body weight' || /traction|pull ?up|chin ?up|dips|pompe|push ?up/.test(n)) return 'comp';
+  if (!mach && /squat|soulev|deadlift|developpe|bench|press|militaire|overhead|rowing|row\b|fente|lunge|hip thrust|good morning|clean|snatch|arrache|epaule-jete/.test(n)) return 'heavy';
+  return mach ? 'comp' : 'iso';
+}
+const autoFailN = name => { const k = exKind(name); return k === 'iso' || k === 'comp' ? 1 : 0; };
+function smartPlan(exs) {
+  let firstLoaded = true;
+  exs.forEach(e => {
+    if (e.cardio || isTimed(e)) return;
+    const k = exKind(e.name); if (k === 'skip') return;
+    const base = setsOf(e).filter(s => s.t !== 'W').map(s => ({w: s.w ?? '', r: String(s.r ?? e.reps ?? '')}));
+    const loaded = k !== 'iso' && !(k === 'comp' && libEntry(e.name) && libEntry(e.name).eq === 'body weight');
+    const nW = loaded && firstLoaded ? 2 : k === 'heavy' ? 1 : 0; if (loaded) firstLoaded = false;
+    const nF = Math.min(base.length, autoFailN(e.name));
+    base.forEach((s, i) => { if (i >= base.length - nF) s.t = 'F'; });
+    e.sl = [...Array.from({length: nW}, () => ({w: '', r: '', t: 'W'})), ...base]; e.fplan = true;
+    syncSummary(e);
+  });
+  return exs;
+}
 function mkSetsFromRoutine(e, last) {
   let wi = 0;
+  const planned = e.fplan || (Array.isArray(e.sl) && e.sl.some(s => s.t)), autoF = S.settings.failDefault && !planned ? autoFailN(e.name) : 0;
+  const nWork = setsOf(e).filter(s => s.t !== 'W').length; let wk = 0;
   return setsOf(e).map(ts => {
     const warm = ts.t === 'W'; let ls = null;
     if (!warm && last) { ls = last.sets[wi] || last.sets[last.sets.length - 1]; wi++; }
     const rg = String(ts.r || e.reps || '10');
-    const o = {w: (ls && ls.w !== '' && ls.w != null) ? ls.w : (ts.w ?? ''), r: '', done: false, ph: ls ? ls.r : rg.split('-').pop()};
-    if (warm) o.t = 'W'; else if (ts.t) o.t = ts.t; else if (S.settings.failDefault) o.t = 'F';
+    const o = {w: (ls && ls.w !== '' && ls.w != null) ? ls.w : (ts.w !== '' && ts.w != null ? ts.w : (warm ? '' : (e.weight ?? ''))), r: '', done: false, ph: ls ? ls.r : rg.split('-').pop()};
+    if (warm) o.t = 'W'; else if (ts.t) o.t = ts.t; else if (autoF && wk >= nWork - autoF) o.t = 'F';
+    if (!warm) wk++;
     if (!warm && deloadOn() && o.w !== '' && +o.w > 0) { const inc = incr(); o.w = Math.max(inc, Math.round(+o.w * (1 - S.settings.deload.pct / 100) / inc) * inc); }
     return o;
   });
@@ -3061,8 +3102,9 @@ function vRoutineEditor() {
     </div>`; }).join('')}
     <button class="btn primary block" data-act="rd-add-ex">＋ Ajouter un exercice</button>
     <div class="gap"></div>
+    <button class="btn block" data-act="rd-smart" style="margin-bottom:8px">⚡ ${T('Plan auto : échauffements + échec', 'Auto plan: warm-ups + failure')}</button>
     <div class="grid2"><button class="btn" data-act="rd-reorder">↕ Réorganiser</button><button class="btn" data-act="rd-text">📝 Mode texte / IA</button></div>
-    <p class="muted small">Touche le numéro d'une série pour la changer en échauffement (É) ou dropset (D). Laisse ${U()} vide pour le poids du corps.</p>
+    <p class="muted small">${T(`Touche le numéro d'une série pour la changer : échauffement (É), à l'échec (F) ou dropset (D). « Plan auto » met 1-2 échauffements sur les exercices lourds et la dernière série à l'échec seulement là où c'est sans risque (isolation, machines). Laisse ${U()} vide pour le poids du corps.`, `Tap a set number to change it: warm-up (W), to failure (F) or drop set (D). “Auto plan” adds 1-2 warm-ups on heavy lifts and the last set to failure only where it's safe (isolation, machines). Leave ${U()} empty for bodyweight.`)}</p>
     ${d.id ? `<button class="btn danger block" data-act="del-routine" data-rid="${d.id}">Supprimer la routine</button>` : ''}`;
 }
 function openRdExMenu(ei) {
@@ -4218,8 +4260,11 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.9.6';
+const APP_VERSION = '8.9.8';
 const CHANGELOG = [
+  {v: '8.9.8', d: '2026-11-10', fr: ['« À l\'échec » est plus intelligent : seulement la dernière série des exercices d\'isolation et des machines, pas sur les gros mouvements lourds.', 'Bouton ⚡ Plan auto dans l\'éditeur de routine (et pour toutes tes routines dans Réglages) : ajoute les échauffements et les séries à l\'échec où c\'est utile.', 'Le F (échec) est maintenant dans le choix du type de série de l\'éditeur.'],
+   en: ['“To failure” is smarter: only the last set of isolation and machine exercises, not heavy compound lifts.', '⚡ Auto plan button in the routine editor (and for all routines in Settings): adds warm-ups and failure sets where useful.', 'F (failure) is now in the set type choice of the editor.']},
+  {v: '8.9.7', d: '2026-11-10', fr: ['Assistant IA : l\'IA choisit maintenant quelles séries faire à l\'échec (F) et combien d\'échauffements pour chaque exercice, et l\'appli les met dans ta routine.'], en: ['AI assistant: the AI now chooses which sets to take to failure (F) and how many warm-ups for each exercise, and the app puts them in your routine.']},
   {v: '8.9.6', d: '2026-11-10', fr: ['Amis : tes propres séances apparaissent aussi dans le fil, et touche une photo de profil pour voir le profil et les posts de la personne.', 'Calculateur de disques : option « 1 seul côté » pour les machines (mollets, T-bar…), retenue par exercice.', 'Les records 🏆 sont en or et les séries à l\'échec en orange avec un petit F (plus en rouge).'],
    en: ['Friends: your own workouts also show in the feed, and tap a profile picture to see that person\'s profile and posts.', 'Plate calculator: “1 side only” option for machines (calves, T-bar…), remembered per exercise.', 'Records 🏆 are gold and failure sets are orange with a small F (no longer red).']},
   {v: '8.9.5', d: '2026-11-10', fr: ['Ajoute une photo à ta séance (à la fin, ou plus tard dans l\'historique). Tes amis la voient avec ta séance, et elle est dans ta sauvegarde.'], en: ['Add a photo to your workout (at the end, or later in your history). Friends see it with your workout, and it\'s in your backup.']},
@@ -5869,7 +5914,10 @@ document.addEventListener('click', e => {
     case 'cal-more': calMonths += 6; cur().scrolled = true; render(); break;
     case 'cal2-day': { const hs = S.history.filter(x => dkey(x.date) === b.dataset.d); modal(`<div class="row between"><h2>${new Date(b.dataset.d + 'T12:00').toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long'})}</h2><button class="btn sm" data-act="close">✕</button></div>${hs.map(x => histCard(x, true)).join('')}`); break; }
     case 'lib-browse': openPicker({title: 'Bibliothèque', libOnly: true, cb: p => go('exdetail', {n: p.name})}); break;
-    case 'rd-set-type': { const s = rdraft.exercises[ei].sl[si]; s.t = !s.t ? 'W' : s.t === 'W' ? 'D' : undefined; if (!s.t) delete s.t; rdirty = true; render(); break; }
+    case 'rd-set-type': { const s = rdraft.exercises[ei].sl[si]; s.t = !s.t ? 'W' : s.t === 'W' ? 'F' : s.t === 'F' ? 'D' : undefined; if (!s.t) delete s.t; rdraft.exercises[ei].fplan = true; rdirty = true; render(); break; }
+    case 'smart-all': { if (!confirm(T('Ajouter les échauffements et les séries à l\'échec à toutes tes routines? Tes séries, reps et charges ne changent pas. Tu pourras annuler.', 'Add warm-ups and failure sets to all your routines? Your sets, reps and weights don\'t change. You can undo.'))) break;
+      snap(); S.routines.forEach(r => smartPlan(r.exercises)); save(); undoToast(T(`⚡ Plan appliqué à ${S.routines.length} routines`, `⚡ Plan applied to ${S.routines.length} routines`)); break; }
+    case 'rd-smart': { smartPlan(rdraft.exercises); rdraft.exercises.forEach(e => { e.sl = setsOf(e).map(s => ({...s})); }); rdirty = true; render(); toast(T('⚡ Échauffements et séries à l\'échec ajoutés : modifie-les si tu veux', '⚡ Warm-ups and failure sets added: edit them if you want')); break; }
     case 'rd-set-del': { const sl = rdraft.exercises[ei].sl; if (sl.length > 1) { sl.splice(si, 1); rdirty = true; render(); } else toast('Il faut au moins une série'); break; }
     case 'rd-add-set': { const sl = rdraft.exercises[ei].sl; const l = sl.filter(s => s.t !== 'W').pop() || sl[sl.length - 1] || {w: '', r: '8-12'}; sl.push({w: l.w ?? '', r: l.r || '8-12'}); rdirty = true; render(); break; }
     case 'rd-add-ex': openPicker({title: 'Ajouter un exercice', cb: p => { if (p.lib) S.links[norm(p.name)] = p.lib; rdraft.exercises.push({name: p.name, sets: 2, reps: '8-12', weight: '', note: '', sl: [{w: '', r: '8-12'}, {w: '', r: '8-12'}]}); rdirty = true; render(); setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50); }}); break;
@@ -5939,7 +5987,7 @@ document.addEventListener('click', e => {
       }
       break;
     }
-    case 'add-set': { const st = A.exercises[ei].sets; const l = st[st.length - 1]; const o = {w: l ? l.w : '', r: '', done: false, ph: l ? l.ph : ''}; if (S.settings.failDefault) o.t = 'F'; st.push(o); save(); render(); break; }
+    case 'add-set': { const st = A.exercises[ei].sets; const l = st[st.length - 1]; const o = {w: l ? l.w : '', r: '', done: false, ph: l ? l.ph : ''}; if (l && l.t === 'F') o.t = 'F'; st.push(o); save(); render(); break; }
     case 'add-warm': { const st = A.exercises[ei].sets; st.unshift({w: '', r: '', done: false, ph: '10', t: 'W'}); save(); render(); break; }
     case 'rm-set': A.exercises[ei].sets.pop(); save(); render(); break;
     case 'use-prev': {
@@ -6048,9 +6096,9 @@ document.addEventListener('click', e => {
     case 'new-past-ok': createPast(); break;
     case 'ed-set-menu': openSetMenu(draft.exercises[ei].sets, si, draft.exercises[ei].name, () => showEditor()); break;
     case 'ed-set-del': draft.exercises[ei].sets.splice(si, 1); showEditor(); break;
-    case 'ed-add-set': { const st = draft.exercises[ei].sets; const l = st[st.length - 1]; const o = {w: l ? l.w : '', r: ''}; if (S.settings.failDefault) o.t = 'F'; st.push(o); showEditor(); break; }
+    case 'ed-add-set': { const st = draft.exercises[ei].sets; const l = st[st.length - 1]; const o = {w: l ? l.w : '', r: ''}; if (l && l.t === 'F') o.t = 'F'; st.push(o); showEditor(); break; }
     case 'ed-ex-del': if (confirm('Retirer cet exercice de la séance?')) { draft.exercises.splice(ei, 1); showEditor(); } break;
-    case 'ed-add-ex': openPicker({title: 'Ajouter un exercice', cb: p => { if (p.lib) S.links[norm(p.name)] = p.lib; draft.exercises.push({name: p.name, sets: [S.settings.failDefault ? {w: '', r: '', t: 'F'} : {w: '', r: ''}]}); showEditor(); }}); break;
+    case 'ed-add-ex': openPicker({title: 'Ajouter un exercice', cb: p => { if (p.lib) S.links[norm(p.name)] = p.lib; draft.exercises.push({name: p.name, sets: [{w: '', r: ''}]}); showEditor(); }}); break;
     case 'ed-save': if (saveEditor()) { closeAll(); render(); toast('✅ Séance enregistrée'); } break;
 
     /* progrès */
