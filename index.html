@@ -4139,7 +4139,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.7';
+const APP_VERSION = '8.7.1';
 const CHANGELOG = [
   {v: '8.7', d: '2026-11-09', fr: ['Nouvel onglet ❤️ Cardio : entre tes pas sur tapis incliné (ex. 1 000 pas à 15 %) et vois l\'équivalent en pas à plat, en km et en calories. Marche aussi pour la course, le vélo, l\'elliptique, les escaliers, le rameur et la corde à sauter.', 'Profil → Mes infos : poids, grandeur, âge et sexe, pour des calculs précis.', 'Nouveau bouton « Ajouter du cardio » plus visible dans tes séances.', 'Photos : choisis entre prendre une photo ou l\'album.'],
    en: ['New ❤️ Cardio tab: enter your incline treadmill steps (e.g. 1,000 steps at 15%) and see the flat-ground equivalent in steps, km and calories. Also works for running, bike, elliptical, stairs, rower and jump rope.', 'Profile → My info: weight, height, age and sex, for accurate results.', 'New, more visible “Add cardio” button in your workouts.', 'Photos: choose between taking a photo or the album.']},
@@ -5136,7 +5136,7 @@ document.addEventListener('touchstart', e => {
   swp = null;
   if (modals.length || e.touches.length > 1 || S.settings.swipe === false) return;
   const t = e.target;
-  if (!t.closest('#app') || t.closest('input,textarea,select,button.check,.chs,.chips,.wstrip,.cycprev,.seg,.stbl,canvas,[data-noswipe]')) return;
+  if (!t.closest('#app') || t.closest('input,textarea,select,button.check,.chs,.chips,.wstrip,.cycprev,.seg,.cvkinds,.stbl,canvas,[data-noswipe]')) return;
   const p = e.touches[0]; if (isIOS && (p.clientX < 24 || p.clientX > innerWidth - 24)) return;
   swp = {x: p.clientX, y: p.clientY, t: Date.now(), lock: null, dx: 0};
 }, {passive: true});
