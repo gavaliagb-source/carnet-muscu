@@ -94,7 +94,8 @@ textarea.short{min-height:80px;font-family:inherit;font-size:16px}
 .setrow.done input{border-color:var(--ok);background:var(--done-bg)}
 .nb{position:relative;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--card2);
   color:var(--muted);font-weight:700;font-size:15px}
-.nb.t-F{color:var(--danger)}
+.nb.t-F{color:#ff9f43;background:color-mix(in srgb,#ff9f43 12%,var(--card2));border-color:color-mix(in srgb,#ff9f43 45%,transparent)}
+.nb.t-F::before{content:'F';position:absolute;bottom:2px;right:5px;font-size:9px;font-weight:800;opacity:.85}
 .nb.t-W{background:var(--w-bg);color:var(--warm);border-color:var(--w-line)}
 .nb.t-D{background:var(--d-bg);color:var(--drop);border-color:var(--d-line)}
 .nb.hasn::after{content:'';position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
@@ -244,7 +245,7 @@ button.chip{cursor:pointer}
 .chtip{min-height:20px;font-size:13px;margin:6px 4px 0;color:var(--muted)}.chtip b{color:var(--text)}
 .goal{height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin-top:8px}.goal>div{height:100%;background:var(--accent);border-radius:6px}
 .stag{display:block;width:100%;text-align:left;background:color-mix(in srgb,var(--warm) 14%,transparent);border:1px solid var(--warm);color:var(--text);border-radius:10px;padding:8px 10px;margin:8px 0 2px;font-size:13px;cursor:pointer}
-.check.pr{background:var(--accent);color:#000;font-size:18px}
+.check.pr{background:linear-gradient(180deg,#ffd54a,#f5a700);color:#3a2600;border-color:#f5a700;font-size:18px}
 .mxt td{padding:6px 4px;text-align:center}.medal{text-align:center;opacity:.45;margin:0}.medal.ok{opacity:1;border-color:var(--accent)}.mic2{font-size:30px;line-height:1.2}
 .ybig{text-align:center;margin:0;display:flex;flex-direction:column;gap:2px}.ybig b{font-size:26px}
 .ymonths{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;height:90px;margin-top:10px;align-items:end}.ymonths div{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}.ymonths span{width:70%;background:var(--accent);border-radius:3px;min-height:2px}.ymonths i{font-style:normal;font-size:10px;color:var(--muted);margin-top:3px}
@@ -2566,29 +2567,34 @@ function openDeload() {
 /* ---------- Calculateur de disques ---------- */
 const PLATES = {lb: [45, 35, 25, 10, 5, 2.5], kg: [25, 20, 15, 10, 5, 2.5, 1.25]};
 const PLATES_ALL = {lb: [55, 45, 35, 25, 15, 10, 5, 2.5, 1.25], kg: [25, 20, 15, 10, 5, 2.5, 2, 1.25, 1, 0.5]};
-function platesFor(total, bar) {
-  let side = (total - bar) / 2; const out = [];
+function platesFor(total, bar, sides = 2) {
+  let side = (total - bar) / sides; const out = [];
   if (side < 0) return {out, rest: 0, under: true};
   const own = (S.settings.plates || {})[U()], list = own && own.length ? PLATES_ALL[U()].filter(x => own.includes(x)) : PLATES[U()];
   for (const pl of list) while (side >= pl - 1e-9) { out.push(pl); side = Math.round((side - pl) * 1000) / 1000; }
-  return {out, rest: Math.round(side * 2 * 100) / 100};
+  return {out, rest: Math.round(side * sides * 100) / 100};
 }
-function openPlates(w) {
+let pltEx = '';
+const pltSides = () => pltEx ? ((S.settings.plSide || {})[pltEx] || 2) : (window._pltS || 2);
+function openPlates(w, exName) {
+  pltEx = exName ? norm(exName) : '';
   const bar = S.settings.bar != null ? S.settings.bar : (U() === 'kg' ? 20 : 45);
   const bars = U() === 'kg' ? [20, 15, 10, 0] : [45, 35, 25, 15, 0];
   modal(`<div class="row between"><h2>🧮 Calculateur de disques</h2><button class="btn sm" data-act="close">✕</button></div>
     <div class="grid2"><div><label>Charge totale (${U()})</label><input id="pltw" inputmode="decimal" value="${esc(w || '')}"></div>
     <div><label>Barre</label><select id="pltb">${bars.map(b => `<option value="${b}" ${b === bar ? 'selected' : ''}>${b ? b + ' ' + U() : 'Aucune (machine)'}</option>`).join('')}</select></div></div>
+    <label>${T('Où vont les disques?', 'Where do plates go?')}</label><div class="seg" id="pltsd"><button class="btn ${pltSides() === 2 ? 'primary' : ''}" data-act="plt-sides" data-n="2">⇆ ${T('2 côtés', '2 sides')}</button><button class="btn ${pltSides() === 1 ? 'primary' : ''}" data-act="plt-sides" data-n="1">→ ${T('1 seul côté', '1 side only')}</button></div>
+    <p class="muted small" style="margin:6px 0 0">${T('« 1 seul côté » : machines à mollets, T-bar, presse à un chargement…', '“1 side only”: calf machines, T-bar, single-load press…')}${pltEx ? ' ' + T('Retenu pour cet exercice.', 'Remembered for this exercise.') : ''}</p>
     <div id="pltres" style="margin-top:12px"></div>`);
   renderPlates();
 }
 function renderPlates() {
   const t = parseFloat(($('#pltw').value || '').replace(',', '.')), bar = +$('#pltb').value, box = $('#pltres');
   if (!(t > 0)) { box.innerHTML = '<p class="muted small">Entre une charge.</p>'; return; }
-  const {out, rest, under} = platesFor(t, bar);
+  const sides = pltSides(), {out, rest, under} = platesFor(t, bar, sides);
   const big = PLATES[U()][0];
   box.innerHTML = under ? `<p class="muted">C'est moins que la barre (${bar} ${U()}).</p>` :
-    `<p style="margin:0 0 8px"><b>De chaque côté :</b> ${out.length ? out.join(' + ') + ' ' + U() : 'rien, la barre seule'}</p>
+    `<p style="margin:0 0 8px"><b>${sides === 1 ? T('À mettre :', 'Load:') : T('De chaque côté :', 'Each side:')}</b> ${out.length ? out.join(' + ') + ' ' + U() : bar ? T('rien, la barre seule', 'nothing, just the bar') : T('rien', 'nothing')}</p>
      <div class="pltviz"><span class="sleeve"></span>${out.map(pl => `<span class="plate" style="height:${Math.round(34 + pl / big * 76)}px">${pl}</span>`).join('')}</div>
      ${rest > 0.001 ? `<p class="small" style="color:var(--warm)">⚠️ Impossible exactement : il manque ${rest} ${U()} avec ${(S.settings.plates || {})[U()] ? T('les disques de ton gym', 'your gym’s plates') : T('les disques standards', 'standard plates')}.</p>` : ''}`;
 }
@@ -4212,8 +4218,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.9.5';
+const APP_VERSION = '8.9.6';
 const CHANGELOG = [
+  {v: '8.9.6', d: '2026-11-10', fr: ['Amis : tes propres séances apparaissent aussi dans le fil, et touche une photo de profil pour voir le profil et les posts de la personne.', 'Calculateur de disques : option « 1 seul côté » pour les machines (mollets, T-bar…), retenue par exercice.', 'Les records 🏆 sont en or et les séries à l\'échec en orange avec un petit F (plus en rouge).'],
+   en: ['Friends: your own workouts also show in the feed, and tap a profile picture to see that person\'s profile and posts.', 'Plate calculator: “1 side only” option for machines (calves, T-bar…), remembered per exercise.', 'Records 🏆 are gold and failure sets are orange with a small F (no longer red).']},
   {v: '8.9.5', d: '2026-11-10', fr: ['Ajoute une photo à ta séance (à la fin, ou plus tard dans l\'historique). Tes amis la voient avec ta séance, et elle est dans ta sauvegarde.'], en: ['Add a photo to your workout (at the end, or later in your history). Friends see it with your workout, and it\'s in your backup.']},
   {v: '8.9.4', d: '2026-11-10', fr: ['Partage une photo de progrès avec tes amis (touche la photo → Partager avec mes amis). Tu choisis lesquelles.', 'Le code ami se partage sans lien (plus de bug sur iPhone) : ton ami copie ton message et touche Coller.'], en: ['Share a progress photo with your friends (tap the photo → Share with my friends). You choose which ones.', 'Friend codes are shared without a link (no more iPhone bug): your friend copies your message and taps Paste.']},
   {v: '8.9.2', d: '2026-11-10', fr: ['La sauvegarde garde maintenant tout, y compris tes photos de progrès (Google Drive et fichier exporté).'], en: ['Backups now keep everything, including your progress photos (Google Drive and exported file).']},
@@ -5161,7 +5169,7 @@ function frAgo(iso) {
 }
 function frAvatar() {
   const a = S.settings.avatar; if (!a) return Promise.resolve('');
-  return new Promise(ok => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = c.height = 72; const g = c.getContext('2d'), s = Math.min(im.width, im.height); g.drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, 72, 72); ok(c.toDataURL('image/jpeg', .7)); }; im.onerror = () => ok(''); im.src = a; });
+  return new Promise(ok => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = c.height = 160; const g = c.getContext('2d'), s = Math.min(im.width, im.height); g.drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, 160, 160); ok(c.toDataURL('image/jpeg', .75)); }; im.onerror = () => ok(''); im.src = a; });
 }
 /* Résumé d'une séance pour les amis */
 function frSess(hs, i) {
@@ -5287,10 +5295,19 @@ async function frLoad(force) {
   frSaveCache(); saveLocal(); if (['friends', 'profile'].includes(cur().v) && !modals.length) render();
 }
 /* fil : séances des amis, plus récentes d'abord */
-function frFeed() {
+/* Ma propre « carte » (pour voir mes posts dans le fil, comme mes amis les voient) */
+function frMe() {
+  const fr = FRS(), hide = new Set(fr.hide || []);
+  const s = S.history.map((x, i) => [x, i]).filter(([x]) => !hide.has(x.id) && new Date(x.date) > Date.now() - 45 * 864e5).slice(-15).map(([x, i]) => Object.assign(frSess(x, i), x.ph ? {phId: x.ph} : {}));
+  const p = (S.photos || []).filter(x => (fr.ph || []).includes(x.id)).slice(-8).map(x => ({id: x.id, d: x.d, phId: x.id}));
+  return {f: {c: fr.file || 'me', me: true, n: T('Moi', 'Me')}, d: {name: (S.settings.name || '').trim() || T('Moi', 'Me'), av: S.settings.avatar || '', wk: streakWeeks(), s, p, up: fr.last}};
+}
+function frItems(f, d) { const out = []; (d.s || []).forEach(s => out.push({f, d, s})); (d.p || []).forEach(ph => out.push({f, d, s: {id: ph.id, d: ph.d + 'T12:00:00', ph}})); return out; }
+function frFeed(onlyC) {
   const fr = FRS(), out = [];
-  fr.list.forEach(f => { const c = frData[f.c]; if (!c) return; (c.d.s || []).forEach(s => out.push({f, d: c.d, s}));
-    (c.d.p || []).forEach(ph => out.push({f, d: c.d, s: {id: ph.id, d: ph.d + 'T12:00:00', ph}})); });
+  if (frOn() && (!onlyC || onlyC === 'me')) { const m = frMe(); out.push(...frItems(m.f, m.d)); }
+  if (onlyC === 'me') return out.sort((a, b) => b.s.d.localeCompare(a.s.d));
+  fr.list.forEach(f => { if (onlyC && f.c !== onlyC) return; const c = frData[f.c]; if (!c) return; out.push(...frItems(f, c.d)); });
   return out.sort((a, b) => b.s.d.localeCompare(a.s.d)).slice(0, 40);
 }
 /* réactions visibles sur une séance (celles de mes amis + la mienne) */
@@ -5315,37 +5332,40 @@ function frExLine(o) {
   return `${nm} · ${o.ns} ${T('séries', 'sets')}`;
 }
 const FR_EMO = ['🔥', '💪', '👏'];
+const frImg = (f, s, src) => `<img ${src ? `src="${src}"` : `data-ph="${s.phId || s.id}"`} alt="" data-act="fr-phbig" data-c="${f.c}" style="width:100%;max-height:55vh;object-fit:cover;border-radius:12px;margin-top:10px;display:block;cursor:zoom-in;background:var(--card2);min-height:120px">`;
 function frPost({f, d, s}) {
   if (s.ph) return frPhotoPost({f, d, s});
-  const r = frReacts(f.c, s.id), mine = (FRS().re || []).find(x => x.to === f.c && x.s === s.id);
+  if (f.me && s.phId) setTimeout(phFill, 0);
   const ex = s.ex || [], more = ex.length - 5;
-  return `<div class="card frpost"><div class="row" style="gap:10px;align-items:center">${d.av ? `<img class="frav" src="${d.av}" alt="">` : `<span class="frav">${esc((d.name || '?')[0].toUpperCase())}</span>`}
+  return `<div class="card frpost"><div class="row" style="gap:10px;align-items:center">${frAv(d, f.c)}
       <div style="flex:1;min-width:0"><b>${esc(d.name)}</b> <span class="muted small">· ${frAgo(s.d)}</span><br><span class="small">💪 ${T('a fait', 'did')} <b>${esc(s.n)}</b> · ${hm(s.dur)}${s.pr ? ` · 🏆 ${s.pr} record${s.pr > 1 ? 's' : ''}` : ''}</span></div></div>
-    ${s.img ? `<img src="${s.img}" alt="" data-act="fr-phbig" data-c="${f.c}" style="width:100%;max-height:55vh;object-fit:cover;border-radius:12px;margin-top:10px;display:block;cursor:zoom-in">` : ''}
+    ${s.img ? frImg(f, s, s.img) : f.me && s.phId ? frImg(f, s) : ''}
     <div class="frex">${ex.slice(0, 5).map(o => `<div>${frExLine(o)}</div>`).join('')}${more > 0 ? `<div class="muted">+ ${more} ${T('autre' + (more > 1 ? 's' : ''), 'more')}</div>` : ''}</div>
-    <div class="row" style="gap:6px;margin-top:10px;flex-wrap:wrap">${FR_EMO.map(e => `<button class="frre ${mine && mine.e === e ? 'on' : ''}" data-act="fr-react" data-c="${f.c}" data-s="${esc(s.id)}" data-e="${e}">${e}${r[e] ? ` <span>${r[e].length}</span>` : ''}</button>`).join('')}
-      ${Object.keys(r).length ? `<span class="muted small" style="align-self:center">${esc([...new Set(Object.values(r).flat())].join(', '))}</span>` : ''}</div></div>`;
+    ${frReactRow(f, s)}</div>`;
 }
 function frReactRow(f, s) {
+  if (f.me) { const r = frReacts(FRS().file, s.id), ks = Object.keys(r); return `<div class="small muted" style="margin-top:10px">${ks.length ? ks.map(e => `${e} ${r[e].length}`).join('  ') + ' · ' + esc([...new Set(Object.values(r).flat())].join(', ')) : T('Pas encore de réaction', 'No reactions yet')}</div>`; }
   const r = frReacts(f.c, s.id), mine = (FRS().re || []).find(x => x.to === f.c && x.s === s.id);
   return `<div class="row" style="gap:6px;margin-top:10px;flex-wrap:wrap">${FR_EMO.map(e => `<button class="frre ${mine && mine.e === e ? 'on' : ''}" data-act="fr-react" data-c="${f.c}" data-s="${esc(s.id)}" data-e="${e}">${e}${r[e] ? ` <span>${r[e].length}</span>` : ''}</button>`).join('')}
     ${Object.keys(r).length ? `<span class="muted small" style="align-self:center">${esc([...new Set(Object.values(r).flat())].join(', '))}</span>` : ''}</div>`;
 }
+const frAv = (d, c, cls = '') => d.av ? `<img class="frav ${cls}" src="${d.av}" alt="" data-act="fr-who" data-c="${c}">` : `<span class="frav ${cls}" data-act="fr-who" data-c="${c}">${esc((d.name || '?')[0].toUpperCase())}</span>`;
 function frPhotoPost({f, d, s}) {
-  return `<div class="card frpost"><div class="row" style="gap:10px;align-items:center">${d.av ? `<img class="frav" src="${d.av}" alt="">` : `<span class="frav">${esc((d.name || '?')[0].toUpperCase())}</span>`}
+  return `<div class="card frpost"><div class="row" style="gap:10px;align-items:center">${frAv(d, f.c)}
       <div style="flex:1;min-width:0"><b>${esc(d.name)}</b> <span class="muted small">· ${dateFr(s.d)}</span><br><span class="small">📸 ${T('a partagé une photo de progrès', 'shared a progress photo')}</span></div></div>
-    <img src="${s.ph.img}" alt="" data-act="fr-phbig" data-c="${f.c}" data-id="${esc(s.id)}" style="width:100%;max-height:55vh;object-fit:cover;border-radius:12px;margin-top:10px;display:block;cursor:zoom-in">
+    ${f.me ? (setTimeout(phFill, 0), frImg(f, s)) : frImg(f, s, s.ph.img)}
     ${frReactRow(f, s)}</div>`;
 }
 function vFriends() {
   const fr = FRS(), feed = frFeed(), rec = frReceived();
   setTimeout(() => frLoad(), 50);
-  if (feed[0] && feed[0].s.d > (fr.seen || '')) { fr.seen = feed[0].s.d; setTimeout(saveLocal, 0); }
+  const fNew = feed.find(x => !x.f.me); if (fNew && fNew.s.d > (fr.seen || '')) { fr.seen = fNew.s.d; setTimeout(saveLocal, 0); }
   const meCard = frOn() ? `<div class="card"><div class="row between"><div><b>🟢 ${T('Tu partages tes séances', 'You share your workouts')}</b><br><span class="muted small">${fr.pending ? T('⏳ Mise à jour à la prochaine séance', '⏳ Update at next workout') : fr.last ? T('Carte à jour · ', 'Card updated · ') + frAgo(fr.last) : ''}${fr.err ? ' · ⚠️ ' + esc(fr.err) : ''}</span></div><button class="btn sm primary" data-act="fr-code">${T('Mon code', 'My code')}</button></div></div>`
     : `<div class="card" style="border-color:var(--accent)"><h3 style="margin:0 0 6px">👥 ${T('Partage tes séances avec tes amis', 'Share your workouts with friends')}</h3>
       <p class="small" style="margin:0 0 10px">${T('Tes amis voient tes séances, tes records et ta série 🔥, et peuvent réagir. Ta carte est gardée dans <b>ton</b> Google Drive. Jamais partagés : ton poids corporel et tes mensurations. Tes photos de progrès, seulement celles que tu choisis.', 'Friends see your workouts, records and 🔥 streak, and can react. Your card is kept in <b>your</b> Google Drive. Never shared: body weight and measurements. Progress photos: only the ones you choose.')}</p>
       <button class="btn primary block" data-act="fr-start">${T('Activer avec Google', 'Turn on with Google')}</button></div>`;
-  const friends = fr.list.length ? `<div class="frlist">${fr.list.map(f => { const d = frData[f.c] && frData[f.c].d; return `<button class="frchip" data-act="fr-who" data-c="${f.c}">${d && d.av ? `<img class="frav sm" src="${d.av}" alt="">` : `<span class="frav sm">${esc((f.n || '?')[0].toUpperCase())}</span>`}<span>${esc(f.n || '…')}${d ? `<small>🔥 ${d.wk} ${T('sem.', 'wk')}</small>` : ''}${f.gone ? `<small>⚠️ ${T('partage arrêté', 'stopped')}</small>` : ''}</span></button>`; }).join('')}<button class="frchip add" data-act="fr-add"><span class="frav sm">＋</span><span>${T('Ajouter', 'Add')}</span></button></div>`
+  const meChip = frOn() ? `<button class="frchip" data-act="fr-who" data-c="me">${S.settings.avatar ? `<img class="frav sm" src="${S.settings.avatar}" alt="">` : `<span class="frav sm">${esc(((S.settings.name || 'M').trim() || 'M')[0].toUpperCase())}</span>`}<span>${T('Moi', 'Me')}<small>🔥 ${streakWeeks()} ${T('sem.', 'wk')}</small></span></button>` : '';
+  const friends = fr.list.length ? `<div class="frlist">${meChip}${fr.list.map(f => { const d = frData[f.c] && frData[f.c].d; return `<button class="frchip" data-act="fr-who" data-c="${f.c}">${d && d.av ? `<img class="frav sm" src="${d.av}" alt="">` : `<span class="frav sm">${esc((f.n || '?')[0].toUpperCase())}</span>`}<span>${esc(f.n || '…')}${d ? `<small>🔥 ${d.wk} ${T('sem.', 'wk')}</small>` : ''}${f.gone ? `<small>⚠️ ${T('partage arrêté', 'stopped')}</small>` : ''}</span></button>`; }).join('')}<button class="frchip add" data-act="fr-add"><span class="frav sm">＋</span><span>${T('Ajouter', 'Add')}</span></button></div>`
     : `<button class="btn block" data-act="fr-add" style="margin-bottom:12px">＋ ${T('Ajouter un ami', 'Add a friend')}</button>`;
   const recHtml = rec.length ? `<div class="card"><span class="muted small">❤️ ${T('Réactions à tes séances', 'Reactions to your workouts')}</span>${rec.map(x => `<div class="small" style="margin-top:6px">${x.e} <b>${esc(x.n)}</b> · ${esc(x.h.routineName || '')} <span class="muted">(${dateFr(x.h.date)})</span></div>`).join('')}</div>` : '';
   const feedHtml = feed.length ? feed.map(frPost).join('') : fr.list.length ? `<p class="muted center" style="margin:30px 0">${T('Tes amis n\'ont pas encore de séance partagée.', 'Your friends have no shared workouts yet.')}</p>`
@@ -5361,7 +5381,7 @@ function vFriends() {
 }
 function friendsCard() {
   const fr = S.settings.fr || {}, n = (fr.list || []).length;
-  const feed = n ? frFeed() : [], seen = fr.seen || '', nNew = feed.filter(x => x.s.d > seen).length;
+  const feed = n ? frFeed().filter(x => !x.f.me) : [], seen = fr.seen || '', nNew = feed.filter(x => x.s.d > seen).length;
   return `<button class="card frcard" data-act="go" data-v="friends"><span class="frav">👥</span><span style="flex:1;text-align:left"><b>${T('Amis', 'Friends')}</b><br><span class="muted small">${n ? (feed[0] ? `${esc(feed[0].d.name)} : ${esc(feed[0].s.n)} · ${frAgo(feed[0].s.d)}` : T(`${n} ami${n > 1 ? 's' : ''}`, `${n} friend${n > 1 ? 's' : ''}`)) : T('Suis les entraînements de tes amis', 'Follow your friends\' workouts')}</span></span>${nNew ? `<span class="frbadge">${nNew}</span>` : ''}<span class="muted" style="font-size:22px">›</span></button>`;
 }
 async function checkFriendLink() {
@@ -5652,8 +5672,8 @@ document.addEventListener('click', e => {
     case 'st-share': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); if (rt) { const c = JSON.parse(JSON.stringify(rt)); delete c.id; shareItem('s', [c], T(rt.n[0], rt.n[1] || rt.n[0])); } break; }
     case 'imp-ok': doImport(); break;
     case 'avatar': if (S.settings.avatar) { modal(`<h2>${T('Photo de profil', 'Profile photo')}</h2><div class="menu"><button class="btn block" data-act="avatar-new">📷 ${T('Changer la photo', 'Change photo')}</button><button class="btn danger block" data-act="avatar-del">${T('Retirer la photo', 'Remove photo')}</button><button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`); break; } // sinon : choisir tout de suite
-    case 'avatar-new': closeAll(); pickImage(async f => { try { S.settings.avatar = await shrinkImg(f, 240, .82); save(); render(); } catch (e) { toast('⚠️ ' + e.message); } }, true); break;
-    case 'avatar-del': delete S.settings.avatar; save(); closeAll(); render(); break;
+    case 'avatar-new': closeAll(); pickImage(async f => { try { S.settings.avatar = await shrinkImg(f, 240, .82); save(); render(); if (frOn()) frQueue(false); } catch (e) { toast('⚠️ ' + e.message); } }, true); break;
+    case 'avatar-del': delete S.settings.avatar; save(); closeAll(); render(); if (frOn()) frQueue(false); break;
     case 'bw-quick': bwQuick(); break;
     case 'bw-quick-ok': { const v = ($('#bwq').value || '').replace(',', '.').trim(), d = $('#bwqd').value || dkey(new Date()); if (!v || isNaN(v)) { toast(T('Entre ton poids', 'Enter your weight')); break; } let e2 = S.body.find(x => x.d === d); if (!e2) { e2 = {id: uid(), d, w: null, m: {}}; S.body.push(e2); } e2.w = +v; save(); closeAll(); render(); toast(T('✅ Poids enregistré', '✅ Weight saved')); break; }
     case 'ph-add': addProgressPhoto(); break;
@@ -5688,8 +5708,16 @@ document.addEventListener('click', e => {
     case 'fr-react': { const fr = FRS(), {c, s, e} = b.dataset; fr.re = fr.re || []; const i = fr.re.findIndex(x => x.to === c && x.s === s);
       if (i >= 0 && fr.re[i].e === e) fr.re.splice(i, 1); else { if (i >= 0) fr.re.splice(i, 1); fr.re.push({to: c, s, e, d: new Date().toISOString()}); }
       save(); render(); if (frOn()) frQueue(true); else if (!fr.nagRe) { fr.nagRe = 1; save(); setTimeout(() => toast(T('💡 Active le partage pour que tes amis voient tes réactions', '💡 Turn on sharing so friends see your reactions')), 400); } break; }
-    case 'fr-who': { const f = FRS().list.find(x => x.c === b.dataset.c), d = frData[b.dataset.c] && frData[b.dataset.c].d;
-      modal(`<div class="row between"><h2 style="margin:0">${esc(f.n || '')}</h2><button class="btn sm" data-act="close">✕</button></div>${d ? `<p class="small">🔥 ${d.wk} ${T('semaines de suite', 'weeks in a row')} · ${(d.s || []).length} ${T('séances partagées (45 derniers jours)', 'shared workouts (last 45 days)')}<br><span class="muted">${T('Carte mise à jour', 'Card updated')} ${frAgo(d.up)}</span></p>` : ''}<button class="btn block" data-act="fr-del" data-c="${f.c}" style="color:var(--bad)">${T('Retirer de mes amis', 'Remove friend')}</button>`); break; }
+    case 'fr-who': { const me = b.dataset.c === 'me' || b.dataset.c === FRS().file, c = me ? 'me' : b.dataset.c;
+      const f = me ? frMe().f : FRS().list.find(x => x.c === c), d = me ? frMe().d : frData[c] && frData[c].d; if (!f) break;
+      const items = frFeed(c), nS = (d && d.s || []).length;
+      modal(`<div class="row between"><span></span><button class="btn sm" data-act="close">✕</button></div>
+        <div style="text-align:center;margin-top:-8px">${d && d.av ? `<img src="${d.av}" alt="" style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid var(--accent)">` : `<span class="frav" style="width:110px;height:110px;font-size:44px">${esc(((d && d.name) || f.n || '?')[0].toUpperCase())}</span>`}
+          <h2 style="margin:8px 0 2px">${esc((d && d.name) || f.n || '')}</h2>
+          ${d ? `<p class="small muted" style="margin:0">🔥 ${d.wk || 0} ${T('sem. de suite', 'weeks in a row')} · ${nS} ${T('séance' + (nS > 1 ? 's' : ''), 'workout' + (nS > 1 ? 's' : ''))} · ${(d.p || []).length} 📸</p>` : ''}</div>
+        <div style="margin-top:12px">${items.length ? items.map(frPost).join('') : `<p class="muted center">${T('Rien de partagé pour l\'instant.', 'Nothing shared yet.')}</p>`}</div>
+        ${me ? `<button class="btn block" data-act="fr-code" style="margin-top:8px">${T('Mon code ami', 'My friend code')}</button>` : `<button class="btn block" data-act="fr-del" data-c="${f.c}" style="color:var(--bad);margin-top:8px">${T('Retirer de mes amis', 'Remove friend')}</button>`}`);
+      setTimeout(phFill, 0); break; }
     case 'fr-del': { const fr = FRS(); fr.list = fr.list.filter(x => x.c !== b.dataset.c); fr.re = (fr.re || []).filter(x => x.to !== b.dataset.c); delete frData[b.dataset.c]; frSaveCache(); save(); closeAll(); render(); if (frOn()) frQueue(false); break; }
     case 'cv-kind': cv.k = b.dataset.k; render(); break;
     case 'cv-mode': cv.mode = b.dataset.m; render(); break;
@@ -5920,7 +5948,9 @@ document.addEventListener('click', e => {
       const k = e.sets.slice(0, si).filter(x => (x.t === 'W') === (s.t === 'W')).length, pv = list[k]; if (!pv) break;
       s.w = pv.w === '' || pv.w == null ? '' : pv.w; s.r = String(pv.r); save(); render(); break;
     }
-    case 'plates': { const e = A.exercises[ei], ws = e.sets.find(x => x.t !== 'W' && +x.w > 0); closeModal(); openPlates(ws ? ws.w : ''); break; }
+    case 'plates': { const e = A.exercises[ei], ws = e.sets.find(x => x.t !== 'W' && +x.w > 0); closeModal(); openPlates(ws ? ws.w : '', e.name); break; }
+    case 'plt-sides': { const n = +b.dataset.n; if (pltEx) { S.settings.plSide = S.settings.plSide || {}; if (n === 2) delete S.settings.plSide[pltEx]; else S.settings.plSide[pltEx] = n; save(); } else window._pltS = n;
+      b.parentNode.querySelectorAll('.btn').forEach(x => x.classList.toggle('primary', x === b)); renderPlates(); break; }
     case 'plates-free': openPlates(''); break;
     case 'st-rir': { const s = setCtx.sets[setCtx.si]; if (b.dataset.v === '') delete s.rir; else s.rir = +b.dataset.v; document.querySelectorAll('.rirs .btn').forEach(x => x.classList.toggle('on', x === b)); break; }
     case 'deload-menu': closeAll();
