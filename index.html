@@ -2387,8 +2387,6 @@ function openFolderMenu(f) {
     <p class="muted small" style="margin:2px 0 6px">${T("Le collage touche seulement les routines de ce dossier : les autres dossiers ne changent pas.", 'Pasting only touches the routines in this folder: other folders stay unchanged.')}</p>
     ${n ? `<button class="btn block" data-act="share-f" data-f="${esc(f)}">📤 ${T('Partager le dossier à un ami', 'Share the folder with a friend')}</button>` : ''}
     <button class="btn block" data-act="rename-folder" data-f="${esc(f)}">✏️ Renommer</button>
-    ${folders().length > 1 ? `<button class="btn block" data-act="fold-reo">↕ ${T('Changer l\'ordre des dossiers', 'Reorder folders')}</button>` : ''}
-    ${n ? `<button class="btn block" data-act="sel-start" data-f="${esc(f)}">☑️ ${T('Sélectionner des routines', 'Select routines')}</button>` : ''}
     <button class="btn danger block" data-act="del-folder" data-f="${esc(f)}">🗑 ${T('Supprimer le dossier', 'Delete folder')}</button>
     <button class="btn block" data-act="close">Annuler</button></div>`);
 }
@@ -4260,7 +4258,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.9.8';
+const APP_VERSION = '8.9.9';
 const CHANGELOG = [
   {v: '8.9.8', d: '2026-11-10', fr: ['« À l\'échec » est plus intelligent : seulement la dernière série des exercices d\'isolation et des machines, pas sur les gros mouvements lourds.', 'Bouton ⚡ Plan auto dans l\'éditeur de routine (et pour toutes tes routines dans Réglages) : ajoute les échauffements et les séries à l\'échec où c\'est utile.', 'Le F (échec) est maintenant dans le choix du type de série de l\'éditeur.'],
    en: ['“To failure” is smarter: only the last set of isolation and machine exercises, not heavy compound lifts.', '⚡ Auto plan button in the routine editor (and for all routines in Settings): adds warm-ups and failure sets where useful.', 'F (failure) is now in the set type choice of the editor.']},
@@ -5829,7 +5827,6 @@ document.addEventListener('click', e => {
     case 'tm-menu': { const t = tmAll().find(x => x.id === b.dataset.id), own = (S.timers || []).some(x => x.id === t.id);
       modal(`<h2>⏱ ${esc(tmN(t))}</h2><div class="menu">${own ? `<button class="btn block" data-act="tm-edit" data-id="${t.id}">✏️ ${T('Modifier', 'Edit')}</button>` : ''}
         <button class="btn block" data-act="tm-copy" data-id="${t.id}">⧉ ${own ? T('Dupliquer', 'Duplicate') : T('Copier et modifier', 'Copy and edit')}</button>
-        <button class="btn block" data-act="selx-start" data-k="t" data-id="${t.id}">☑️ ${T('Sélectionner plusieurs', 'Select several')}</button>
         <button class="btn danger block" data-act="tm-del" data-id="${t.id}">${T('Supprimer', 'Delete')}</button><button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`); break; }
     case 'tm-edit': { const t = (S.timers || []).find(x => x.id === b.dataset.id); closeAll(); openTmEdit(t); break; }
     case 'tm-copy': { const t = JSON.parse(JSON.stringify(tmAll().find(x => x.id === b.dataset.id))); t.id = 'tm' + uid(); t.n = tmN(t) + T(' (copie)', ' (copy)'); t.blocks = JSON.parse(JSON.stringify(tmBlocks(t))); closeAll(); openTmEdit(t); break; }
@@ -5872,7 +5869,6 @@ document.addEventListener('click', e => {
       modal(`<h2>🧘 ${esc(T(rt.n[0], rt.n[1] || rt.n[0]))}</h2><div class="menu">${own ? `<button class="btn block" data-act="st-edit" data-id="${rt.id}">✏️ ${T('Modifier', 'Edit')}</button>` : ''}
         <button class="btn block" data-act="st-copy" data-id="${rt.id}">⧉ ${own ? T('Dupliquer', 'Duplicate') : T('Copier et modifier', 'Copy and edit')}</button>
         <button class="btn block" data-act="st-share" data-id="${rt.id}">📤 ${T('Partager à un ami', 'Share with a friend')}</button>
-        <button class="btn block" data-act="selx-start" data-k="s" data-id="${rt.id}">☑️ ${T('Sélectionner plusieurs', 'Select several')}</button>
         <button class="btn danger block" data-act="str-del" data-id="${rt.id}">${T('Supprimer', 'Delete')}</button><button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`); break; }
     case 'st-edit': { const rt = (S.stretches || []).find(x => x.id === b.dataset.id); closeAll(); openStEdit(rt); break; }
     case 'st-copy': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); const c = JSON.parse(JSON.stringify(rt)); c.id = 's' + uid(); c.n = [c.n[0] + T(' (copie)', ' (copy)'), (c.n[1] || c.n[0]) + ' (copy)']; delete c.d; openStEdit(c); break; }
@@ -6081,9 +6077,7 @@ document.addEventListener('click', e => {
       <button class="btn block" data-act="programs">${IC('book', '📚')} ${T('Programmes connus prêts à importer', 'Popular programs ready to import')}</button>
       ${deloadOn() ? '' : `<button class="btn block" data-act="deload-menu">${IC('feather', '🪶')} ${T('Semaine de récupération (deload)', 'Recovery week (deload)')}</button>`}
       <button class="btn block" data-act="sched-edit">${IC('calendar', '📅')} ${T('Mon horaire', 'My schedule')}</button>
-      <button class="btn block" data-act="new-folder">${IC('folderp', '📁')} ${T('Nouveau dossier', 'New folder')}</button>
-      ${S.routines.length ? `<button class="btn block" data-act="sel-start">☑️ ${T('Sélectionner plusieurs routines', 'Select several routines')}</button>` : ''}
-      ${folders().length > 1 ? `<button class="btn block" data-act="fold-reo">↕ ${T('Changer l\'ordre des dossiers', 'Reorder folders')}</button>` : ''}</div>`); break;
+      </div><p class="muted small" style="margin:6px 2px 0">💡 ${T('Appuie longtemps sur une routine pour en sélectionner plusieurs, ou sur un dossier pour changer l\'ordre.', 'Long-press a routine to select several, or a folder to reorder.')}</p>`); break;
     case 'prog-add': addProgram(b.dataset.k); break;
     case 'yr': yrSel = +b.dataset.y; render(); break;
     case 'go-year': yrSel = +b.dataset.y; go('year'); break;
