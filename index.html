@@ -4139,7 +4139,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.7.1';
+const APP_VERSION = '8.7.2';
 const CHANGELOG = [
   {v: '8.7', d: '2026-11-09', fr: ['Nouvel onglet ❤️ Cardio : entre tes pas sur tapis incliné (ex. 1 000 pas à 15 %) et vois l\'équivalent en pas à plat, en km et en calories. Marche aussi pour la course, le vélo, l\'elliptique, les escaliers, le rameur et la corde à sauter.', 'Profil → Mes infos : poids, grandeur, âge et sexe, pour des calculs précis.', 'Nouveau bouton « Ajouter du cardio » plus visible dans tes séances.', 'Photos : choisis entre prendre une photo ou l\'album.'],
    en: ['New ❤️ Cardio tab: enter your incline treadmill steps (e.g. 1,000 steps at 15%) and see the flat-ground equivalent in steps, km and calories. Also works for running, bike, elliptical, stairs, rower and jump rope.', 'Profile → My info: weight, height, age and sex, for accurate results.', 'New, more visible “Add cardio” button in your workouts.', 'Photos: choose between taking a photo or the album.']},
@@ -4864,7 +4864,7 @@ function bodyCard() {
   const nPh = (S.photos || []).length;
   return `<div class="card"><div class="row between"><div><span class="muted small">⚖️ ${T('Poids', 'Weight')}</span><br>${last ? `<b style="font-size:22px">${dec1(last.w)} ${U()}</b>${diff != null ? ` <span class="small" style="color:${diff > 0 ? 'var(--warm)' : 'var(--ok, #4ade80)'}">${diff > 0 ? '+' : ''}${dec1(diff)} ${T('en 30 j', 'in 30 d')}</span>` : ''}` : `<span class="muted">${T('Pas encore entré', 'Not entered yet')}</span>`}</div>
     <button class="btn sm primary" data-act="bw-quick">＋ ${T('Poids', 'Weight')}</button></div>${spark}
-    <div class="row" style="margin-top:10px"><button class="btn sm" style="flex:1" data-act="me-edit">👤 ${T('Mes infos', 'My info')}</button><button class="btn sm" style="flex:1" data-act="go" data-v="measures">📏 ${T('Mesures', 'Measures')}</button><button class="btn sm" style="flex:1" data-act="go" data-v="measures" data-ph="1">📸 ${T('Photos', 'Photos')}${nPh ? ' (' + nPh + ')' : ''}</button></div></div>`;
+    <div class="row" style="margin-top:10px"><button class="btn sm" style="flex:1" data-act="me-edit">👤 ${T('Mes infos', 'My info')}</button><button class="btn sm" style="flex:1.6" data-act="go" data-v="measures">📏 ${T('Mesures et photos', 'Measures & photos')}${nPh ? ' (' + nPh + ')' : ''}</button></div></div>`;
 }
 function bwQuick() {
   const ws = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)), last = ws[ws.length - 1];
