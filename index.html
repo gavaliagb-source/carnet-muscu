@@ -4151,9 +4151,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.8';
+const APP_VERSION = '8.8.1';
 const CHANGELOG = [
-  {v: '8.8', d: '2026-11-10', fr: ['Nouveau : 👥 Amis (Profil → Amis). Partage tes séances, ajoute tes chums avec leur code ou leur lien, vois leurs séances et réagis 🔥 💪 👏.', 'Tu choisis ce qui est partagé : cacher tes poids, rendre une séance privée, arrêter le partage. Ton poids corporel, tes mensurations et tes photos ne sont jamais partagés.'],
+  {v: '8.8', d: '2026-11-10', fr: ['Nouveau : 👥 Amis (Profil → Amis). Partage tes séances, ajoute tes amis avec leur code ou leur lien, vois leurs séances et réagis 🔥 💪 👏.', 'Tu choisis ce qui est partagé : cacher tes poids, rendre une séance privée, arrêter le partage. Ton poids corporel, tes mensurations et tes photos ne sont jamais partagés.'],
    en: ['New: 👥 Friends (Profile → Friends). Share your workouts, add buddies with their code or link, see their workouts and react 🔥 💪 👏.', 'You choose what is shared: hide weights, make a workout private, stop sharing. Body weight, measurements and photos are never shared.']},
   {v: '8.7', d: '2026-11-09', fr: ['Nouvel onglet ❤️ Cardio : entre tes pas sur tapis incliné (ex. 1 000 pas à 15 %) et vois l\'équivalent en pas à plat, en km et en calories. Marche aussi pour la course, le vélo, l\'elliptique, les escaliers, le rameur et la corde à sauter.', 'Profil → Mes infos : poids, grandeur, âge et sexe, pour des calculs précis.', 'Nouveau bouton « Ajouter du cardio » plus visible dans tes séances.', 'Photos : choisis entre prendre une photo ou l\'album.'],
    en: ['New ❤️ Cardio tab: enter your incline treadmill steps (e.g. 1,000 steps at 15%) and see the flat-ground equivalent in steps, km and calories. Also works for running, bike, elliptical, stairs, rower and jump rope.', 'Profile → My info: weight, height, age and sex, for accurate results.', 'New, more visible “Add cardio” button in your workouts.', 'Photos: choose between taking a photo or the album.']},
@@ -5170,7 +5170,7 @@ function vFriends() {
 function friendsCard() {
   const fr = S.settings.fr || {}, n = (fr.list || []).length;
   const feed = n ? frFeed() : [], seen = fr.seen || '', nNew = feed.filter(x => x.s.d > seen).length;
-  return `<button class="card frcard" data-act="go" data-v="friends"><span class="frav">👥</span><span style="flex:1;text-align:left"><b>${T('Amis', 'Friends')}</b><br><span class="muted small">${n ? (feed[0] ? `${esc(feed[0].d.name)} : ${esc(feed[0].s.n)} · ${frAgo(feed[0].s.d)}` : T(`${n} ami${n > 1 ? 's' : ''}`, `${n} friend${n > 1 ? 's' : ''}`)) : T('Vois les séances de tes chums et réagis 🔥', 'See your buddies\' workouts and react 🔥')}</span></span>${nNew ? `<span class="frbadge">${nNew}</span>` : ''}<span class="muted" style="font-size:22px">›</span></button>`;
+  return `<button class="card frcard" data-act="go" data-v="friends"><span class="frav">👥</span><span style="flex:1;text-align:left"><b>${T('Amis', 'Friends')}</b><br><span class="muted small">${n ? (feed[0] ? `${esc(feed[0].d.name)} : ${esc(feed[0].s.n)} · ${frAgo(feed[0].s.d)}` : T(`${n} ami${n > 1 ? 's' : ''}`, `${n} friend${n > 1 ? 's' : ''}`)) : T('Suis les entraînements de tes amis', 'Follow your friends\' workouts')}</span></span>${nNew ? `<span class="frbadge">${nNew}</span>` : ''}<span class="muted" style="font-size:22px">›</span></button>`;
 }
 async function checkFriendLink() {
   const m = location.hash.match(/#ami=([A-Za-z0-9_-]{20,})/); if (!m) return;
