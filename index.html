@@ -342,6 +342,19 @@ body.selon main{padding-bottom:170px}
 .phgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
 .phth{position:relative;padding:0;border:0;border-radius:12px;overflow:hidden;aspect-ratio:3/4;background:var(--card2);cursor:pointer}
 .phth img{width:100%;height:100%;object-fit:cover;display:block}.phth span{position:absolute;left:0;right:0;bottom:0;padding:4px 6px;font-size:11px;color:#fff;background:linear-gradient(transparent,#000a);text-align:left}
+
+.cvkinds{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin:0 -4px;padding-left:4px;scrollbar-width:none}.cvkinds::-webkit-scrollbar{display:none}
+.cvk{flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:76px;padding:10px 8px;border-radius:14px;border:1px solid var(--line);background:var(--card2);color:var(--text);font:inherit;font-size:12px;cursor:pointer}
+.cvk span{font-size:22px}.cvk.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--card2))}
+.cvout{margin-top:14px;padding:16px;border-radius:16px;background:var(--card2);text-align:center}
+.cvbig span,.cvsm span{display:block;color:var(--muted);font-size:12px}.cvbig b{display:block;font-size:40px;line-height:1.1;color:var(--accent)}.cvbig small,.cvsm small{color:var(--muted);font-size:11px}
+.cvsm{text-align:center;min-width:70px}.cvsm b{display:block;font-size:20px}
+.seg{display:flex;gap:6px}.seg .btn{flex:1}
+nav button{font-size:11px}
+.cardiobtn{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:12px 14px;border-radius:16px;border:1px dashed color-mix(in srgb,var(--accent) 60%,transparent);background:color-mix(in srgb,var(--accent) 8%,var(--card));color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.cardiobtn .ci{width:42px;height:42px;border-radius:12px;background:color-mix(in srgb,var(--accent) 22%,transparent);display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
+.cardiobtn b{display:block}.cardiobtn small{color:var(--muted)}.cardiobtn .ar{margin-left:auto;color:var(--muted);font-size:22px}
+.cvgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.cvgrid .cvk{min-width:0}
 </style>
 </head>
 <body>
@@ -1584,7 +1597,8 @@ function vWorkout() {
       </div>
     </div>`;
   }).join('') + `
-    <div class="row"><button class="btn" style="flex:2" data-act="add-exo">＋ Ajouter un exercice</button><button class="btn" style="flex:1" data-act="cardio-add">🏃 Cardio</button></div>
+    <button class="btn block" data-act="add-exo">＋ Ajouter un exercice</button>
+    <button class="cardiobtn" data-act="cardio-add"><span class="ci">🏃</span><span><b>${T('Ajouter du cardio', 'Add cardio')}</b><small>${T('Tapis, vélo, elliptique, escaliers…', 'Treadmill, bike, elliptical, stairs…')}</small></span><span class="ar">›</span></button>
     <div class="gap"></div><div class="gap"></div>
     <button class="btn primary block" data-act="finish">✔ Terminer la séance</button>
     <div class="gap"></div>
@@ -3949,7 +3963,7 @@ function tmCard(t) {
     <button class="btn primary" data-act="tm-go" data-id="${t.id}">▶ ${T('COMMENCER', 'START')}</button></div></div>`;
 }
 function vTimers() {
-  return `${selX ? '' : chrCard() + `<button class="btn block" data-act="cardio-calc" style="margin:-4px 0 12px">👣 ${T('Convertir du cardio en pas et calories', 'Convert cardio to steps & calories')}</button>`}<div class="row between" style="margin:0 0 10px"><p class="muted" style="margin:0">${T('Minuteurs d\'intervalles : travail, repos, tempo, tabata…', 'Interval timers: work, rest, tempo, tabata…')}</p><span class="row" style="gap:6px"><button class="btn sm" data-act="pcode" data-k="t">📥 ${T('Coller', 'Paste')}</button><button class="btn sm" data-act="tm-new">＋ ${T('Créer', 'Create')}</button></span></div>
+  return `${selX ? '' : chrCard()}<div class="row between" style="margin:0 0 10px"><p class="muted" style="margin:0">${T('Minuteurs d\'intervalles : travail, repos, tempo, tabata…', 'Interval timers: work, rest, tempo, tabata…')}</p><span class="row" style="gap:6px"><button class="btn sm" data-act="pcode" data-k="t">📥 ${T('Coller', 'Paste')}</button><button class="btn sm" data-act="tm-new">＋ ${T('Créer', 'Create')}</button></span></div>
     ${selX && selX.k === 't' ? selHint() : ''}
     ${(S.timers || []).length ? `<p class="muted small" style="margin:0 0 6px">${T('Mes minuteurs', 'My timers')}</p><div class="sellistx" data-k="t">` + S.timers.map(tmCard).join('') + '</div>' : ''}
     ${tmPre().length ? `<p class="muted small" style="margin:14px 0 6px">${T('Minuteurs prêts', 'Ready-made timers')}</p><div class="sellistx" data-k="tp">${tmPre().map(tmCard).join('')}</div>` : ''}
@@ -4125,8 +4139,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '8.6.1';
+const APP_VERSION = '8.7';
 const CHANGELOG = [
+  {v: '8.7', d: '2026-11-09', fr: ['Nouvel onglet ❤️ Cardio : entre tes pas sur tapis incliné (ex. 1 000 pas à 15 %) et vois l\'équivalent en pas à plat, en km et en calories. Marche aussi pour la course, le vélo, l\'elliptique, les escaliers, le rameur et la corde à sauter.', 'Profil → Mes infos : poids, grandeur, âge et sexe, pour des calculs précis.', 'Nouveau bouton « Ajouter du cardio » plus visible dans tes séances.', 'Photos : choisis entre prendre une photo ou l\'album.'],
+   en: ['New ❤️ Cardio tab: enter your incline treadmill steps (e.g. 1,000 steps at 15%) and see the flat-ground equivalent in steps, km and calories. Also works for running, bike, elliptical, stairs, rower and jump rope.', 'Profile → My info: weight, height, age and sex, for accurate results.', 'New, more visible “Add cardio” button in your workouts.', 'Photos: choose between taking a photo or the album.']},
   {v: '8.6.1', d: '2026-11-09', fr: ['Correction d\'affichage de la photo de profil.'], en: ['Profile photo display fix.']},
   {v: '8.6', d: '2026-11-09', fr: ['Cardio dans tes séances : bouton « 🏃 Cardio » (tapis, vélo, elliptique, escaliers…), avec minutes, distance, inclinaison ou niveau, et les calories et pas estimés selon ton poids.', 'Calculateur « cardio → pas et calories » dans Intervalles.', 'Profil : photo de profil, carte Poids avec ta courbe, photos de progrès avec comparaison avant/après, et mensurations.', 'Google Drive : l\'appli retient ton compte, Google ne te le redemande plus à chaque séance.'],
    en: ['Cardio in your workouts: “🏃 Cardio” button (treadmill, bike, elliptical, stairs…), with minutes, distance, incline or level, and estimated calories and steps based on your weight.', '“Cardio → steps & calories” calculator in Intervals.', 'Profile: profile photo, Weight card with your trend, progress photos with before/after compare, and measurements.', 'Google Drive: the app remembers your account, Google no longer asks after every workout.']},
@@ -4198,6 +4214,7 @@ const TOURS = {
     {tab: 'train', sel: '[data-act="ai-menu"]', t: ['🤖 Assistant IA', '🤖 AI assistant'], d: ['Transfère tes routines d\'une autre appli, crée un nouveau programme ou fais-le améliorer. L\'appli te guide étape par étape avec ChatGPT, Claude ou Gemini.', 'Move your routines from another app, create a new program or improve yours. The app guides you step by step with ChatGPT, Claude or Gemini.']},
     {tab: 'train', sel: '.folder .fhead', t: ['📁 Dossiers', '📁 Folders'], d: ['Range tes routines par programme. <b>Appuie longtemps</b> sur une routine pour en sélectionner plusieurs (déplacer, supprimer, changer l\'ordre), ou sur un dossier pour changer l\'ordre des dossiers. Le menu ⋯ a les autres options.', 'Organize routines by program. The ⋯ menu lets you rename, reorder, send to AI or share with a friend.']},
     {sel: 'nav [data-tab="stretch"]', t: ['🧘 Étirements', '🧘 Stretching'], d: ['Routines d\'étirement guidées avec minuteur et images, ou crée les tiennes.', 'Guided stretching routines with timer and pictures, or make your own.']},
+    {sel: 'nav [data-tab="cardio"]', t: ['❤️ Cardio', '❤️ Cardio'], d: ['Convertis tes pas sur tapis incliné, ton vélo ou ton elliptique en pas équivalents, en km et en calories, selon ton poids, ta grandeur et ton âge.', 'Convert incline treadmill steps, bike or elliptical into equivalent steps, km and calories, based on your weight, height and age.']},
     {sel: 'nav [data-tab="timers"]', t: ['⏱ Intervalles', '⏱ Intervals'], d: ['Minuteurs Tabata, HIIT, EMOM ou sur mesure, avec bips et notifications.', 'Tabata, HIIT, EMOM or custom timers, with beeps and notifications.']},
     {sel: 'nav [data-tab="profile"]', t: ['📈 Profil', '📈 Profile'], d: ['Ton historique, tes records, tes graphiques de progression, ton calendrier et tes mesures.', 'Your history, records, progress charts, calendar and body measurements.']},
     {tab: 'profile', sel: '#hdr [data-v="settings"]', t: ['⚙️ Réglages', '⚙️ Settings'], d: ['Son, vibration, notifications sur la montre, couleurs, langue, sauvegarde… Tu peux revoir cette visite dans Réglages → Général.', 'Sound, vibration, watch notifications, colors, language, backup… You can replay this tour in Settings → General.']},
@@ -4695,23 +4712,45 @@ const CARDIO_MET = {bike: 7, ell: 5, stair: 9, rope: 11, row: 7, other: 6, walk:
 function bodyKg() { const L = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)).pop(); const w = L ? +L.w : (+S.settings.bwDefault || (U() === 'kg' ? 75 : 170)); return U() === 'kg' ? w : w / 2.20462; }
 const kmU = () => S.settings.dist || 'km';
 /* min = minutes, dist = km ou mi, inc = inclinaison (%) ou niveau, kg = poids du corps */
+/* ---- Infos du corps (Profil) ---- */
+const ME = () => S.settings.me || {};
+const meH = () => +ME().h || (ME().sex === 'f' ? 163 : 176); // taille en cm
+const meAge = () => +ME().age || 30, meF = () => ME().sex === 'f';
+const strideW = () => meH() / 100 * (meF() ? 0.413 : 0.415); // longueur d'un pas de marche (m)
+const strideR = () => meH() / 100 * 0.62;                     // longueur d'un pas de course (m)
+const rmrMin = kg => Math.max(0.6, (10 * kg + 6.25 * meH() - 5 * meAge() + (meF() ? -161 : 5)) / 1440); // métabolisme de repos (kcal/min), Mifflin-St Jeor
+const vo2W = (v, g) => 0.1 * v + 1.8 * v * g + 3.5; // ACSM marche, v en m/min
+const vo2R = (v, g) => 0.2 * v + 0.9 * v * g + 3.5; // ACSM course
+const kcalOf = (vo2, min, kg) => ((vo2 - 3.5) * kg * 5 / 1000 + rmrMin(kg)) * min;
+const FLAT_V = 83.3; // marche à plat de référence : 5 km/h
+function flatStepKcal(kg) { const spm = FLAT_V / strideW(); return kcalOf(vo2W(FLAT_V, 0), 1, kg) / spm; }
+/* Calcul principal.
+   o = {kind, steps, min, kmh, inc, level, kg}
+   Retour : {kcal, steps (équivalent à plat), km (équivalent), realSteps, realKm, min} */
+function cardioCompute(o) {
+  const kg = o.kg || bodyKg(), g = Math.max(0, +o.inc || 0) / 100, k = o.kind;
+  if (k === 'walk' || k === 'run') {
+    const run = k === 'run' || (+o.kmh || 0) >= 8, sl = run ? strideR() : strideW();
+    let v = (+o.kmh || (run ? 9.5 : 5)) * 1000 / 60, steps = +o.steps || 0, min = +o.min || 0, dist;
+    if (steps) { dist = steps * sl; min = dist / v; }
+    else if (min) { dist = v * min; steps = Math.round(dist / sl); }
+    else return null;
+    const vo2 = run ? vo2R(v, g) : vo2W(v, g), kcal = kcalOf(vo2, min, kg);
+    const eq = Math.round(kcal / flatStepKcal(kg));
+    return {kcal: Math.round(kcal), steps: eq, km: eq * strideW() / 1000, realSteps: Math.round(steps), realKm: dist / 1000, min, ratio: steps ? eq / steps : 0};
+  }
+  const min = +o.min || 0; if (!min) return null;
+  let met = CARDIO_MET[k] || 6; const lv = +o.level || 0;
+  if (lv) met *= 0.7 + Math.min(20, lv) / 33;
+  const kcal = kcalOf(met * 3.5, min, kg), eq = Math.round(kcal / flatStepKcal(kg));
+  return {kcal: Math.round(kcal), steps: eq, km: eq * strideW() / 1000, min};
+}
+/* compatibilité : cartes cardio dans les séances (min, distance, inclinaison ou niveau) */
 function cardioCalc(kind, min, dist, inc, kg) {
   min = +min || 0; if (!min) return null;
   const km = (+dist || 0) * (kmU() === 'mi' ? 1.609 : 1);
-  let kcalMin;
-  if ((kind === 'walk' || kind === 'run') && km > 0) {
-    const v = km * 1000 / min, g = Math.max(0, +inc || 0) / 100; // m/min
-    const vo2 = v < 134 ? 0.1 * v + 1.8 * v * g + 3.5 : 0.2 * v + 0.9 * v * g + 3.5; // formules ACSM
-    kcalMin = vo2 * kg / 1000 * 5;
-  } else {
-    let met = CARDIO_MET[kind] || 6;
-    if (kind === 'walk' && inc) met += +inc * 0.35; // marche inclinée sans distance : approximation
-    if (['bike', 'ell', 'stair', 'row'].includes(kind) && inc) met *= 0.75 + Math.min(20, +inc) / 40; // niveau de la machine
-    kcalMin = met * 3.5 * kg / 200;
-  }
-  const kcal = kcalMin * min;
-  const stepsEq = Math.round(kcal / (0.00055 * kg)); // pas de marche qui dépenseraient autant
-  return {kcal: Math.round(kcal), steps: Math.round(stepsEq / 10) * 10};
+  const r = (kind === 'walk' || kind === 'run') ? cardioCompute({kind, min, kmh: km ? km / (min / 60) : 0, inc, kg}) : cardioCompute({kind, min, level: inc, kg});
+  return r && {kcal: r.kcal, steps: Math.round(r.steps / 10) * 10};
 }
 const cardioLine = (e, s) => { const c = cardioCalc(CARDIO_KIND(e.name), s.r || s.ph, s.km, s.inc, bodyKg()); return c ? `🔥 ≈ ${c.kcal} kcal · 👣 ≈ ${c.steps.toLocaleString(LOC())} ${T('pas', 'steps')}` : ''; };
 function openCardioCalc() {
@@ -4735,7 +4774,7 @@ function openCardioAdd() {
   const L = [['Tapis roulant (marche)', '🚶'], ['Tapis roulant (course)', '🏃'], ['Vélo stationnaire', '🚴'], ['Elliptique', '⛷️'], ['Escaliers (StairMaster)', '🪜'], ['Rameur', '🚣'], ['Corde à sauter', '🪢'], ['Course extérieure', '🏃'], ['Marche extérieure', '🚶']];
   modal(`<div class="row between"><h2 style="margin:0">🏃 ${T('Ajouter du cardio', 'Add cardio')}</h2><button class="btn sm" data-act="close">✕</button></div>
     <label>${T('Durée prévue (min)', 'Planned time (min)')}</label><input id="cad_m" inputmode="numeric" value="15">
-    <div class="menu" style="margin-top:10px">${L.map(([n, i]) => `<button class="btn block" data-act="cardio-add-ok" data-n="${esc(n)}">${i} ${esc(n)}</button>`).join('')}</div>
+    <div class="cvgrid">${L.map(([n, i]) => `<button class="cvk" data-act="cardio-add-ok" data-n="${esc(n)}"><span>${i}</span>${esc(n.replace(' (StairMaster)', ''))}</button>`).join('')}</div>
     <button class="btn ghost block" data-act="cardio-other" style="margin-top:6px">🔎 ${T('Autre (chercher)', 'Other (search)')}</button>`);
 }
 function addCardio(name, min) {
@@ -4759,7 +4798,10 @@ function shrinkImg(file, max, q) {
     im.src = url;
   });
 }
-function pickImage(cb) { const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*'; i.onchange = () => { if (i.files[0]) cb(i.files[0]); }; i.click(); }
+function pickImage(cb, front) {
+  window._pimgCb = cb; window._pimgFront = !!front;
+  modal(`<h2>${T('Ajouter une photo', 'Add a photo')}</h2><div class="menu"><button class="btn block" data-act="pimg-cam">📷 ${T('Prendre une photo', 'Take a photo')}</button><button class="btn block" data-act="pimg-alb">🖼️ ${T('Choisir dans l\'album', 'Choose from album')}</button><button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`);
+}
 let phDB = null;
 function phOpen() { if (phDB) return Promise.resolve(phDB); return new Promise((ok, ko) => { const r = indexedDB.open('carnet-muscu-photos', 1); r.onupgradeneeded = () => r.result.createObjectStore('p'); r.onsuccess = () => { phDB = r.result; ok(phDB); }; r.onerror = () => ko(r.error); }); }
 const phTx = (mode, fn) => phOpen().then(db => new Promise((ok, ko) => { const t = db.transaction('p', mode), st = t.objectStore('p'), r = fn(st); t.oncomplete = () => ok(r && r.result); t.onerror = () => ko(t.error); }));
@@ -4822,7 +4864,7 @@ function bodyCard() {
   const nPh = (S.photos || []).length;
   return `<div class="card"><div class="row between"><div><span class="muted small">⚖️ ${T('Poids', 'Weight')}</span><br>${last ? `<b style="font-size:22px">${dec1(last.w)} ${U()}</b>${diff != null ? ` <span class="small" style="color:${diff > 0 ? 'var(--warm)' : 'var(--ok, #4ade80)'}">${diff > 0 ? '+' : ''}${dec1(diff)} ${T('en 30 j', 'in 30 d')}</span>` : ''}` : `<span class="muted">${T('Pas encore entré', 'Not entered yet')}</span>`}</div>
     <button class="btn sm primary" data-act="bw-quick">＋ ${T('Poids', 'Weight')}</button></div>${spark}
-    <div class="row" style="margin-top:10px"><button class="btn sm" style="flex:1" data-act="go" data-v="measures">📏 ${T('Mensurations', 'Measurements')}</button><button class="btn sm" style="flex:1" data-act="go" data-v="measures" data-ph="1">📸 ${T('Photos', 'Photos')}${nPh ? ' (' + nPh + ')' : ''}</button></div></div>`;
+    <div class="row" style="margin-top:10px"><button class="btn sm" style="flex:1" data-act="me-edit">👤 ${T('Mes infos', 'My info')}</button><button class="btn sm" style="flex:1" data-act="go" data-v="measures">📏 ${T('Mesures', 'Measures')}</button><button class="btn sm" style="flex:1" data-act="go" data-v="measures" data-ph="1">📸 ${T('Photos', 'Photos')}${nPh ? ' (' + nPh + ')' : ''}</button></div></div>`;
 }
 function bwQuick() {
   const ws = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)), last = ws[ws.length - 1];
@@ -4831,6 +4873,85 @@ function bwQuick() {
     <label>Date</label><input type="date" id="bwqd" value="${dkey(new Date())}">
     <button class="btn primary block" data-act="bw-quick-ok" style="margin-top:14px">${T('Enregistrer', 'Save')}</button>`);
   setTimeout(() => { const i = $('#bwq'); if (i) i.focus(); }, 80);
+}
+
+
+/* ===================== Onglet Cardio ===================== */
+const CV_KINDS = [['walk', '🚶', ['Tapis / marche', 'Treadmill / walk']], ['run', '🏃', ['Course', 'Run']], ['bike', '🚴', ['Vélo', 'Bike']], ['ell', '⛷️', ['Elliptique', 'Elliptical']], ['stair', '🪜', ['Escaliers', 'Stairs']], ['row', '🚣', ['Rameur', 'Rower']], ['rope', '🪢', ['Corde à sauter', 'Jump rope']]];
+let cv = {k: 'walk', mode: 'steps', steps: '', min: '', kmh: '', inc: '', level: ''};
+const spdU = () => kmU() === 'mi' ? 'mph' : 'km/h';
+function meLine() {
+  const m = ME(), kgv = bodyKg(), wv = U() === 'kg' ? Math.round(kgv) : Math.round(kgv * 2.20462);
+  const hh = m.h ? (U() === 'kg' ? m.h + ' cm' : `${Math.floor(m.h / 2.54 / 12)}'${Math.round(m.h / 2.54 % 12)}"`) : null;
+  const ok = m.h && m.age && m.sex && S.body.some(b => b.w != null);
+  return `<div class="card" style="${ok ? '' : 'border-color:var(--accent)'}"><div class="row between"><div style="min-width:0"><span class="muted small">👤 ${T('Mes infos', 'My info')}</span><br>
+    <b>${wv} ${U()}${hh ? ' · ' + hh : ''}${m.age ? ' · ' + m.age + T(' ans', ' y') : ''}${m.sex ? ' · ' + (m.sex === 'f' ? T('Femme', 'Female') : T('Homme', 'Male')) : ''}</b>
+    ${ok ? '' : `<br><span class="small" style="color:var(--accent)">${T('Complète tes infos pour des calculs précis', 'Fill in your info for accurate results')}</span>`}</div>
+    <button class="btn sm" data-act="me-edit">${T('Modifier', 'Edit')}</button></div></div>`;
+}
+function openMe() {
+  const m = ME(), lb = U() !== 'kg', kgv = bodyKg(), wv = lb ? Math.round(kgv * 2.20462 * 10) / 10 : Math.round(kgv * 10) / 10;
+  const ft = m.h ? Math.floor(m.h / 2.54 / 12) : '', inch = m.h ? Math.round(m.h / 2.54 % 12) : '';
+  modal(`<div class="row between"><h2 style="margin:0">👤 ${T('Mes infos', 'My info')}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <p class="muted small">${T('Servent à calculer tes calories, la longueur de ton pas et tes pas équivalents. Elles restent sur ton téléphone.', 'Used to compute your calories, stride length and equivalent steps. They stay on your phone.')}</p>
+    <label>${T('Poids', 'Weight')} (${U()})</label><input id="me_w" inputmode="decimal" value="${S.body.some(b => b.w != null) ? wv : ''}" placeholder="${wv}">
+    <label>${T('Grandeur', 'Height')}</label>${lb ? `<div class="grid2"><div><input id="me_ft" inputmode="numeric" value="${ft}" placeholder="pi (ex. 5)"></div><div><input id="me_in" inputmode="numeric" value="${inch}" placeholder="po (ex. 10)"></div></div>` : `<input id="me_cm" inputmode="numeric" value="${m.h || ''}" placeholder="cm (ex. 176)">`}
+    <label>${T('Âge', 'Age')}</label><input id="me_age" inputmode="numeric" value="${m.age || ''}">
+    <label>${T('Sexe', 'Sex')}</label><div class="seg"><button class="btn ${m.sex === 'm' ? 'primary' : ''}" data-act="me-sex" data-s="m">${T('Homme', 'Male')}</button><button class="btn ${m.sex === 'f' ? 'primary' : ''}" data-act="me-sex" data-s="f">${T('Femme', 'Female')}</button></div>
+    <button class="btn primary block" data-act="me-ok" style="margin-top:14px">${T('Enregistrer', 'Save')}</button>`);
+  window._meSex = m.sex || '';
+}
+function saveMe() {
+  const num = id => { const el = $('#' + id); const v = el ? (el.value || '').replace(',', '.').trim() : ''; return v !== '' && !isNaN(v) ? +v : null; };
+  const me = S.settings.me = S.settings.me || {};
+  const cm = U() === 'kg' ? num('me_cm') : (num('me_ft') != null ? Math.round(((num('me_ft') || 0) * 12 + (num('me_in') || 0)) * 2.54) : null);
+  if (cm) me.h = cm; const a = num('me_age'); if (a) me.age = a; if (window._meSex) me.sex = window._meSex;
+  const w = num('me_w'); if (w) { const d = dkey(new Date()); let e = S.body.find(x => x.d === d); if (!e) { e = {id: uid(), d, w: null, m: {}}; S.body.push(e); } e.w = w; }
+  save(); closeAll(); render(); toast(T('✅ Infos enregistrées', '✅ Info saved'));
+}
+function cvInputs() {
+  const k = cv.k, wr = k === 'walk' || k === 'run';
+  const fld = (key, lab, ph) => `<div><label>${lab}</label><input inputmode="decimal" data-cv="${key}" value="${esc(cv[key])}" placeholder="${ph}"></div>`;
+  if (wr) return `<div class="seg" style="margin-top:12px"><button class="btn ${cv.mode === 'steps' ? 'primary' : ''}" data-act="cv-mode" data-m="steps">👣 ${T('J\'ai mes pas', 'I have my steps')}</button><button class="btn ${cv.mode === 'time' ? 'primary' : ''}" data-act="cv-mode" data-m="time">⏱ ${T('Temps et vitesse', 'Time & speed')}</button></div>
+    <div class="grid2">${cv.mode === 'steps' ? fld('steps', T('Pas faits', 'Steps done'), 'ex. 1000') + fld('inc', T('Inclinaison (%)', 'Incline (%)'), 'ex. 15') + fld('kmh', T('Vitesse', 'Speed') + ` (${spdU()})`, T('facultatif', 'optional'))
+      : fld('min', T('Durée (min)', 'Time (min)'), 'ex. 20') + fld('kmh', T('Vitesse', 'Speed') + ` (${spdU()})`, k === 'run' ? 'ex. 9.5' : 'ex. 5') + fld('inc', T('Inclinaison (%)', 'Incline (%)'), '0')}</div>`;
+  return `<div class="grid2" style="margin-top:12px">${fld('min', T('Durée (min)', 'Time (min)'), 'ex. 20')}${fld('level', T('Niveau (1-20)', 'Level (1-20)'), T('facultatif', 'optional'))}</div>`;
+}
+function cvResult() {
+  const sp = +String(cv.kmh).replace(',', '.') || 0;
+  const r = cardioCompute({kind: cv.k, steps: cv.mode === 'steps' ? +String(cv.steps).replace(',', '.') : 0, min: cv.mode === 'time' || !['walk', 'run'].includes(cv.k) ? +String(cv.min).replace(',', '.') : 0,
+    kmh: kmU() === 'mi' ? sp * 1.609 : sp, inc: +String(cv.inc).replace(',', '.') || 0, level: +String(cv.level).replace(',', '.') || 0});
+  window._cvR = r;
+  if (!r) return `<div class="cvout"><span class="muted">${T('Entre tes valeurs pour voir le résultat', 'Enter your values to see the result')}</span></div>`;
+  const d = x => dec1(kmU() === 'mi' ? x / 1.609 : x), N = x => Math.round(x / 10) * 10;
+  const wr = ['walk', 'run'].includes(cv.k);
+  return `<div class="cvout"><div class="cvbig"><span>${T('Pas équivalents', 'Equivalent steps')}</span><b>${N(r.steps).toLocaleString(LOC())}</b><small>${T('à plat', 'on flat ground')}</small></div>
+    <div class="row" style="justify-content:space-around;margin-top:10px"><div class="cvsm"><span>${T('Distance éq.', 'Eq. distance')}</span><b>${d(r.km)} ${kmU()}</b><small>${wr ? T('réel : ', 'actual: ') + d(r.realKm) + ' ' + kmU() : T('en marchant', 'walking')}</small></div><div class="cvsm"><span>Calories</span><b>${r.kcal}</b><small>kcal</small></div><div class="cvsm"><span>${T('Durée', 'Time')}</span><b>${Math.round(r.min)}</b><small>min</small></div></div>
+    ${wr && r.realSteps ? `<p class="small" style="margin:12px 0 0;text-align:center">${r.realSteps.toLocaleString(LOC())} ${T('pas', 'steps')}${+cv.inc ? ` ${T('à', 'at')} ${cv.inc} %` : ''} ≈ <b>${N(r.steps).toLocaleString(LOC())} ${T('pas à plat', 'flat steps')}</b>${r.ratio > 1.05 ? ` (×${dec1(r.ratio)})` : ''}</p>` : ''}</div>`;
+}
+function cvWeek() {
+  const t0 = Date.now() - 7 * 864e5; let min = 0, kc = 0, st = 0;
+  S.history.filter(h => new Date(h.date) >= t0).forEach(h => h.exercises.forEach(e => e.sets.forEach(s => { if (s.u === 'c') { min += +s.r || 0; kc += +s.kc || 0; st += +s.st || 0; } })));
+  return min ? `<div class="card"><span class="muted small">📅 ${T('Cardio des 7 derniers jours', 'Cardio, last 7 days')}</span><div class="row" style="justify-content:space-around;margin-top:8px"><div class="cvsm"><b>${Math.round(min)}</b><small>min</small></div><div class="cvsm"><b>${Math.round(kc)}</b><small>kcal</small></div><div class="cvsm"><b>${(Math.round(st / 10) * 10).toLocaleString(LOC())}</b><small>${T('pas éq.', 'eq. steps')}</small></div></div></div>` : '';
+}
+function vCardio() {
+  return `${meLine()}
+    <div class="card"><h3 style="margin:0 0 10px">👣 ${T('Convertisseur', 'Converter')}</h3>
+      <div class="cvkinds">${CV_KINDS.map(([k, ic, n]) => `<button class="cvk ${cv.k === k ? 'on' : ''}" data-act="cv-kind" data-k="${k}"><span>${ic}</span>${T(n[0], n[1])}</button>`).join('')}</div>
+      <div id="cvin">${cvInputs()}</div>
+      <div id="cvres">${cvResult()}</div>
+      <button class="btn primary block" data-act="cv-save" style="margin-top:12px">💾 ${T('Ajouter à mon historique', 'Add to my history')}</button>
+      <p class="muted small" style="margin:8px 0 0">${T('Estimations selon ton poids, ta grandeur, ton âge et ton sexe (formules ACSM et Mifflin-St Jeor). Une montre peut donner un peu différent.', 'Estimates from your weight, height, age and sex (ACSM and Mifflin-St Jeor formulas). A watch may differ a bit.')}</p></div>
+    ${cvWeek()}`;
+}
+function cvSave() {
+  const r = window._cvR; if (!r) { toast(T('Entre tes valeurs d\'abord', 'Enter your values first')); return; }
+  const n = T(...CV_KINDS.find(x => x[0] === cv.k)[2]), names = {walk: 'Tapis roulant (marche)', run: 'Tapis roulant (course)', bike: 'Vélo stationnaire', ell: 'Elliptique', stair: 'Escaliers (StairMaster)', row: 'Rameur', rope: 'Corde à sauter'};
+  const set = {w: '', r: Math.round(r.min), u: 'c', kc: r.kcal, st: Math.round(r.steps / 10) * 10};
+  if (['walk', 'run'].includes(cv.k)) { set.km = Math.round((kmU() === 'mi' ? r.realKm / 1.609 : r.realKm) * 100) / 100; if (+cv.inc) set.inc = +cv.inc; if (r.realSteps) set.steps = r.realSteps; } else if (+cv.level) set.inc = +cv.level;
+  S.history.push({id: uid(), routineName: 'Cardio', date: new Date(Date.now() - r.min * 60000).toISOString(), duration: Math.round(r.min), exercises: [{name: names[cv.k] || n, sets: [set]}]});
+  S.history.sort((a, b) => a.date.localeCompare(b.date));
+  save(); render(); toast(T('✅ Cardio ajouté à ton historique', '✅ Cardio added to your history'));
 }
 
 /* ---------- Calendrier façon Hevy ---------- */
@@ -4864,7 +4985,7 @@ const VIEWS = {
   stats: ['Statistiques', () => vStats()], 'st-vol': ['Séries par muscle', () => vVolume()], 'st-radar': ['Répartition musculaire', () => vRadar()],
   'st-body': ['Carte des muscles', () => vBodyMap()], 'st-top': ['Principaux exercices', () => vTopEx()], 'st-rec': ['Records personnels', () => vRecords()],
   'st-month': ['Rapport mensuel', () => vMonth()], exercises: ['Exercices', () => vExList()], exdetail: ['Exercice', () => vExDetail()],
-  measures: ['Corps et progrès', () => vBody()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()]
+  measures: ['Corps et progrès', () => vBody()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], cardio: ['Cardio', () => vCardio()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()]
 };
 function headerRight(v) {
   if (v === 'profile') return `<button class="hbtn" data-act="go" data-v="settings" aria-label="Réglages">${IC('gear', '⚙️', 24)}</button>`;
@@ -4937,6 +5058,7 @@ const ICP = {
   ruler: '<path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/>',
   medal: '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
   pulse: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  heartp: '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/><path d="M3.5 12h4.5l1.5-2.5 2.5 5 1.5-2.5h7"/>',
   clip: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14h6"/><path d="M12 17v-6"/>',
   spark: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>',
   more: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
@@ -4997,7 +5119,7 @@ const iconsOn = () => S.settings.icons !== false;
 const ic = (k, sz = 20) => `<svg class="ico" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICP[k] || ''}</svg>`;
 const IC = (k, emo, sz) => iconsOn() ? ic(k, sz) : emo;
 function renderChrome() {
-  const nav = $('#nav'); if (nav) nav.innerHTML = `<button data-tab="train"><span class="ic">${IC('dumbbell', '🏋️', 22)}</span>${T('Entraînement', 'Workout')}</button><button data-tab="stretch"><span class="ic">${IC('yoga', '🧘', 22)}</span>${T('Étirements', 'Stretch')}</button><button data-tab="timers"><span class="ic">${IC('timer', '⏱', 22)}</span>${T('Intervalles', 'Intervals')}</button><button data-tab="profile"><span class="ic">${IC('user', '👤', 22)}</span>${T('Profil', 'Profile')}</button>`;
+  const nav = $('#nav'); if (nav) nav.innerHTML = `<button data-tab="train"><span class="ic">${IC('dumbbell', '🏋️', 22)}</span>${T('Entraînement', 'Workout')}</button><button data-tab="stretch"><span class="ic">${IC('yoga', '🧘', 22)}</span>${T('Étirements', 'Stretch')}</button><button data-tab="cardio"><span class="ic">${IC('heartp', '❤️', 22)}</span>Cardio</button><button data-tab="timers"><span class="ic">${IC('timer', '⏱', 22)}</span>${T('Intervalles', 'Intervals')}</button><button data-tab="profile"><span class="ic">${IC('user', '👤', 22)}</span>${T('Profil', 'Profile')}</button>`;
   const bk = $('#back'); if (bk) bk.innerHTML = IC('back', '←', 22);
 }
 
@@ -5006,7 +5128,7 @@ function renderChrome() {
 let swp = null;
 function swipeTarget(dx) {
   if (stack.length > 1) return dx > 0 ? 'back' : null;
-  const TABS = ['train', 'stretch', 'timers', 'profile'], i = TABS.indexOf(stack[0].v);
+  const TABS = ['train', 'stretch', 'cardio', 'timers', 'profile'], i = TABS.indexOf(stack[0].v);
   if (i < 0) return null;
   return dx < 0 ? (TABS[i + 1] || null) : (TABS[i - 1] || null);
 }
@@ -5101,7 +5223,7 @@ document.addEventListener('click', e => {
     case 'st-share': { const rt = stAll().find(x => x.id === b.dataset.id); closeAll(); if (rt) { const c = JSON.parse(JSON.stringify(rt)); delete c.id; shareItem('s', [c], T(rt.n[0], rt.n[1] || rt.n[0])); } break; }
     case 'imp-ok': doImport(); break;
     case 'avatar': if (S.settings.avatar) { modal(`<h2>${T('Photo de profil', 'Profile photo')}</h2><div class="menu"><button class="btn block" data-act="avatar-new">📷 ${T('Changer la photo', 'Change photo')}</button><button class="btn danger block" data-act="avatar-del">${T('Retirer la photo', 'Remove photo')}</button><button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`); break; } // sinon : choisir tout de suite
-    case 'avatar-new': closeAll(); pickImage(async f => { try { S.settings.avatar = await shrinkImg(f, 240, .82); save(); render(); } catch (e) { toast('⚠️ ' + e.message); } }); break;
+    case 'avatar-new': closeAll(); pickImage(async f => { try { S.settings.avatar = await shrinkImg(f, 240, .82); save(); render(); } catch (e) { toast('⚠️ ' + e.message); } }, true); break;
     case 'avatar-del': delete S.settings.avatar; save(); closeAll(); render(); break;
     case 'bw-quick': bwQuick(); break;
     case 'bw-quick-ok': { const v = ($('#bwq').value || '').replace(',', '.').trim(), d = $('#bwqd').value || dkey(new Date()); if (!v || isNaN(v)) { toast(T('Entre ton poids', 'Enter your weight')); break; } let e2 = S.body.find(x => x.d === d); if (!e2) { e2 = {id: uid(), d, w: null, m: {}}; S.body.push(e2); } e2.w = +v; save(); closeAll(); render(); toast(T('✅ Poids enregistré', '✅ Weight saved')); break; }
@@ -5112,7 +5234,14 @@ document.addEventListener('click', e => {
     case 'cardio-add': openCardioAdd(); break;
     case 'cardio-add-ok': { const m = ($('#cad_m') || {}).value; closeModal(); addCardio(b.dataset.n, m); break; }
     case 'cardio-other': closeModal(); openPicker({title: T('Ajouter du cardio', 'Add cardio'), cb: p => addCardio(p.name, 15)}); break;
-    case 'cardio-calc': openCardioCalc(); break;
+    case 'cardio-calc': navAnim = true; setRoot('cardio'); render(); window.scrollTo(0, 0); break;
+    case 'cv-kind': cv.k = b.dataset.k; render(); break;
+    case 'cv-mode': cv.mode = b.dataset.m; render(); break;
+    case 'cv-save': cvSave(); break;
+    case 'me-edit': openMe(); break;
+    case 'me-sex': window._meSex = b.dataset.s; b.parentNode.querySelectorAll('.btn').forEach(x => x.classList.toggle('primary', x === b)); break;
+    case 'me-ok': saveMe(); break;
+    case 'pimg-cam': case 'pimg-alb': { const cb = window._pimgCb; closeModal(); const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*'; if (act === 'pimg-cam') i.setAttribute('capture', window._pimgFront ? 'user' : 'environment'); i.onchange = () => { if (i.files[0] && cb) cb(i.files[0]); }; i.click(); break; }
     case 'rt-upd': applyRoutineUpdate(); break;
     case 'rt-keep': { window._rtUpd = null; const c = $('#rtupd'); if (c) c.innerHTML = `<span class="small muted">👍 ${T('Routine gardée comme avant. Les changements restent dans cette séance seulement.', 'Routine kept as it was. The changes stay in this workout only.')}</span>`; break; }
     case 'h2r': h2rModal([b.dataset.hid]); break;
@@ -5467,6 +5596,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('input', e => {
   const t = e.target;
+  if (t.dataset.cv) { cv[t.dataset.cv] = t.value; const r = $('#cvres'); if (r) r.innerHTML = cvResult(); }
   if (t.dataset.phd) { const p = (S.photos || []).find(x => x.id === t.dataset.phd); if (p && t.value) { p.d = t.value; save(); } }
   if (t.dataset.in && S.active) {
     const s = S.active.exercises[+t.dataset.e].sets[+t.dataset.s];
