@@ -182,6 +182,10 @@ button.chip{cursor:pointer}
 .btn.ghost{background:none;border-color:transparent}
 .rcard{cursor:pointer}
 .fhead{padding:8px 0;cursor:pointer;user-select:none}
+.fempty{display:flex;border:1.5px dashed var(--muted);border-radius:14px;margin:2px 0 14px;overflow:hidden}
+.fempty button{flex:1;background:none;border:0;color:var(--accent);font-size:15px;font-weight:600;padding:20px 8px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;min-width:0}
+.fempty button+button{border-left:1.5px dashed var(--muted)}
+.fempty button:active{background:var(--card)}
 .linkbtn{background:none;border:0;color:var(--accent);font-weight:600;font-size:15px;padding:4px 0;cursor:pointer}
 .exlink.acc{color:var(--accent);border-bottom:0;font-weight:700;font-size:16px}
 .rex{padding:14px 0;border-bottom:1px solid var(--line)}
@@ -2936,7 +2940,7 @@ function vTrain() {
       return;
     }
     h += `<div class="folder"><div class="row between fhead" data-act="fold" data-f="${esc(f)}"><span class="muted">${closed ? '▸' : '▾'} ${esc(f)} (${rs.length})</span><button class="btn sm ghost" data-act="folder-menu" data-f="${esc(f)}" aria-label="Options du dossier">⋯</button></div>`;
-    if (!closed) h += rs.length ? rs.map(routineCard).join('') : '<p class="muted small" style="margin:0 0 12px">Dossier vide. Déplace une routine ici avec son menu ⋯.</p>';
+    if (!closed) h += rs.length ? rs.map(routineCard).join('') : `<div class="fempty"><button data-act="new-routine" data-f="${esc(f)}">＋ ${T('Nouvelle routine', 'New routine')}</button><button data-act="ai-guide" data-k="fresh" data-f="${esc(f)}">✨ ${T('Créer avec l\'IA', 'Create with AI')}</button></div>`;
     h += '</div>';
   });
   return h;
@@ -3005,11 +3009,12 @@ function openAiMenu() {
     ${opt('data-act="paste" data-rid=""', '📥', T('J\'ai déjà la réponse de l\'IA', 'I already have the AI\'s answer'), T('Colle-la directement.', 'Paste it directly.'))}
     ${newbie ? `<p class="muted small" style="margin:10px 0 0">💡 ${T('Tu viens de Hevy, Strong ou une autre appli qui exporte en CSV? Importe tout ton <b>historique</b> (Réglages → Sauvegarde → Restaurer, avec le fichier CSV). L\'appli te proposera ensuite de recréer tes routines.', 'Coming from Hevy, Strong or another app with CSV export? Import your whole <b>history</b> (Settings → Backup → Restore, with the CSV file). The app will then offer to rebuild your routines.')}</p>` : ''}`);
 }
-function aiGuide(k) {
+function aiGuide(k, folder) {
   const g = AI_KINDS[k]; if (!g) return;
-  aiG = {k, copied: false};
+  aiG = {k, copied: false, folder: folder || null};
   closeAll();
   const m = modal(`<div class="row between"><h2 style="margin:0">${g.ic} ${T(g.t[0], g.t[1])}</h2><button class="btn sm" data-act="close">✕</button></div>
+    ${aiG.folder ? `<p class="muted small" style="margin:8px 0 0">📁 ${T('Les routines iront dans le dossier', 'Routines will go in the folder')} « ${esc(aiG.folder)} »</p>` : ''}
     <div style="margin-top:14px" id="aig">${aiGuideBody()}</div>`, {id: 'aiguide'});
 }
 function aiGuideBody() {
@@ -3089,10 +3094,10 @@ function vRoutineDetail() {
 
 /* ---------- Éditeur visuel de routine ---------- */
 let rdraft = null, rdirty = false;
-function editRoutine(rid) {
+function editRoutine(rid, folder) {
   const r = S.routines.find(x => x.id === rid);
   rdraft = r ? {id: r.id, name: r.name, folder: r.folder || DEF_FOLDER, exercises: r.exercises.map(e => ({...clone(e), sl: clone(setsOf(e))}))}
-             : {id: null, name: '', folder: DEF_FOLDER, exercises: []};
+             : {id: null, name: '', folder: folder || DEF_FOLDER, exercises: []};
   rdirty = false; go('redit');
 }
 function vRoutineEditor() {
@@ -4279,7 +4284,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.1';
+const APP_VERSION = '9.2';
 const CHANGELOG = [
   {v: '9.0', d: '2026-11-10', fr: ['Appli 3 fois plus légère : elle s\'ouvre plus vite, surtout la première fois.', 'Menus épurés : les boutons en double sont partis (horaire, programmes, partage, statistiques).', 'Profil plus simple : 3 séances récentes et une tuile Historique pour tout le reste.', 'Nouveaux utilisateurs : la sauvegarde Google est proposée dès le début.'],
    en: ['App 3 times lighter: it opens faster, especially the first time.', 'Cleaner menus: duplicate buttons are gone (schedule, programs, sharing, stats).', 'Simpler Profile: 3 recent workouts and a History tile for the rest.', 'New users: Google backup is offered right at the start.']},
@@ -5880,9 +5885,9 @@ document.addEventListener('click', e => {
     case 'sel-move': selMove(); break;
     case 'sel-move-to': selMoveTo(b.dataset.f); break;
     case 'sel-move-new': { const nf = (prompt(T('Nom du nouveau dossier :', 'New folder name:')) || '').trim(); if (nf) selMoveTo(nf); break; }
-    case 'ai-guide': aiGuide(b.dataset.k); break;
+    case 'ai-guide': aiGuide(b.dataset.k, b.dataset.f || null); break;
     case 'aig-copy': { const g = AI_KINDS[aiG && aiG.k]; if (!g) break; const t = g.prompt(); if (!t) { toast(T('Aucune séance dans les 30 derniers jours', 'No workouts in the last 30 days')); break; } copy(t); aiG.copied = true; const el = $('#aig'); if (el) el.innerHTML = aiGuideBody(); break; }
-    case 'aig-paste': { const g = AI_KINDS[aiG.k]; closeAll(); openPaste('', null); if (navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(t => { const ta = $('#pasteTa'); if (ta && t && /ROUTINE|DOSSIER|FOLDER/i.test(t)) { ta.value = t; ta.dispatchEvent(new Event('input')); } }).catch(() => {}); break; }
+    case 'aig-paste': { const g = AI_KINDS[aiG.k]; closeAll(); openPaste('', aiG.folder || null); if (navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(t => { const ta = $('#pasteTa'); if (ta && t && /ROUTINE|DOSSIER|FOLDER/i.test(t)) { ta.value = t; ta.dispatchEvent(new Event('input')); } }).catch(() => {}); break; }
     case 'xfer-hide': S.settings.xferHide = true; save(); render(); break;
     case 'ios-hint-off': S.settings.iosHintOff = true; save(); closeAll(); break;
     case 'ios-install': iosHint(); break;
@@ -5953,7 +5958,7 @@ document.addEventListener('click', e => {
     case 'st-pause': if (stp) { if (stp.paused) { stp.end = Date.now() + stp.paused; stp.paused = null; } else stp.paused = Math.max(0, stp.end - Date.now()); stDraw(true); } break;
     case 'st-next': if (stp) { if (stp.i + 1 >= stp.steps.length) stFinish(); else stGoto(stp.i + 1); } break;
     case 'st-prev': if (stp) stGoto(Math.max(0, stp.phase === 'hold' || stp.i === 0 ? stp.i : stp.i - 1)); break;
-    case 'new-routine': editRoutine(null); break;
+    case 'new-routine': editRoutine(null, b.dataset.f || null); break;
     case 'open-routine': go('routine', {rid}); break;
     case 'edit-routine': closeAll(); editRoutine(rid); break;
     case 'routine-menu': openRoutineMenu(rid); break;
