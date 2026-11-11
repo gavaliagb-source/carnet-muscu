@@ -203,12 +203,28 @@ button.chip{cursor:pointer}
 .calhead{gap:8px}
 .calhead>div{flex:1;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;font-size:14px}
 .wd7{position:sticky;top:calc(52px + env(safe-area-inset-top));z-index:3;background:var(--bg);margin:0;padding:6px 0}
-.mtitle{margin:16px 0 6px;text-transform:capitalize;font-size:17px}
+.mtitle{margin:26px 0 12px;text-transform:capitalize;font-size:22px;font-weight:800;letter-spacing:-.3px;scroll-margin-top:calc(150px + env(safe-area-inset-top))}
+.cal2{gap:0 !important}
+.calsticky{position:sticky;top:calc(52px + env(safe-area-inset-top));z-index:3;background:var(--bg);margin:-16px -16px 0}
+.calbar{display:flex;border-bottom:1px solid var(--line)}.calbar>div{flex:1;text-align:center;padding:12px 6px;font-size:14px;min-width:0}.calbar>div+div{border-left:1px solid var(--line)}
+.calwd{display:grid;grid-template-columns:repeat(7,1fr);padding:9px 16px;border-bottom:1px solid var(--line);color:var(--muted);font-size:13px;text-align:center}
+.calmore{display:block;margin:14px auto 0;background:none;border:0;color:var(--muted);font-size:13px}
+.calmode{font-size:16px;font-weight:600;display:flex;align-items:center;gap:4px}
+.yhead{display:flex;align-items:center;justify-content:space-between;margin:14px 0 6px}.yhead h3{margin:0;font-size:22px;font-weight:800}
+.ysum{text-align:center;margin:0 0 16px}
+.ygrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px 12px;align-items:start}
+.ymon{display:block;background:none;border:0;color:var(--text);padding:0;text-align:left;min-width:0;cursor:pointer}
+.ymon b{display:block;font-size:14px;margin-bottom:6px;text-transform:capitalize}
+.ymg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.ymg i{aspect-ratio:1/1;border-radius:50%;font-style:normal;font-size:8px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.ymg i.has{background:var(--accent);color:var(--accent-ink);font-weight:700}.ymg i.today{color:var(--accent);font-weight:800}
+.ymon .yc{display:block;font-size:11px;color:var(--muted);margin-top:5px}
 .cal2{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:8px}
-.cday{background:none;border:0;color:var(--text);padding:4px 0 6px;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:58px;min-width:0}
-.cday .dn{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px}
+.cday{background:none;border:0;border-top:1px solid var(--line);color:var(--text);padding:8px 0 6px;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:72px;min-width:0;border-radius:0}
+.cday .dn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px}
 .cday.has .dn{background:var(--accent);color:var(--accent-ink);font-weight:700}
-.cday.today .dn{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.cday.today:not(.has) .dn{color:var(--accent);font-weight:700}
+.cday.today.has .dn{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--accent)}
 .wstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:12px 0 4px}
 .wday{background:var(--card2);border-radius:8px;padding:6px 2px;text-align:center;font-size:11px;min-width:0}
 .wday.past{opacity:.55}.cycrow{padding:6px 0;border-bottom:1px solid var(--line)}
@@ -283,7 +299,7 @@ button.chip{cursor:pointer}
 .pbtn{width:56px;height:56px;border-radius:50%;padding:0;font-size:24px;display:inline-flex;align-items:center;justify-content:center}.pmain{width:72px;height:72px;font-size:30px}
 .toolt{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:14px}.toolt .ico{color:var(--accent);margin:0 0 2px}
 .chrono{font-variant-numeric:tabular-nums;font-weight:700;color:var(--accent);font-size:15px}
-.cday .dl{font-size:10px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
+.cday .dl{font-size:11px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
 
 /* Visite guidée */
 #tour{position:fixed;inset:0;z-index:9000;touch-action:none}
@@ -4263,7 +4279,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.0';
+const APP_VERSION = '9.1';
 const CHANGELOG = [
   {v: '9.0', d: '2026-11-10', fr: ['Appli 3 fois plus légère : elle s\'ouvre plus vite, surtout la première fois.', 'Menus épurés : les boutons en double sont partis (horaire, programmes, partage, statistiques).', 'Profil plus simple : 3 séances récentes et une tuile Historique pour tout le reste.', 'Nouveaux utilisateurs : la sauvegarde Google est proposée dès le début.'],
    en: ['App 3 times lighter: it opens faster, especially the first time.', 'Cleaner menus: duplicate buttons are gone (schedule, programs, sharing, stats).', 'Simpler Profile: 3 recent workouts and a History tile for the rest.', 'New users: Google backup is offered right at the start.']},
@@ -5453,19 +5469,30 @@ async function frLanding(code) {
 }
 
 /* ---------- Calendrier façon Hevy ---------- */
-let calMonths = 6;
-function vCal2() {
-  const byDay = {};
-  S.history.forEach(h => { const k = dkey(h.date); (byDay[k] = byDay[k] || []).push(h); });
+let calMonths = 6, calMode = 'month', calYear = new Date().getFullYear();
+const calWd = () => { const a = isEN() ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']; return sunFirst() ? [a[6], ...a.slice(0, 6)] : a; };
+const calByDay = () => { const o = {}; S.history.forEach(h => { const k = dkey(h.date); (o[k] = o[k] || []).push(h); }); return o; };
+function calMaxMonths() {
+  if (!S.history.length) return 1;
+  const o = new Date(Math.min(...S.history.map(h => +new Date(h.date)))), n = new Date();
+  return (n.getFullYear() - o.getFullYear()) * 12 + n.getMonth() - o.getMonth() + 1;
+}
+function calBar(withWd) {
   const rd = restDays(), sw = streakWeeks();
-  let h = `<div class="row calhead"><div>🔥 Série de <b>${sw}</b> semaine${sw > 1 ? 's' : ''}</div><div>🌙 ${rd == null ? 'Aucune séance' : rd === 0 ? 'Entraîné aujourd\'hui' : rd + ' jour' + (rd > 1 ? 's' : '') + ' de repos'}</div></div>
-    <button class="btn sm block" data-act="cal-more" style="margin:10px 0">Afficher les mois précédents</button>
-    <div class="cal2 wd7">${wdl().map(d => `<div class="muted small" style="text-align:center">${d}</div>`).join('')}</div>`;
+  const rest = rd == null ? T('Aucune séance', 'No workouts') : rd === 0 ? T('Entraîné aujourd\'hui', 'Trained today') : isEN() ? `${rd} rest day${rd > 1 ? 's' : ''}` : `${rd} jour${rd > 1 ? 's' : ''} de repos`;
+  const ser = isEN() ? `Streak: <b>${sw}</b> week${sw > 1 ? 's' : ''}` : `Série de <b>${sw}</b> semaine${sw > 1 ? 's' : ''}`;
+  return `<div class="calsticky"><div class="calbar"><div>🔥 ${ser}</div><div>🌙 ${rest}</div></div>${withWd ? `<div class="calwd">${calWd().map(d => `<span>${d}</span>`).join('')}</div>` : ''}</div>`;
+}
+function vCal2() {
+  if (calMode === 'year') return vCalYear();
+  const byDay = calByDay(), max = calMaxMonths();
+  if (calMonths > max) calMonths = Math.max(1, max);
+  let h = calBar(true) + (calMonths < max ? `<button class="calmore" id="calmore" data-act="cal-more">${T('Afficher les mois précédents', 'Show previous months')}</button>` : '');
   const now = new Date(), today = dkey(now);
   for (let i = calMonths - 1; i >= 0; i--) {
     const first = new Date(now.getFullYear(), now.getMonth() - i, 1), Y = first.getFullYear(), M = first.getMonth();
     const days = new Date(Y, M + 1, 0).getDate(), lead = wOff(first);
-    h += `<h3 class="mtitle">${first.toLocaleDateString(LOC(), {month: 'long', year: 'numeric'})}</h3><div class="cal2">`;
+    h += `<h3 class="mtitle" id="m-${Y}-${M + 1}">${first.toLocaleDateString(LOC(), {month: 'long', year: 'numeric'})}</h3><div class="cal2">`;
     for (let j = 0; j < lead; j++) h += '<div></div>';
     for (let d = 1; d <= days; d++) {
       const k = `${Y}-${pad2(M + 1)}-${pad2(d)}`, hs = byDay[k];
@@ -5473,7 +5500,41 @@ function vCal2() {
     }
     h += '</div>';
   }
-  return h + `<button class="btn sm block" data-act="hist-new" style="margin-top:12px">＋ Ajouter une séance oubliée</button>`;
+  return h + `<button class="btn sm block" data-act="hist-new" style="margin-top:16px">＋ ${T('Ajouter une séance oubliée', 'Add a missed workout')}</button>`;
+}
+function vCalYear() {
+  const byDay = calByDay(), Y = calYear, today = dkey(new Date());
+  const yrs = S.history.map(h => new Date(h.date).getFullYear()), minY = Math.min(new Date().getFullYear(), ...yrs), maxY = new Date().getFullYear();
+  let tot = 0, act = 0;
+  let g = '';
+  for (let M = 0; M < 12; M++) {
+    const first = new Date(Y, M, 1), days = new Date(Y, M + 1, 0).getDate(), lead = wOff(first);
+    let cells = '', n = 0;
+    for (let j = 0; j < lead; j++) cells += '<i></i>';
+    for (let d = 1; d <= days; d++) {
+      const k = `${Y}-${pad2(M + 1)}-${pad2(d)}`, c = (byDay[k] || []).length;
+      if (c) { n += c; act++; }
+      cells += `<i class="${c ? 'has' : ''} ${k === today ? 'today' : ''}">${d}</i>`;
+    }
+    tot += n;
+    g += `<button class="ymon" data-act="cal-ym" data-y="${Y}" data-m="${M}"><b>${first.toLocaleDateString(LOC(), {month: 'long'})}</b><div class="ymg">${cells}</div><span class="yc">${n ? (isEN() ? `${n} workout${n > 1 ? 's' : ''}` : `${n} séance${n > 1 ? 's' : ''}`) : '—'}</span></button>`;
+  }
+  return calBar(false) + `<div class="yhead"><button class="btn sm" data-act="cal-yr" data-d="-1" ${Y <= minY ? 'disabled style="visibility:hidden"' : ''}>‹</button><h3>${Y}</h3><button class="btn sm" data-act="cal-yr" data-d="1" ${Y >= maxY ? 'disabled style="visibility:hidden"' : ''}>›</button></div>
+    <p class="muted small ysum">${isEN() ? `${tot} workout${tot > 1 ? 's' : ''} · ${act} active day${act > 1 ? 's' : ''}` : `${tot} séance${tot > 1 ? 's' : ''} · ${act} jour${act > 1 ? 's' : ''} actif${act > 1 ? 's' : ''}`}</p>
+    <div class="ygrid">${g}</div>`;
+}
+function calLoadMore() {
+  if (calMode !== 'month' || calMonths >= calMaxMonths()) return;
+  const fromBottom = document.documentElement.scrollHeight - scrollY;
+  calMonths += 6; cur().scrolled = true; render();
+  window.scrollTo(0, document.documentElement.scrollHeight - fromBottom);
+}
+let calObs = null;
+function calWatch() {
+  if (calObs) { calObs.disconnect(); calObs = null; }
+  const el = document.getElementById('calmore'); if (!el || !('IntersectionObserver' in window)) return;
+  calObs = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { calObs.disconnect(); calObs = null; setTimeout(calLoadMore, 60); } }, {rootMargin: '200px 0px 0px 0px'});
+  setTimeout(() => calObs && calObs.observe(el), 400);
 }
 
 /* ===================== Rendu ===================== */
@@ -5486,6 +5547,7 @@ const VIEWS = {
   measures: ['Corps et progrès', () => vBody()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], friends: ['Amis', () => vFriends()], cardio: ['Cardio', () => vCardio()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()]
 };
 function headerRight(v) {
+  if (v === 'calendar') return `<button class="hbtn calmode" data-act="cal-mode">${calMode === 'year' ? T('Année', 'Year') : T('Mois', 'Month')} ▾</button>`;
   if (v === 'profile') return `<button class="hbtn" data-act="go" data-v="settings" aria-label="Réglages">${IC('gear', '⚙️', 24)}</button>`;
   if (v === 'workout' && S.active) return '<span class="chrono" id="elapsed"></span><button class="btn primary sm" data-act="finish">Terminer</button>';
   if (v === 'redit') return '<button class="btn primary sm" data-act="rd-save">Enregistrer</button>';
@@ -5524,7 +5586,8 @@ function afterRender(c) {
   if (c.v === 'routine') { const r = S.routines.find(x => x.id === c.rid); if (r) drawChart(routinePoints(r)); }
   if (c.v === 'exdetail') drawChart(exPoints(c.n));
   if (c.v === 'measures') drawChart(bodySeries(bodyMetric).map(p => ({d: p.d + 'T12:00', v: +p.v})));
-  if (c.v === 'calendar' && !c.scrolled) { c.scrolled = true; setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 0); }
+  if (c.v === 'calendar' && !c.scrolled) { c.scrolled = true; setTimeout(() => window.scrollTo(0, calMode === 'year' ? 0 : document.body.scrollHeight), 0); }
+  if (c.v === 'calendar') calWatch(); else if (calObs) { calObs.disconnect(); calObs = null; }
 }
 const fmtDur = ms => { const s = Math.max(0, Math.floor(ms / 1000)), hh = Math.floor(s / 3600), mm = Math.floor(s / 60) % 60, ss = s % 60; return hh ? `${hh}:${pad2(mm)}:${pad2(ss)}` : `${mm}:${pad2(ss)}`; };
 function woStats() { const a = S.active; let d = 0, n = 0; a.exercises.forEach(e => e.sets.forEach(s => { n++; if (s.done) d++; })); return {d, n}; }
@@ -5916,7 +5979,11 @@ document.addEventListener('click', e => {
     case 'top-p': topP = +b.dataset.p; render(); break;
     case 'month-prev': mon.m--; if (mon.m < 0) { mon.m = 11; mon.y--; } render(); break;
     case 'month-next': mon.m++; if (mon.m > 11) { mon.m = 0; mon.y++; } render(); break;
-    case 'cal-more': calMonths += 6; cur().scrolled = true; render(); break;
+    case 'cal-more': calLoadMore(); break;
+    case 'cal-mode': modal(`<h2>${T('Affichage', 'View')}</h2><button class="btn block ${calMode === 'month' ? 'primary' : ''}" data-act="cal-set" data-m="month" style="margin-bottom:8px">📅 ${T('Mois', 'Month')}</button><button class="btn block ${calMode === 'year' ? 'primary' : ''}" data-act="cal-set" data-m="year">🗓 ${T('Année', 'Year')}</button>`); break;
+    case 'cal-set': closeModal(); if (calMode !== b.dataset.m) { calMode = b.dataset.m; calYear = new Date().getFullYear(); cur().scrolled = false; render(); } break;
+    case 'cal-yr': calYear += +b.dataset.d; render(); window.scrollTo(0, 0); break;
+    case 'cal-ym': { const y = +b.dataset.y, m = +b.dataset.m, n = new Date(); calMode = 'month'; calMonths = Math.max(calMonths, (n.getFullYear() - y) * 12 + n.getMonth() - m + 1, 1); cur().scrolled = true; render(); const t = document.getElementById(`m-${y}-${m + 1}`); if (t) t.scrollIntoView(); else window.scrollTo(0, document.body.scrollHeight); break; }
     case 'cal2-day': { const hs = S.history.filter(x => dkey(x.date) === b.dataset.d); modal(`<div class="row between"><h2>${new Date(b.dataset.d + 'T12:00').toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long'})}</h2><button class="btn sm" data-act="close">✕</button></div>${hs.map(x => histCard(x, true)).join('')}`); break; }
     case 'lib-browse': openPicker({title: 'Bibliothèque', libOnly: true, cb: p => go('exdetail', {n: p.name})}); break;
     case 'rd-set-type': { const s = rdraft.exercises[ei].sl[si]; s.t = !s.t ? 'W' : s.t === 'W' ? 'F' : s.t === 'F' ? 'D' : undefined; if (!s.t) delete s.t; rdraft.exercises[ei].fplan = true; rdirty = true; render(); break; }
