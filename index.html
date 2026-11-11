@@ -268,6 +268,11 @@ button.chip{cursor:pointer}
 .chartw{display:flex;align-items:stretch}.chartw .yax{flex:none}.chs{flex:1;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin}.chs svg{display:block}
 .chtip{min-height:20px;font-size:13px;margin:6px 4px 0;color:var(--muted)}.chtip b{color:var(--text)}
 .goal{height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin-top:8px}.goal>div{height:100%;background:var(--accent);border-radius:6px}
+.chrow{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.chbar{height:8px;border-radius:99px;background:color-mix(in srgb,var(--warm) 45%,var(--card2));overflow:hidden;margin:6px 0}.chbar>div{height:100%;background:var(--accent)}
+.frcm{margin-top:8px;padding:6px 10px;border-radius:10px;background:var(--card2)}.sxtro{font-size:13px;color:#f5c542;white-space:nowrap}
+.bossline{background:color-mix(in srgb,#fb7185 12%,transparent);border:1px solid color-mix(in srgb,#fb7185 55%,transparent);border-radius:10px;padding:7px 10px;margin:8px 0 2px;font-size:13px}.bossline.dead{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.bosskill{text-align:center;padding:6px 0}.bkskull{font-size:64px;line-height:1;color:#fb7185;animation:bkhit .9s ease-out both}.bkskull .ico{width:72px;height:72px}
+@keyframes bkhit{0%{transform:scale(.3) rotate(-20deg);opacity:0}35%{transform:scale(1.35) rotate(8deg);opacity:1}55%{transform:scale(.9) rotate(-6deg)}70%{transform:scale(1.05) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:.85;filter:grayscale(.6)}}
 .stag{display:block;width:100%;text-align:left;background:color-mix(in srgb,var(--warm) 14%,transparent);border:1px solid var(--warm);color:var(--text);border-radius:10px;padding:8px 10px;margin:8px 0 2px;font-size:13px;cursor:pointer}
 .check.pr{background:linear-gradient(180deg,#ffd54a,#f5a700);color:#3a2600;border-color:#f5a700;font-size:18px}
 .mxt td{padding:6px 4px;text-align:center}.medal{text-align:center;opacity:.45;margin:0;position:relative}.medal.ok{opacity:1;border-color:var(--rc,var(--accent));box-shadow:0 0 14px -6px var(--rc,var(--accent))}.mic2{font-size:30px;line-height:1.2}
@@ -1284,7 +1289,7 @@ function myNames() {
   return [...seen.values()];
 }
 function openPicker(o) {
-  pk = {cb: o.cb, libOnly: !!o.libOnly, chip: -1};
+  pk = {cb: o.cb, libOnly: !!o.libOnly, chip: -1, alt: o.alt || ''};
   modal(`
     <div class="row between"><h2>${esc(o.title || 'Choisir un exercice')}</h2><button class="btn sm" data-act="close">✕</button></div>
     <input id="pkq" placeholder="Chercher (français ou anglais)…" autocomplete="off">
@@ -1299,6 +1304,7 @@ function renderPicker() {
   const muscles = pk.chip >= 0 ? CHIPS[pk.chip][1] : null;
   pkResults = []; let html = '';
   const add = (kind, name, sub, id) => { pkResults.push({kind, name, id}); return `<button class="pkrow" data-act="pick" data-i="${pkResults.length - 1}">${kind === 'new' ? '<span class="th" style="--s:36px"></span>' : kind === 'lib' ? thumbL(LIBMAP[id], 36) : thumb(name, 36)}<span>${esc(name)}${sub ? `<small>${esc(sub)}</small>` : ''}</span></button>`; };
+  if (pk.alt && !q && !muscles) { const al = altExercises(pk.alt); if (al.length) html += `<div class="pkh">🔄 ${T('Suggestions : mêmes muscles', 'Suggestions: same muscles')}</div>` + al.map(L => add('lib', L.name, [L.p.map(m => musN(m)).join(', '), eqN(L.eq)].filter(Boolean).join(' · '), L.id)).join(''); }
   if (!pk.libOnly && !muscles) {
     const toks = norm(q).split(' ').filter(Boolean);
     const mine = myNames().filter(n => !toks.length || toks.every(t => norm(n).includes(t))).slice(0, q ? 8 : 40);
@@ -1311,6 +1317,16 @@ function renderPicker() {
   else html += '<p class="muted small">Tape un nom ou choisis un muscle.</p>';
   if (q && !pk.libOnly) html += '<div class="pkh">Autre</div>' + add('new', q, 'Créer un exercice perso avec ce nom');
   $('#pkres').innerHTML = html;
+}
+/* 3 exercices qui travaillent les mêmes muscles (pour remplacer quand la machine est prise) */
+function altExercises(name, n = 3) {
+  const L0 = libEntry(name); if (!L0 || !L0.p || !L0.p.length) return [];
+  const mine = new Set(myNames().map(x => libId(x)).filter(Boolean)), p0 = L0.p[0];
+  return LIB.filter(L => L.id !== L0.id && L.p && L.p[0] === p0).map(L => {
+    let sc = 0; if (mine.has(L.id)) sc += 1.5; if (POP.has(L.id)) sc += 1;
+    sc += 3 * L.p.filter(m => L0.p.includes(m)).length / Math.max(L.p.length, L0.p.length); if (/pov|side view/i.test(L.name)) sc -= 2; const s0 = L0.s || [], s1 = L.s || []; if (s0.length || s1.length) sc += 3 * s1.filter(m => s0.includes(m)).length / Math.max(s0.length, s1.length, 1);
+    if (L.eq !== L0.eq) sc += .5; return [sc, L];
+  }).sort((a, b) => b[0] - a[0]).filter((x, i, arr) => arr.findIndex(y => norm(y[1].name) === norm(x[1].name)) === i).slice(0, n).map(x => x[1]);
 }
 const MUS_LIST = ['pectorals', 'delts', 'lats', 'upper back', 'traps', 'biceps', 'triceps', 'forearms', 'abs', 'quads', 'hamstrings', 'glutes', 'calves', 'adductors', 'abductors', 'spine'];
 let newCb = null;
@@ -1594,6 +1610,32 @@ function addExercise(pick) {
 let timerEnd = 0, timerInt = null;
 /* ===================== Notifications (cell + Galaxy Watch) ===================== */
 const notifOn = () => S.settings.notif === true && 'Notification' in window && Notification.permission === 'granted';
+/* ---------- Coach vocal ---------- */
+const voiceOn = () => !!S.settings.voice && 'speechSynthesis' in window;
+let voiceLast = 0;
+function say(txt) {
+  if (!voiceOn() || !txt) return;
+  try {
+    const sy = speechSynthesis; sy.cancel();
+    const u = new SpeechSynthesisUtterance(txt), lang = T('fr-CA', 'en-US');
+    u.lang = lang; u.rate = 1.02;
+    const vs = sy.getVoices(), v = vs.find(x => x.lang === lang) || vs.find(x => x.lang && x.lang.slice(0, 2) === lang.slice(0, 2));
+    if (v) u.voice = v;
+    sy.speak(u);
+  } catch (e) {}
+}
+function voiceNext() {
+  const a = S.active; if (!a) return '';
+  const i = curEx(); if (i < 0) return T('Toutes les séries sont faites. Beau travail!', 'All sets done. Great work!');
+  const e = a.exercises[i], s = e.sets.find(x => !x.done), work = e.sets.filter(x => x.t !== 'W'), k = work.indexOf(s) + 1;
+  const unit = U() === 'kg' ? T('kilos', 'kilos') : T('livres', 'pounds');
+  const w = s.w === '' || s.w == null ? (isBWEx(e.name) ? T('poids du corps', 'bodyweight') : '') : `${dec1(+s.w)} ${unit}`, r = s.r || s.ph || '';
+  const reps = r ? (isTimed(e) ? `${r} ${T('secondes', 'seconds')}` : `${r} ${T('répétitions', 'reps')}`) : '';
+  const which = s.t === 'W' ? T('échauffement', 'warm-up') : T(`série ${k} sur ${work.length}`, `set ${k} of ${work.length}`);
+  let txt = `${e.name}, ${which} : ${[w, reps].filter(Boolean).join(', ')}.`;
+  try { const b = GAME() && monthBoss(); if (b && !b.done && norm(b.ex) === norm(e.name) && s.t !== 'W') txt += ' ' + T('C\'est l\'exercice du boss. Donne tout!', 'This is the boss exercise. Give it everything!'); } catch (er) {}
+  return txt;
+}
 function nextSetInfo() {
   const a = S.active; if (!a) return '';
   const i = curEx(); if (i < 0) return T('✅ Toutes les séries sont faites', '✅ All sets done');
@@ -1653,6 +1695,7 @@ function timerDone() {
   const swc = navigator.serviceWorker && navigator.serviceWorker.controller;
   if (swc && notifOn()) swc.postMessage({type: 'rest-fire', at: timerEnd, title: T('✅ Repos terminé', '✅ Rest over'), body: T('À toi : ', 'Your turn: ') + nextSetInfo()});
   else notify(T('✅ Repos terminé', '✅ Rest over'), T('À toi : ', 'Your turn: ') + nextSetInfo());
+  if (voiceOn()) setTimeout(() => say(T('Repos terminé. ', 'Rest over. ') + voiceNext()), S.settings.sound === false ? 0 : 700);
   const el = $('#timer'); el.classList.add('show', 'fin'); setTimeout(bigTimerSync, 0);
   $('#tlab').textContent = T('✅ Repos terminé', '✅ Rest over'); $('#tval').textContent = '';
   const onWo = cur().v === 'workout';
@@ -1699,6 +1742,7 @@ function tickTimer() {
   const ftv = $('#ftv'); if (ftv) ftv.textContent = $('#tval').textContent;
   const fdv = $('#fdv'); if (fdv) fdv.textContent = $('#tval').textContent;
   bigTimerSync();
+  if (left === 10 && timerTot > 20 && voiceLast !== timerEnd && voiceOn()) { voiceLast = timerEnd; say(T('Plus que 10 secondes.', '10 seconds left.')); }
   if (left <= 0) timerDone();
 }
 function stopTimer() { bigTimerClose(); clearInterval(timerInt); cancelBeeps(); restSW(0); clearNotif(); clearTimeout(timerFinT); $('#timer').classList.remove('show', 'fin'); if (focusOn && S.active && cur().v === 'workout') setTimeout(render, 0); else setTimeout(foldPaint, 0); }
@@ -1756,6 +1800,7 @@ function vWorkout() {
       ${e.note ? `<div class="last">📝 ${esc(e.note)}</div>` : ''}
       ${!last ? '<div class="last">Première fois</div>' : last.note ? `<div class="last">Dernière note : ${esc(last.note)}</div>` : ''}
       ${stagBtn(e.name, ei)}
+      ${bossLine(e.name)}
       ${e.mach ? `<div class="last">⚖️ ${T('Machine', 'Machine')} : ${dec1(e.mach.v)} ${e.mach.u} = ${dec1(e.mach.u === 'kg' ? e.mach.v * KG : e.mach.v / KG)} ${U()}</div>` : ''}
       ${(() => { const sg = suggestFor(e); return sg ? `<div class="sug"><span>💡 Haut de la fourchette atteint (${esc(sg.from)}). Essaie <b>${dec1(sg.top)} ${U()}${sg.bw ? ' de lest' : ''}</b>.${(() => { const lw = Math.max(...e.sets.filter(s => s.t !== 'W').map(s => +s.w || 0)); return lw > 0 && (sg.top - lw) / lw > 0.1 ? `<br><span class="small muted">${T('Gros saut : vise d\'abord le bas de ta plage de reps avec la nouvelle charge.', 'Big jump: aim for the bottom of your rep range with the new weight first.')}</span>` : ''; })()}</span><span class="row" style="gap:4px;flex-direction:column"><button class="btn primary sm" data-act="apply-sug" data-e="${ei}">Appliquer</button><button class="linkbtn small" data-act="inc-menu" data-e="${ei}">${isDB(e.name) && +S.settings.dbStep > 0 ? T('haltères ', 'dumbbells ') + dec1(+S.settings.dbStep) : '+' + dec1(incFor(e.name))} ${U()} ⚙️</button></span></div>` : ''; })()}
       <div class="colhead w5"><span>#</span><span>${S.settings.prevMode === 'best' ? T('Meilleur', 'Best') : 'Précédent'}</span><span>${U()}</span><span>${tm ? 'Sec' : 'Reps'}</span><span></span></div>
@@ -2087,6 +2132,8 @@ function vSettings() {
       <button class="btn sm" data-act="plates-free" style="margin-top:10px">🧮 Calculateur de disques</button>`) +
   setSec('snd', 'timer', '⏱', T('Minuteur et son', 'Timer and sound'), T('Bip, volume, vibration', 'Beep, volume, vibration'), `
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="sound" ${S.settings.sound !== false ? 'checked' : ''}> 🔔 Bip à la fin du repos (3-2-1 puis bip final)</label>
+      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="voice" ${S.settings.voice ? 'checked' : ''}> 🗣️ ${T('Coach vocal : annonce la fin du repos et ta prochaine série (idéal avec des écouteurs)', 'Voice coach: announces the end of rest and your next set (great with earbuds)')}</label>
+      ${S.settings.voice ? `<button class="btn sm" data-act="voice-test" style="margin-top:6px">▶ ${T('Tester la voix', 'Test the voice')}</button>` : ''}
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="notif" ${S.settings.notif === true ? 'checked' : ''}> <span>⌚ ${T('Notifications pour ma montre', 'Notifications for my watch')}<br><span class="muted small">${T('Fin du repos + prochaine série. Ta Galaxy Watch vibre et affiche la notification.', 'End of rest + next set. Your Galaxy Watch vibrates and shows the notification.')}</span></span></label>
       ${S.settings.notif === true ? `<label class="row" style="margin-top:6px;color:var(--text);font-size:14px;padding-left:32px"><input type="checkbox" style="width:20px;height:20px" data-set="notifStart" ${S.settings.notifStart !== false ? 'checked' : ''}> ${T('Aussi au début du repos (silencieuse, avec l\'heure de fin)', 'Also at the start of rest (silent, with end time)')}</label>
       <button class="btn sm" data-act="test-notif" style="margin-top:8px">⌚ ${T('Tester la notification (8 s, écran éteint)', 'Test the notification (8 s, screen off)')}</button>
@@ -4061,6 +4108,25 @@ function monthBoss() {
   const left = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate() + 1;
   return {...b, cur, done: !!when, when, left, name: T(b.nm[0], b.nm[1])};
 }
+function bossSets(target) { const st = U() === 'kg' ? 2.5 : 5; return [3, 5, 8].map(r => ({w: Math.ceil(target / (1 + r / 30) / st) * st, r})); }
+/* Rappel du boss sur l'exercice pendant la séance */
+function bossLine(name) {
+  if (!GAME()) return '';
+  let b; try { b = monthBoss(); } catch (e) { return ''; }
+  if (!b || norm(b.ex) !== norm(name)) return '';
+  const a = S.active;
+  if (b.done || (a && a.bossHit)) return `<div class="bossline dead">☠ <b>${esc(b.name)}</b> · ${T('vaincu ✓', 'defeated ✓')}</div>`;
+  return `<div class="bossline">☠ <b>${T('Exercice du boss', 'Boss exercise')}</b> · ${esc(b.name)}<br><span class="small">${T('Une série de', 'One set of')} ${bossSets(b.target).map(x => `<b>${x.w}×${x.r}</b>`).join(T(' ou ', ' or '))} ${T('le fait tomber', 'takes it down')}</span></div>`;
+}
+function bossKill(b) {
+  confetti();
+  if (S.settings.sound !== false) { ensureAudio(); setTimeout(() => beep(true), 30); }
+  haptic([120, 80, 120, 80, 400]);
+  say(T(`${b.name} est vaincu! Mille points d'expérience.`, `${b.name} is defeated! One thousand experience points.`));
+  modal(`<div class="bosskill"><div class="bkskull">☠</div><div class="sysh">[ ${T('BOSS VAINCU', 'BOSS DEFEATED')} ]</div><h2 style="margin:6px 0">${esc(b.name)}</h2>
+    <p class="small muted" style="margin:0 0 14px">${T('Tu l\'as abattu au', 'You took it down on')} <b>${esc(b.ex)}</b>. <b style="color:var(--ok)">+1 000 XP</b> ${T('à la fin de ta séance.', 'when you finish your workout.')}</p>
+    <button class="btn primary block" data-act="close">${T('Continuer', 'Continue')}</button></div>`);
+}
 function bossRow() {
   const b = monthBoss(); if (!b) return '';
   const base = b.from * .85, hp = b.done ? 0 : Math.max(0, Math.min(100, Math.round((b.target - b.cur) / Math.max(1, b.target - base) * 100)));
@@ -4075,7 +4141,7 @@ function bossRow() {
 function hunter(me) {
   me = me || medalsEarned();
   const st = me.st, nm = Object.keys(me.got).length;
-  const xp = Math.round(st.n * 100 + st.sets * 5 + st.pr * 40 + nm * 250 + (st.qd || 0) * 150 + (st.dg || 0) * 500 + (st.boss || 0) * 1000 - Object.keys(S.qFail || {}).length * QFAIL_XP);
+  const xp = Math.round(st.n * 100 + st.sets * 5 + st.pr * 40 + nm * 250 + (st.qd || 0) * 150 + (st.dg || 0) * 500 + (st.boss || 0) * 1000 - Object.keys(S.qFail || {}).length * QFAIL_XP + (typeof xpBonus === 'function' ? xpBonus() : 0));
   const lvl = Math.floor(Math.sqrt(Math.max(0, xp) / 60)) + 1;
   const r = HRANKS.filter(x => lvl >= x[0]).pop(), nx = HRANKS.find(x => x[0] > lvl);
   return {xp, lvl, rk: r[1], cls: hClass(lvl), title: T(r[2][0], r[2][1]), col: RKC[r[1]], cur: xp - xpAt(lvl), need: xpAt(lvl + 1) - xpAt(lvl), nextRank: nx ? {lvl: nx[0], rk: nx[1]} : null, st, nm};
@@ -4846,8 +4912,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.22';
+const APP_VERSION = '9.23';
 const CHANGELOG = [
+  {v: '9.23', d: '2026-11-11', fr: ['🗣️ Coach vocal (Réglages → Minuteur et son) : avec tes écouteurs, une voix t\'annonce la fin du repos et ta prochaine série (exercice, poids, reps), plus « Plus que 10 secondes ».', '☠️ Le boss dans ta séance : l\'exercice du boss affiche les séries à viser, et quand ta série le bat, le boss tombe à l\'écran.', '🔄 Remplacer un exercice propose maintenant 3 exercices qui travaillent les mêmes muscles (pratique quand la machine est prise).', '⚔️ Défis entre amis : le plus de volume, de séances ou de reps en 7 jours. Le gagnant prend +300 XP.', '🛡️ Raid de guilde : toi et tes amis additionnez vos reps de la semaine pour abattre un boss commun (1 500 reps par aventurier). Réussi = +400 XP pour tout le monde.', '💬 Commentaires : écris un petit message sous les séances et les photos de tes amis.', '🏆 Saisons de la Guilde : chaque mois, un classement de l\'XP gagnée ce mois-ci. Le 1er remporte un trophée visible sur son profil.'], en: ['🗣️ Voice coach (Settings → Timer & sound): with earbuds, a voice announces the end of rest and your next set (exercise, weight, reps), plus “10 seconds left”.', '☠️ The boss in your workout: the boss exercise shows the sets to aim for, and when your set beats it, the boss falls on screen.', '🔄 Swapping an exercise now suggests 3 exercises that work the same muscles (handy when the machine is taken).', '⚔️ Friend challenges: most volume, workouts or reps in 7 days. The winner gets +300 XP.', '🛡️ Guild raid: you and your friends add up your weekly reps to take down a shared boss (1,500 reps per adventurer). Cleared = +400 XP for everyone.', '💬 Comments: write a short message under your friends\' workouts and photos.', '🏆 Guild seasons: each month, a ranking of the XP earned that month. 1st place wins a trophy shown on their profile.']},
   {v: '9.22', d: '2026-11-11', fr: ['L\'appli se rouvre sur le dernier onglet utilisé (Étirements, Cardio, Intervalles, Profil…) au lieu de toujours revenir à Entraînement, et garde ta position quand tu rafraîchis. Une séance en cours s\'ouvre toujours en premier.'], en: ['The app reopens on the last tab you used (Stretch, Cardio, Intervals, Profile…) instead of always going back to Workout, and keeps your scroll position on refresh. A workout in progress still opens first.']},
   {v: '9.21.5', d: '2026-11-11', fr: ['La barre du bas affiche ses icônes dès l\'ouverture, sans emoji qui flashe.'], en: ['The bottom bar shows its icons right away on launch, no emoji flash.']},
   {v: '9.21.4', d: '2026-11-11', fr: ['Les emojis n\'apparaissent plus une fraction de seconde à l\'ouverture : les icônes sont posées avant le premier affichage.'], en: ['Emojis no longer flash for a split second on launch: icons are applied before the first paint.']},
@@ -5871,7 +5938,7 @@ async function frCardBody() {
   const fr = FRS(), hide = new Set(fr.hide || []);
   const idx = S.history.map((x, i) => [x, i]).filter(([x]) => !hide.has(x.id) && new Date(x.date) > Date.now() - 45 * 864e5).slice(-15);
   return JSON.stringify({app: 'carnet-muscu', v: 1, name: (S.settings.name || '').trim() || T('Un ami', 'A friend'), av: await frAvatar(), wk: streakWeeks(), hu: frHu(), up: new Date().toISOString(),
-    s: await frSessWithPh(idx), p: await frPhotos(), re: (fr.re || []).slice(-150)});
+    s: await frSessWithPh(idx), p: await frPhotos(), re: (fr.re || []).slice(-150), ...frSocial()});
 }
 async function frApi(url, opt = {}) {
   const r = await fetch(url, {...opt, headers: {Authorization: 'Bearer ' + gdTok(), ...(opt.headers || {})}});
@@ -5957,7 +6024,7 @@ async function frLoad(force) {
   if (!force && Date.now() - frLastLoad < 5 * 60000) return;
   frLastLoad = Date.now();
   await Promise.all(fr.list.map(async f => { try { const d = await frFetch(f.c); frData[f.c] = {d, t: Date.now()}; f.n = d.name; f.gone = false; } catch (e) { if (e.message === 'gone') f.gone = true; } }));
-  frSaveCache(); saveLocal(); if (['friends', 'profile'].includes(cur().v) && !modals.length) render();
+  frSaveCache(); saveLocal(); socialCheck(); if (['friends', 'profile'].includes(cur().v) && !modals.length) render();
 }
 /* fil : séances des amis, plus récentes d'abord */
 /* Ma propre « carte » (pour voir mes posts dans le fil, comme mes amis les voient) */
@@ -5965,7 +6032,7 @@ function frMe() {
   const fr = FRS(), hide = new Set(fr.hide || []);
   const s = S.history.map((x, i) => [x, i]).filter(([x]) => !hide.has(x.id) && new Date(x.date) > Date.now() - 45 * 864e5).slice(-15).map(([x, i]) => Object.assign(frSess(x, i), x.ph ? {phId: x.ph} : {}));
   const p = (S.photos || []).filter(x => (fr.ph || []).includes(x.id)).slice(-8).map(x => ({id: x.id, d: x.d, phId: x.id}));
-  return {f: {c: fr.file || 'me', me: true, n: T('Moi', 'Me')}, d: {name: (S.settings.name || '').trim() || T('Moi', 'Me'), av: S.settings.avatar || '', wk: streakWeeks(), hu: frHu(), s, p, up: fr.last}};
+  return {f: {c: fr.file || 'me', me: true, n: T('Moi', 'Me')}, d: {name: (S.settings.name || '').trim() || T('Moi', 'Me'), av: S.settings.avatar || '', wk: streakWeeks(), hu: frHu(), s, p, up: fr.last, cw: Object.keys(S.seasonWon || {}).filter(k => S.seasonWon[k])}};
 }
 /* Niveau de chasseur partagé avec les amis */
 function frHu() { if (!S.history.length || !GAME()) return null; const x = hunter(); return {l: x.lvl, r: x.rk, xp: x.xp, c: x.cls}; }
@@ -6022,7 +6089,7 @@ function frPost({f, d, s}) {
       <div style="flex:1;min-width:0"><b>${esc(d.name)}</b> ${frLv(d)} <span class="muted small">· ${frAgo(s.d)}</span><br><span class="small">💪 ${T('a fait', 'did')} <b>${esc(s.n)}</b> · ${hm(s.dur)}${s.pr ? ` · 🏆 ${s.pr} record${s.pr > 1 ? 's' : ''}` : ''}</span></div></div>
     ${s.img ? frImg(f, s, s.img) : f.me && s.phId ? frImg(f, s) : ''}
     <div class="frex">${ex.slice(0, 5).map(o => `<div>${frExLine(o)}</div>`).join('')}${more > 0 ? `<div class="muted">+ ${more} ${T('autre' + (more > 1 ? 's' : ''), 'more')}</div>` : ''}</div>
-    ${frReactRow(f, s)}</div>`;
+    ${frReactRow(f, s)}${frCmRow(f, s)}</div>`;
 }
 function frReactRow(f, s) {
   if (f.me) { const r = frReacts(FRS().file, s.id), ks = Object.keys(r); return `<div class="small muted" style="margin-top:10px">${ks.length ? ks.map(e => `${e} ${r[e].length}`).join('  ') + ' · ' + esc([...new Set(Object.values(r).flat())].join(', ')) : T('Pas encore de réaction', 'No reactions yet')}</div>`; }
@@ -6035,8 +6102,184 @@ function frPhotoPost({f, d, s}) {
   return `<div class="card frpost"><div class="row" style="gap:10px;align-items:center">${frAv(d, f.c)}
       <div style="flex:1;min-width:0"><b>${esc(d.name)}</b> <span class="muted small">· ${dateFr(s.d)}</span><br><span class="small">📸 ${T('a partagé une photo de progrès', 'shared a progress photo')}</span></div></div>
     ${f.me ? (setTimeout(phFill, 0), frImg(f, s)) : frImg(f, s, s.ph.img)}
-    ${frReactRow(f, s)}</div>`;
+    ${frReactRow(f, s)}${frCmRow(f, s)}</div>`;
 }
+/* ===================== Social : commentaires, défis, raid de guilde, saisons ===================== */
+const xpBonus = (m) => (S.xpb || []).filter(x => !m || String(x.d || '').slice(0, 7) === m).reduce((a, x) => a + (+x.xp || 0), 0);
+function giveXp(k, id, xp, msg) {
+  S.xpb = S.xpb || []; if (S.xpb.some(x => x.k === k && x.id === id)) return false;
+  S.xpb.push({k, id, xp, d: new Date().toISOString()}); save();
+  if (GAME() && msg) setTimeout(() => { confetti(); toast(msg); }, 300);
+  return true;
+}
+const monKey = d => dkey(d).slice(0, 7);
+const monStart = m => new Date(+m.slice(0, 4), +m.slice(5, 7) - 1, 1);
+const monEnd = m => new Date(+m.slice(0, 4), +m.slice(5, 7), 1);
+const prevMon = m => monKey(new Date(monStart(m) - 864e5));
+const monName = m => monStart(m).toLocaleDateString(LOC(), {month: 'long'});
+/* ---------- Saison : XP gagnée pendant le mois seulement ---------- */
+const sxMemo = new Map();
+function seasonXp(m) {
+  const k = m + '|' + S.history.length + '|' + (S.xpb || []).length + '|' + Object.keys(S.questLog || {}).length + '|' + Object.keys(S.dungeonLog || {}).length + '|' + Object.keys(S.bossLog || {}).length + '|' + Object.keys(S.qFail || {}).length;
+  if (sxMemo.has(k)) return sxMemo.get(k);
+  const a = +monStart(m), b = +monEnd(m);
+  const A = medalsEarned(S.history.filter(h => +new Date(h.date) < b)).st, B = medalsEarned(S.history.filter(h => +new Date(h.date) < a)).st;
+  let xp = (A.n - B.n) * 100 + (A.sets - B.sets) * 5 + (A.pr - B.pr) * 40;
+  const inM = v => String(v || '').slice(0, 7) === m;
+  try { xp += Object.values(medalsEarned().got).filter(inM).length * 250; } catch (e) {}
+  xp += Object.keys(S.questLog || {}).filter(inM).length * 150 + Object.keys(S.dungeonLog || {}).filter(inM).length * 500;
+  xp += Object.values(S.bossLog || {}).filter(v => inM(v && v.d || v)).length * 1000;
+  xp -= Object.keys(S.qFail || {}).filter(inM).length * QFAIL_XP;
+  xp += xpBonus(m);
+  xp = Math.max(0, Math.round(xp)); sxMemo.set(k, xp); return xp;
+}
+/* XP de saison d'une carte (ami ou moi) pour un mois */
+const cardSx = (d, m) => !d ? null : d.sx && d.sx.m === m ? d.sx.xp : d.sxp && d.sxp.m === m ? d.sxp.xp : null;
+function seasonRows(m) {
+  const fr = FRS(), rows = [];
+  rows.push({c: 'me', me: true, d: frMe().d, xp: seasonXp(m)});
+  fr.list.forEach(f => { const c = frData[f.c]; if (c && c.d && cardSx(c.d, m) != null) rows.push({c: f.c, d: c.d, xp: cardSx(c.d, m)}); });
+  return rows.sort((a, b) => b.xp - a.xp);
+}
+function seasonCheck() { // la saison passée : suis-je champion?
+  if (!GAME() || !FRS().list.length) return;
+  const now = new Date(), pm = prevMon(monKey(now)); S.seasonWon = S.seasonWon || {};
+  if (pm in S.seasonWon && now.getDate() > 7) return;
+  const rows = seasonRows(pm); if (rows.length < 2) return;
+  const win = rows[0].me && rows[0].xp > 0 && rows[0].xp > rows[1].xp;
+  if (S.seasonWon[pm] !== win) { S.seasonWon[pm] = win; save(); }
+}
+const seasonTrophies = d => { const w = d && d.cw || []; return w.length ? `<span class="sxtro" title="${T('Champion de saison', 'Season champion')}">🏆${w.length > 1 ? '×' + w.length : ''}</span>` : ''; };
+function seasonCard() {
+  if (!GAME() || !FRS().list.length) return '';
+  const m = monKey(new Date()), rows = seasonRows(m), left = Math.ceil((monEnd(m) - Date.now()) / 864e5);
+  if (rows.length < 2) return '';
+  const pm = prevMon(m), pRows = seasonRows(pm), champ = pRows.length > 1 && pRows[0].xp > 0 && pRows[0].xp > pRows[1].xp ? pRows[0] : null;
+  return `<div class="card sysw" style="margin:0 0 12px"><div class="row between"><div class="sysh">[ ${T('SAISON DE', 'SEASON OF')} ${monName(m).toUpperCase()} ]</div><span class="small muted">${left} ${T('j restants', 'days left')}</span></div>
+    <p class="small muted" style="margin:4px 0 8px">${T('XP gagnée ce mois-ci seulement. Le 1er remporte le trophée de la saison.', 'XP earned this month only. 1st place wins the season trophy.')}</p>
+    ${rows.map((r, i) => `<button class="frrk ${r.me ? 'me' : ''}" data-act="fr-who" data-c="${r.c}"><b class="frpos">${i === 0 && r.xp > 0 ? '👑' : i + 1}</b>${frAv(r.d, r.c, 'sm')}<span style="flex:1;min-width:0;text-align:left"><b>${esc(r.me ? T('Moi', 'Me') : r.d.name)}</b> ${seasonTrophies(r.d)}</span><span class="small"><b>${r.xp.toLocaleString(LOC())}</b> XP</span></button>`).join('')}
+    ${champ ? `<p class="small" style="margin:8px 0 0">🏆 ${T(`Champion de ${monName(pm)}`, `${monName(pm)} champion`)} : <b>${esc(champ.me ? T('Toi!', 'You!') : champ.d.name)}</b></p>` : ''}</div>`;
+}
+/* ---------- Raid de guilde : reps de la semaine additionnées ---------- */
+const RAID_PER = 1500, RAID_XP = 400;
+const wkKey = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return dkey(x); }; // toujours lundi, pour que tous les amis aient la même semaine
+function myWeekReps(wk) {
+  const a = +new Date(wk + 'T00:00:00'), b = a + 7 * 864e5;
+  return S.history.filter(h => { const t = +new Date(h.date); return t >= a && t < b; }).reduce((t, h) => t + h.exercises.reduce((u, e) => isCardio(e) ? u : u + work(e.sets).reduce((v, s) => v + (s.u === 's' || s.u === 'c' ? 0 : (+s.r || 0)), 0), 0), 0);
+}
+const cardRd = (d, wk) => !d ? null : d.rd && d.rd.wk === wk ? d.rd.r : d.rdp && d.rdp.wk === wk ? d.rdp.r : (d.rd ? 0 : null);
+function raidState(wk) {
+  const fr = FRS(), rows = [{c: 'me', me: true, d: frMe().d, r: myWeekReps(wk)}];
+  fr.list.forEach(f => { const c = frData[f.c]; if (!c || !c.d) return; const r = cardRd(c.d, wk); if (r != null) rows.push({c: f.c, d: c.d, r}); });
+  const tot = rows.reduce((a, x) => a + x.r, 0), goal = RAID_PER * rows.length;
+  return {rows: rows.sort((a, b) => b.r - a.r), tot, goal, done: rows.length > 1 && tot >= goal};
+}
+function raidCheck() {
+  if (!GAME() || !FRS().list.length) return;
+  const wk = wkKey(new Date()), pw = wkKey(new Date(+new Date(wk + 'T12:00:00') - 3 * 864e5));
+  [pw, wk].forEach(w => { const st = raidState(w); if (st.done) giveXp('raid', w, RAID_XP, T(`⚔️ Raid réussi! +${RAID_XP} XP`, `⚔️ Raid cleared! +${RAID_XP} XP`)); });
+}
+const RAID_BOSS = [['la Forteresse vivante', 'the Living Fortress'], ['le Colosse de bronze', 'the Bronze Colossus'], ['le Ver des sables', 'the Sandworm'], ['la Reine des araignées', 'the Spider Queen'], ['le Géant de glace', 'the Frost Giant'], ['le Léviathan', 'the Leviathan']];
+function raidCard() {
+  if (!GAME() || !FRS().list.length) return '';
+  const wk = wkKey(new Date()), st = raidState(wk);
+  if (st.rows.length < 2) return `<div class="card sysw" style="margin:0 0 12px"><div class="sysh">[ ${T('RAID DE GUILDE', 'GUILD RAID')} ]</div><p class="small muted" style="margin:6px 0 0">${T('Le raid commence dès qu\'un de tes amis a l\'appli à jour (9.23 ou plus).', 'The raid starts as soon as one of your friends has the app up to date (9.23 or later).')}</p></div>`;
+  const n = Math.floor(+new Date(wk + 'T12:00:00') / (7 * 864e5)), nm = RAID_BOSS[n % RAID_BOSS.length], pct = Math.min(100, Math.round(st.tot / st.goal * 100));
+  const left = Math.max(0, Math.ceil((+new Date(wk + 'T00:00:00') + 7 * 864e5 - Date.now()) / 864e5));
+  return `<div class="card sysw" style="margin:0 0 12px"><div class="row between"><div class="sysh">[ ${T('RAID DE GUILDE', 'GUILD RAID')} ]</div><span class="small muted">${st.done ? `<b style="color:var(--ok)">${T('VAINCU', 'CLEARED')}</b>` : `${left} ${T('j restants', 'days left')} · +${RAID_XP} XP`}</span></div>
+    <b class="bossn">${esc(T(nm[0], nm[1]).replace(/^./, c => c.toUpperCase()))}</b>
+    <p class="small" style="margin:2px 0 8px">${T(`Ensemble, faites <b>${st.goal.toLocaleString(LOC())} répétitions</b> cette semaine (${RAID_PER.toLocaleString(LOC())} par aventurier). Chaque rep de chacun compte. Si vous y arrivez, tout le monde gagne +${RAID_XP} XP.`, `Together, do <b>${st.goal.toLocaleString(LOC())} reps</b> this week (${RAID_PER.toLocaleString(LOC())} per adventurer). Everyone's reps count. If you make it, everyone gets +${RAID_XP} XP.`)}</p>
+    <div class="goal bossbar"><div style="width:${100 - pct}%"></div></div>
+    <div class="row between small muted" style="margin-bottom:6px"><span>${T('PV du raid', 'Raid HP')}</span><span>${st.tot.toLocaleString(LOC())} / ${st.goal.toLocaleString(LOC())} reps</span></div>
+    ${st.rows.map(r => `<div class="row between small" style="margin-top:4px"><span>${esc(r.me ? T('Moi', 'Me') : r.d.name)}</span><b>${r.r.toLocaleString(LOC())}</b></div>`).join('')}</div>`;
+}
+/* ---------- Défis entre amis ---------- */
+const CH_KINDS = {vol: [['Le plus de volume', 'Most volume'], '🏋️'], sess: [['Le plus de séances', 'Most workouts'], '📅'], reps: [['Le plus de répétitions', 'Most reps'], '🔁']};
+const CH_XP = 300;
+function chList() { // tous mes défis : ceux que j'ai lancés + ceux reçus
+  const fr = FRS(), no = new Set(fr.chNo || []), out = [];
+  (fr.ch || []).forEach(c => out.push({...c, by: 'me', other: c.to}));
+  fr.list.forEach(f => { const d = frData[f.c] && frData[f.c].d; (d && d.ch || []).forEach(c => { if (c.to === fr.file && !no.has(c.id)) out.push({...c, by: f.c, other: f.c}); }); });
+  return out.sort((a, b) => b.from.localeCompare(a.from));
+}
+function chMine(c) {
+  const a = +new Date(c.from), b = +new Date(c.until);
+  const hs = S.history.filter(h => { const t = +new Date(h.date); return t >= a && t < b; });
+  if (c.k === 'sess') return hs.length;
+  if (c.k === 'reps') return hs.reduce((t, h) => t + h.exercises.reduce((u, e) => isCardio(e) ? u : u + work(e.sets).reduce((v, s) => v + (s.u === 's' || s.u === 'c' ? 0 : (+s.r || 0)), 0), 0), 0);
+  const kg = hs.reduce((t, h) => t + sessVol(h), 0) * (U() === 'kg' ? 1 : 1 / 2.20462); return Math.round(kg);
+}
+const chTheirs = c => { const d = frData[c.other] && frData[c.other].d; return d && d.cp && d.cp[c.id] != null ? +d.cp[c.id] : null; };
+const chFmt = (c, v) => v == null ? '—' : c.k === 'vol' ? `${Math.round(U() === 'kg' ? v : v * 2.20462).toLocaleString(LOC())} ${U()}` : c.k === 'sess' ? `${v} ${T('séance' + (v > 1 ? 's' : ''), 'workout' + (v !== 1 ? 's' : ''))}` : `${v.toLocaleString(LOC())} reps`;
+function chCheck() {
+  chList().forEach(c => { if (Date.now() < +new Date(c.until)) return; const me = chMine(c), th = chTheirs(c); if (th == null) return;
+    if (me > th) giveXp('ch', c.id, CH_XP, T(`🏆 Défi gagné! +${CH_XP} XP`, `🏆 Challenge won! +${CH_XP} XP`)); });
+}
+function chCard() {
+  const fr = FRS(); if (!fr.list.length) return '';
+  const L = chList().filter(c => +new Date(c.until) > Date.now() - 7 * 864e5);
+  const row = c => {
+    const d = frData[c.other] && frData[c.other].d, nm = d ? d.name : (fr.list.find(f => f.c === c.other) || {}).n || '?';
+    const me = chMine(c), th = chTheirs(c), over = Date.now() >= +new Date(c.until), left = Math.max(0, Math.ceil((+new Date(c.until) - Date.now()) / 864e5));
+    const lead = th == null ? '' : me > th ? (over ? `<b style="color:var(--ok)">${T('Gagné! 🏆', 'Won! 🏆')}</b>` : `<span style="color:var(--ok)">${T('Tu mènes', 'You lead')}</span>`) : me < th ? (over ? T('Perdu', 'Lost') : `<span style="color:var(--warm)">${esc(nm)} ${T('mène', 'leads')}</span>`) : T('Égalité', 'Tie');
+    const tot = Math.max(1, me + (th || 0));
+    return `<div class="chrow"><div class="row between small"><b>${CH_KINDS[c.k][1]} ${T(CH_KINDS[c.k][0][0], CH_KINDS[c.k][0][1])}</b><span class="muted">${over ? T('terminé', 'over') : `${left} ${T('j', 'd')}`}</span></div>
+      <div class="chbar"><div style="width:${Math.round(me / tot * 100)}%"></div></div>
+      <div class="row between small"><span>${T('Moi', 'Me')} : <b>${chFmt(c, me)}</b></span><span>${esc(nm)} : <b>${chFmt(c, th)}</b></span></div>
+      <div class="row between small" style="margin-top:2px"><span>${lead}</span>${c.by !== 'me' && !over ? `<button class="linkbtn small" data-act="ch-no" data-id="${c.id}">${T('Refuser', 'Decline')}</button>` : ''}</div></div>`;
+  };
+  return `<div class="card" style="margin:0 0 12px"><div class="row between"><b>⚔️ ${T('Défis', 'Challenges')}</b><button class="btn sm primary" data-act="ch-new">＋ ${T('Lancer un défi', 'Start a challenge')}</button></div>
+    ${L.length ? L.map(row).join('') : `<p class="small muted" style="margin:6px 0 0">${T(`Défie un ami pour 7 jours : le plus de volume, de séances ou de reps.${GAME() ? ` Le gagnant prend +${CH_XP} XP.` : ''}`, `Challenge a friend for 7 days: most volume, workouts or reps.${GAME() ? ` The winner gets +${CH_XP} XP.` : ''}`)}</p>`}</div>`;
+}
+function chNew(pre) {
+  const fr = FRS();
+  if (!frOn()) { toast(T('💡 Active d\'abord le partage pour lancer un défi', '💡 Turn on sharing first to start a challenge')); return; }
+  chDraft = {f: pre || (fr.list[0] || {}).c, k: 'vol'};
+  modal(`<div class="row between"><h2 style="margin:0">⚔️ ${T('Lancer un défi', 'Start a challenge')}</h2><button class="btn sm" data-act="close">✕</button></div><div id="chbox"></div>`, {id: 'chnew'});
+  chPaint();
+}
+let chDraft = null;
+function chPaint() {
+  const box = $('#chbox'); if (!box || !chDraft) return; const fr = FRS();
+  box.innerHTML = `<label>${T('Contre qui?', 'Against who?')}</label><div class="chips">${fr.list.filter(f => !f.gone).map(f => `<button class="chip ${chDraft.f === f.c ? 'on' : ''}" data-act="ch-f" data-c="${f.c}">${esc(f.n || '?')}</button>`).join('')}</div>
+    <label style="margin-top:10px">${T('Le défi (7 jours)', 'The challenge (7 days)')}</label><div class="chips">${Object.entries(CH_KINDS).map(([k, v]) => `<button class="chip ${chDraft.k === k ? 'on' : ''}" data-act="ch-k" data-k="${k}">${v[1]} ${T(v[0][0], v[0][1])}</button>`).join('')}</div>
+    <p class="small muted">${T('Ça commence maintenant et finit dans 7 jours. Ton ami le voit dans son onglet Amis à sa prochaine ouverture.', 'It starts now and ends in 7 days. Your friend sees it in their Friends tab next time they open the app.')}${GAME() ? T(` Le gagnant prend +${CH_XP} XP.`, ` The winner gets +${CH_XP} XP.`) : ''}</p>
+    <button class="btn primary block" data-act="ch-go">${T('Lancer le défi', 'Start the challenge')}</button>`;
+}
+/* ---------- Commentaires ---------- */
+function frComments(owner, sid) {
+  const fr = FRS(), out = [];
+  (fr.cm || []).forEach(x => { if (x.to === owner && x.s === sid) out.push({n: T('Toi', 'You'), t: x.t, d: x.d, me: 1}); });
+  fr.list.forEach(f => { const d = frData[f.c] && frData[f.c].d; (d && d.cm || []).forEach(x => { if (x.to === owner && x.s === sid) out.push({n: d.name, t: x.t, d: x.d}); }); });
+  return out.sort((a, b) => (a.d || '').localeCompare(b.d || ''));
+}
+function frCmRow(f, s) {
+  const owner = f.me ? FRS().file : f.c, cs = frComments(owner, s.id), sh = cs.slice(-2);
+  return `${sh.length ? `<div class="frcm">${cs.length > 2 ? `<div class="muted small">… ${cs.length - 2} ${T('autre' + (cs.length > 3 ? 's' : ''), 'more')}</div>` : ''}${sh.map(c => `<div class="small"><b>${esc(c.n)}</b> ${esc(c.t)}</div>`).join('')}</div>` : ''}
+    <button class="linkbtn small" style="margin-top:6px" data-act="fr-cm" data-c="${owner}" data-s="${esc(s.id)}">💬 ${cs.length ? T('Voir / répondre', 'View / reply') : T('Commenter', 'Comment')}</button>`;
+}
+function frCmOpen(owner, sid) {
+  const cs = frComments(owner, sid);
+  modal(`<div class="row between"><h2 style="margin:0">💬 ${T('Commentaires', 'Comments')}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <div style="margin:10px 0">${cs.length ? cs.map(c => `<div class="frcm" style="margin-top:6px"><b>${esc(c.n)}</b> <span class="muted small">· ${c.d ? frAgo(c.d) : ''}</span><br>${esc(c.t)}</div>`).join('') : `<p class="muted small">${T('Pas encore de commentaire. Sois le premier!', 'No comments yet. Be the first!')}</p>`}</div>
+    <textarea id="cmin" maxlength="200" rows="2" placeholder="${T('Ex. : Malade ton PR! 🔥', 'E.g. Sick PR! 🔥')}" data-noic></textarea>
+    <button class="btn primary block" style="margin-top:8px" data-act="fr-cm-send" data-c="${owner}" data-s="${esc(sid)}">${T('Envoyer', 'Send')}</button>`);
+  setTimeout(() => { const t = $('#cmin'); if (t) t.focus(); }, 80);
+}
+function frCmReceived() {
+  const fr = FRS(), out = []; if (!fr.file) return out;
+  fr.list.forEach(f => { const d = frData[f.c] && frData[f.c].d; (d && d.cm || []).forEach(x => { if (x.to === fr.file) out.push({n: d.name, t: x.t, d: x.d}); }); });
+  return out.sort((a, b) => (b.d || '').localeCompare(a.d || '')).slice(0, 4);
+}
+/* ---------- Ce que ma carte publie en plus ---------- */
+function frSocial() {
+  const fr = FRS(), now = new Date(), m = monKey(now), wk = wkKey(now), pw = wkKey(new Date(+new Date(wk + 'T12:00:00') - 3 * 864e5)), cp = {};
+  chList().forEach(c => { if (+new Date(c.until) > Date.now() - 14 * 864e5) cp[c.id] = chMine(c); });
+  const o = {cm: (fr.cm || []).slice(-100), ch: (fr.ch || []).filter(c => +new Date(c.until) > Date.now() - 14 * 864e5), cp, rd: {wk, r: myWeekReps(wk)}, rdp: {wk: pw, r: myWeekReps(pw)}};
+  if (GAME()) { o.sx = {m, xp: seasonXp(m)}; o.sxp = {m: prevMon(m), xp: seasonXp(prevMon(m))}; o.cw = Object.keys(S.seasonWon || {}).filter(k => S.seasonWon[k]); }
+  return o;
+}
+function socialCheck() { try { seasonCheck(); raidCheck(); chCheck(); } catch (e) {} }
 function vFriends() {
   const fr = FRS(), feed = frFeed(), rec = frReceived();
   setTimeout(() => frLoad(), 50);
@@ -6051,7 +6294,9 @@ function vFriends() {
   const recHtml = rec.length ? `<div class="card"><span class="muted small">❤️ ${T('Réactions à tes séances', 'Reactions to your workouts')}</span>${rec.map(x => `<div class="small" style="margin-top:6px">${x.e} <b>${esc(x.n)}</b> · ${esc(x.h.routineName || '')} <span class="muted">(${dateFr(x.h.date)})</span></div>`).join('')}</div>` : '';
   const feedHtml = feed.length ? feed.map(frPost).join('') : fr.list.length ? `<p class="muted center" style="margin:30px 0">${T('Tes amis n\'ont pas encore de séance partagée.', 'Your friends have no shared workouts yet.')}</p>`
     : `<p class="muted center" style="margin:30px 16px">${T('Ajoute un ami avec son code pour voir ses séances ici.', 'Add a friend with their code to see their workouts here.')}</p>`;
-  return `${meCard}${friends}${frRanking()}${recHtml}
+  setTimeout(socialCheck, 0);
+  const cmRec = frCmReceived(), cmHtml = cmRec.length ? `<div class="card"><span class="muted small">💬 ${T('Commentaires reçus', 'Comments received')}</span>${cmRec.map(x => `<div class="small" style="margin-top:6px"><b>${esc(x.n)}</b> : ${esc(x.t)} <span class="muted">· ${x.d ? frAgo(x.d) : ''}</span></div>`).join('')}</div>` : '';
+  return `${meCard}${friends}${chCard()}${raidCard()}${seasonCard()}${frRanking()}${recHtml}${cmHtml}
     <div class="row between" style="margin:14px 0 8px"><b>${T('Fil des amis', 'Friends feed')}</b>${fr.list.length ? `<button class="btn sm ghost" data-act="fr-refresh">↻ ${T('Actualiser', 'Refresh')}</button>` : ''}</div>
     ${feedHtml}
     ${frOn() ? `<details class="card"><summary><b>🔒 ${T('Ce que tes amis voient', 'What friends see')}</b></summary>
@@ -6617,6 +6862,17 @@ document.addEventListener('click', e => {
     case 'fr-phbig': modal(`<div class="row between"><b>${esc((frData[b.dataset.c] || {d: {}}).d.name || '')}</b><button class="btn sm" data-act="close">✕</button></div><img src="${b.src}" alt="" style="width:100%;border-radius:14px;margin-top:10px;display:block">`); break;
     case 'fr-add-ok': frAdd(($('#frin') || {}).value); break;
     case 'fr-refresh': toast('↻'); frLoad(true); break;
+    case 'ch-new': closeAll(); chNew(b.dataset.c); break;
+    case 'ch-f': chDraft.f = b.dataset.c; chPaint(); break;
+    case 'ch-k': chDraft.k = b.dataset.k; chPaint(); break;
+    case 'ch-go': { const fr = FRS(); if (!chDraft || !chDraft.f) { toast(T('Choisis un ami', 'Pick a friend')); break; }
+      const now = new Date(); fr.ch = fr.ch || []; fr.ch.push({id: 'c' + Date.now().toString(36), to: chDraft.f, k: chDraft.k, from: now.toISOString(), until: new Date(+now + 7 * 864e5).toISOString()});
+      save(); closeAll(); render(); frQueue(true); toast(T('⚔️ Défi lancé! Ton ami le verra à sa prochaine ouverture.', '⚔️ Challenge started! Your friend will see it next time they open the app.')); break; }
+    case 'ch-no': { if (!confirm(T('Refuser ce défi?', 'Decline this challenge?'))) break; const fr = FRS(); fr.chNo = fr.chNo || []; fr.chNo.push(b.dataset.id); save(); render(); break; }
+    case 'fr-cm': frCmOpen(b.dataset.c, b.dataset.s); break;
+    case 'fr-cm-send': { const t = (($('#cmin') || {}).value || '').trim().slice(0, 200); if (!t) break; const fr = FRS();
+      if (!frOn()) { toast(T('💡 Active le partage pour que tes amis voient tes commentaires', '💡 Turn on sharing so friends see your comments')); break; }
+      fr.cm = fr.cm || []; fr.cm.push({to: b.dataset.c, s: b.dataset.s, t, d: new Date().toISOString()}); save(); closeModal(); frCmOpen(b.dataset.c, b.dataset.s); render(); frQueue(true); break; }
     case 'fr-now': FRS().noW = b.checked; save(); frQueue(false); break;
     case 'fr-hide': { const fr = FRS(), id = b.dataset.id; fr.hide = fr.hide || []; const i = fr.hide.indexOf(id); if (i >= 0) fr.hide.splice(i, 1); else fr.hide.push(id); save(); render(); frQueue(false); break; }
     case 'fr-react': { const fr = FRS(), {c, s, e} = b.dataset; fr.re = fr.re || []; const i = fr.re.findIndex(x => x.to === c && x.s === s);
@@ -6627,10 +6883,10 @@ document.addEventListener('click', e => {
       const items = frFeed(c), nS = (d && d.s || []).length;
       modal(`<div class="row between"><span></span><button class="btn sm" data-act="close">✕</button></div>
         <div style="text-align:center;margin-top:-8px">${d && d.av ? `<img src="${d.av}" alt="" style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid var(--accent)">` : `<span class="frav" style="width:110px;height:110px;font-size:44px">${esc(((d && d.name) || f.n || '?')[0].toUpperCase())}</span>`}
-          <h2 style="margin:8px 0 2px">${esc((d && d.name) || f.n || '')}</h2>${GAME() && d && d.hu ? `<div style="margin:2px 0 6px">${frLv(d, true)}</div>` : ''}
+          <h2 style="margin:8px 0 2px">${esc((d && d.name) || f.n || '')} ${GAME() ? seasonTrophies(d) : ''}</h2>${GAME() && d && d.hu ? `<div style="margin:2px 0 6px">${frLv(d, true)}</div>` : ''}
           ${d ? `<p class="small muted" style="margin:0">🔥 ${d.wk || 0} ${T('sem. de suite', 'weeks in a row')} · ${nS} ${T('séance' + (nS > 1 ? 's' : ''), 'workout' + (nS > 1 ? 's' : ''))} · ${(d.p || []).length} 📸</p>` : ''}</div>
         <div style="margin-top:12px">${items.length ? items.map(frPost).join('') : `<p class="muted center">${T('Rien de partagé pour l\'instant.', 'Nothing shared yet.')}</p>`}</div>
-        ${me ? `<button class="btn block" data-act="fr-code" style="margin-top:8px">${T('Mon code ami', 'My friend code')}</button>` : `<button class="btn block" data-act="fr-del" data-c="${f.c}" style="color:var(--bad);margin-top:8px">${T('Retirer de mes amis', 'Remove friend')}</button>`}`);
+        ${me ? `<button class="btn block" data-act="fr-code" style="margin-top:8px">${T('Mon code ami', 'My friend code')}</button>` : `<button class="btn primary block" data-act="ch-new" data-c="${f.c}" style="margin-top:8px">⚔️ ${T('Défier', 'Challenge')} ${esc((d && d.name) || f.n || '')}</button><button class="btn block" data-act="fr-del" data-c="${f.c}" style="color:var(--bad);margin-top:8px">${T('Retirer de mes amis', 'Remove friend')}</button>`}`);
       setTimeout(phFill, 0); break; }
     case 'fr-del': { const fr = FRS(); fr.list = fr.list.filter(x => x.c !== b.dataset.c); fr.re = (fr.re || []).filter(x => x.to !== b.dataset.c); delete frData[b.dataset.c]; frSaveCache(); save(); closeAll(); render(); if (frOn()) frQueue(false); break; }
     case 'cv-kind': cv.k = b.dataset.k; render(); break;
@@ -6828,7 +7084,7 @@ document.addEventListener('click', e => {
     case 'rd-add-set': { const sl = rdraft.exercises[ei].sl; const l = sl.filter(s => s.t !== 'W').pop() || sl[sl.length - 1] || {w: '', r: '8-12'}; sl.push({w: l.w ?? '', r: l.r || '8-12'}); rdirty = true; render(); break; }
     case 'rd-add-ex': openPicker({title: 'Ajouter un exercice', cb: p => { if (p.lib) S.links[norm(p.name)] = p.lib; rdraft.exercises.push({name: p.name, sets: 2, reps: '8-12', weight: '', note: '', sl: [{w: '', r: '8-12'}, {w: '', r: '8-12'}]}); rdirty = true; render(); setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50); }}); break;
     case 'rd-ex-menu': openRdExMenu(ei); break;
-    case 'rd-ex-replace': closeModal(); openPicker({title: `Remplacer « ${rdraft.exercises[ei].name} »`, cb: p => { if (p.lib) S.links[norm(p.name)] = p.lib; rdraft.exercises[ei].name = p.name; rdirty = true; render(); }}); break;
+    case 'rd-ex-replace': closeModal(); openPicker({title: `Remplacer « ${rdraft.exercises[ei].name} »`, alt: rdraft.exercises[ei].name, cb: p => { if (p.lib) S.links[norm(p.name)] = p.lib; rdraft.exercises[ei].name = p.name; rdirty = true; render(); }}); break;
     case 'rd-ex-up': case 'rd-ex-down': { const L2 = rdraft.exercises, j = act === 'rd-ex-up' ? ei - 1 : ei + 1; if (j >= 0 && j < L2.length) { [L2[ei], L2[j]] = [L2[j], L2[ei]]; fixSS(L2); rdirty = true; } closeModal(); render(); break; }
     case 'rd-ex-ss': { const L2 = rdraft.exercises; if (!L2[ei + 1]) break; const tg = L2[ei].ss || newSSTag(L2); L2[ei].ss = tg; L2[ei + 1].ss = tg; rdirty = true; closeModal(); render(); break; }
     case 'rd-ex-ss-off': { const L2 = rdraft.exercises; delete L2[ei].ss; fixSS(L2); rdirty = true; closeModal(); render(); break; }
@@ -6884,6 +7140,7 @@ document.addEventListener('click', e => {
       if (s.done) autoNext(ei);
       if (!s.pr) delete s.pr;
       save(); render();
+      if (s.done && s.t !== 'W' && !A.bossHit && GAME()) { try { const b = monthBoss(); if (b && !b.done && norm(b.ex) === norm(e.name) && +s.w > 0 && e1rm(+s.w, +s.r) >= b.target) { A.bossHit = 1; save(); render(); setTimeout(() => bossKill(b), 250); } } catch (er) {} }
       if (s.pr) { confetti(); toast(T(`🏆 Nouveau record! ${s.w || BWL()}×${s.r}`, `🏆 New record! ${s.w || BWL()}×${s.r}`)); if (S.settings.sound !== false) { ensureAudio(); setTimeout(() => beep(true), 30); } haptic([80, 60, 80, 60, 200]); }
       if (s.done) {
         const grp = e.ss ? A.exercises.map((x, i) => x.ss === e.ss ? i : -1).filter(i => i >= 0) : [];
@@ -6932,7 +7189,7 @@ document.addEventListener('click', e => {
     case 'st-type': { const s = setCtx.sets[setCtx.si]; if (b.dataset.t === 'N') delete s.t; else s.t = b.dataset.t; document.querySelectorAll('#sttypes .btn').forEach(x => x.classList.toggle('on', x === b)); break; }
     case 'st-del': { snap(); setCtx.sets.splice(setCtx.si, 1); closeModal(); undoToast(T('Série supprimée', 'Set deleted')); break; }
     case 'ex-menu': openExMenu(ei); break;
-    case 'ex-replace': closeModal(); openPicker({title: `Remplacer « ${A.exercises[ei].name} »`, cb: p => replaceExercise(ei, p)}); break;
+    case 'ex-replace': closeModal(); openPicker({title: `Remplacer « ${A.exercises[ei].name} »`, alt: A.exercises[ei].name, cb: p => replaceExercise(ei, p)}); break;
     case 'ex-ss': {
       const list = A.exercises, e = list[ei], nx = list[ei + 1];
       const tag = e.ss || newSSTag(list); e.ss = tag; nx.ss = tag;
@@ -6962,6 +7219,7 @@ document.addEventListener('click', e => {
     case 'timer-stop-big': closeModal(); stopTimer(); break;
     case 'timer-add': timerTot += 30; timerEnd += 30000; scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); restSW(timerEnd); tickTimer(); break;
     case 'timer-stop': stopTimer(); break;
+    case 'voice-test': say(S.active ? T('Repos terminé. ', 'Rest over. ') + voiceNext() : T('Repos terminé. Développé couché, série 2 sur 4 : 185 livres, 8 répétitions.', 'Rest over. Bench press, set 2 of 4: 185 pounds, 8 reps.')); break;
     case 'timer-big': bigTimerOpen(); break;
     case 'timer-go': if (!S.active) break; if (cur().v === 'workout' && $('#timer').classList.contains('show') && !$('#timer').classList.contains('fin')) { bigTimerOpen(); break; } if ($('#timer').classList.contains('fin')) stopTimer(); if (cur().v !== 'workout') { closeAll(); openWorkout(); } else scrollCur(); break;
 
@@ -7056,7 +7314,7 @@ document.addEventListener('input', e => {
     if (t.dataset.set === 'gameMode') { S.settings.game = t.value === '1'; save(); render(); try { if (frOn()) frQueue(false); } catch (e) {} toast(GAME() ? T('⚔️ Mode jeu activé', '⚔️ Game mode on') : T('📒 Mode classique', '📒 Classic mode')); return; }
     if (t.dataset.set === 'stagOn') S.settings.stagOff = !t.checked;
     else if (t.dataset.set === 'notif') { if (t.checked) { askNotif().then(ok => { S.settings.notif = ok; save(); render(); if (ok) toast(T('⌚ Notifications activées', '⌚ Notifications on')); }); return; } S.settings.notif = false; save(); render(); return; }
-    else if (t.type === 'checkbox') { S.settings[t.dataset.set] = t.checked; if (t.dataset.set === 'wake') syncWake(); }
+    else if (t.type === 'checkbox') { S.settings[t.dataset.set] = t.checked; if (t.dataset.set === 'wake') syncWake(); if (t.dataset.set === 'voice') { if (t.checked) say(T('Coach vocal activé.', 'Voice coach on.')); setTimeout(render, 0); } }
     else if (t.dataset.set === 'inc') { const v = parseFloat(t.value.replace(',', '.')); if (v > 0) S.settings.inc = v; else delete S.settings.inc; }
     else S.settings[t.dataset.set] = t.dataset.set === 'rest' ? (parseInt(t.value, 10) || 150) : ['goal', 'bar', 'restWarm'].includes(t.dataset.set) ? +t.value : t.dataset.set === 'weekSun' ? !!t.value : t.value;
     if (t.dataset.set === 'fontScale') applyTheme();
