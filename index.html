@@ -2122,7 +2122,6 @@ function vSettings() {
       <span class="small muted" style="flex:1">${S.settings.accent ? 'Couleur perso : ' + esc(S.settings.accent) : 'Couleur du thème'}</span>
       ${S.settings.accent ? '<button class="btn sm" data-act="accent-reset">Remettre celle du thème</button>' : ''}</div>
       <label class="row" style="margin-top:14px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="fold" ${S.settings.fold !== false ? 'checked' : ''}> ${T('Écran déplié : séance à gauche, chrono et historique à droite', 'Unfolded screen: workout on the left, timer and history on the right')}</label>
-      <label class="row" style="margin-top:14px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="icons" ${S.settings.icons !== false ? 'checked' : ''}> ${T('Icônes modernes (décoche pour garder les emojis)', 'Modern icons (uncheck to keep emojis)')}</label>
       <label style="margin-top:16px">${T('Couleur du fond (personnalisée)', 'Background color (custom)')}</label>
       <div class="chips">${BGS.map(c => `<button class="chip" data-act="bg-pick" data-c="${c}" style="background:${c};border-color:${S.settings.bg === c ? 'var(--accent)' : '#8886'};border-width:2px;width:34px;height:34px;padding:0" aria-label="${T('Fond', 'Background')} ${c}"></button>`).join('')}</div>
       <div class="row" style="margin-top:6px"><button class="btn cpbtn" data-act="cpick" data-k="bg" aria-label="${T('Choisir la couleur du fond', 'Pick the background color')}"><span style="background:${S.settings.bg || 'var(--bg)'}"></span></button>
@@ -4846,8 +4845,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.21.2';
+const APP_VERSION = '9.21.3';
 const CHANGELOG = [
+  {v: '9.21.3', d: '2026-11-11', fr: ['Réglages : l\'option des emojis est retirée, les icônes modernes sont toujours utilisées.'], en: ['Settings: the emoji option is removed, modern icons are always used.']},
   {v: '9.21.2', d: '2026-11-11', fr: ['⚔️ Boss : « Comment le battre » est maintenant repliable — touche pour voir les options.'], en: ['⚔️ Boss: “How to beat it” is now collapsible — tap to see the options.']},
   {v: '9.21.1', d: '2026-11-11', fr: ['⚔️ Boss : les options sont plus claires (ex. « 95 lb pour 3 reps »), une par ligne.'], en: ['⚔️ Boss: clearer options (e.g. “95 lb for 3 reps”), one per line.']},
   {v: '9.21', d: '2026-11-11', fr: ['⚔️ La carte du boss explique maintenant comment le battre : une seule série suffit, avec des exemples de poids × reps à viser (ex. 3, 5 ou 8 reps).'], en: ['⚔️ The boss card now explains how to beat it: a single set is enough, with example weight × reps targets (e.g. 3, 5 or 8 reps).']},
@@ -4869,7 +4869,7 @@ const CHANGELOG = [
   {v: '9.10', d: '2026-11-11', fr: ['👥 Tes amis voient ton niveau et ton rang d\'aventurier, et tu vois les leurs : dans le fil, sur leur profil et dans le nouveau Tableau de la Guilde (onglet Amis).', 'Les titres à choisir sont retirés : ton titre suit simplement ton rang.'], en: ['👥 Friends see your adventurer level and rank, and you see theirs: in the feed, on their profile and in the new Guild board (Friends tab).', 'Selectable titles are removed: your title simply follows your rank.']},
   {v: '9.9', d: '2026-11-11', fr: ['✨ Quête quotidienne de la Guilde (+150 XP) et donjon de la semaine (+500 XP), dans l\'onglet Entraînement.', '🏷 Titres : chaque médaille débloque un titre à afficher sous ton nom (touche ton titre dans Médailles).', '⚔️ Arsenal : chaque exercice où tu bats un record devient une arme qui monte en rang.', '🌟 Écran « Rang supérieur » quand tu changes de rang.', '⛶ Mode focus pendant la séance : une série à la fois, gros boutons et gros chrono.', '⚖️ Statistiques → Comparer deux périodes : ta force maintenant contre il y a 1 à 12 mois.', '🔔 Réglages → Rappels d\'entraînement, même appli fermée.', 'Raccourcis : appui long sur l\'icône → Statut de l\'aventurier ou Quête du jour.'], en: ['✨ Daily quest from the Guild (+150 XP) and weekly dungeon (+500 XP), in the Workout tab.', '🏷 Titles: each medal unlocks a title shown under your name (tap your title in Medals).', '⚔️ Arsenal: each exercise where you break a record becomes a weapon that ranks up.', '🌟 “Rank up” screen when your rank changes.', '⛶ Focus mode during workouts: one set at a time, big buttons and big timer.', '⚖️ Statistics → Compare two periods: your strength now vs 1 to 12 months ago.', '🔔 Settings → Workout reminders, even with the app closed.', 'Shortcuts: long-press the icon → Hunter status or Daily quest.']},
   {v: '9.8', d: '2026-11-11', fr: ['⚔️ Mode aventurier : gagne de l\'XP, monte de niveau et passe du rang E au rang S… et plus.', '🏅 Plus de 100 médailles, classées par rang et par catégorie : force, constance, volume, quêtes spéciales (aventurier de nuit, quête quotidienne, club des 1 000…).', 'Fin de séance : la Guilde t\'annonce ton XP gagnée et tes montées de niveau.'], en: ['⚔️ Adventurer mode: earn XP, level up and climb from E rank to S rank… and beyond.', '🏅 Over 100 medals, sorted by rank and category: strength, consistency, volume, special quests (night adventurer, daily quest, 1,000 club…).', 'End of workout: the Guild shows your XP gained and level-ups.']},
-  {v: '9.7', d: '2026-11-11', fr: ['Icônes dessinées partout dans l\'appli à la place des emojis : titres, menus, médailles, statistiques, réglages et messages.', 'Tu préfères les emojis? Décoche « Icônes modernes » dans Réglages → Apparence.'], en: ['Drawn icons everywhere in the app instead of emojis: titles, menus, medals, stats, settings and messages.', 'Prefer emojis? Uncheck “Modern icons” in Settings → Appearance.']},
+  {v: '9.7', d: '2026-11-11', fr: ['Icônes dessinées partout dans l\'appli à la place des emojis : titres, menus, médailles, statistiques, réglages et messages.'], en: ['Drawn icons everywhere in the app instead of emojis: titles, menus, medals, stats, settings and messages.']},
   {v: '9.6', d: '2026-11-11', fr: ['Cardio : nouvelles icônes dessinées pour chaque activité, plus sobres que les emojis.'], en: ['Cardio: new drawn icons for each activity, cleaner than emojis.']},
   {v: '9.5', d: '2026-11-11', fr: ['🎨 Mes thèmes : enregistre tes propres combinaisons de couleurs (Réglages → Apparence) et remets-les en un clic.'], en: ['🎨 My themes: save your own color combinations (Settings → Appearance) and switch back in one tap.']},
   {v: '9.4', d: '2026-11-11', fr: ['L\'icône de l\'appli garde maintenant son look d\'origine, peu importe tes couleurs.'], en: ['The app icon now keeps its original look, whatever your colors.']},
@@ -6473,7 +6473,7 @@ function startIconObs() {
   icoObs.observe(document.body, {childList: true, subtree: true, characterData: true});
   iconizeAll(document.body);
 }
-const iconsOn = () => S.settings.icons !== false;
+const iconsOn = () => true;
 const ic = (k, sz = 20) => `<svg class="ico" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICP[k] || ''}</svg>`;
 const IC = (k, emo, sz) => iconsOn() ? ic(k, sz) : emo;
 function renderChrome() {
