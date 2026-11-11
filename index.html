@@ -319,6 +319,8 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .bossh{font-size:12px;letter-spacing:2px;font-weight:800;color:#fb7185}.bossrow.dead .bossh{color:var(--ok)}
 .bossn{display:block;font-size:18px;margin:4px 0 2px}
 .bossbar{margin:8px 0 4px;height:9px}.bossbar>div{background:linear-gradient(90deg,#f43f5e,#fb923c)!important;box-shadow:0 0 8px #f43f5e}
+.mrrow{display:flex;align-items:center;gap:10px;width:100%;margin:6px 0;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--rc);border-radius:12px;color:var(--text);font:inherit;cursor:pointer}
+.mrrow.on{border-color:var(--rc)}.mrbars{display:grid;grid-template-columns:56px 1fr auto;gap:8px;align-items:center;margin-top:4px}.mrbars .goal{height:6px;margin:0}.mrbars .goal>span{display:block;height:100%;border-radius:3px;background:var(--rc)}
 .ftog{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 12px}
 .lvup{border:1.5px solid #38bdf8;background:color-mix(in srgb,#38bdf8 10%,var(--card));box-shadow:0 0 18px -6px #38bdf8;text-align:center;margin:8px 0}.lvup .sysh{margin-bottom:6px}
 .ybig{text-align:center;margin:0;display:flex;flex-direction:column;gap:2px}.ybig b{font-size:26px}
@@ -3367,6 +3369,7 @@ function vHistAll() {
 const STATS = [['st-vol', '📊', 'Séries par groupe musculaire', 'Nombre de séries pour chaque groupe musculaire.'],
   ['st-radar', '🕸️', 'Répartition musculaire (graphique)', 'Compare ta répartition actuelle à la période précédente.'],
   ['st-body', '🧍', 'Répartition musculaire (corps)', 'Carte thermique des muscles travaillés.'],
+  ['murank', '🎯', 'Rangs par muscle', 'Le rang de chaque muscle selon ta force et ton volume : tes points forts et tes points faibles.'],
   ['st-top', '🏋️', 'Principaux exercices', 'Les exercices que tu fais le plus souvent.'],
   ['st-rec', '🏆', 'Records personnels', 'Tes meilleures performances par exercice.'],
   ['st-month', '🗓️', 'Rapport mensuel', 'Récap de tes entraînements et statistiques du mois.'],
@@ -4048,6 +4051,75 @@ function hunter(me) {
   return {xp, lvl, rk: r[1], cls: hClass(lvl), title: T(r[2][0], r[2][1]), col: RKC[r[1]], cur: xp - xpAt(lvl), need: xpAt(lvl + 1) - xpAt(lvl), nextRank: nx ? {lvl: nx[0], rk: nx[1]} : null, st, nm};
 }
 const rkBadge = (rk, cls = 'mrk') => `<span class="${cls}" style="--rc:${RKC[rk]}">${rk}</span>`;
+/* ---------- Rang par muscle : force (par rapport à ton poids) + volume des 8 dernières semaines ---------- */
+const MR_MUS = ['pectorals', 'delts', 'triceps', 'biceps', 'forearms', 'abs', 'traps', 'upper back', 'lats', 'spine', 'glutes', 'quads', 'hamstrings', 'calves', 'adductors'];
+const MR_SMALL = {forearms: 6, calves: 8, abs: 8, traps: 6, adductors: 6, biceps: 9, triceps: 9, spine: 6};
+const isRowBB = n => /rowing|row\b/.test(n) && /barre|barbell|penche|bent/.test(n) && !/haltere|dumbbell|poulie|cable|machine/.test(n);
+const isDip = n => /\bdips?\b/.test(n) && !/machine|assist/.test(n);
+const isCurlBB = n => /curl/.test(n) && /barre|barbell|ez/.test(n) && !/poignet|wrist|jambe|leg/.test(n);
+const MR_STD = [[isBench, ['pectorals'], 1.75], [isSquat, ['quads', 'glutes'], 2.25], [isDead, ['hamstrings', 'spine', 'glutes'], 2.5], [isOHP, ['delts'], 1.1],
+  [isRowBB, ['upper back', 'lats'], 1.5], [isPullUp, ['lats', 'biceps'], 1.8, 1], [isDip, ['triceps'], 1.9, 1], [isCurlBB, ['biceps'], .75], [n => /hip thrust/.test(n), ['glutes'], 2.5]];
+const myBW = () => { const L = (S.body || []).filter(b => b.w != null && +b.w > 0).sort((a, b) => a.d.localeCompare(b.d)).pop(); return L ? +L.w : (+S.settings.bwDefault || 0); };
+const MR_TH = [[85, 'S'], [70, 'A'], [55, 'B'], [40, 'C'], [22, 'D'], [0.01, 'E']];
+function muscleRanks() {
+  const now = Date.now(), D = 864e5, bw = myBW();
+  const {out} = volumeBy(new Date(now - 56 * D), new Date(now + D));
+  const str = {}, strEx = {};
+  if (bw > 0) S.history.forEach(x => { if (+new Date(x.date) < now - 183 * D) return; x.exercises.forEach(e => { const nn = norm(e.name); const st = MR_STD.find(r => r[0](nn)); if (!st) return;
+    work(e.sets).forEach(s => { if (s.u === 's' || s.u === 'c' || !(+s.r > 0)) return; const load = st[3] ? bw + (+s.w || 0) : +s.w || 0; if (!(load > 0)) return; const v = e1rm(load, s.r) / bw / st[2] * 100;
+      st[1].forEach(m => { if (v > (str[m] || 0)) { str[m] = v; strEx[m] = {name: e.name, r: e1rm(load, s.r) / bw}; } }); }); }); });
+  const res = {};
+  MR_MUS.forEach(m => {
+    const wk = (out[m] || 0) / 8, tgt = MR_SMALL[m] || 12, vol = Math.min(100, wk / tgt * 100);
+    const sc = str[m] != null ? Math.min(100, str[m]) : null;
+    const score = sc != null ? (vol * .5 + sc * .5) : vol;
+    const rk = (MR_TH.find(t => score >= t[0]) || [0, null])[1];
+    res[m] = {m, wk, tgt, vol, str: sc, ex: strEx[m], score, rk};
+  });
+  return {res, bw};
+}
+function mrSVG(shapes, res, dx, sel) {
+  return shapes.map(([t, m, ...g]) => {
+    const r = m && res[m];
+    const st = !m ? 'fill:var(--card2)' : r && r.rk ? `fill:${RKC[r.rk]};fill-opacity:${m === sel ? 1 : .78};${m === sel ? 'stroke:#fff;stroke-width:1.5' : ''}` : `fill:var(--line);${m === sel ? 'stroke:#fff;stroke-width:1.5' : ''}`;
+    const a = m ? ` data-act="mr-pick" data-m="${m}" style="${st};cursor:pointer"` : ` style="${st}"`;
+    if (t === 'c') return `<circle cx="${g[0] + dx}" cy="${g[1]}" r="${g[2]}"${a}/>`;
+    if (t === 'e') return `<ellipse cx="${g[0] + dx}" cy="${g[1]}" rx="${g[2]}" ry="${g[3]}"${a}/>`;
+    if (t === 'r') return `<rect x="${g[0] + dx}" y="${g[1]}" width="${g[2]}" height="${g[3]}" rx="${g[4]}"${a}/>`;
+    return `<polygon points="${g[0].split(' ').map(q => { const [x, y] = q.split(',').map(Number); return (x + dx) + ',' + y; }).join(' ')}"${a}/>`;
+  }).join('');
+}
+let mrSel = null;
+function mrRow(r) {
+  const f1 = v => (Math.round(v * 10) / 10).toLocaleString(LOC());
+  return `<button class="mrrow ${r.m === mrSel ? 'on' : ''}" data-act="mr-pick" data-m="${r.m}" style="--rc:${r.rk ? RKC[r.rk] : 'var(--muted)'}">
+    ${r.rk ? rkBadge(r.rk, 'mrk lvrk') : '<span class="mrk lvrk" style="--rc:var(--muted)">–</span>'}
+    <span style="flex:1;min-width:0;text-align:left"><b>${esc(musN(r.m))}</b>
+      <span class="mrbars"><span class="small muted">${T('Volume', 'Volume')}</span><span class="goal"><span style="width:${Math.max(r.vol > 0 ? 3 : 0, r.vol)}%"></span></span><span class="small">${f1(r.wk)} / ${r.tgt} ${T('séries/sem.', 'sets/wk')}</span></span>
+      ${r.str != null ? `<span class="mrbars"><span class="small muted">${T('Force', 'Strength')}</span><span class="goal"><span style="width:${Math.max(3, r.str)}%"></span></span><span class="small">${f1(r.ex.r)} × ${T('ton poids', 'your weight')}</span></span>` : ''}
+    </span></button>`;
+}
+function vMuscleRanks() {
+  const {res, bw} = muscleRanks(), L = MR_MUS.map(m => res[m]);
+  const trained = L.filter(r => r.rk), weak = L.slice().sort((a, b) => a.score - b.score).slice(0, 3);
+  const best = trained.slice().sort((a, b) => b.score - a.score)[0];
+  const avg = trained.length ? trained.reduce((a, r) => a + r.score, 0) / MR_MUS.length : 0, ov = (MR_TH.find(t => avg >= t[0]) || [0, 'E'])[1];
+  const sel = mrSel && res[mrSel];
+  return `<div class="card sysw"><div class="sysh">[ ${T('RANGS PAR MUSCLE', 'MUSCLE RANKS')} ]</div>
+      <div class="row" style="gap:12px;align-items:center;margin-bottom:8px">${rkBadge(ov, 'rkbig')}<div style="flex:1;min-width:0"><div class="muted small">${T('Rang global du corps', 'Overall body rank')}</div>
+        ${best ? `<div class="small" style="margin-top:4px">💪 ${T('Point fort', 'Strongest')} : <b>${esc(musN(best.m))}</b> (${best.rk})</div>` : ''}
+        <div class="small" style="margin-top:2px">⚠️ ${T('Points faibles', 'Weak points')} : <b>${weak.map(r => esc(musN(r.m)) + ' (' + (r.rk || T('pas travaillé', 'not trained')) + ')').join(', ')}</b></div></div></div>
+      <svg viewBox="0 0 300 312" width="100%" role="img" aria-label="${T('Rang de chaque muscle', 'Rank of each muscle')}">${mrSVG(BODY_F, res, 0, mrSel)}${mrSVG(BODY_B, res, 160, mrSel)}
+        <text x="70" y="308" text-anchor="middle" style="fill:var(--muted);font-size:12px">${T('Avant', 'Front')}</text><text x="230" y="308" text-anchor="middle" style="fill:var(--muted);font-size:12px">${T('Arrière', 'Back')}</text></svg>
+      <div class="row" style="justify-content:center;gap:6px;flex-wrap:wrap;margin-top:6px">${RKS.slice().reverse().map(r => rkBadge(r, 'mrk lvrk')).join('')}<span class="small muted" style="align-self:center">${T('Touche un muscle', 'Tap a muscle')}</span></div>
+      ${sel ? `<div style="margin-top:12px">${mrRow(sel)}</div>` : ''}
+    </div>
+    ${bw > 0 ? '' : `<div class="card" style="border-color:var(--warm)"><b>⚖️ ${T('Ajoute ton poids', 'Add your bodyweight')}</b><p class="small muted" style="margin:4px 0 8px">${T('Sans ton poids, le rang se base seulement sur ton volume. Avec ton poids, ta force compte aussi (ex. couché à 1,5 × ton poids).', 'Without your weight, the rank uses only your volume. With it, your strength counts too (e.g. bench at 1.5 × bodyweight).')}</p><button class="btn sm" data-act="go" data-v="measures">${T('Ajouter mon poids', 'Add my weight')}</button></div>`}
+    <h3 style="margin:16px 0 8px">${T('Tous les muscles', 'All muscles')}</h3>
+    ${L.slice().sort((a, b) => b.score - a.score).map(mrRow).join('')}
+    <p class="small muted" style="margin:12px 0 0">${T('Le rang combine ton volume (séries par semaine sur les 8 dernières semaines, objectif 12 pour les gros muscles et 6 à 9 pour les petits) et ta force sur 6 mois, comparée à ton poids sur les grands exercices : couché, squat, soulevé de terre, développé militaire, rowing barre, tractions, dips, curl barre et hip thrust. S = 85 et plus, A = 70, B = 55, C = 40, D = 22.', 'The rank combines your volume (sets per week over the last 8 weeks, target 12 for big muscles and 6 to 9 for small ones) and your strength over 6 months compared to your bodyweight on the big lifts: bench, squat, deadlift, overhead press, barbell row, pull-ups, dips, barbell curl and hip thrust. S = 85+, A = 70, B = 55, C = 40, D = 22.')}</p>`;
+}
+
 let medFilter = 'all';
 function vMedals() {
   const me = medalsEarned(), {got, st, defs} = me, hu = hunter(me);
@@ -4066,7 +4138,7 @@ function vMedals() {
       <div class="row between small muted"><span>${fmtN(hu.cur)} / ${fmtN(hu.need)} XP</span><span>${hu.nextRank ? T(`Rang ${hu.nextRank.rk} au niveau ${hu.nextRank.lvl}`, `Rank ${hu.nextRank.rk} at level ${hu.nextRank.lvl}`) : T('Rang maximal atteint', 'Max rank reached')}</span></div>
       <div class="sysstats"><div><span>${T('FOR', 'STR')}</span><b>${fmtN(st.b3)}</b><i>${U()}</i></div><div><span>${T('END', 'END')}</span><b>${fmtN(st.hr)}</b><i>h</i></div><div><span>${T('CON', 'CON')}</span><b>${st.wk}</b><i>${T('sem.', 'wk')}</i></div><div><span>${T('MÉD', 'MED')}</span><b>${n}</b><i>/ ${defs.length}</i></div></div>
       <p class="small muted" style="margin:10px 0 0">${T('XP : séance 100 · série 5 · record 40 · médaille 250 · quête 150 · donjon 500 · boss 1 000.', 'XP: workout 100 · set 5 · record 40 · medal 250 · quest 150 · dungeon 500 · boss 1,000.')}</p>
-      <button class="btn block" data-act="go" data-v="shadows" style="margin-top:10px">⚔️ ${T('Armée des ombres', 'Shadow army')} (${st.sh || 0})</button>
+      <div class="row" style="gap:8px;margin-top:10px"><button class="btn" style="flex:1" data-act="go" data-v="murank">🎯 ${T('Rangs par muscle', 'Muscle ranks')}</button><button class="btn" style="flex:1" data-act="go" data-v="shadows">⚔️ ${T('Ombres', 'Shadows')} (${st.sh || 0})</button></div>
     </div>
     ${S.history.length ? '<div style="height:12px"></div>' + questCard() : ''}
     <div class="seg" style="margin:14px 0 4px"><button class="${medFilter === 'all' ? 'on' : ''}" data-act="med-f" data-f="all">${T('Toutes', 'All')}</button><button class="${medFilter === 'ok' ? 'on' : ''}" data-act="med-f" data-f="ok">${T('Gagnées', 'Earned')} (${n})</button><button class="${medFilter === 'todo' ? 'on' : ''}" data-act="med-f" data-f="todo">${T('À débloquer', 'Locked')} (${defs.length - n})</button></div>
@@ -4697,8 +4769,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.12';
+const APP_VERSION = '9.13';
 const CHANGELOG = [
+  {v: '9.13', d: '2026-11-11', fr: ['🎯 Rangs par muscle : une silhouette où chaque muscle a son rang (E à S) selon ta force et ton volume, avec tes points forts et tes points faibles. Dans Médailles et dans Statistiques.'], en: ['🎯 Muscle ranks: a body map where each muscle has its own rank (E to S) based on your strength and volume, with your strongest and weakest points. In Medals and Statistics.']},
   {v: '9.12', d: '2026-11-11', fr: ['✨ Classes : tu deviens Éveillé au niveau 10, puis au niveau 40 le Système te donne ta classe selon ton style : Guerrier, Tank, Assassin, Mage ou Combattant. Tes amis la voient aussi.', '☠️ Boss du mois : bats ton 1RM estimé sur ton exercice principal pour le vaincre (+1 000 XP). Il est dans la carte de quête.'], en: ['✨ Classes: you become Awakened at level 10, then at level 40 the System gives you a class based on your style: Warrior, Tank, Assassin, Mage or Fighter. Friends see it too.', '☠️ Boss of the month: beat your estimated 1RM on your main lift to defeat it (+1,000 XP). It is in the quest card.']},
   {v: '9.11', d: '2026-11-11', fr: ['📱 Mode écran déplié : sur un téléphone pliable ouvert (ou une tablette), ta séance est à gauche et à droite tu as un gros chrono de repos, ta prochaine série et l\'historique de l\'exercice (dernières fois, records, courbe du 1RM). Touche un exercice pour voir le sien.'], en: ['📱 Unfolded screen mode: on an open foldable (or a tablet), your workout is on the left and on the right a big rest timer, your next set and the exercise history (previous times, records, 1RM curve). Tap an exercise to see its own.']},
   {v: '9.10', d: '2026-11-11', fr: ['👥 Tes amis voient ton niveau et ton rang de chasseur, et tu vois les leurs : dans le fil, sur leur profil et dans le nouveau Classement des chasseurs (onglet Amis).', 'Les titres à choisir sont retirés : ton titre suit simplement ton rang.'], en: ['👥 Friends see your hunter level and rank, and you see theirs: in the feed, on their profile and in the new Hunter ranking (Friends tab).', 'Selectable titles are removed: your title simply follows your rank.']},
@@ -5989,7 +6062,7 @@ const VIEWS = {
   stats: ['Statistiques', () => vStats()], 'st-vol': ['Séries par muscle', () => vVolume()], 'st-radar': ['Répartition musculaire', () => vRadar()],
   'st-body': ['Carte des muscles', () => vBodyMap()], 'st-top': ['Principaux exercices', () => vTopEx()], 'st-rec': ['Records personnels', () => vRecords()],
   'st-month': ['Rapport mensuel', () => vMonth()], exercises: ['Exercices', () => vExList()], exdetail: ['Exercice', () => vExDetail()],
-  measures: ['Corps et progrès', () => vBody()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], friends: ['Amis', () => vFriends()], cardio: ['Cardio', () => vCardio()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], shadows: ['Armée des ombres', () => vShadows()], compare: ['Comparer deux périodes', () => vCompare()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()]
+  measures: ['Corps et progrès', () => vBody()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], friends: ['Amis', () => vFriends()], cardio: ['Cardio', () => vCardio()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], murank: ['Rangs par muscle', () => vMuscleRanks()], shadows: ['Armée des ombres', () => vShadows()], compare: ['Comparer deux périodes', () => vCompare()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()]
 };
 function headerRight(v) {
   if (v === 'calendar') return `<button class="hbtn calmode" data-act="cal-mode">${calMode === 'year' ? T('Année', 'Year') : T('Mois', 'Month')} ▾</button>`;
@@ -6472,6 +6545,7 @@ document.addEventListener('click', e => {
       const base = s2[k2] === '' || s2[k2] == null ? (k2 === 'r' ? +s2.ph || 0 : 0) : +String(s2[k2]).replace(',', '.') || 0;
       s2[k2] = String(Math.max(0, Math.round((base + +b.dataset.d * step) * 100) / 100)); save(); render(); break; }
     case 'cmp-m': cmpM = +b.dataset.m; render(); break;
+    case 'mr-pick': mrSel = mrSel === b.dataset.m ? null : b.dataset.m; render(); break;
     case 'cls-info': { const hu = hunter(), s = classStyle();
       modal(`<h2>${clsIc(hu.cls)} ${esc(clsName(hu.cls))}</h2><p class="muted">${esc(clsDesc(hu.cls))}</p>
         <p class="small" style="margin:12px 0 6px"><b>${T('Les classes', 'The classes')}</b></p>
