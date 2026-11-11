@@ -969,7 +969,11 @@ function save() { saveLocal(); if (typeof queueCloud === 'function') queueCloud(
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 
 /* ---------- Navigation façon Hevy (pile d'écrans) ---------- */
-let stack = S.active ? [{v: 'train'}, {v: 'workout'}] : [{v: 'train'}];
+const ROOT_TABS = ['train', 'stretch', 'cardio', 'timers', 'profile'];
+function lastTab() { try { const t = localStorage.getItem('cm-tab'); return ROOT_TABS.includes(t) ? t : 'train'; } catch (e) { return 'train'; } }
+let stack = S.active ? [{v: 'train'}, {v: 'workout'}] : [{v: lastTab()}];
+/* Garde l'onglet et la position quand on rafraîchit la page */
+addEventListener('pagehide', () => { try { if (stack.length === 1) sessionStorage.setItem('cm-scroll', stack[0].v + ':' + Math.round(scrollY)); else sessionStorage.removeItem('cm-scroll'); } catch (e) {} });
 const cur = () => stack[stack.length - 1];
 let woY = 0;
 function go(v, p = {}) { navAnim = true; if (cur().v === 'workout') woY = scrollY; stack.push({v, ...p}); try { history.pushState({d: stack.length}, ''); } catch (e) {} render(); window.scrollTo(0, 0); }
@@ -4842,8 +4846,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.21.5';
+const APP_VERSION = '9.22';
 const CHANGELOG = [
+  {v: '9.22', d: '2026-11-11', fr: ['L\'appli se rouvre sur le dernier onglet utilisé (Étirements, Cardio, Intervalles, Profil…) au lieu de toujours revenir à Entraînement, et garde ta position quand tu rafraîchis. Une séance en cours s\'ouvre toujours en premier.'], en: ['The app reopens on the last tab you used (Stretch, Cardio, Intervals, Profile…) instead of always going back to Workout, and keeps your scroll position on refresh. A workout in progress still opens first.']},
   {v: '9.21.5', d: '2026-11-11', fr: ['La barre du bas affiche ses icônes dès l\'ouverture, sans emoji qui flashe.'], en: ['The bottom bar shows its icons right away on launch, no emoji flash.']},
   {v: '9.21.4', d: '2026-11-11', fr: ['Les emojis n\'apparaissent plus une fraction de seconde à l\'ouverture : les icônes sont posées avant le premier affichage.'], en: ['Emojis no longer flash for a split second on launch: icons are applied before the first paint.']},
   {v: '9.21.3', d: '2026-11-11', fr: ['Réglages : l\'option des emojis est retirée, les icônes modernes sont toujours utilisées.'], en: ['Settings: the emoji option is removed, modern icons are always used.']},
@@ -6263,6 +6268,7 @@ function render() {
   $('#hdr').innerHTML = headerRight(c.v);
   $('#app').innerHTML = html;
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === stack[0].v));
+  try { if (ROOT_TABS.includes(stack[0].v)) localStorage.setItem('cm-tab', stack[0].v); } catch (e) {}
   afterRender(c);
   try { iconize($('#app')); iconize($('#hdr')); } catch (e) {}
   if (c.v === 'workout') setTimeout(maybeTourWo, 700);
@@ -7124,6 +7130,7 @@ $('#fileIn').addEventListener('change', e => { const f = e.target.files[0]; if (
 window.addEventListener('resize', () => afterRender(cur()));
 
 render();
+try { const sc = sessionStorage.getItem('cm-scroll'); sessionStorage.removeItem('cm-scroll'); if (sc && stack.length === 1) { const [t, y] = sc.split(':'); if (t === stack[0].v && +y > 0) requestAnimationFrame(() => window.scrollTo(0, +y)); } } catch (e) {}
 function openWelcome() {
   modal(`<div style="text-align:center"><div style="font-size:46px">💪</div><h2 style="margin:4px 0">${T('Bienvenue dans Carnet Muscu!', 'Welcome to Carnet Muscu!')}</h2><p class="muted small">${T('4 questions et c\'est parti. Tu pourras tout changer dans les Réglages.', '4 quick questions and you\'re set. You can change everything later in Settings.')}</p></div>
     <label>Langue / Language</label><div class="seg"><button class="${isEN() ? '' : 'on'}" data-act="wl-lang" data-v="fr">Français</button><button class="${isEN() ? 'on' : ''}" data-act="wl-lang" data-v="en">English</button></div>
