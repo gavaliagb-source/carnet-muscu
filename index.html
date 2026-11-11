@@ -430,7 +430,7 @@ body.selon main{padding-bottom:170px}
 .sspill.sm{font-size:10.5px;padding:2px 7px 2px 6px}
 
 .avatar{position:relative;cursor:pointer;border:0;padding:0;isolation:isolate}.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
-.avatar .cam{position:absolute;right:-2px;bottom:-2px;width:24px;height:24px;border-radius:50%;background:var(--card);border:2px solid var(--bg);font-size:12px;display:flex;align-items:center;justify-content:center}
+.avatar .cam{position:absolute;right:-2px;bottom:-2px;width:26px;height:26px;border-radius:50%;background:var(--card);color:var(--text);border:2px solid var(--bg);font-size:13px;box-shadow:0 1px 3px #0003;display:flex;align-items:center;justify-content:center}
 .phgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
 .phth{position:relative;padding:0;border:0;border-radius:12px;overflow:hidden;aspect-ratio:3/4;background:var(--card2);cursor:pointer}
 .phth img{width:100%;height:100%;object-fit:cover;display:block}.phth span{position:absolute;left:0;right:0;bottom:0;padding:4px 6px;font-size:11px;color:#fff;background:linear-gradient(transparent,#000a);text-align:left}
@@ -4801,8 +4801,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.14.1';
+const APP_VERSION = '9.14.2';
 const CHANGELOG = [
+  {v: '9.14.2', d: '2026-11-11', fr: ['Profil : l\'icône d\'appareil photo sur ta photo est de nouveau visible.'], en: ['Profile: the camera icon on your photo is visible again.']},
   {v: '9.14.1', d: '2026-11-11', fr: ['Quêtes : les barres de progression s\'affichent maintenant bien.'], en: ['Quests: progress bars now display properly.']},
   {v: '9.14', d: '2026-11-11', fr: ['Carte des muscles : 5 couleurs bien différentes (bleu → rouge) au lieu d\'une seule couleur plus ou moins pâle.', 'Quêtes : la carte est maintenant repliée par défaut (quête, donjon et boss en petit). Touche-la pour l\'ouvrir.', 'Boss du mois : il se base maintenant sur un grand exercice (couché, squat, soulevé de terre…), pas sur une élévation latérale.', '⛶ Touche le gros chrono de repos (écran déplié ou mode focus) pour l\'afficher en plein écran, lisible de loin.'], en: ['Muscle map: 5 clearly different colors (blue → red) instead of one color more or less faded.', 'Quests: the card is now collapsed by default (quest, dungeon and boss in small). Tap it to open.', 'Boss of the month: now based on a big lift (bench, squat, deadlift…), not a lateral raise.', '⛶ Tap the big rest timer (unfolded screen or focus mode) to show it full screen, readable from afar.']},
   {v: '9.13', d: '2026-11-11', fr: ['🎯 Rangs par muscle : une silhouette où chaque muscle a son rang (E à S) selon ta force et ton volume, avec tes points forts et tes points faibles. Dans Médailles et dans Statistiques.'], en: ['🎯 Muscle ranks: a body map where each muscle has its own rank (E to S) based on your strength and volume, with your strongest and weakest points. In Medals and Statistics.']},
