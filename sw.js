@@ -1,4 +1,4 @@
-const CACHE = 'carnet-muscu-v4';
+const CACHE = 'carnet-muscu-v5';
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener('activate', e => {
@@ -10,7 +10,9 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   // Google (connexion et sauvegarde Drive) : jamais en cache, ce sont des données personnelles
   if (/(^|\.)google(apis)?\.com$/.test(new URL(e.request.url).hostname)) return;
-  e.respondWith(fetch(e.request).then(r => {
+  // La page elle-même : toujours vérifier auprès du serveur (sinon le cache du navigateur peut garder l'ancienne version ~10 min)
+  const u = new URL(e.request.url), page = e.request.mode === 'navigate' || (u.origin === location.origin && /\/(index\.html)?$/.test(u.pathname));
+  e.respondWith((page ? fetch(e.request.url, {cache: 'no-cache', credentials: 'same-origin'}) : fetch(e.request)).then(r => {
     const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r;
   }).catch(() => caches.match(e.request).then(r => r || caches.match('./index.html'))));
 });
