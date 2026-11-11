@@ -321,13 +321,13 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .bossbar{margin:8px 0 4px;height:9px}.bossbar>div{background:linear-gradient(90deg,#f43f5e,#fb923c)!important;box-shadow:0 0 8px #f43f5e}
 .mrrow{display:flex;align-items:center;gap:10px;width:100%;margin:6px 0;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--rc);border-radius:12px;color:var(--text);font:inherit;cursor:pointer}
 .mrrow.on{border-color:var(--rc)}.mrbars{display:grid;grid-template-columns:56px 1fr auto;gap:8px;align-items:center;margin-top:4px}.mrbars .goal{height:6px;margin:0}.mrbars .goal>span{display:block;height:100%;border-radius:3px;background:var(--rc)}
-#bigtimer{position:fixed;inset:0;z-index:9998;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;cursor:pointer;animation:awIn .25s ease both;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
-#bigtimer .btlab{font-size:clamp(20px,5vw,44px);font-weight:800;letter-spacing:.3em;color:#9aa3ad}
+#fstimer{position:fixed;inset:0;z-index:9998;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;cursor:pointer;animation:awIn .25s ease both;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
+#fstimer .btlab{font-size:clamp(20px,5vw,44px);font-weight:800;letter-spacing:.3em;color:#9aa3ad}
 #btv{font-size:min(38vw,62vh);font-weight:900;line-height:.9;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-#bigtimer.fin{background:var(--ok);color:#06210f;animation:btFlash 1s ease-in-out infinite}#bigtimer.fin .btlab{color:#06210f}
+#fstimer.fin{background:var(--ok);color:#06210f;animation:btFlash 1s ease-in-out infinite}#fstimer.fin .btlab{color:#06210f}
 @keyframes btFlash{50%{filter:brightness(1.25)}}
 .btbtns{display:flex;gap:12px}.btbtns button{background:#ffffff1a;color:inherit;border:0;border-radius:14px;padding:14px 22px;font:inherit;font-size:clamp(16px,3vw,26px);font-weight:800;cursor:pointer}
-.bthint{font-size:13px;color:#9aa3ad;margin-top:1vh}#bigtimer.fin .bthint{color:#06210f}
+.bthint{font-size:13px;color:#9aa3ad;margin-top:1vh}#fstimer.fin .bthint{color:#06210f}
 #fdv,#ftv{cursor:zoom-in}
 .heatleg{display:flex;justify-content:center;align-items:center;gap:4px;margin-top:8px}.heatleg i{width:24px;height:10px;border-radius:3px}.heatleg span{margin:0 4px}
 .qhead{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:none;border:0;padding:0;cursor:pointer;color:inherit;font:inherit}.qchev{color:#7dd3fc;font-size:14px}
@@ -4801,8 +4801,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.14.2';
+const APP_VERSION = '9.14.3';
 const CHANGELOG = [
+  {v: '9.14.3', d: '2026-11-11', fr: ['Corrigé : la fenêtre du chrono de repos (avec l\'anneau) restait bloquée en plein écran noir. Elle se ferme de nouveau normalement.'], en: ['Fixed: the rest timer window (with the ring) got stuck full screen in black. It closes normally again.']},
   {v: '9.14.2', d: '2026-11-11', fr: ['Profil : l\'icône d\'appareil photo sur ta photo est de nouveau visible.'], en: ['Profile: the camera icon on your photo is visible again.']},
   {v: '9.14.1', d: '2026-11-11', fr: ['Quêtes : les barres de progression s\'affichent maintenant bien.'], en: ['Quests: progress bars now display properly.']},
   {v: '9.14', d: '2026-11-11', fr: ['Carte des muscles : 5 couleurs bien différentes (bleu → rouge) au lieu d\'une seule couleur plus ou moins pâle.', 'Quêtes : la carte est maintenant repliée par défaut (quête, donjon et boss en petit). Touche-la pour l\'ouvrir.', 'Boss du mois : il se base maintenant sur un grand exercice (couché, squat, soulevé de terre…), pas sur une élévation latérale.', '⛶ Touche le gros chrono de repos (écran déplié ou mode focus) pour l\'afficher en plein écran, lisible de loin.'], en: ['Muscle map: 5 clearly different colors (blue → red) instead of one color more or less faded.', 'Quests: the card is now collapsed by default (quest, dungeon and boss in small). Tap it to open.', 'Boss of the month: now based on a big lift (bench, squat, deadlift…), not a lateral raise.', '⛶ Tap the big rest timer (unfolded screen or focus mode) to show it full screen, readable from afar.']},
@@ -6110,8 +6111,8 @@ function headerRight(v) {
 let navAnim = false;
 /* ---------- Chrono plein écran : lisible de loin ---------- */
 function bigTimerOpen() {
-  if (document.getElementById('bigtimer')) return;
-  const o = document.createElement('div'); o.id = 'bigtimer';
+  if (document.getElementById('fstimer')) return;
+  const o = document.createElement('div'); o.id = 'fstimer';
   o.innerHTML = `<div class="btlab">${T('REPOS', 'REST')}</div><div id="btv">${$('#tval') ? $('#tval').textContent : '0:00'}</div>
     <div class="btbtns"><button data-act="timer-sub">−15 s</button><button data-act="timer-add">+30 s</button><button data-act="timer-stop">${T('Passer', 'Skip')}</button></div>
     <div class="bthint">${T('Touche l\'écran pour fermer', 'Tap the screen to close')}</div>`;
@@ -6121,12 +6122,12 @@ function bigTimerOpen() {
   focusWakeSet(true);
 }
 function bigTimerClose() {
-  const o = document.getElementById('bigtimer'); if (!o) return; o.remove();
+  const o = document.getElementById('fstimer'); if (!o) return; o.remove();
   try { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {}
   if (!focusOn) focusWakeSet(false);
 }
 function bigTimerSync() {
-  const o = document.getElementById('bigtimer'); if (!o) return;
+  const o = document.getElementById('fstimer'); if (!o) return;
   const t = $('#timer'), fin = t && t.classList.contains('fin'), on = t && t.classList.contains('show');
   o.classList.toggle('fin', !!fin);
   const v = document.getElementById('btv'); if (v) v.textContent = fin ? T('GO!', 'GO!') : on ? $('#tval').textContent : '0:00';
