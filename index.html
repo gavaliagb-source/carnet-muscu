@@ -472,10 +472,7 @@ nav button{font-size:11px}
 <main id="app"></main>
 <div id="timer"><span data-act="timer-go" style="flex:1;cursor:pointer" title="Agrandir / retour à la séance"><span id="tlab">Repos</span> <span class="t" id="tval">0:00</span></span>
   <span class="row" id="tbtns"><button data-act="timer-add">+30 s</button><button data-act="timer-stop">Passer</button></span></div>
-<nav id="nav">
-  <button data-tab="train"><span class="ic">🏋️</span>Entraînement</button>
-  <button data-tab="profile"><span class="ic">👤</span>Profil</button>
-</nav>
+<nav id="nav"><button data-tab="train"><span class="ic"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.4 14.4 9.6 9.6"></path><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"></path><path d="m21.5 21.5-1.4-1.4"></path><path d="M3.9 3.9 2.5 2.5"></path><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"></path></svg></span>Entraînement</button><button data-tab="stretch"><span class="ic"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4.5" r="2"></circle><path d="M12 7v6"></path><path d="m5 10 7 2 7-2"></path><path d="m8 20 4-7 4 7"></path></svg></span>Étirements</button><button data-tab="cardio"><span class="ic"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path><path d="M3.5 12h4.5l1.5-2.5 2.5 5 1.5-2.5h7"></path></svg></span>Cardio</button><button data-tab="timers"><span class="ic"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2h4"></path><path d="m12 14 3-3"></path><circle cx="12" cy="14" r="8"></circle></svg></span>Intervalles</button><button data-tab="profile"><span class="ic"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>Profil</button></nav>
 <div id="wobar" data-act="go-workout"></div>
 <div id="toast"></div>
 <input type="file" id="fileIn" accept=".json,application/json,.csv,text/csv" hidden>
@@ -4845,8 +4842,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.21.4';
+const APP_VERSION = '9.21.5';
 const CHANGELOG = [
+  {v: '9.21.5', d: '2026-11-11', fr: ['La barre du bas affiche ses icônes dès l\'ouverture, sans emoji qui flashe.'], en: ['The bottom bar shows its icons right away on launch, no emoji flash.']},
   {v: '9.21.4', d: '2026-11-11', fr: ['Les emojis n\'apparaissent plus une fraction de seconde à l\'ouverture : les icônes sont posées avant le premier affichage.'], en: ['Emojis no longer flash for a split second on launch: icons are applied before the first paint.']},
   {v: '9.21.3', d: '2026-11-11', fr: ['Réglages : l\'option des emojis est retirée, les icônes modernes sont toujours utilisées.'], en: ['Settings: the emoji option is removed, modern icons are always used.']},
   {v: '9.21.2', d: '2026-11-11', fr: ['⚔️ Boss : « Comment le battre » est maintenant repliable — touche pour voir les options.'], en: ['⚔️ Boss: “How to beat it” is now collapsible — tap to see the options.']},
