@@ -169,7 +169,7 @@ button.chip{cursor:pointer}
 .bar .fill{height:100%;background:var(--accent);border-radius:7px}
 .bar b{text-align:right;font-variant-numeric:tabular-nums}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.ie{display:inline-flex;vertical-align:-.18em;line-height:1}.ie .ico{flex:none}.medal.ok .mic2 .ie:not([style]){color:var(--accent)}
+.ie{display:inline-flex;vertical-align:-.18em;line-height:1}.ie .ico{flex:none}
 .mythm{display:flex;gap:0;align-items:stretch}.mythm .btn:first-child{flex:1;min-width:0;text-align:left;border-radius:10px 0 0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mythm .btn+.btn{border-radius:0 10px 10px 0;border-left:0;padding:0 10px}
 .sw2{display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:6px;vertical-align:-3px;border:1px solid #fff4}
 .sug{margin-top:8px;padding:8px 10px;border-radius:10px;background:var(--card2);border:1px dashed var(--accent);font-size:13px;display:flex;gap:8px;align-items:center;justify-content:space-between}
@@ -270,7 +270,19 @@ button.chip{cursor:pointer}
 .goal{height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin-top:8px}.goal>div{height:100%;background:var(--accent);border-radius:6px}
 .stag{display:block;width:100%;text-align:left;background:color-mix(in srgb,var(--warm) 14%,transparent);border:1px solid var(--warm);color:var(--text);border-radius:10px;padding:8px 10px;margin:8px 0 2px;font-size:13px;cursor:pointer}
 .check.pr{background:linear-gradient(180deg,#ffd54a,#f5a700);color:#3a2600;border-color:#f5a700;font-size:18px}
-.mxt td{padding:6px 4px;text-align:center}.medal{text-align:center;opacity:.45;margin:0}.medal.ok{opacity:1;border-color:var(--accent)}.mic2{font-size:30px;line-height:1.2}
+.mxt td{padding:6px 4px;text-align:center}.medal{text-align:center;opacity:.45;margin:0;position:relative}.medal.ok{opacity:1;border-color:var(--rc,var(--accent));box-shadow:0 0 14px -6px var(--rc,var(--accent))}.mic2{font-size:30px;line-height:1.2}
+.medal.ok .mic2 .ie:not([style]){color:var(--rc,var(--accent))!important}.msub{font-size:11px;margin:2px 0}.medal .goal>div{background:var(--rc,var(--accent))}
+.mrk{position:absolute;top:8px;right:8px;min-width:20px;height:20px;padding:0 5px;border-radius:6px;border:1.5px solid var(--rc);color:var(--rc);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1}
+.mcat{margin:22px 0 10px;font-size:17px;display:flex;align-items:baseline;gap:8px}
+.sysw{border:1.5px solid color-mix(in srgb,#38bdf8 70%,transparent);background:linear-gradient(160deg,color-mix(in srgb,#38bdf8 12%,var(--card)),var(--card) 60%);box-shadow:0 0 22px -8px #38bdf8,inset 0 0 18px -12px #38bdf8;margin:0}
+.sysh{text-align:center;letter-spacing:4px;font-weight:800;font-size:13px;color:#7dd3fc;margin-bottom:12px;text-shadow:0 0 8px #38bdf880}
+.rkbig{width:64px;height:64px;flex:none;border-radius:14px;border:2px solid var(--rc);color:var(--rc);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;box-shadow:0 0 18px -4px var(--rc),inset 0 0 14px -6px var(--rc);text-shadow:0 0 10px var(--rc)}
+.lvl{font-size:34px;font-weight:900;line-height:1.05}
+.sysbar{margin:12px 0 6px;height:8px}.sysbar>div{background:linear-gradient(90deg,#38bdf8,var(--rc))!important;box-shadow:0 0 10px #38bdf8}
+.sysstats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}.sysstats>div{background:color-mix(in srgb,#38bdf8 8%,var(--card2));border:1px solid color-mix(in srgb,#38bdf8 30%,transparent);border-radius:10px;padding:7px 4px;text-align:center;min-width:0}.sysstats span{display:block;font-size:10px;letter-spacing:1.5px;color:#7dd3fc;font-weight:800}.sysstats b{font-size:15px}.sysstats i{font-style:normal;font-size:10px;color:var(--muted);margin-left:2px}
+.rkchip{display:inline-flex;align-items:center;gap:6px;background:none;border:1.5px solid var(--rc);color:var(--text);border-radius:999px;padding:3px 10px 3px 4px;font-size:12px;font-weight:700;cursor:pointer;margin-top:4px}.rkchip .mrk{position:static;height:18px;min-width:18px;border-radius:999px;background:var(--rc);color:#0b0d10;border:0;font-size:10px}
+.lvrk{position:static!important;display:inline-flex}
+.lvup{border:1.5px solid #38bdf8;background:color-mix(in srgb,#38bdf8 10%,var(--card));box-shadow:0 0 18px -6px #38bdf8;text-align:center;margin:8px 0}.lvup .sysh{margin-bottom:6px}
 .ybig{text-align:center;margin:0;display:flex;flex-direction:column;gap:2px}.ybig b{font-size:26px}
 .ymonths{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;height:90px;margin-top:10px;align-items:end}.ymonths div{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}.ymonths span{width:70%;background:var(--accent);border-radius:3px;min-height:2px}.ymonths i{font-style:normal;font-size:10px;color:var(--muted);margin-top:3px}
 .trow .btn{white-space:nowrap;display:flex;align-items:center;justify-content:center;padding-left:8px;padding-right:8px;font-size:15px}.trow .btn .ico{margin-right:6px}.trow .btn:last-child .ico{margin:0}
@@ -1461,12 +1473,12 @@ function finishWorkout() {
     if (nv > 0 && pv > 0 && nv > pv) prs.push({name: e.name, from: `${pb.w}×${pb.r}`, to: `${nb.w}×${nb.r}`});
     else if (nv === 0 && pv === 0) { const nr = Math.max(...ws.map(s => +s.r)), pr = Math.max(...prevSets.map(s => +s.r)); if (nr > pr) prs.push({name: e.name, from: pr + ' reps', to: nr + ' reps'}); }
   });
-  const medBefore = medalsEarned().got;
+  const meBefore = medalsEarned(), medBefore = meBefore.got, huBefore = hunter(meBefore);
   S.history.push({id, routineId: a.routineId, routineName: a.routineName, date: a.start, duration: Math.round((Date.now() - new Date(a.start)) / 60000), exercises});
   const wasFree = !a.routineId;
   const rtR = S.routines.find(x => x.id === a.routineId), rtCh = routineChanges(a, rtR);
   window._rtUpd = rtCh.length ? {rid: a.routineId, ex: JSON.parse(JSON.stringify(a.exercises))} : null;
-  const medDefs = medalDefs(), medNew = Object.keys(medalsEarned().got).filter(k => !medBefore[k]).map(k => medDefs.find(d => d.id === k)).filter(Boolean);
+  const meAfter = medalsEarned(), huAfter = hunter(meAfter), medDefs = meAfter.defs, medNew = Object.keys(meAfter.got).filter(k => !medBefore[k]).map(k => medDefs.find(d => d.id === k)).filter(Boolean);
   setTimeout(() => queueCloud(1500), 0);
   S.active = null; save(); stopTimer(); clearNotif(); setRoot('profile'); render(); setTimeout(() => confetti(prs.length ? 160 : 90), 200);
   modal(`<h2>Séance enregistrée 💪</h2>
@@ -1475,7 +1487,11 @@ function finishWorkout() {
     ${(() => { if (!prevH) return ''; const nh = S.history[S.history.length - 1];
       const row = (l, nv, pv, f) => { const pc = pv ? Math.round((nv - pv) / pv * 100) : null; return `<div class="row between" style="padding:5px 0"><span class="muted">${l}</span><span><b>${f(nv)}</b> ${pc == null ? '' : `<span class="small" style="color:${pc >= 0 ? 'var(--ok)' : 'var(--danger)'}">${pc >= 0 ? '▲' : '▼'} ${Math.abs(pc)} %</span>`}</span></div>`; };
       return `<div class="card" style="margin:8px 0"><b>Par rapport au ${dateFr(prevH.date)}</b>${row('Volume', sessVol(nh), sessVol(prevH), v => Math.round(v).toLocaleString(LOC()) + ' ' + U())}${row('Réps', sessReps(nh), sessReps(prevH), v => v)}${prevH.duration ? row('Durée', nh.duration, prevH.duration, v => hm(v)) : ''}</div>`; })()}
-    ${medNew.length ? `<div class="card" style="border-color:var(--accent);margin:8px 0"><b>🏅 ${T(medNew.length > 1 ? 'Nouvelles médailles!' : 'Nouvelle médaille!', medNew.length > 1 ? 'New medals!' : 'New medal!')}</b>${medNew.map(d => `<div style="margin-top:4px">${d.ic} ${esc(d.t)}</div>`).join('')}</div>` : ''}
+    <div class="card lvup" style="--rc:${huAfter.col}"><div class="sysh">[ ${T('SYSTÈME', 'SYSTEM')} ]</div>
+      ${huAfter.lvl > huBefore.lvl ? `<b style="font-size:18px;letter-spacing:1px">${T('NIVEAU SUPÉRIEUR!', 'LEVEL UP!')}</b><div style="margin:4px 0">${T('Niveau', 'Level')} ${huBefore.lvl} → <b style="color:var(--rc);font-size:20px">${huAfter.lvl}</b></div>` : `<div>${T('Niveau', 'Level')} <b>${huAfter.lvl}</b></div>`}
+      ${huAfter.rk !== huBefore.rk ? `<div style="margin:6px 0">${T('Nouveau rang', 'New rank')} : ${rkBadge(huAfter.rk, 'mrk lvrk')} <b style="color:var(--rc)">${esc(huAfter.title)}</b></div>` : ''}
+      <div class="small muted">+${(huAfter.xp - huBefore.xp).toLocaleString(LOC())} XP</div></div>
+    ${medNew.length ? `<div class="card" style="border-color:var(--accent);margin:8px 0"><b>🏅 ${T(medNew.length > 1 ? 'Nouvelles médailles!' : 'Nouvelle médaille!', medNew.length > 1 ? 'New medals!' : 'New medal!')}</b>${medNew.map(d => `<div style="margin-top:6px;display:flex;align-items:center;gap:8px">${rkBadge(d.rk, 'mrk lvrk')} ${d.ic} ${esc(d.t)}</div>`).join('')}</div>` : ''}
     ${rtCh.length ? `<div class="card" id="rtupd" style="border-color:var(--accent);margin:8px 0"><b>✏️ ${T('Tu as modifié cette séance', 'You changed this workout')}</b>
       <ul class="small" style="margin:6px 0 10px;padding-left:18px">${rtCh.slice(0, 6).map(c => `<li>${esc(c)}</li>`).join('')}${rtCh.length > 6 ? `<li>…</li>` : ''}</ul>
       <button class="btn primary block" data-act="rt-upd">${T('Mettre à jour « ' + esc(rtR.name) + ' »', 'Update “' + esc(rtR.name) + '”')}</button>
@@ -3258,7 +3274,7 @@ function vProfile() {
   const month = S.history.filter(h => { const d = new Date(h.date); return d.getMonth() === n0.getMonth() && d.getFullYear() === n0.getFullYear(); }).length;
   const recent = S.history.slice().reverse().slice(0, 3);
   return `<div class="row" style="gap:14px;margin-bottom:16px"><button class="avatar" data-act="avatar" aria-label="${T('Photo de profil', 'Profile photo')}">${S.settings.avatar ? `<img src="${S.settings.avatar}" alt="">` : esc((nm.trim()[0] || '?').toUpperCase())}<span class="cam">📷</span></button>
-      <div style="flex:1;min-width:0"><h2 style="font-size:20px">${esc(nm)}</h2>
+      <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0">${esc(nm)}</h2>${(() => { if (!S.history.length) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${esc(hu.title)}</button>`; })()}
       <div class="row" style="gap:18px;flex-wrap:wrap"><div><span class="muted small">Entraînements</span><br><b>${S.history.length}</b></div><div><span class="muted small">${T('Série', 'Streak')}</span><br><b>🔥 ${streakWeeks()} sem.</b></div><div><span class="muted small">Ce mois</span><br><b>${month}</b></div></div></div></div>
     ${bodyCard()}${friendsCard()}${yearBanner()}${weekGoal()}${stagCard()}
     <div class="row between"><span>${headline}</span><select style="width:auto" data-pf="range"><option value="12" ${pfWeeks === 12 ? 'selected' : ''}>3 derniers mois</option><option value="26" ${pfWeeks === 26 ? 'selected' : ''}>6 mois</option><option value="52" ${pfWeeks === 52 ? 'selected' : ''}>1 an</option><option value="0" ${pfWeeks === 0 ? 'selected' : ''}>Tout</option></select></div>
@@ -3802,44 +3818,111 @@ async function shareImage(hid) {
 const isBench = n => /couche|bench press/.test(n) && !/inclin|declin|haltere|dumbbell|smith|serre|close|guillotine|floor/.test(n);
 const isSquat = n => /squat/.test(n) && !/goblet|split|bulgar|hack|front|avant|sissy|jump|saut|haltere|dumbbell|smith|pistol|bosu|overhead|wall|band/.test(n);
 const isDead = n => /souleve de terre|deadlift/.test(n) && !/roumain|romanian|jambes tendues|stiff|haltere|dumbbell|trap|hex/.test(n);
+const isOHP = n => /militaire|military press|overhead press|developpe debout|strict press/.test(n) && !/haltere|dumbbell|machine|smith|assis|seated|arnold/.test(n);
+const isPushUp = n => /pompe|push.?up/.test(n) && !/machine|bande|band/.test(n);
+const isPullUp = n => /traction|pull.?up|chin.?up/.test(n) && !/poulie|lat|assist|machine|band|bande|tirage/.test(n);
+const RKS = ['E', 'D', 'C', 'B', 'A', 'S'], RKC = {E: '#9aa3ad', D: '#4ade80', C: '#38bdf8', B: '#a78bfa', A: '#fb923c', S: '#f43f5e', 'S+': '#f5c542', M: '#8b5cf6'};
+const MCATS = [['n', ['L\'Éveil', 'The Awakening']], ['cst', ['Constance', 'Consistency']], ['str', ['Force', 'Strength']], ['vol', ['Volume et endurance', 'Volume & endurance']], ['qst', ['Quêtes spéciales', 'Special quests']]];
 function medalDefs() {
   const kg = U() === 'kg', u = U();
-  const L = (key, ic, fr, en, arr, kgArr) => (kg ? kgArr : arr).map((v, i) => ({id: key + v, ic, g: key, v, t: T(fr.replace('#', v.toLocaleString(LOC())), en.replace('#', v.toLocaleString(LOC()))), lvl: i}));
+  const L = (key, cat, ic, fr, en, arr, kgArr, sub) => { const a = kg ? kgArr : arr; return a.map((v, i) => ({id: key + v, ic, g: key, v, cat, rk: RKS[Math.min(5, a.length === 1 ? 0 : Math.round(i / (a.length - 1) * 5))], t: T(fr.replace('#', v.toLocaleString(LOC())), en.replace('#', v.toLocaleString(LOC()))), s: sub ? T(sub[0], sub[1]) : ''})); };
+  const one = (id, g, v, cat, ic, rk, fr, en, sub) => ({id, g, v, cat, ic, rk, t: T(fr, en), s: sub ? T(sub[0], sub[1]) : ''});
   return [
-    {id: 'n1', ic: '🏋️', g: 'n', v: 1, t: T('Première séance', 'First workout')}, {id: 'pr1', ic: '🏆', g: 'pr', v: 1, t: T('Premier record battu', 'First record broken')},
-    ...L('n', '🏋️', '# séances', '# workouts', [10, 25, 50, 100, 250, 500, 1000], [10, 25, 50, 100, 250, 500, 1000]),
-    ...L('wk', '🔥', '# semaines de suite', '# weeks in a row', [4, 8, 12, 26, 52], [4, 8, 12, 26, 52]),
-    ...L('hr', '⏱️', '# heures d\'entraînement', '# hours of training', [10, 50, 100, 250, 500], [10, 50, 100, 250, 500]),
-    ...L('vol', '🏗️', `# ${u} soulevées au total`, `# ${u} lifted in total`, [100000, 500000, 1000000, 5000000], [50000, 250000, 500000, 2500000]),
-    ...L('pr', '🏆', '# records battus', '# records broken', [10, 50, 100, 250], [10, 50, 100, 250]),
-    ...L('bp', '🛏️', `# ${u} au développé couché`, `# ${u} bench press`, [135, 185, 225, 275, 315], [60, 80, 100, 120, 140]),
-    ...L('sq', '🦵', `# ${u} au squat`, `# ${u} squat`, [135, 225, 315, 405], [60, 100, 140, 180]),
-    ...L('dl', '⛓️', `# ${u} au soulevé de terre`, `# ${u} deadlift`, [135, 225, 315, 405, 495], [60, 100, 140, 180, 220])];
+    one('n1', 'n', 1, 'n', '🏋️', 'E', 'L\'Éveil', 'The Awakening', ['Ta toute première séance', 'Your very first workout']),
+    ...L('n', 'n', '🏋️', '# séances', '# workouts', [10, 25, 50, 100, 250, 500, 1000], [10, 25, 50, 100, 250, 500, 1000]),
+    ...L('wk', 'cst', '🔥', '# semaines de suite', '# weeks in a row', [4, 8, 12, 26, 52, 104], [4, 8, 12, 26, 52, 104]),
+    ...L('day', 'cst', '📅', 'Quête quotidienne : # jours de suite', 'Daily quest: # days in a row', [3, 5, 7, 14], [3, 5, 7, 14]),
+    ...L('mon', 'cst', '🗓️', '# séances en un mois', '# workouts in one month', [12, 16, 20, 25], [12, 16, 20, 25]),
+    ...L('yr', 'cst', '🏅', '# séances en une année', '# workouts in one year', [50, 100, 150, 200, 250], [50, 100, 150, 200, 250]),
+    one('back1', 'back', 1, 'cst', '🔁', 'D', 'Le retour du chasseur', 'The hunter returns', ['Revenir après 2 semaines de pause', 'Come back after a 2-week break']),
+    ...L('bp', 'str', '🛏️', `# ${u} au développé couché`, `# ${u} bench press`, [135, 185, 225, 275, 315, 405], [60, 80, 100, 120, 140, 180]),
+    ...L('sq', 'str', '🦵', `# ${u} au squat`, `# ${u} squat`, [135, 225, 315, 405, 495], [60, 100, 140, 180, 220]),
+    ...L('dl', 'str', '⛓️', `# ${u} au soulevé de terre`, `# ${u} deadlift`, [135, 225, 315, 405, 495, 585], [60, 100, 140, 180, 220, 260]),
+    ...L('ohp', 'str', '⬆️', `# ${u} au développé militaire`, `# ${u} overhead press`, [95, 135, 185, 225], [40, 60, 80, 100]),
+    ...L('b3', 'str', '👑', `Club des # ${u}`, `# ${u} club`, [500, 750, 1000, 1200, 1500], [225, 340, 450, 545, 680], ['Couché + squat + soulevé de terre', 'Bench + squat + deadlift']),
+    ...L('vol', 'vol', '🏗️', `# ${u} soulevées au total`, `# ${u} lifted in total`, [100000, 500000, 1000000, 5000000, 10000000], [50000, 250000, 500000, 2500000, 5000000]),
+    ...L('svol', 'vol', '⚡', `# ${u} en une seule séance`, `# ${u} in a single workout`, [10000, 20000, 30000, 40000], [5000, 10000, 15000, 20000]),
+    ...L('hr', 'vol', '⏱️', '# heures d\'entraînement', '# hours of training', [10, 50, 100, 250, 500, 1000], [10, 50, 100, 250, 500, 1000]),
+    ...L('sets', 'vol', '✅', '# séries complétées', '# sets completed', [100, 500, 1000, 5000, 10000], [100, 500, 1000, 5000, 10000]),
+    ...L('reps', 'vol', '🔢', '# répétitions au total', '# total reps', [1000, 10000, 50000, 100000, 250000], [1000, 10000, 50000, 100000, 250000]),
+    ...L('long', 'vol', '⏳', 'Donjon interminable × #', 'Endless dungeon × #', [1, 10, 25], [1, 10, 25], ['Séances de 90 min ou plus', 'Workouts of 90 min or more']),
+    one('pr1', 'pr', 1, 'qst', '🏆', 'E', 'Premier record battu', 'First record broken'),
+    ...L('pr', 'qst', '🏆', '# records battus', '# records broken', [10, 50, 100, 250, 500], [10, 50, 100, 250, 500]),
+    ...L('night', 'qst', '🌙', 'Chasseur de nuit × #', 'Night hunter × #', [1, 25, 100], [1, 25, 100], ['Séances commencées après 21 h', 'Workouts started after 9 PM']),
+    ...L('early', 'qst', '✨', 'Lève-tôt × #', 'Early bird × #', [1, 25, 100], [1, 25, 100], ['Séances commencées avant 7 h', 'Workouts started before 7 AM']),
+    ...L('wknd', 'qst', '🎯', 'Guerrier du week-end × #', 'Weekend warrior × #', [10, 50, 100], [10, 50, 100], ['Séances le samedi ou le dimanche', 'Workouts on Saturday or Sunday']),
+    ...L('ex', 'qst', '📚', 'Arsenal de # exercices', 'Arsenal of # exercises', [10, 25, 50, 100], [10, 25, 50, 100], ['Exercices différents essayés', 'Different exercises tried']),
+    ...L('push', 'qst', '💪', '# pompes en une séance', '# push-ups in one workout', [50, 100, 200], [50, 100, 200], ['La quête quotidienne de Solo Leveling commence à 100', 'Solo Leveling\'s daily quest starts at 100']),
+    ...L('pull', 'qst', '🧗', '# tractions au total', '# total pull-ups', [100, 500, 1000, 5000], [100, 500, 1000, 5000])];
 }
 function medalsEarned(hist) {
   const H = (hist || S.history).slice().sort((a, b) => a.date.localeCompare(b.date));
-  const st = {n: 0, wk: 0, hr: 0, vol: 0, pr: 0, bp: 0, sq: 0, dl: 0}, weeks = new Set(), best = {}, got = {}, defs = medalDefs();
+  const st = {n: 0, wk: 0, hr: 0, vol: 0, pr: 0, bp: 0, sq: 0, dl: 0, ohp: 0, b3: 0, day: 0, mon: 0, yr: 0, back: 0, svol: 0, sets: 0, reps: 0, long: 0, night: 0, early: 0, wknd: 0, ex: 0, push: 0, pull: 0};
+  const weeks = new Set(), days = new Set(), mons = {}, yrs = {}, exs = new Set(), best = {}, got = {}, defs = medalDefs();
+  let prevT = null;
   H.forEach(h => {
-    st.n++; st.hr += (+h.duration || 0) / 60; st.vol += sessVol(h);
+    const d = new Date(h.date), hr = d.getHours(), dk = dkey(d);
+    st.n++; st.hr += (+h.duration || 0) / 60;
+    const sv = sessVol(h); st.vol += sv; st.svol = Math.max(st.svol, sv);
+    if ((+h.duration || 0) >= 90) st.long++;
+    if (hr >= 21) st.night++; if (hr < 7 && hr >= 3) st.early++; if (d.getDay() === 0 || d.getDay() === 6) st.wknd++;
+    if (prevT != null && (d - prevT) >= 14 * 864e5) st.back++; prevT = +d;
     const wk = weekStart(h.date); weeks.add(dkey(wk));
     const w2 = new Date(wk); let k = 0; while (weeks.has(dkey(w2))) { k++; w2.setDate(w2.getDate() - 7); } st.wk = Math.max(st.wk, k);
+    if (!days.has(dk)) { days.add(dk); const d2 = new Date(d); let c = 0; while (days.has(dkey(d2))) { c++; d2.setDate(d2.getDate() - 1); } st.day = Math.max(st.day, c); }
+    const mk = d.getFullYear() + '-' + d.getMonth(); mons[mk] = (mons[mk] || 0) + 1; st.mon = Math.max(st.mon, mons[mk]);
+    yrs[d.getFullYear()] = (yrs[d.getFullYear()] || 0) + 1; st.yr = Math.max(st.yr, yrs[d.getFullYear()]);
+    let push = 0;
     h.exercises.forEach(e => {
-      const ws = work(e.sets).filter(s => s.u !== 's'), nn = norm(e.name); if (!ws.length) return;
+      const nn = norm(e.name), ws0 = work(e.sets);
+      if (ws0.length) exs.add(nn);
+      st.sets += ws0.length;
+      const rs = ws0.filter(s => s.u !== 's' && s.u !== 'c').reduce((a, s) => a + (+s.r || 0), 0); st.reps += rs;
+      if (isPushUp(nn)) push += rs; if (isPullUp(nn)) st.pull += rs;
+      const ws = ws0.filter(s => s.u !== 's'); if (!ws.length) return;
       const v = Math.max(...ws.map(s => e1rm(s.w, s.r))), mw = Math.max(...ws.map(s => +s.w || 0));
       if (best[nn] != null && v > best[nn] && best[nn] > 0) st.pr++;
       best[nn] = Math.max(best[nn] || 0, v);
-      if (isBench(nn)) st.bp = Math.max(st.bp, mw); if (isSquat(nn)) st.sq = Math.max(st.sq, mw); if (isDead(nn)) st.dl = Math.max(st.dl, mw);
+      if (isBench(nn)) st.bp = Math.max(st.bp, mw); if (isSquat(nn)) st.sq = Math.max(st.sq, mw); if (isDead(nn)) st.dl = Math.max(st.dl, mw); if (isOHP(nn)) st.ohp = Math.max(st.ohp, mw);
     });
-    defs.forEach(d => { if (!got[d.id] && st[d.g] >= d.v) got[d.id] = h.date; });
+    st.push = Math.max(st.push, push); st.ex = exs.size; st.b3 = st.bp + st.sq + st.dl;
+    defs.forEach(x => { if (!got[x.id] && st[x.g] >= x.v) got[x.id] = h.date; });
   });
   return {got, st, defs};
 }
+/* ---------- Système de chasseur (niveau, rang, XP) ---------- */
+const HRANKS = [[1, 'E', ['Chasseur de rang E', 'E-rank hunter']], [10, 'D', ['Chasseur de rang D', 'D-rank hunter']], [20, 'C', ['Chasseur de rang C', 'C-rank hunter']], [30, 'B', ['Chasseur de rang B', 'B-rank hunter']], [45, 'A', ['Chasseur de rang A', 'A-rank hunter']], [60, 'S', ['Chasseur de rang S', 'S-rank hunter']], [80, 'S+', ['Chasseur de niveau national', 'National-level hunter']], [100, 'M', ['Monarque des Ombres', 'Shadow Monarch']]];
+const xpAt = L => 60 * (L - 1) * (L - 1);
+function hunter(me) {
+  me = me || medalsEarned();
+  const st = me.st, nm = Object.keys(me.got).length;
+  const xp = Math.round(st.n * 100 + st.sets * 5 + st.pr * 40 + nm * 250);
+  const lvl = Math.floor(Math.sqrt(xp / 60)) + 1;
+  const r = HRANKS.filter(x => lvl >= x[0]).pop(), nx = HRANKS.find(x => x[0] > lvl);
+  return {xp, lvl, rk: r[1], title: T(r[2][0], r[2][1]), col: RKC[r[1]], cur: xp - xpAt(lvl), need: xpAt(lvl + 1) - xpAt(lvl), nextRank: nx ? {lvl: nx[0], rk: nx[1]} : null, st, nm};
+}
+const rkBadge = (rk, cls = 'mrk') => `<span class="${cls}" style="--rc:${RKC[rk]}">${rk}</span>`;
+let medFilter = 'all';
 function vMedals() {
-  const {got, st, defs} = medalsEarned();
+  const me = medalsEarned(), {got, st, defs} = me, hu = hunter(me);
   const n = Object.keys(got).length;
-  const cur = {n: st.n, wk: st.wk, hr: Math.round(st.hr), vol: Math.round(st.vol), pr: st.pr, bp: st.bp, sq: st.sq, dl: st.dl};
-  return `<p class="muted" style="margin:0 0 12px"><b style="color:var(--text)">${n}</b> / ${defs.length} ${T('médailles gagnées', 'medals earned')}</p><div class="grid2">` +
-    defs.map(d => { const ok = got[d.id]; return `<div class="card medal ${ok ? 'ok' : ''}"><div class="mic2">${d.ic}</div><b class="small">${esc(d.t)}</b><div class="small muted">${ok ? dateFr(ok) + ' ' + new Date(ok).getFullYear() : `${Math.min(cur[d.g], d.v).toLocaleString(LOC())} / ${d.v.toLocaleString(LOC())}`}</div>${ok ? '' : `<div class="goal" style="margin-top:6px"><div style="width:${Math.min(100, cur[d.g] / d.v * 100)}%"></div></div>`}</div>`; }).join('') + '</div>';
+  const fmtN = v => Math.round(v).toLocaleString(LOC());
+  const card = d => { const ok = got[d.id], cur = Math.min(st[d.g] || 0, d.v);
+    return `<div class="card medal ${ok ? 'ok' : ''}" style="--rc:${RKC[d.rk]}">${rkBadge(d.rk)}<div class="mic2">${d.ic}</div><b class="small">${esc(d.t)}</b>${d.s ? `<div class="small muted msub">${esc(d.s)}</div>` : ''}<div class="small muted">${ok ? dateFr(ok) + ' ' + new Date(ok).getFullYear() : `${fmtN(cur)} / ${fmtN(d.v)}`}</div>${ok ? '' : `<div class="goal" style="margin-top:6px"><div style="width:${Math.round(cur / d.v * 100)}%"></div></div>`}</div>`; };
+  const list = defs.filter(d => medFilter === 'all' || (medFilter === 'ok' ? got[d.id] : !got[d.id]));
+  const pct = Math.min(100, Math.round(hu.cur / hu.need * 100));
+  return `<div class="card sysw" style="--rc:${hu.col}">
+      <div class="sysh">[ ${T('STATUT', 'STATUS')} ]</div>
+      <div class="row" style="gap:14px;align-items:center">${rkBadge(hu.rk, 'rkbig')}
+        <div style="flex:1;min-width:0"><div class="muted small">${T('Niveau', 'Level')}</div><div class="lvl">${hu.lvl}</div><div class="small" style="color:var(--rc);font-weight:700">${esc(hu.title)}</div></div></div>
+      <div class="goal sysbar"><div style="width:${pct}%"></div></div>
+      <div class="row between small muted"><span>${fmtN(hu.cur)} / ${fmtN(hu.need)} XP</span><span>${hu.nextRank ? T(`Rang ${hu.nextRank.rk} au niveau ${hu.nextRank.lvl}`, `Rank ${hu.nextRank.rk} at level ${hu.nextRank.lvl}`) : T('Rang maximal atteint', 'Max rank reached')}</span></div>
+      <div class="sysstats"><div><span>${T('FOR', 'STR')}</span><b>${fmtN(st.b3)}</b><i>${U()}</i></div><div><span>${T('END', 'END')}</span><b>${fmtN(st.hr)}</b><i>h</i></div><div><span>${T('CON', 'CON')}</span><b>${st.wk}</b><i>${T('sem.', 'wk')}</i></div><div><span>${T('MÉD', 'MED')}</span><b>${n}</b><i>/ ${defs.length}</i></div></div>
+      <p class="small muted" style="margin:10px 0 0">${T('Chaque séance donne 100 XP, chaque série 5 XP, chaque record 40 XP et chaque médaille 250 XP.', 'Each workout gives 100 XP, each set 5 XP, each record 40 XP and each medal 250 XP.')}</p>
+    </div>
+    <div class="seg" style="margin:14px 0 4px"><button class="${medFilter === 'all' ? 'on' : ''}" data-act="med-f" data-f="all">${T('Toutes', 'All')}</button><button class="${medFilter === 'ok' ? 'on' : ''}" data-act="med-f" data-f="ok">${T('Gagnées', 'Earned')} (${n})</button><button class="${medFilter === 'todo' ? 'on' : ''}" data-act="med-f" data-f="todo">${T('À débloquer', 'Locked')} (${defs.length - n})</button></div>
+    ${MCATS.map(([c, nmC]) => { const L = list.filter(d => d.cat === c); if (!L.length) return ''; const gotC = defs.filter(d => d.cat === c && got[d.id]).length, totC = defs.filter(d => d.cat === c).length;
+      return `<h3 class="mcat">${T(nmC[0], nmC[1])} <span class="muted small">${gotC} / ${totC}</span></h3><div class="grid2">${L.map(card).join('')}</div>`; }).join('')}`;
 }
 
 /* ----- Bilan de l'année ----- */
@@ -4280,8 +4363,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.7';
+const APP_VERSION = '9.8';
 const CHANGELOG = [
+  {v: '9.8', d: '2026-11-11', fr: ['⚔️ Système de chasseur façon Solo Leveling : gagne de l\'XP, monte de niveau et passe du rang E au rang S… et plus.', '🏅 Plus de 100 médailles, classées par rang et par catégorie : force, constance, volume, quêtes spéciales (chasseur de nuit, quête quotidienne, club des 1 000…).', 'Fin de séance : le Système t\'annonce ton XP gagnée et tes montées de niveau.'], en: ['⚔️ Solo Leveling-style hunter system: earn XP, level up and climb from E rank to S rank… and beyond.', '🏅 Over 100 medals, sorted by rank and category: strength, consistency, volume, special quests (night hunter, daily quest, 1,000 club…).', 'End of workout: the System shows your XP gained and level-ups.']},
   {v: '9.7', d: '2026-11-11', fr: ['Icônes dessinées partout dans l\'appli à la place des emojis : titres, menus, médailles, statistiques, réglages et messages.', 'Tu préfères les emojis? Décoche « Icônes modernes » dans Réglages → Apparence.'], en: ['Drawn icons everywhere in the app instead of emojis: titles, menus, medals, stats, settings and messages.', 'Prefer emojis? Uncheck “Modern icons” in Settings → Appearance.']},
   {v: '9.6', d: '2026-11-11', fr: ['Cardio : nouvelles icônes dessinées pour chaque activité, plus sobres que les emojis.'], en: ['Cardio: new drawn icons for each activity, cleaner than emojis.']},
   {v: '9.5', d: '2026-11-11', fr: ['🎨 Mes thèmes : enregistre tes propres combinaisons de couleurs (Réglages → Apparence) et remets-les en un clic.'], en: ['🎨 My themes: save your own color combinations (Settings → Appearance) and switch back in one tap.']},
@@ -5737,10 +5821,13 @@ Object.assign(ICP, {
   eraser: '<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>',
   shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>'
 });
+ICP.crown = '<path d="M11.56 3.27a.5.5 0 0 1 .88 0l2.95 5.6a1 1 0 0 0 1.52.29L21.18 5.5a.5.5 0 0 1 .8.52L19.15 16.3a1 1 0 0 1-.95.7H5.8a1 1 0 0 1-.96-.7L2.02 6.02a.5.5 0 0 1 .8-.52l4.27 3.66a1 1 0 0 0 1.52-.29z"/><path d="M5 21h14"/>';
+ICP.pullup = '<path d="M3 4h18"/><circle cx="12" cy="9.5" r="2"/><path d="m8 4 2 7.5h4L16 4"/><path d="M12 11.5v5.5"/><path d="m9 21 3-4 3 4"/>';
+ICP.swords = '<path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/><path d="M14.5 6.5 18 3h3v3l-3.5 3.5"/><path d="m5 14 4 4"/><path d="m7 17-3 3"/><path d="m3 19 2 2"/>';
 if (!ICP.flag) ICP.flag = '<path d="M4 22V4"/><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1"/>';
 if (!ICP.pause) ICP.pause = '<rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/>';
 const EMO_ALL = {'✅': ['ccheck', 'var(--ok)'], '☑': ['checksq'], '⚠': ['alert', 'var(--warm)'], '⏱': ['timer'], '⏲': ['timer'], '📁': ['folder'], '☁': ['cloud'], '🔥': ['flame', '#ff8a3d'],
-  '💪': ['arm'], '📥': ['down'], '🤖': ['bot'], '📤': ['share'], '🗑': ['trash'], '🏆': ['trophy', '#f5c542'], '📅': ['calendar'], '📆': ['calendar'], '🗓': ['calendar'], '📋': ['clip'],
+  '💪': ['dumbbell'], '📥': ['down'], '🤖': ['bot'], '📤': ['share'], '🗑': ['trash'], '🏆': ['trophy', '#f5c542'], '📅': ['calendar'], '📆': ['calendar'], '🗓': ['calendar'], '📋': ['clip'],
   '🔒': ['lock'], '⏳': ['hourglass'], '💾': ['save'], '👥': ['users'], '🏋': ['dumbbell'], '📸': ['camera'], '📷': ['camera'], '🧘': ['yoga'], '🪶': ['feather'], '✏': ['pencil'],
   '📝': ['file'], '⬇': ['down'], '⬆': ['up'], '🔄': ['refresh'], '🔁': ['repeat'], '⚙': ['gear'], '👤': ['user'], '⛓': ['link'], '🔗': ['link'], '📊': ['chart'], '📈': ['chart'], '📉': ['chart'],
   '🏃': ['crun'], '🦵': ['crun'], '🚶': ['cwalk'], '👣': ['cwalk'], '🚴': ['cbike'], '⛷': ['cell'], '🪜': ['cstair'], '🚣': ['crow'], '🪢': ['crope'], '📚': ['book'], '📖': ['bookopen'],
@@ -5749,7 +5836,7 @@ const EMO_ALL = {'✅': ['ccheck', 'var(--ok)'], '☑': ['checksq'], '⚠': ['al
   '🏅': ['medal', '#f5c542'], '🥇': ['medal', '#f5c542'], '🏗': ['hammer'], '👋': ['hand'], '👆': ['hand'], '👏': ['thumb'], '👍': ['thumb'], '🔔': ['bell'], '🔕': ['belloff'],
   '🛠': ['wrench'], '🔧': ['wrench'], '🕓': ['clock'], '🕐': ['clock'], '🚀': ['rocket'], '📏': ['ruler'], '📐': ['ruler'], '📎': ['paperclip'], '🧭': ['compass'], '🔢': ['hash'],
   '🏁': ['flag'], '😄': ['smile'], '🎓': ['cap'], '🎯': ['target'], '🕸': ['radar'], '🛏': ['bed'], '📩': ['mail'], '⏸': ['pause'], '▶': ['play'], '🔎': ['search'], '🔍': ['search'],
-  '👁': ['eye'], '🧹': ['eraser'], '🛡': ['shield'], '🤝': ['users'], '❤️‍🔥': ['flame', '#ff8a3d']};
+  '👁': ['eye'], '🧹': ['eraser'], '🛡': ['shield'], '👑': ['crown', '#f5c542'], '🧗': ['pullup'], '⚔': ['swords'], '🤝': ['users'], '❤️‍🔥': ['flame', '#ff8a3d']};
 const EMO_RE = new RegExp('(' + Object.keys(EMO_ALL).sort((a, b) => b.length - a.length).join('|') + ')[\\uFE0F\\u200D]*', 'gu');
 const EMO_SKIP = 'select,option,textarea,input,script,style,title,canvas,[data-noic]';
 function iconizeAll(root) {
@@ -5963,6 +6050,7 @@ document.addEventListener('click', e => {
     case 'chr-lap': { const t = chrNow(), prev = chr.laps.length ? chr.laps[chr.laps.length - 1].t : 0; chr.laps.push({t, d: t - prev}); chrSave(); haptic(15); chrDraw(true); break; }
     case 'chr-reset': chr = {acc: 0, start: null, laps: []}; chrSave(); chrDraw(true); break;
     case 'cpick': openColorPicker(b.dataset.k); break;
+    case 'med-f': medFilter = b.dataset.f; render(); break;
     case 'mythm': { const t = myThemes().find(x => x.id === b.dataset.id); if (t) thmApply(t); break; }
     case 'mythm-save': {
       const n = (prompt(T('Nom de ton thème :', 'Name your theme:'), T('Mon thème', 'My theme') + ' ' + (myThemes().length + 1)) || '').trim(); if (!n) break;
