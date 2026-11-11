@@ -301,6 +301,17 @@ button.chip{cursor:pointer}
 .fdone{height:64px;font-size:20px}
 .frest{text-align:center;margin:6px 0 14px;padding:12px;border-radius:14px;background:var(--card2)}.frest b{display:block;font-size:52px;font-weight:900;line-height:1.1;margin:2px 0 8px;font-variant-numeric:tabular-nums}
 .focusing #timer{display:none!important}
+.foldwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.8fr);gap:16px;align-items:start}
+.foldside{position:sticky;top:calc(64px + env(safe-area-inset-top));max-height:calc(100vh - 160px - env(safe-area-inset-top));overflow:auto;overscroll-behavior:contain;padding-bottom:12px}
+body.fold main{max-width:1180px}
+body.fold #timer{display:none!important}
+body.fold .foldmain [id^="wex"]{cursor:pointer}
+.fdcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.fdcard.frest2{text-align:center;border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--card))}
+.frest2 b{display:block;font-size:64px;font-weight:900;line-height:1.05;margin:2px 0 10px;font-variant-numeric:tabular-nums}
+.fdnext{font-size:28px;font-weight:900;margin:2px 0}
+.fdtabs{display:flex;gap:6px;overflow-x:auto;margin:0 0 10px;padding-bottom:2px}.fdtabs button{flex:none;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:3px;cursor:pointer}.fdtabs button.on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
+.fdh{padding:10px 12px}
 .ftog{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 12px}
 .lvup{border:1.5px solid #38bdf8;background:color-mix(in srgb,#38bdf8 10%,var(--card));box-shadow:0 0 18px -6px #38bdf8;text-align:center;margin:8px 0}.lvup .sysh{margin-bottom:6px}
 .ybig{text-align:center;margin:0;display:flex;flex-direction:column;gap:2px}.ybig b{font-size:26px}
@@ -1506,7 +1517,7 @@ function finishWorkout() {
   const meAfter = medalsEarned(), huAfter = hunter(meAfter), medDefs = meAfter.defs, medNew = Object.keys(meAfter.got).filter(k => !medBefore[k]).map(k => medDefs.find(d => d.id === k)).filter(Boolean);
   setTimeout(() => queueCloud(1500), 0); setTimeout(remindSync, 500);
   if (huAfter.rk !== huBefore.rk) setTimeout(() => awaken(huBefore.rk, huAfter), 900);
-  focusOn = false; focusEx = null; focusWakeSet(false);
+  focusOn = false; focusEx = null; foldEx = null; focusWakeSet(false);
   S.active = null; save(); stopTimer(); clearNotif(); setRoot('profile'); render(); setTimeout(() => confetti(prs.length ? 160 : 90), 200);
   modal(`<h2>Séance enregistrée 💪</h2>
     <div class="row" style="margin:10px 0"><div class="stat"><span class="muted small">Durée</span><b>${hm((Date.now() - new Date(a.start)) / 60000)}</b></div><div class="stat"><span class="muted small">Exercices</span><b>${exercises.length}</b></div><div class="stat"><span class="muted small">Séries</span><b>${exercises.reduce((n, e) => n + work(e.sets).length, 0)}</b></div></div>
@@ -1628,6 +1639,7 @@ function startTimer(sec) {
   scheduleBeeps(sec); restSW(timerEnd);
   clearInterval(timerInt); tickTimer(); timerInt = setInterval(tickTimer, 250);
   if (focusOn && S.active && cur().v === 'workout') setTimeout(render, 0);
+  else setTimeout(foldPaint, 0);
 }
 /* Les bips sont programmés d'avance dans le moteur audio du téléphone : ils sonnent à l'heure même si l'écran
    est éteint et que l'appli est en pause. Un son inaudible garde le moteur audio actif pendant le repos. */
@@ -1656,9 +1668,10 @@ function tickTimer() {
   const left = Math.max(0, Math.round((timerEnd - Date.now()) / 1000));
   $('#tval').textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
   const ftv = $('#ftv'); if (ftv) ftv.textContent = $('#tval').textContent;
+  const fdv = $('#fdv'); if (fdv) fdv.textContent = $('#tval').textContent;
   if (left <= 0) timerDone();
 }
-function stopTimer() { clearInterval(timerInt); cancelBeeps(); restSW(0); clearNotif(); clearTimeout(timerFinT); $('#timer').classList.remove('show', 'fin'); if (focusOn && S.active && cur().v === 'workout') setTimeout(render, 0); }
+function stopTimer() { clearInterval(timerInt); cancelBeeps(); restSW(0); clearNotif(); clearTimeout(timerFinT); $('#timer').classList.remove('show', 'fin'); if (focusOn && S.active && cur().v === 'workout') setTimeout(render, 0); else setTimeout(foldPaint, 0); }
 
 /* ===================== Vues ===================== */
 const exl = n => `<span class="exlink" data-act="exo" data-n="${esc(n)}">${esc(n)}</span>`;
@@ -2076,6 +2089,7 @@ function vSettings() {
       <div class="row" style="margin-top:6px"><button class="btn cpbtn" data-act="cpick" data-k="accent" aria-label="${T('Choisir une couleur', 'Pick a color')}"><span style="background:${S.settings.accent || 'var(--accent)'}"></span></button>
       <span class="small muted" style="flex:1">${S.settings.accent ? 'Couleur perso : ' + esc(S.settings.accent) : 'Couleur du thème'}</span>
       ${S.settings.accent ? '<button class="btn sm" data-act="accent-reset">Remettre celle du thème</button>' : ''}</div>
+      <label class="row" style="margin-top:14px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="fold" ${S.settings.fold !== false ? 'checked' : ''}> ${T('Écran déplié : séance à gauche, chrono et historique à droite', 'Unfolded screen: workout on the left, timer and history on the right')}</label>
       <label class="row" style="margin-top:14px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="icons" ${S.settings.icons !== false ? 'checked' : ''}> ${T('Icônes modernes (décoche pour garder les emojis)', 'Modern icons (uncheck to keep emojis)')}</label>
       <label style="margin-top:16px">${T('Couleur du fond (personnalisée)', 'Background color (custom)')}</label>
       <div class="chips">${BGS.map(c => `<button class="chip" data-act="bg-pick" data-c="${c}" style="background:${c};border-color:${S.settings.bg === c ? 'var(--accent)' : '#8886'};border-width:2px;width:34px;height:34px;padding:0" aria-label="${T('Fond', 'Background')} ${c}"></button>`).join('')}</div>
@@ -4602,8 +4616,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.10';
+const APP_VERSION = '9.11';
 const CHANGELOG = [
+  {v: '9.11', d: '2026-11-11', fr: ['📱 Mode écran déplié : sur un téléphone pliable ouvert (ou une tablette), ta séance est à gauche et à droite tu as un gros chrono de repos, ta prochaine série et l\'historique de l\'exercice (dernières fois, records, courbe du 1RM). Touche un exercice pour voir le sien.'], en: ['📱 Unfolded screen mode: on an open foldable (or a tablet), your workout is on the left and on the right a big rest timer, your next set and the exercise history (previous times, records, 1RM curve). Tap an exercise to see its own.']},
   {v: '9.10', d: '2026-11-11', fr: ['👥 Tes amis voient ton niveau et ton rang de chasseur, et tu vois les leurs : dans le fil, sur leur profil et dans le nouveau Classement des chasseurs (onglet Amis).', 'Les titres à choisir sont retirés : ton titre suit simplement ton rang.'], en: ['👥 Friends see your hunter level and rank, and you see theirs: in the feed, on their profile and in the new Hunter ranking (Friends tab).', 'Selectable titles are removed: your title simply follows your rank.']},
   {v: '9.9', d: '2026-11-11', fr: ['✨ Quête quotidienne du Système (+150 XP) et donjon de la semaine (+500 XP), dans l\'onglet Entraînement.', '🏷 Titres : chaque médaille débloque un titre à afficher sous ton nom (touche ton titre dans Médailles).', '⚔️ Armée des ombres : chaque exercice où tu bats un record devient une ombre qui monte en rang.', '🌟 Écran d\'éveil quand tu changes de rang.', '⛶ Mode focus pendant la séance : une série à la fois, gros boutons et gros chrono.', '⚖️ Statistiques → Comparer deux périodes : ta force maintenant contre il y a 1 à 12 mois.', '🔔 Réglages → Rappels d\'entraînement, même appli fermée.', 'Raccourcis : appui long sur l\'icône → Statut du chasseur ou Quête du jour.'], en: ['✨ Daily quest from the System (+150 XP) and weekly dungeon (+500 XP), in the Workout tab.', '🏷 Titles: each medal unlocks a title shown under your name (tap your title in Medals).', '⚔️ Shadow army: each exercise where you break a record becomes a shadow that ranks up.', '🌟 Awakening screen when your rank changes.', '⛶ Focus mode during workouts: one set at a time, big buttons and big timer.', '⚖️ Statistics → Compare two periods: your strength now vs 1 to 12 months ago.', '🔔 Settings → Workout reminders, even with the app closed.', 'Shortcuts: long-press the icon → Hunter status or Daily quest.']},
   {v: '9.8', d: '2026-11-11', fr: ['⚔️ Système de chasseur façon Solo Leveling : gagne de l\'XP, monte de niveau et passe du rang E au rang S… et plus.', '🏅 Plus de 100 médailles, classées par rang et par catégorie : force, constance, volume, quêtes spéciales (chasseur de nuit, quête quotidienne, club des 1 000…).', 'Fin de séance : le Système t\'annonce ton XP gagnée et tes montées de niveau.'], en: ['⚔️ Solo Leveling-style hunter system: earn XP, level up and climb from E rank to S rank… and beyond.', '🏅 Over 100 medals, sorted by rank and category: strength, consistency, volume, special quests (night hunter, daily quest, 1,000 club…).', 'End of workout: the System shows your XP gained and level-ups.']},
@@ -5903,6 +5918,63 @@ function headerRight(v) {
   return '';
 }
 let navAnim = false;
+/* ---------- Mode écran déplié (téléphone pliable, tablette) : séance à gauche, chrono et historique à droite ---------- */
+let foldEx = null;
+const foldWide = () => S.settings.fold !== false && innerWidth >= 700;
+const foldActive = () => foldWide() && cur().v === 'workout' && !!S.active;
+function foldSpark(name) {
+  const ss = exSessions(name).slice().sort((a, b) => a.h.date.localeCompare(b.h.date)).slice(-12);
+  const v = ss.map(x => bestVal(x.e)).filter(x => x > 0 && x < 5000);
+  if (v.length < 2) return '';
+  const W = 300, H = 70, mn = Math.min(...v), mx = Math.max(...v), r = mx - mn || 1;
+  const pts = v.map((y, i) => [Math.round(i / (v.length - 1) * (W - 8) + 4), Math.round(H - 6 - (y - mn) / r * (H - 16))]);
+  const d = pts.map((q, i) => (i ? 'L' : 'M') + q[0] + ' ' + q[1]).join(' ');
+  return `<div class="small muted" style="margin:10px 0 2px">${T('1RM estimé, dernières séances', 'Est. 1RM, recent workouts')} · ${Math.round(v[0])} → <b style="color:var(--text)">${Math.round(v[v.length - 1])} ${U()}</b></div>
+    <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none" aria-hidden="true"><path d="${d} L${W - 4} ${H} L4 ${H}Z" fill="color-mix(in srgb,var(--accent) 16%,transparent)" stroke="none"/><path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>${pts.map(q => `<circle cx="${q[0]}" cy="${q[1]}" r="2.5" fill="var(--accent)"/>`).join('')}</svg>`;
+}
+function foldSide() {
+  const A = S.active; if (!A) return '';
+  let ei = foldEx != null && A.exercises[foldEx] ? foldEx : curEx(); if (ei < 0) ei = A.exercises.length - 1;
+  const e = A.exercises[ei]; if (!e) return '';
+  const tEl = $('#timer'), resting = tEl && tEl.classList.contains('show') && !tEl.classList.contains('fin');
+  const left = Math.max(0, Math.round((timerEnd - Date.now()) / 1000));
+  let si = e.sets.findIndex(s => !s.done), works = e.sets.filter(x => x.t !== 'W');
+  const nx = si >= 0 ? e.sets[si] : null, k = nx ? (nx.t === 'W' ? 0 : works.indexOf(nx) + 1) : 0;
+  const top = resting
+    ? `<div class="fdcard frest2"><span class="small muted">${T('Repos', 'Rest')}</span><b id="fdv">${Math.floor(left / 60)}:${pad2(left % 60)}</b><div class="row" style="gap:8px;justify-content:center"><button class="btn sm" data-act="timer-sub">−15 s</button><button class="btn sm" data-act="timer-add">+30 s</button><button class="btn sm primary" data-act="timer-stop">${T('Passer', 'Skip')}</button></div></div>`
+    : `<div class="fdcard"><span class="small muted">${T('Prochaine série', 'Next set')}</span><div class="fdnext">${nx ? (nx.t === 'W' ? T('Échauffement', 'Warm-up') : `${T('Série', 'Set')} ${k} / ${works.length}`) : `✅ ${T('Exercice terminé', 'Exercise done')}`}</div><div class="small muted">${esc(e.name)}</div></div>`;
+  const rec = computeRecords().find(r => norm(r.name) === norm(e.name));
+  const ss = exSessions(e.name).slice().sort((a, b) => b.h.date.localeCompare(a.h.date)).filter(x => x.h.id !== A.id).slice(0, 5);
+  const tabs = A.exercises.length > 1 ? `<div class="fdtabs">${A.exercises.map((x, i) => `<button class="${i === ei ? 'on' : ''}" data-act="fold-ex" data-e="${i}" title="${esc(x.name)}">${thumb(x.name, 30)}</button>`).join('')}</div>` : '';
+  return `${top}${tabs}
+    <div class="fdcard"><div class="row" style="gap:10px;align-items:center">${thumb(e.name, 44)}<div style="min-width:0;flex:1"><b>${esc(e.name)}</b><div class="small muted">${T('Exercice', 'Exercise')} ${ei + 1} / ${A.exercises.length}</div></div><button class="btn sm" data-act="exo" data-n="${esc(e.name)}" aria-label="${T('Instructions', 'Instructions')}">📖</button></div>
+      ${rec && rec.best ? `<div class="row" style="gap:8px;margin-top:10px"><div class="stat"><span class="muted small">${T('Top série', 'Top set')}</span><b class="pr">${rec.best.w}×${rec.best.r}</b></div><div class="stat"><span class="muted small">${T('1RM estimé', 'Est. 1RM')}</span><b>${Math.round(rec.best.v)} ${U()}</b></div></div>` : ''}
+      ${foldSpark(e.name)}</div>
+    <p class="muted small" style="margin:14px 0 6px">${T('Dernières fois', 'Previous times')}</p>
+    ${ss.length ? ss.map(({h: hs, e: ex}) => { let n = 0; return `<div class="fdcard fdh"><div class="row between"><b class="small">${esc(hs.routineName || '')}</b><span class="tag">${new Date(hs.date).toLocaleDateString(LOC(), {day: 'numeric', month: 'short'})}</span></div>${ex.sets.map(s => `<div class="row between small" style="padding:1px 0"><span class="muted">${s.t === 'W' ? T('Échauff.', 'Warm-up') : T('Série', 'Set') + ' ' + (++n)}</span><span>${fmtSet(s, true)}</span></div>`).join('')}</div>`; }).join('')
+      : `<div class="empty" style="padding:14px">${T('Première fois pour cet exercice.', 'First time doing this exercise.')}</div>`}`;
+}
+function foldPaint() {
+  const on = foldActive(); document.body.classList.toggle('fold', on);
+  if (!on) return;
+  const a = document.getElementById('foldside'); if (!a) return;
+  a.innerHTML = foldSide();
+  try { iconize(a); } catch (e) {}
+}
+document.addEventListener('click', ev => {
+  if (!document.body.classList.contains('fold')) return;
+  const c = ev.target.closest('#app .foldmain [id^="wex"]'); if (!c) return;
+  if (ev.target.closest('input,button,select,textarea,[data-act]')) { setTimeout(foldPaint, 0); return; }
+  const i = +c.id.slice(3); if (i !== foldEx) { foldEx = i; foldPaint(); }
+});
+document.addEventListener('focusin', ev => {
+  if (!document.body.classList.contains('fold')) return;
+  const c = ev.target.closest && ev.target.closest('#app .foldmain [id^="wex"]'); if (!c) return;
+  const i = +c.id.slice(3); if (i !== foldEx) { foldEx = i; foldPaint(); }
+});
+let foldWas = null;
+addEventListener('resize', () => { const w = foldActive(); if (w !== foldWas) { foldWas = w; if (cur().v === 'workout') render(); } });
+
 function render() {
   if (selR && cur().v !== 'train') { selR = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
   if (selH && !HVIEWS.includes(cur().v)) { selH = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
@@ -5910,8 +5982,10 @@ function render() {
   applyLang();
   renderChrome();
   if (!VIEWS[cur().v]) setRoot('train');
-  const html = VIEWS[cur().v][1]();
+  let html = VIEWS[cur().v][1]();
   const c = cur();
+  foldWas = foldActive(); document.body.classList.toggle('fold', foldWas);
+  if (foldWas) html = `<div class="foldwrap"><div class="foldmain">${html}</div><aside class="foldside" id="foldside">${foldSide()}</aside></div>`;
   $('#title').textContent = c.v === 'workout' && S.active ? S.active.routineName : VIEWS[c.v][0];
   $('#back').style.visibility = stack.length > 1 ? 'visible' : 'hidden';
   $('#hdr').innerHTML = headerRight(c.v);
@@ -6315,6 +6389,7 @@ document.addEventListener('click', e => {
       const base = s2[k2] === '' || s2[k2] == null ? (k2 === 'r' ? +s2.ph || 0 : 0) : +String(s2[k2]).replace(',', '.') || 0;
       s2[k2] = String(Math.max(0, Math.round((base + +b.dataset.d * step) * 100) / 100)); save(); render(); break; }
     case 'cmp-m': cmpM = +b.dataset.m; render(); break;
+    case 'fold-ex': foldEx = +b.dataset.e; foldPaint(); { const t = document.getElementById('wex' + foldEx); if (t) t.scrollIntoView({block: 'start', behavior: 'smooth'}); } break;
     case 'remind-test': remindTest(); break;
     case 'mythm': { const t = myThemes().find(x => x.id === b.dataset.id); if (t) thmApply(t); break; }
     case 'mythm-save': {
