@@ -4054,6 +4054,7 @@ function monthBoss() {
     b = {k, v: 2, ex: bb.name, target: Math.ceil(bb.v * 1.025 / step) * step, from: Math.round(bb.v), nm: BOSSES[(now.getFullYear() * 12 + now.getMonth()) % BOSSES.length]};
     S.boss = b; save();
   }
+  if (b.nm && b.nm[0] === 'Le Monarque déchu') { b.nm = ['Le Roi déchu', 'The Fallen King']; save(); } // ancien nom
   const ms2 = +ms, hs = S.history.filter(x => +new Date(x.date) >= ms2);
   let cur = 0, when = null;
   hs.slice().sort((a, c) => a.date.localeCompare(c.date)).forEach(x => x.exercises.forEach(e => { if (norm(e.name) !== norm(b.ex)) return; work(e.sets).filter(s => s.u !== 's').forEach(s => { const v = e1rm(s.w, s.r); if (v > cur) cur = v; if (!when && v >= b.target) when = x.date; }); }));
@@ -4257,7 +4258,7 @@ function questCard(compact) {
       ${bo ? chip('☠️', 'Boss', pc(bo.cur - bo.from * .85, bo.target - bo.from * .85), bo.done) : ''}</div>
       ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Pénalité en cours : accomplis la quête d\'aujourd\'hui.', 'Penalty active: complete today\'s quest.')}</div>` : ''}</div>`;
   return `<div class="card sysw qcard">${head}<div style="height:10px"></div>${qh}
-    ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Pénalité : la quête d\'hier a échoué. Pour te racheter, survis à la zone de pénalité… ou accomplis celle d\'aujourd\'hui.', 'Penalty: yesterday\'s quest failed. Survive the penalty zone… or complete today\'s quest.')}</div>` : ''}
+    ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : accomplis celle d\'aujourd\'hui pour te racheter.', 'Yesterday\'s quest failed: complete today\'s to make up for it.')}</div>` : ''}
     ${dh}${bossRow()}</div>`;
 }
 /* ----- Armée des ombres ----- */
@@ -4809,7 +4810,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.17';
+const APP_VERSION = '9.17.1';
 const CHANGELOG = [
   {v: '9.17', d: '2026-11-11', fr: ['⚔️ Le mode jeu a maintenant son propre univers : la Guilde des aventuriers. Tu es Aventurier de rang E à S, tu deviens Initié au niveau 10, et le sommet est Légende de la Guilde.', '🗡️ L\'Armée des ombres devient ton Arsenal : chaque exercice où tu bats un record devient une arme qui monte en rang.', 'Les fenêtres du jeu prennent maintenant les couleurs de ton appli. Ton XP, ton niveau et tes médailles ne changent pas.'],
    en: ['⚔️ Game mode now has its own world: the Adventurers\' Guild. You are an E to S-rank Adventurer, you become an Initiate at level 10, and the peak is Guild Legend.', '🗡️ The Shadow Army becomes your Arsenal: every exercise where you break a record becomes a weapon that ranks up.', 'Game windows now use your app colors. Your XP, level and medals don\'t change.']},
