@@ -1624,17 +1624,16 @@ function say(txt) {
     sy.speak(u);
   } catch (e) {}
 }
-function voiceNext() {
+function voiceNext() { // court : « 8 à 10 reps, 185 livres » (poids réussi à la séance d'avant)
   const a = S.active; if (!a) return '';
-  const i = curEx(); if (i < 0) return T('Toutes les séries sont faites. Beau travail!', 'All sets done. Great work!');
-  const e = a.exercises[i], s = e.sets.find(x => !x.done), work = e.sets.filter(x => x.t !== 'W'), k = work.indexOf(s) + 1;
-  const unit = U() === 'kg' ? T('kilos', 'kilos') : T('livres', 'pounds');
-  const w = s.w === '' || s.w == null ? (isBWEx(e.name) ? T('poids du corps', 'bodyweight') : '') : `${dec1(+s.w)} ${unit}`, r = s.r || s.ph || '';
-  const reps = r ? (isTimed(e) ? `${r} ${T('secondes', 'seconds')}` : `${r} ${T('répétitions', 'reps')}`) : '';
-  const which = s.t === 'W' ? T('échauffement', 'warm-up') : T(`série ${k} sur ${work.length}`, `set ${k} of ${work.length}`);
-  let txt = `${e.name}, ${which} : ${[w, reps].filter(Boolean).join(', ')}.`;
-  try { const b = GAME() && monthBoss(); if (b && !b.done && norm(b.ex) === norm(e.name) && s.t !== 'W') txt += ' ' + T('C\'est l\'exercice du boss. Donne tout!', 'This is the boss exercise. Give it everything!'); } catch (er) {}
-  return txt;
+  const i = curEx(); if (i < 0) return T('Séance terminée.', 'Workout done.');
+  const e = a.exercises[i], s = e.sets.find(x => !x.done), tm = isTimed(e);
+  const isW = s.t === 'W', same = e.sets.filter(x => (x.t === 'W') === isW), k = same.indexOf(s);
+  const rg = String(isW ? (s.r || s.ph || '') : (e.target && e.target.reps) || s.r || s.ph || '').trim().replace(/\s*[-–]\s*/, T(' à ', ' to '));
+  const reps = rg ? `${rg} ${tm ? T('secondes', 'seconds') : 'reps'}` : '';
+  let w = '';
+  try { const pv = (lastFull(e.name) || []).filter(x => (x.t === 'W') === isW && x.u !== 's'), p = pv[k] || pv[pv.length - 1]; if (p && +p.w > 0) w = `${dec1(+p.w)} ${U() === 'kg' ? T('kilos', 'kilos') : T('livres', 'pounds')}`; } catch (er) {}
+  return [reps, w].filter(Boolean).join(', ') + '.';
 }
 function nextSetInfo() {
   const a = S.active; if (!a) return '';
@@ -1695,7 +1694,7 @@ function timerDone() {
   const swc = navigator.serviceWorker && navigator.serviceWorker.controller;
   if (swc && notifOn()) swc.postMessage({type: 'rest-fire', at: timerEnd, title: T('✅ Repos terminé', '✅ Rest over'), body: T('À toi : ', 'Your turn: ') + nextSetInfo()});
   else notify(T('✅ Repos terminé', '✅ Rest over'), T('À toi : ', 'Your turn: ') + nextSetInfo());
-  if (voiceOn()) setTimeout(() => say(T('Repos terminé. ', 'Rest over. ') + voiceNext()), S.settings.sound === false ? 0 : 700);
+  if (voiceOn()) setTimeout(() => say(voiceNext()), S.settings.sound === false ? 0 : 700);
   const el = $('#timer'); el.classList.add('show', 'fin'); setTimeout(bigTimerSync, 0);
   $('#tlab').textContent = T('✅ Repos terminé', '✅ Rest over'); $('#tval').textContent = '';
   const onWo = cur().v === 'workout';
@@ -1742,7 +1741,7 @@ function tickTimer() {
   const ftv = $('#ftv'); if (ftv) ftv.textContent = $('#tval').textContent;
   const fdv = $('#fdv'); if (fdv) fdv.textContent = $('#tval').textContent;
   bigTimerSync();
-  if (left === 10 && timerTot > 20 && voiceLast !== timerEnd && voiceOn()) { voiceLast = timerEnd; say(T('Plus que 10 secondes.', '10 seconds left.')); }
+  if (left === 10 && timerTot > 20 && voiceLast !== timerEnd && voiceOn()) { voiceLast = timerEnd; say(T('10 secondes.', '10 seconds.')); }
   if (left <= 0) timerDone();
 }
 function stopTimer() { bigTimerClose(); clearInterval(timerInt); cancelBeeps(); restSW(0); clearNotif(); clearTimeout(timerFinT); $('#timer').classList.remove('show', 'fin'); if (focusOn && S.active && cur().v === 'workout') setTimeout(render, 0); else setTimeout(foldPaint, 0); }
@@ -2132,7 +2131,7 @@ function vSettings() {
       <button class="btn sm" data-act="plates-free" style="margin-top:10px">🧮 Calculateur de disques</button>`) +
   setSec('snd', 'timer', '⏱', T('Minuteur et son', 'Timer and sound'), T('Bip, volume, vibration', 'Beep, volume, vibration'), `
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="sound" ${S.settings.sound !== false ? 'checked' : ''}> 🔔 Bip à la fin du repos (3-2-1 puis bip final)</label>
-      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="voice" ${S.settings.voice ? 'checked' : ''}> 🗣️ ${T('Coach vocal : annonce la fin du repos et ta prochaine série (idéal avec des écouteurs)', 'Voice coach: announces the end of rest and your next set (great with earbuds)')}</label>
+      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="voice" ${S.settings.voice ? 'checked' : ''}> 🗣️ ${T('Coach vocal : te dit tes reps et ton poids de la dernière fois à la fin du repos (idéal avec des écouteurs)', 'Voice coach: tells you your reps and last time’s weight when rest ends (great with earbuds)')}</label>
       ${S.settings.voice ? `<button class="btn sm" data-act="voice-test" style="margin-top:6px">▶ ${T('Tester la voix', 'Test the voice')}</button>` : ''}
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="notif" ${S.settings.notif === true ? 'checked' : ''}> <span>⌚ ${T('Notifications pour ma montre', 'Notifications for my watch')}<br><span class="muted small">${T('Fin du repos + prochaine série. Ta Galaxy Watch vibre et affiche la notification.', 'End of rest + next set. Your Galaxy Watch vibrates and shows the notification.')}</span></span></label>
       ${S.settings.notif === true ? `<label class="row" style="margin-top:6px;color:var(--text);font-size:14px;padding-left:32px"><input type="checkbox" style="width:20px;height:20px" data-set="notifStart" ${S.settings.notifStart !== false ? 'checked' : ''}> ${T('Aussi au début du repos (silencieuse, avec l\'heure de fin)', 'Also at the start of rest (silent, with end time)')}</label>
@@ -4912,8 +4911,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.23';
+const APP_VERSION = '9.23.1';
 const CHANGELOG = [
+  {v: '9.23.1', d: '2026-11-11', fr: ['🗣️ Coach vocal plus court : il dit juste tes reps à faire et le poids réussi à ta dernière séance (ex. « 8 à 10 reps, 185 livres »), et « 10 secondes » avant la fin du repos.'], en: ['🗣️ Shorter voice coach: it just says your target reps and the weight you hit last time (e.g. “8 to 10 reps, 185 pounds”), and “10 seconds” before rest ends.']},
   {v: '9.23', d: '2026-11-11', fr: ['🗣️ Coach vocal (Réglages → Minuteur et son) : avec tes écouteurs, une voix t\'annonce la fin du repos et ta prochaine série (exercice, poids, reps), plus « Plus que 10 secondes ».', '☠️ Le boss dans ta séance : l\'exercice du boss affiche les séries à viser, et quand ta série le bat, le boss tombe à l\'écran.', '🔄 Remplacer un exercice propose maintenant 3 exercices qui travaillent les mêmes muscles (pratique quand la machine est prise).', '⚔️ Défis entre amis : le plus de volume, de séances ou de reps en 7 jours. Le gagnant prend +300 XP.', '🛡️ Raid de guilde : toi et tes amis additionnez vos reps de la semaine pour abattre un boss commun (1 500 reps par aventurier). Réussi = +400 XP pour tout le monde.', '💬 Commentaires : écris un petit message sous les séances et les photos de tes amis.', '🏆 Saisons de la Guilde : chaque mois, un classement de l\'XP gagnée ce mois-ci. Le 1er remporte un trophée visible sur son profil.'], en: ['🗣️ Voice coach (Settings → Timer & sound): with earbuds, a voice announces the end of rest and your next set (exercise, weight, reps), plus “10 seconds left”.', '☠️ The boss in your workout: the boss exercise shows the sets to aim for, and when your set beats it, the boss falls on screen.', '🔄 Swapping an exercise now suggests 3 exercises that work the same muscles (handy when the machine is taken).', '⚔️ Friend challenges: most volume, workouts or reps in 7 days. The winner gets +300 XP.', '🛡️ Guild raid: you and your friends add up your weekly reps to take down a shared boss (1,500 reps per adventurer). Cleared = +400 XP for everyone.', '💬 Comments: write a short message under your friends\' workouts and photos.', '🏆 Guild seasons: each month, a ranking of the XP earned that month. 1st place wins a trophy shown on their profile.']},
   {v: '9.22', d: '2026-11-11', fr: ['L\'appli se rouvre sur le dernier onglet utilisé (Étirements, Cardio, Intervalles, Profil…) au lieu de toujours revenir à Entraînement, et garde ta position quand tu rafraîchis. Une séance en cours s\'ouvre toujours en premier.'], en: ['The app reopens on the last tab you used (Stretch, Cardio, Intervals, Profile…) instead of always going back to Workout, and keeps your scroll position on refresh. A workout in progress still opens first.']},
   {v: '9.21.5', d: '2026-11-11', fr: ['La barre du bas affiche ses icônes dès l\'ouverture, sans emoji qui flashe.'], en: ['The bottom bar shows its icons right away on launch, no emoji flash.']},
@@ -7219,7 +7219,7 @@ document.addEventListener('click', e => {
     case 'timer-stop-big': closeModal(); stopTimer(); break;
     case 'timer-add': timerTot += 30; timerEnd += 30000; scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); restSW(timerEnd); tickTimer(); break;
     case 'timer-stop': stopTimer(); break;
-    case 'voice-test': say(S.active ? T('Repos terminé. ', 'Rest over. ') + voiceNext() : T('Repos terminé. Développé couché, série 2 sur 4 : 185 livres, 8 répétitions.', 'Rest over. Bench press, set 2 of 4: 185 pounds, 8 reps.')); break;
+    case 'voice-test': say(S.active ? voiceNext() : T('8 à 10 reps, 185 livres.', '8 to 10 reps, 185 pounds.')); break;
     case 'timer-big': bigTimerOpen(); break;
     case 'timer-go': if (!S.active) break; if (cur().v === 'workout' && $('#timer').classList.contains('show') && !$('#timer').classList.contains('fin')) { bigTimerOpen(); break; } if ($('#timer').classList.contains('fin')) stopTimer(); if (cur().v !== 'workout') { closeAll(); openWorkout(); } else scrollCur(); break;
 
