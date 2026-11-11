@@ -282,7 +282,6 @@ button.chip{cursor:pointer}
 .sysstats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}.sysstats>div{background:color-mix(in srgb,#38bdf8 8%,var(--card2));border:1px solid color-mix(in srgb,#38bdf8 30%,transparent);border-radius:10px;padding:7px 4px;text-align:center;min-width:0}.sysstats span{display:block;font-size:10px;letter-spacing:1.5px;color:#7dd3fc;font-weight:800}.sysstats b{font-size:15px}.sysstats i{font-style:normal;font-size:10px;color:var(--muted);margin-left:2px}
 .rkchip{display:inline-flex;align-items:center;gap:6px;background:none;border:1.5px solid var(--rc);color:var(--text);border-radius:999px;padding:3px 10px 3px 4px;font-size:12px;font-weight:700;cursor:pointer;margin-top:4px}.rkchip .mrk{position:static;height:18px;min-width:18px;border-radius:999px;background:var(--rc);color:#0b0d10;border:0;font-size:10px}
 .lvrk{position:static!important;display:inline-flex}
-.ttlbtn{background:none;border:0;padding:2px 0;color:var(--rc);font-weight:700;font-size:13px;text-align:left;cursor:pointer}
 .qcard{margin:0 0 12px}.qrow{display:flex;gap:12px;align-items:flex-start}.qic{width:32px;height:32px;flex:none;border-radius:9px;border:1px solid color-mix(in srgb,#38bdf8 40%,transparent);display:flex;align-items:center;justify-content:center;color:#7dd3fc;font-size:18px}.qic .mrk{border:0}
 .shrow{display:flex;align-items:center;gap:10px;width:100%;margin:8px 0;padding:10px 12px;border-color:color-mix(in srgb,var(--rc) 55%,var(--line));color:var(--text);font:inherit;cursor:pointer}
 .cmprow{display:flex;align-items:center;gap:10px;width:100%;margin:6px 0;padding:10px 12px;color:var(--text);font:inherit;cursor:pointer}
@@ -420,7 +419,11 @@ nav button{font-size:11px}
 .frbadge{background:var(--accent);color:var(--accentText,#000);border-radius:99px;padding:2px 8px;font-weight:800;font-size:13px}
 .frlist{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}.frlist::-webkit-scrollbar{display:none}
 .frchip{flex:none;display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--text);font:inherit;font-size:14px;cursor:pointer}
-.frchip small{display:block;color:var(--muted);font-size:11px}.frchip span{text-align:left;line-height:1.2}
+.frchip small{display:block;color:var(--muted);font-size:11px}
+.frlv{display:inline-block;border:1px solid var(--rc);color:var(--rc);border-radius:6px;padding:0 5px;font-size:10px;font-weight:800;line-height:16px;vertical-align:1px;white-space:nowrap}
+.frlvb{display:inline-flex;align-items:center;gap:6px;color:var(--rc);font-weight:700;font-size:14px}
+.frrk{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;border-top:1px solid color-mix(in srgb,#38bdf8 20%,transparent);padding:10px 2px;color:var(--text);font:inherit;cursor:pointer}.frrk:first-of-type{border-top:0}.frrk.me{background:color-mix(in srgb,var(--accent) 8%,transparent);border-radius:10px}
+.frpos{width:20px;text-align:center;color:#7dd3fc;flex:none}.frchip span{text-align:left;line-height:1.2}
 .frex{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--card2);font-size:14px;line-height:1.7}
 .frre{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:99px;padding:6px 12px;font:inherit;font-size:16px;cursor:pointer}
 .frre span{font-size:13px;font-weight:700}.frre.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 20%,var(--card2))}
@@ -3314,7 +3317,7 @@ function vProfile() {
   const month = S.history.filter(h => { const d = new Date(h.date); return d.getMonth() === n0.getMonth() && d.getFullYear() === n0.getFullYear(); }).length;
   const recent = S.history.slice().reverse().slice(0, 3);
   return `<div class="row" style="gap:14px;margin-bottom:16px"><button class="avatar" data-act="avatar" aria-label="${T('Photo de profil', 'Profile photo')}">${S.settings.avatar ? `<img src="${S.settings.avatar}" alt="">` : esc((nm.trim()[0] || '?').toUpperCase())}<span class="cam">📷</span></button>
-      <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0">${esc(nm)}</h2>${(() => { if (!S.history.length) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${esc(myTitle(hu))}</button>`; })()}
+      <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0">${esc(nm)}</h2>${(() => { if (!S.history.length) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${esc(hu.title)}</button>`; })()}
       <div class="row" style="gap:18px;flex-wrap:wrap"><div><span class="muted small">Entraînements</span><br><b>${S.history.length}</b></div><div><span class="muted small">${T('Série', 'Streak')}</span><br><b>🔥 ${streakWeeks()} sem.</b></div><div><span class="muted small">Ce mois</span><br><b>${month}</b></div></div></div></div>
     ${bodyCard()}${friendsCard()}${yearBanner()}${weekGoal()}${stagCard()}
     <div class="row between"><span>${headline}</span><select style="width:auto" data-pf="range"><option value="12" ${pfWeeks === 12 ? 'selected' : ''}>3 derniers mois</option><option value="26" ${pfWeeks === 26 ? 'selected' : ''}>6 mois</option><option value="52" ${pfWeeks === 52 ? 'selected' : ''}>1 an</option><option value="0" ${pfWeeks === 0 ? 'selected' : ''}>Tout</option></select></div>
@@ -3964,7 +3967,7 @@ function vMedals() {
   return `<div class="card sysw" style="--rc:${hu.col}">
       <div class="sysh">[ ${T('STATUT', 'STATUS')} ]</div>
       <div class="row" style="gap:14px;align-items:center">${rkBadge(hu.rk, 'rkbig')}
-        <div style="flex:1;min-width:0"><div class="muted small">${T('Niveau', 'Level')}</div><div class="lvl">${hu.lvl}</div><button class="ttlbtn" data-act="title-pick">${esc(myTitle(hu))} <span class="muted">▾</span></button></div></div>
+        <div style="flex:1;min-width:0"><div class="muted small">${T('Niveau', 'Level')}</div><div class="lvl">${hu.lvl}</div><div class="small" style="color:var(--rc);font-weight:700">${esc(hu.title)}</div></div></div>
       <div class="goal sysbar"><div style="width:${pct}%"></div></div>
       <div class="row between small muted"><span>${fmtN(hu.cur)} / ${fmtN(hu.need)} XP</span><span>${hu.nextRank ? T(`Rang ${hu.nextRank.rk} au niveau ${hu.nextRank.lvl}`, `Rank ${hu.nextRank.rk} at level ${hu.nextRank.lvl}`) : T('Rang maximal atteint', 'Max rank reached')}</span></div>
       <div class="sysstats"><div><span>${T('FOR', 'STR')}</span><b>${fmtN(st.b3)}</b><i>${U()}</i></div><div><span>${T('END', 'END')}</span><b>${fmtN(st.hr)}</b><i>h</i></div><div><span>${T('CON', 'CON')}</span><b>${st.wk}</b><i>${T('sem.', 'wk')}</i></div><div><span>${T('MÉD', 'MED')}</span><b>${n}</b><i>/ ${defs.length}</i></div></div>
@@ -4049,17 +4052,6 @@ function questCard(compact) {
   return `<div class="card sysw qcard"><div class="sysh">[ ${T('QUÊTE QUOTIDIENNE', 'DAILY QUEST')} ]</div>${qh}
     ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Pénalité : la quête d\'hier a échoué. Pour te racheter, survis à la zone de pénalité… ou accomplis celle d\'aujourd\'hui.', 'Penalty: yesterday\'s quest failed. Survive the penalty zone… or complete today\'s quest.')}</div>` : ''}
     ${dh}</div>`;
-}
-/* ----- Titres ----- */
-const TITLES = {n1: ['L\'Éveillé', 'The Awakened'], back1: ['Le Revenant', 'The Returner'], b31000: ['Membre du Club des 1 000', '1,000 Club member'], b3450: ['Membre du Club des 450', '450 Club member'],
-  night100: ['Chasseur de nuit', 'Night hunter'], early100: ['Lève-tôt légendaire', 'Legendary early bird'], push100: ['Celui qui a fait la quête', 'The one who did the quest'], push200: ['Plus fort que la quête', 'Beyond the quest'],
-  long25: ['Explorateur de donjons', 'Dungeon explorer'], day14: ['Infatigable', 'Tireless'], wk52: ['Un an sans faillir', 'A year unbroken'], ex100: ['Maître d\'armes', 'Weapons master'],
-  qd30: ['Serviteur du Système', 'Servant of the System'], dg12: ['Conquérant de donjons', 'Dungeon conqueror'], dg26: ['Seigneur des donjons', 'Dungeon lord'], n1000: ['Légende vivante', 'Living legend']};
-const titleOf = d => TITLES[d.id] ? T(TITLES[d.id][0], TITLES[d.id][1]) : d.t;
-function myTitle(hu) {
-  const id = S.settings.htitle; if (!id || id === 'rank') return hu.title;
-  const me = medalsEarned(); if (!me.got[id]) return hu.title;
-  const d = me.defs.find(x => x.id === id); return d ? titleOf(d) : hu.title;
 }
 /* ----- Armée des ombres ----- */
 const SHR = [[1, 'E'], [5, 'D'], [10, 'C'], [20, 'B'], [35, 'A'], [50, 'S']];
@@ -4610,8 +4602,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.9';
+const APP_VERSION = '9.10';
 const CHANGELOG = [
+  {v: '9.10', d: '2026-11-11', fr: ['👥 Tes amis voient ton niveau et ton rang de chasseur, et tu vois les leurs : dans le fil, sur leur profil et dans le nouveau Classement des chasseurs (onglet Amis).', 'Les titres à choisir sont retirés : ton titre suit simplement ton rang.'], en: ['👥 Friends see your hunter level and rank, and you see theirs: in the feed, on their profile and in the new Hunter ranking (Friends tab).', 'Selectable titles are removed: your title simply follows your rank.']},
   {v: '9.9', d: '2026-11-11', fr: ['✨ Quête quotidienne du Système (+150 XP) et donjon de la semaine (+500 XP), dans l\'onglet Entraînement.', '🏷 Titres : chaque médaille débloque un titre à afficher sous ton nom (touche ton titre dans Médailles).', '⚔️ Armée des ombres : chaque exercice où tu bats un record devient une ombre qui monte en rang.', '🌟 Écran d\'éveil quand tu changes de rang.', '⛶ Mode focus pendant la séance : une série à la fois, gros boutons et gros chrono.', '⚖️ Statistiques → Comparer deux périodes : ta force maintenant contre il y a 1 à 12 mois.', '🔔 Réglages → Rappels d\'entraînement, même appli fermée.', 'Raccourcis : appui long sur l\'icône → Statut du chasseur ou Quête du jour.'], en: ['✨ Daily quest from the System (+150 XP) and weekly dungeon (+500 XP), in the Workout tab.', '🏷 Titles: each medal unlocks a title shown under your name (tap your title in Medals).', '⚔️ Shadow army: each exercise where you break a record becomes a shadow that ranks up.', '🌟 Awakening screen when your rank changes.', '⛶ Focus mode during workouts: one set at a time, big buttons and big timer.', '⚖️ Statistics → Compare two periods: your strength now vs 1 to 12 months ago.', '🔔 Settings → Workout reminders, even with the app closed.', 'Shortcuts: long-press the icon → Hunter status or Daily quest.']},
   {v: '9.8', d: '2026-11-11', fr: ['⚔️ Système de chasseur façon Solo Leveling : gagne de l\'XP, monte de niveau et passe du rang E au rang S… et plus.', '🏅 Plus de 100 médailles, classées par rang et par catégorie : force, constance, volume, quêtes spéciales (chasseur de nuit, quête quotidienne, club des 1 000…).', 'Fin de séance : le Système t\'annonce ton XP gagnée et tes montées de niveau.'], en: ['⚔️ Solo Leveling-style hunter system: earn XP, level up and climb from E rank to S rank… and beyond.', '🏅 Over 100 medals, sorted by rank and category: strength, consistency, volume, special quests (night hunter, daily quest, 1,000 club…).', 'End of workout: the System shows your XP gained and level-ups.']},
   {v: '9.7', d: '2026-11-11', fr: ['Icônes dessinées partout dans l\'appli à la place des emojis : titres, menus, médailles, statistiques, réglages et messages.', 'Tu préfères les emojis? Décoche « Icônes modernes » dans Réglages → Apparence.'], en: ['Drawn icons everywhere in the app instead of emojis: titles, menus, medals, stats, settings and messages.', 'Prefer emojis? Uncheck “Modern icons” in Settings → Appearance.']},
@@ -5611,7 +5604,7 @@ async function frSessWithPh(idx) {
 async function frCardBody() {
   const fr = FRS(), hide = new Set(fr.hide || []);
   const idx = S.history.map((x, i) => [x, i]).filter(([x]) => !hide.has(x.id) && new Date(x.date) > Date.now() - 45 * 864e5).slice(-15);
-  return JSON.stringify({app: 'carnet-muscu', v: 1, name: (S.settings.name || '').trim() || T('Un ami', 'A friend'), av: await frAvatar(), wk: streakWeeks(), up: new Date().toISOString(),
+  return JSON.stringify({app: 'carnet-muscu', v: 1, name: (S.settings.name || '').trim() || T('Un ami', 'A friend'), av: await frAvatar(), wk: streakWeeks(), hu: frHu(), up: new Date().toISOString(),
     s: await frSessWithPh(idx), p: await frPhotos(), re: (fr.re || []).slice(-150)});
 }
 async function frApi(url, opt = {}) {
@@ -5706,7 +5699,22 @@ function frMe() {
   const fr = FRS(), hide = new Set(fr.hide || []);
   const s = S.history.map((x, i) => [x, i]).filter(([x]) => !hide.has(x.id) && new Date(x.date) > Date.now() - 45 * 864e5).slice(-15).map(([x, i]) => Object.assign(frSess(x, i), x.ph ? {phId: x.ph} : {}));
   const p = (S.photos || []).filter(x => (fr.ph || []).includes(x.id)).slice(-8).map(x => ({id: x.id, d: x.d, phId: x.id}));
-  return {f: {c: fr.file || 'me', me: true, n: T('Moi', 'Me')}, d: {name: (S.settings.name || '').trim() || T('Moi', 'Me'), av: S.settings.avatar || '', wk: streakWeeks(), s, p, up: fr.last}};
+  return {f: {c: fr.file || 'me', me: true, n: T('Moi', 'Me')}, d: {name: (S.settings.name || '').trim() || T('Moi', 'Me'), av: S.settings.avatar || '', wk: streakWeeks(), hu: frHu(), s, p, up: fr.last}};
+}
+/* Niveau de chasseur partagé avec les amis */
+function frHu() { if (!S.history.length) return null; const x = hunter(); return {l: x.lvl, r: x.rk, xp: x.xp}; }
+const huTitle = r => { const x = HRANKS.find(y => y[1] === r); return x ? T(x[2][0], x[2][1]) : ''; };
+const frLv = (d, big) => d && d.hu && d.hu.r ? (big ? `<span class="frlvb" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${rkBadge(d.hu.r, 'mrk lvrk')} ${T('Niveau', 'Level')} ${d.hu.l} · ${esc(huTitle(d.hu.r))}</span>` : `<span class="frlv" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${d.hu.r} · ${T('Niv.', 'Lv.')} ${d.hu.l}</span>`) : '';
+function frRanking() {
+  const fr = FRS(), rows = [];
+  if (frOn()) { const m = frMe(); rows.push({c: 'me', me: true, d: m.d}); }
+  fr.list.forEach(f => { const c = frData[f.c]; if (c && c.d) rows.push({c: f.c, d: c.d}); });
+  const L = rows.filter(r => r.d.hu).sort((a, b) => b.d.hu.xp - a.d.hu.xp);
+  if (L.length < 2) return '';
+  const old = rows.filter(r => !r.d.hu).map(r => r.d.name);
+  return `<div class="card sysw" style="margin:0 0 12px"><div class="sysh">[ ${T('CLASSEMENT', 'RANKING')} ]</div>
+    ${L.map((r, i) => `<button class="frrk ${r.me ? 'me' : ''}" data-act="fr-who" data-c="${r.c}" style="--rc:${RKC[r.d.hu.r]}"><b class="frpos">${i + 1}</b>${frAv(r.d, r.c, 'sm')}<span style="flex:1;min-width:0;text-align:left"><b>${esc(r.me ? T('Moi', 'Me') : r.d.name)}</b><br><span class="small muted">${esc(huTitle(r.d.hu.r))}</span></span><span style="text-align:right">${rkBadge(r.d.hu.r, 'mrk lvrk')}<br><span class="small"><b>${T('Niv.', 'Lv.')} ${r.d.hu.l}</b></span></span></button>`).join('')}
+    ${old.length ? `<p class="small muted" style="margin:8px 0 0">${T('Pas encore de niveau pour', 'No level yet for')} ${esc(old.join(', '))} : ${T('leur appli doit être à jour (9.10 ou plus).', 'their app must be up to date (9.10 or later).')}</p>` : ''}</div>`;
 }
 function frItems(f, d) { const out = []; (d.s || []).forEach(s => out.push({f, d, s})); (d.p || []).forEach(ph => out.push({f, d, s: {id: ph.id, d: ph.d + 'T12:00:00', ph}})); return out; }
 function frFeed(onlyC) {
@@ -5744,7 +5752,7 @@ function frPost({f, d, s}) {
   if (f.me && s.phId) setTimeout(phFill, 0);
   const ex = s.ex || [], more = ex.length - 5;
   return `<div class="card frpost"><div class="row" style="gap:10px;align-items:center">${frAv(d, f.c)}
-      <div style="flex:1;min-width:0"><b>${esc(d.name)}</b> <span class="muted small">· ${frAgo(s.d)}</span><br><span class="small">💪 ${T('a fait', 'did')} <b>${esc(s.n)}</b> · ${hm(s.dur)}${s.pr ? ` · 🏆 ${s.pr} record${s.pr > 1 ? 's' : ''}` : ''}</span></div></div>
+      <div style="flex:1;min-width:0"><b>${esc(d.name)}</b> ${frLv(d)} <span class="muted small">· ${frAgo(s.d)}</span><br><span class="small">💪 ${T('a fait', 'did')} <b>${esc(s.n)}</b> · ${hm(s.dur)}${s.pr ? ` · 🏆 ${s.pr} record${s.pr > 1 ? 's' : ''}` : ''}</span></div></div>
     ${s.img ? frImg(f, s, s.img) : f.me && s.phId ? frImg(f, s) : ''}
     <div class="frex">${ex.slice(0, 5).map(o => `<div>${frExLine(o)}</div>`).join('')}${more > 0 ? `<div class="muted">+ ${more} ${T('autre' + (more > 1 ? 's' : ''), 'more')}</div>` : ''}</div>
     ${frReactRow(f, s)}</div>`;
@@ -5770,13 +5778,13 @@ function vFriends() {
     : `<div class="card" style="border-color:var(--accent)"><h3 style="margin:0 0 6px">👥 ${T('Partage tes séances avec tes amis', 'Share your workouts with friends')}</h3>
       <p class="small" style="margin:0 0 10px">${T('Tes amis voient tes séances, tes records et ta série 🔥, et peuvent réagir. Ta carte est gardée dans <b>ton</b> Google Drive. Jamais partagés : ton poids corporel et tes mensurations. Tes photos de progrès, seulement celles que tu choisis.', 'Friends see your workouts, records and 🔥 streak, and can react. Your card is kept in <b>your</b> Google Drive. Never shared: body weight and measurements. Progress photos: only the ones you choose.')}</p>
       <button class="btn primary block" data-act="fr-start">${T('Activer avec Google', 'Turn on with Google')}</button></div>`;
-  const meChip = frOn() ? `<button class="frchip" data-act="fr-who" data-c="me">${S.settings.avatar ? `<img class="frav sm" src="${S.settings.avatar}" alt="">` : `<span class="frav sm">${esc(((S.settings.name || 'M').trim() || 'M')[0].toUpperCase())}</span>`}<span>${T('Moi', 'Me')}<small>🔥 ${streakWeeks()} ${T('sem.', 'wk')}</small></span></button>` : '';
-  const friends = fr.list.length ? `<div class="frlist">${meChip}${fr.list.map(f => { const d = frData[f.c] && frData[f.c].d; return `<button class="frchip" data-act="fr-who" data-c="${f.c}">${d && d.av ? `<img class="frav sm" src="${d.av}" alt="">` : `<span class="frav sm">${esc((f.n || '?')[0].toUpperCase())}</span>`}<span>${esc(f.n || '…')}${d ? `<small>🔥 ${d.wk} ${T('sem.', 'wk')}</small>` : ''}${f.gone ? `<small>⚠️ ${T('partage arrêté', 'stopped')}</small>` : ''}</span></button>`; }).join('')}<button class="frchip add" data-act="fr-add"><span class="frav sm">＋</span><span>${T('Ajouter', 'Add')}</span></button></div>`
+  const meChip = frOn() ? `<button class="frchip" data-act="fr-who" data-c="me">${S.settings.avatar ? `<img class="frav sm" src="${S.settings.avatar}" alt="">` : `<span class="frav sm">${esc(((S.settings.name || 'M').trim() || 'M')[0].toUpperCase())}</span>`}<span>${T('Moi', 'Me')}<small>${frLv(frMe().d)} 🔥 ${streakWeeks()} ${T('sem.', 'wk')}</small></span></button>` : '';
+  const friends = fr.list.length ? `<div class="frlist">${meChip}${fr.list.map(f => { const d = frData[f.c] && frData[f.c].d; return `<button class="frchip" data-act="fr-who" data-c="${f.c}">${d && d.av ? `<img class="frav sm" src="${d.av}" alt="">` : `<span class="frav sm">${esc((f.n || '?')[0].toUpperCase())}</span>`}<span>${esc(f.n || '…')}${d ? `<small>${frLv(d)} 🔥 ${d.wk} ${T('sem.', 'wk')}</small>` : ''}${f.gone ? `<small>⚠️ ${T('partage arrêté', 'stopped')}</small>` : ''}</span></button>`; }).join('')}<button class="frchip add" data-act="fr-add"><span class="frav sm">＋</span><span>${T('Ajouter', 'Add')}</span></button></div>`
     : `<button class="btn block" data-act="fr-add" style="margin-bottom:12px">＋ ${T('Ajouter un ami', 'Add a friend')}</button>`;
   const recHtml = rec.length ? `<div class="card"><span class="muted small">❤️ ${T('Réactions à tes séances', 'Reactions to your workouts')}</span>${rec.map(x => `<div class="small" style="margin-top:6px">${x.e} <b>${esc(x.n)}</b> · ${esc(x.h.routineName || '')} <span class="muted">(${dateFr(x.h.date)})</span></div>`).join('')}</div>` : '';
   const feedHtml = feed.length ? feed.map(frPost).join('') : fr.list.length ? `<p class="muted center" style="margin:30px 0">${T('Tes amis n\'ont pas encore de séance partagée.', 'Your friends have no shared workouts yet.')}</p>`
     : `<p class="muted center" style="margin:30px 16px">${T('Ajoute un ami avec son code pour voir ses séances ici.', 'Add a friend with their code to see their workouts here.')}</p>`;
-  return `${meCard}${friends}${recHtml}
+  return `${meCard}${friends}${frRanking()}${recHtml}
     <div class="row between" style="margin:14px 0 8px"><b>${T('Fil des amis', 'Friends feed')}</b>${fr.list.length ? `<button class="btn sm ghost" data-act="fr-refresh">↻ ${T('Actualiser', 'Refresh')}</button>` : ''}</div>
     ${feedHtml}
     ${frOn() ? `<details class="card"><summary><b>🔒 ${T('Ce que tes amis voient', 'What friends see')}</b></summary>
@@ -6266,7 +6274,7 @@ document.addEventListener('click', e => {
       const items = frFeed(c), nS = (d && d.s || []).length;
       modal(`<div class="row between"><span></span><button class="btn sm" data-act="close">✕</button></div>
         <div style="text-align:center;margin-top:-8px">${d && d.av ? `<img src="${d.av}" alt="" style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid var(--accent)">` : `<span class="frav" style="width:110px;height:110px;font-size:44px">${esc(((d && d.name) || f.n || '?')[0].toUpperCase())}</span>`}
-          <h2 style="margin:8px 0 2px">${esc((d && d.name) || f.n || '')}</h2>
+          <h2 style="margin:8px 0 2px">${esc((d && d.name) || f.n || '')}</h2>${d && d.hu ? `<div style="margin:2px 0 6px">${frLv(d, true)}</div>` : ''}
           ${d ? `<p class="small muted" style="margin:0">🔥 ${d.wk || 0} ${T('sem. de suite', 'weeks in a row')} · ${nS} ${T('séance' + (nS > 1 ? 's' : ''), 'workout' + (nS > 1 ? 's' : ''))} · ${(d.p || []).length} 📸</p>` : ''}</div>
         <div style="margin-top:12px">${items.length ? items.map(frPost).join('') : `<p class="muted center">${T('Rien de partagé pour l\'instant.', 'Nothing shared yet.')}</p>`}</div>
         ${me ? `<button class="btn block" data-act="fr-code" style="margin-top:8px">${T('Mon code ami', 'My friend code')}</button>` : `<button class="btn block" data-act="fr-del" data-c="${f.c}" style="color:var(--bad);margin-top:8px">${T('Retirer de mes amis', 'Remove friend')}</button>`}`);
@@ -6300,13 +6308,6 @@ document.addEventListener('click', e => {
     case 'chr-reset': chr = {acc: 0, start: null, laps: []}; chrSave(); chrDraw(true); break;
     case 'cpick': openColorPicker(b.dataset.k); break;
     case 'med-f': medFilter = b.dataset.f; render(); break;
-    case 'title-pick': { const me = medalsEarned(), hu = hunter(me), cur0 = S.settings.htitle || 'rank';
-      const L = me.defs.filter(d => me.got[d.id]);
-      modal(`<h2>${T('Choisis ton titre', 'Choose your title')}</h2><p class="muted small">${T('Chaque médaille gagnée débloque un titre. Il s\'affiche sous ton nom.', 'Each medal earned unlocks a title. It shows under your name.')}</p>
-        <div class="menu" style="max-height:55vh;overflow:auto"><button class="btn block ${cur0 === 'rank' ? 'primary' : ''}" data-act="title-set" data-id="rank">${rkBadge(hu.rk, 'mrk lvrk')} ${esc(hu.title)}</button>
-        ${L.map(d => `<button class="btn block ${cur0 === d.id ? 'primary' : ''}" data-act="title-set" data-id="${d.id}" style="--rc:${RKC[d.rk]};justify-content:flex-start">${rkBadge(d.rk, 'mrk lvrk')} ${esc(titleOf(d))}</button>`).join('')}</div>
-        <button class="btn block" data-act="close" style="margin-top:8px">${T('Fermer', 'Close')}</button>`); break; }
-    case 'title-set': S.settings.htitle = b.dataset.id; save(); closeAll(); render(); toast(T('Titre équipé', 'Title equipped')); break;
     case 'focus-tog': focusOn = !focusOn; focusEx = null; focusWakeSet(focusOn); render(); window.scrollTo(0, 0); break;
     case 'f-nav': { const A2 = S.active; if (!A2) break; const c0 = focusEx != null ? focusEx : Math.max(0, curEx()); focusEx = Math.max(0, Math.min(A2.exercises.length - 1, c0 + +b.dataset.d)); render(); break; }
     case 'f-step': { const A2 = S.active; if (!A2) break; const s2 = A2.exercises[ei].sets[si], k2 = b.dataset.k, tm2 = isTimed(A2.exercises[ei]);
@@ -6810,6 +6811,7 @@ setTimeout(() => frLoad(), 2500); document.addEventListener('visibilitychange', 
   } }
 if (cloudOn()) setTimeout(() => cloudPush(), 4000);
 setTimeout(remindSync, 3000);
+setTimeout(() => { try { const fr = FRS(), x = frHu(); if (frOn() && x && fr.huL !== x.l) { fr.huL = x.l; save(); frQueue(false); } } catch (e) {} }, 6000);
 setTimeout(() => loadTxt(), 5000);
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
