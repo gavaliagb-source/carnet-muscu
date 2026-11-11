@@ -369,7 +369,7 @@ body.selon main{padding-bottom:170px}
 
 .cvkinds{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin:0 -4px;padding-left:4px;scrollbar-width:none}.cvkinds::-webkit-scrollbar{display:none}
 .cvk{flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:76px;padding:10px 8px;border-radius:14px;border:1px solid var(--line);background:var(--card2);color:var(--text);font:inherit;font-size:12px;cursor:pointer}
-.cvk span{font-size:22px}.cvk.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--card2))}
+.cvk span{font-size:22px;line-height:1;height:28px;display:flex;align-items:center;justify-content:center;color:var(--muted)}.cvk.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--card2))}.cvk.on span{color:var(--accent)}
 .cvout{margin-top:14px;padding:16px;border-radius:16px;background:var(--card2);text-align:center}
 .cvbig span,.cvsm span{display:block;color:var(--muted);font-size:12px}.cvbig b{display:block;font-size:40px;line-height:1.1;color:var(--accent)}.cvbig small,.cvsm small{color:var(--muted);font-size:11px}
 .cvsm{text-align:center;min-width:70px}.cvsm b{display:block;font-size:20px}
@@ -4279,8 +4279,14 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.5';
+const APP_VERSION = '9.6';
 const CHANGELOG = [
+  {v: '9.6', d: '2026-11-11', fr: ['Cardio : nouvelles icônes dessinées pour chaque activité, plus sobres que les emojis.'], en: ['Cardio: new drawn icons for each activity, cleaner than emojis.']},
+  {v: '9.5', d: '2026-11-11', fr: ['🎨 Mes thèmes : enregistre tes propres combinaisons de couleurs (Réglages → Apparence) et remets-les en un clic.'], en: ['🎨 My themes: save your own color combinations (Settings → Appearance) and switch back in one tap.']},
+  {v: '9.4', d: '2026-11-11', fr: ['L\'icône de l\'appli garde maintenant son look d\'origine, peu importe tes couleurs.'], en: ['The app icon now keeps its original look, whatever your colors.']},
+  {v: '9.3', d: '2026-11-11', fr: ['Ton horaire est cliquable : touche la séance du jour ou un jour à venir pour voir la routine, ou un jour déjà fait pour revoir ta séance.'], en: ['Your schedule is tappable: tap today\'s workout or an upcoming day to see the routine, or a past day to see your workout.']},
+  {v: '9.2', d: '2026-11-11', fr: ['Dossier vide : deux boutons pour y créer une routine, à la main ou avec l\'IA.'], en: ['Empty folder: two buttons to create a routine in it, by hand or with AI.']},
+  {v: '9.1', d: '2026-11-11', fr: ['📅 Nouveau calendrier façon Hevy : série et jours de repos en haut, nom de la routine sous chaque jour, défilement infini et vue Année.'], en: ['📅 New Hevy-style calendar: streak and rest days at the top, routine name under each day, infinite scroll and Year view.']},
   {v: '9.0', d: '2026-11-10', fr: ['Appli 3 fois plus légère : elle s\'ouvre plus vite, surtout la première fois.', 'Menus épurés : les boutons en double sont partis (horaire, programmes, partage, statistiques).', 'Profil plus simple : 3 séances récentes et une tuile Historique pour tout le reste.', 'Nouveaux utilisateurs : la sauvegarde Google est proposée dès le début.'],
    en: ['App 3 times lighter: it opens faster, especially the first time.', 'Cleaner menus: duplicate buttons are gone (schedule, programs, sharing, stats).', 'Simpler Profile: 3 recent workouts and a History tile for the rest.', 'New users: Google backup is offered right at the start.']},
   {v: '8.9.8', d: '2026-11-10', fr: ['« À l\'échec » est plus intelligent : seulement la dernière série des exercices d\'isolation et des machines, pas sur les gros mouvements lourds.', 'Bouton ⚡ Plan auto dans l\'éditeur de routine (et pour toutes tes routines dans Réglages) : ajoute les échauffements et les séries à l\'échec où c\'est utile.', 'Le F (échec) est maintenant dans le choix du type de série de l\'éditeur.'],
@@ -5136,14 +5142,14 @@ function bwQuick() {
 
 
 /* ===================== Onglet Cardio ===================== */
-const CV_KINDS = [['walk', '🚶', ['Tapis / marche', 'Treadmill / walk']], ['run', '🏃', ['Course', 'Run']], ['bike', '🚴', ['Vélo', 'Bike']], ['ell', '⛷️', ['Elliptique', 'Elliptical']], ['stair', '🪜', ['Escaliers', 'Stairs']], ['row', '🚣', ['Rameur', 'Rower']], ['rope', '🪢', ['Corde à sauter', 'Jump rope']]];
+const CV_KINDS = [['walk', '🚶', ['Tapis / marche', 'Treadmill / walk'], 'cwalk'], ['run', '🏃', ['Course', 'Run'], 'crun'], ['bike', '🚴', ['Vélo', 'Bike'], 'cbike'], ['ell', '⛷️', ['Elliptique', 'Elliptical'], 'cell'], ['stair', '🪜', ['Escaliers', 'Stairs'], 'cstair'], ['row', '🚣', ['Rameur', 'Rower'], 'crow'], ['rope', '🪢', ['Corde à sauter', 'Jump rope'], 'crope']];
 let cv = {k: 'walk', mode: 'steps', steps: '', min: '', kmh: '', inc: '', level: ''};
 const spdU = () => kmU() === 'mi' ? 'mph' : 'km/h';
 function meLine() {
   const m = ME(), kgv = bodyKg(), wv = U() === 'kg' ? Math.round(kgv) : Math.round(kgv * 2.20462);
   const hh = m.h ? (U() === 'kg' ? m.h + ' cm' : `${Math.floor(m.h / 2.54 / 12)}'${Math.round(m.h / 2.54 % 12)}"`) : null;
   const ok = m.h && m.age && m.sex && S.body.some(b => b.w != null);
-  return `<div class="card" style="${ok ? '' : 'border-color:var(--accent)'}"><div class="row between"><div style="min-width:0"><span class="muted small">👤 ${T('Mes infos', 'My info')}</span><br>
+  return `<div class="card" style="${ok ? '' : 'border-color:var(--accent)'}"><div class="row between"><div style="min-width:0"><span class="muted small" style="display:inline-flex;align-items:center;gap:5px">${IC('user', '👤', 15)} ${T('Mes infos', 'My info')}</span><br>
     <b>${wv} ${U()}${hh ? ' · ' + hh : ''}${m.age ? ' · ' + m.age + T(' ans', ' y') : ''}${m.sex ? ' · ' + (m.sex === 'f' ? T('Femme', 'Female') : T('Homme', 'Male')) : ''}</b>
     ${ok ? '' : `<br><span class="small" style="color:var(--accent)">${T('Complète tes infos pour des calculs précis', 'Fill in your info for accurate results')}</span>`}</div>
     <button class="btn sm" data-act="me-edit">${T('Modifier', 'Edit')}</button></div></div>`;
@@ -5171,7 +5177,7 @@ function saveMe() {
 function cvInputs() {
   const k = cv.k, wr = k === 'walk' || k === 'run';
   const fld = (key, lab, ph) => `<div><label>${lab}</label><input inputmode="decimal" data-cv="${key}" value="${esc(cv[key])}" placeholder="${ph}"></div>`;
-  if (wr) return `<div class="seg" style="margin-top:12px"><button class="btn ${cv.mode === 'steps' ? 'primary' : ''}" data-act="cv-mode" data-m="steps">👣 ${T('J\'ai mes pas', 'I have my steps')}</button><button class="btn ${cv.mode === 'time' ? 'primary' : ''}" data-act="cv-mode" data-m="time">⏱ ${T('Temps et vitesse', 'Time & speed')}</button></div>
+  if (wr) return `<div class="seg" style="margin-top:12px"><button class="btn ${cv.mode === 'steps' ? 'primary' : ''}" data-act="cv-mode" data-m="steps">${IC('cwalk', '👣', 16)} ${T('J\'ai mes pas', 'I have my steps')}</button><button class="btn ${cv.mode === 'time' ? 'primary' : ''}" data-act="cv-mode" data-m="time">${IC('timer', '⏱', 16)} ${T('Temps et vitesse', 'Time & speed')}</button></div>
     <div class="grid2">${cv.mode === 'steps' ? fld('steps', T('Pas faits', 'Steps done'), 'ex. 1000') + fld('inc', T('Inclinaison (%)', 'Incline (%)'), 'ex. 15') + fld('kmh', T('Vitesse', 'Speed') + ` (${spdU()})`, T('facultatif', 'optional'))
       : fld('min', T('Durée (min)', 'Time (min)'), 'ex. 20') + fld('kmh', T('Vitesse', 'Speed') + ` (${spdU()})`, k === 'run' ? 'ex. 9.5' : 'ex. 5') + fld('inc', T('Inclinaison (%)', 'Incline (%)'), '0')}</div>`;
   return `<div class="grid2" style="margin-top:12px">${fld('min', T('Durée (min)', 'Time (min)'), 'ex. 20')}${fld('level', T('Niveau (1-20)', 'Level (1-20)'), T('facultatif', 'optional'))}</div>`;
@@ -5191,12 +5197,12 @@ function cvResult() {
 function cvWeek() {
   const t0 = Date.now() - 7 * 864e5; let min = 0, kc = 0, st = 0;
   S.history.filter(h => new Date(h.date) >= t0).forEach(h => h.exercises.forEach(e => e.sets.forEach(s => { if (s.u === 'c') { min += +s.r || 0; kc += +s.kc || 0; st += +s.st || 0; } })));
-  return min ? `<div class="card"><span class="muted small">📅 ${T('Cardio des 7 derniers jours', 'Cardio, last 7 days')}</span><div class="row" style="justify-content:space-around;margin-top:8px"><div class="cvsm"><b>${Math.round(min)}</b><small>min</small></div><div class="cvsm"><b>${Math.round(kc)}</b><small>kcal</small></div><div class="cvsm"><b>${(Math.round(st / 10) * 10).toLocaleString(LOC())}</b><small>${T('pas éq.', 'eq. steps')}</small></div></div></div>` : '';
+  return min ? `<div class="card"><span class="muted small" style="display:inline-flex;align-items:center;gap:5px">${IC('calendar', '📅', 15)} ${T('Cardio des 7 derniers jours', 'Cardio, last 7 days')}</span><div class="row" style="justify-content:space-around;margin-top:8px"><div class="cvsm"><b>${Math.round(min)}</b><small>min</small></div><div class="cvsm"><b>${Math.round(kc)}</b><small>kcal</small></div><div class="cvsm"><b>${(Math.round(st / 10) * 10).toLocaleString(LOC())}</b><small>${T('pas éq.', 'eq. steps')}</small></div></div></div>` : '';
 }
 function vCardio() {
   return `${meLine()}
-    <div class="card"><h3 style="margin:0 0 10px">👣 ${T('Convertisseur', 'Converter')}</h3>
-      <div class="cvkinds">${CV_KINDS.map(([k, ic, n]) => `<button class="cvk ${cv.k === k ? 'on' : ''}" data-act="cv-kind" data-k="${k}"><span>${ic}</span>${T(n[0], n[1])}</button>`).join('')}</div>
+    <div class="card"><h3 style="margin:0 0 10px;display:flex;align-items:center;gap:8px">${IC('heartp', '👣', 20)} ${T('Convertisseur', 'Converter')}</h3>
+      <div class="cvkinds">${CV_KINDS.map(([k, emo, n, ik]) => `<button class="cvk ${cv.k === k ? 'on' : ''}" data-act="cv-kind" data-k="${k}"><span>${IC(ik, emo, 26)}</span>${T(n[0], n[1])}</button>`).join('')}</div>
       <div id="cvin">${cvInputs()}</div>
       <div id="cvres">${cvResult()}</div>
       <button class="btn primary block" data-act="cv-save" style="margin-top:12px">💾 ${T('Ajouter à mon historique', 'Add to my history')}</button>
@@ -5677,6 +5683,13 @@ function iconize(root) {
     if (!rest.trim()) n.nodeValue = '';
   });
 }
+ICP.cwalk = '<path d="M4 16v-2.4C4 11.5 3 10.5 3 8c0-2.7 1.5-6 4.5-6C9.4 2 10 3.8 10 5.5c0 3.1-2 5.7-2 8.7V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.4c0-2.1 1-3.1 1-5.6 0-2.7-1.5-6-4.5-6C14.6 6 14 7.8 14 9.5c0 3.1 2 5.7 2 8.7V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/>';
+ICP.crun = '<circle cx="15" cy="4" r="2"/><path d="m13 7-2 6"/><path d="m11 13 3 3v5"/><path d="m11 13-3 3H4"/><path d="m6 10 3-2h4l2 3h3"/>';
+ICP.cbike = '<circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>';
+ICP.cell = '<ellipse cx="12" cy="15" rx="9" ry="4.5"/><circle cx="5" cy="13.6" r="1.4" fill="currentColor"/><circle cx="19" cy="16.4" r="1.4" fill="currentColor"/><path d="M12 10.5V3"/><path d="M8.5 3h7"/>';
+ICP.cstair = '<path d="M3 20h5v-5h5v-5h5V5h3"/>';
+ICP.crow = '<path d="M3 13h18l-2.5 3.5h-13z"/><path d="m16 3-6 13"/><path d="M2 21c2 0 2-1 4-1s2 1 4 1 2-1 4-1 2 1 4 1 2-1 4-1"/>';
+ICP.crope = '<path d="M6.5 14C6.5 7 9 3 12 3s5.5 4 5.5 11"/><rect x="5" y="14" width="3" height="7" rx="1"/><rect x="16" y="14" width="3" height="7" rx="1"/>';
 ICP.yoga = '<circle cx="12" cy="4.5" r="2"/><path d="M12 7v6"/><path d="m5 10 7 2 7-2"/><path d="m8 20 4-7 4 7"/>';
 const iconsOn = () => S.settings.icons !== false;
 const ic = (k, sz = 20) => `<svg class="ico" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICP[k] || ''}</svg>`;
