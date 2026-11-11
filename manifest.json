@@ -46,7 +46,7 @@
       ]
     },
     {
-      "name": "Statut du chasseur",
+      "name": "Statut d'aventurier",
       "short_name": "Statut",
       "url": "./?go=medals",
       "icons": [
