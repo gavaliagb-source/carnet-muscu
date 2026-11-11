@@ -1541,7 +1541,8 @@ function finishWorkout() {
   const sysNew = syncSystem();
   const meAfter = medalsEarned(), huAfter = hunter(meAfter), medDefs = meAfter.defs, medNew = Object.keys(meAfter.got).filter(k => !medBefore[k]).map(k => medDefs.find(d => d.id === k)).filter(Boolean);
   setTimeout(() => queueCloud(1500), 0); setTimeout(remindSync, 500);
-  if (huAfter.rk !== huBefore.rk) setTimeout(() => awaken(huBefore.rk, huAfter), 900);
+  if (!GAME()) {}
+  else if (huAfter.rk !== huBefore.rk) setTimeout(() => awaken(huBefore.rk, huAfter), 900);
   else if (huAfter.cls !== huBefore.cls && huAfter.cls !== 'none') setTimeout(() => awakenClass(huAfter.cls, huAfter), 900);
   focusOn = false; focusEx = null; foldEx = null; focusWakeSet(false);
   S.active = null; save(); stopTimer(); clearNotif(); setRoot('profile'); render(); setTimeout(() => confetti(prs.length ? 160 : 90), 200);
@@ -1551,14 +1552,14 @@ function finishWorkout() {
     ${(() => { if (!prevH) return ''; const nh = S.history[S.history.length - 1];
       const row = (l, nv, pv, f) => { const pc = pv ? Math.round((nv - pv) / pv * 100) : null; return `<div class="row between" style="padding:5px 0"><span class="muted">${l}</span><span><b>${f(nv)}</b> ${pc == null ? '' : `<span class="small" style="color:${pc >= 0 ? 'var(--ok)' : 'var(--danger)'}">${pc >= 0 ? '▲' : '▼'} ${Math.abs(pc)} %</span>`}</span></div>`; };
       return `<div class="card" style="margin:8px 0"><b>Par rapport au ${dateFr(prevH.date)}</b>${row('Volume', sessVol(nh), sessVol(prevH), v => Math.round(v).toLocaleString(LOC()) + ' ' + U())}${row('Réps', sessReps(nh), sessReps(prevH), v => v)}${prevH.duration ? row('Durée', nh.duration, prevH.duration, v => hm(v)) : ''}</div>`; })()}
-    <div class="card lvup" style="--rc:${huAfter.col}"><div class="sysh">[ ${T('SYSTÈME', 'SYSTEM')} ]</div>
+    ${GAME() ? `<div class="card lvup" style="--rc:${huAfter.col}"><div class="sysh">[ ${T('SYSTÈME', 'SYSTEM')} ]</div>
       ${huAfter.lvl > huBefore.lvl ? `<b style="font-size:18px;letter-spacing:1px">${T('NIVEAU SUPÉRIEUR!', 'LEVEL UP!')}</b><div style="margin:4px 0">${T('Niveau', 'Level')} ${huBefore.lvl} → <b style="color:var(--rc);font-size:20px">${huAfter.lvl}</b></div>` : `<div>${T('Niveau', 'Level')} <b>${huAfter.lvl}</b></div>`}
       ${huAfter.rk !== huBefore.rk ? `<div style="margin:6px 0">${T('Nouveau rang', 'New rank')} : ${rkBadge(huAfter.rk, 'mrk lvrk')} <b style="color:var(--rc)">${esc(huAfter.title)}</b></div>` : ''}
       ${sysNew.quest ? `<div style="margin:6px 0">✨ ${T('Quête quotidienne accomplie', 'Daily quest complete')} <b>+150 XP</b></div>` : ''}
       ${sysNew.dungeon ? `<div style="margin:6px 0">⚔️ ${T('Donjon nettoyé', 'Dungeon cleared')} <b>+500 XP</b></div>` : ''}
       ${sysNew.boss ? `<div style="margin:8px 0;font-size:17px">☠️ <b>${T('BOSS VAINCU!', 'BOSS DEFEATED!')}</b> ${esc(sysNew.boss.name)} <b>+1 000 XP</b></div>` : ''}
       ${prs.length ? `<div class="small" style="margin:6px 0;color:#7dd3fc">${T('Lève-toi.', 'Arise.')} ${prs.length > 1 ? T(`${prs.length} ombres renforcées`, `${prs.length} shadows strengthened`) : T('Une ombre s\'est renforcée', 'A shadow grew stronger')} : ${prs.map(r => esc(r.name)).join(', ')}</div>` : ''}
-      <div class="small muted">+${(huAfter.xp - huBefore.xp).toLocaleString(LOC())} XP</div></div>
+      <div class="small muted">+${(huAfter.xp - huBefore.xp).toLocaleString(LOC())} XP</div></div>` : ''}
     ${medNew.length ? `<div class="card" style="border-color:var(--accent);margin:8px 0"><b>🏅 ${T(medNew.length > 1 ? 'Nouvelles médailles!' : 'Nouvelle médaille!', medNew.length > 1 ? 'New medals!' : 'New medal!')}</b>${medNew.map(d => `<div style="margin-top:6px;display:flex;align-items:center;gap:8px">${rkBadge(d.rk, 'mrk lvrk')} ${d.ic} ${esc(d.t)}</div>`).join('')}</div>` : ''}
     ${rtCh.length ? `<div class="card" id="rtupd" style="border-color:var(--accent);margin:8px 0"><b>✏️ ${T('Tu as modifié cette séance', 'You changed this workout')}</b>
       <ul class="small" style="margin:6px 0 10px;padding-left:18px">${rtCh.slice(0, 6).map(c => `<li>${esc(c)}</li>`).join('')}${rtCh.length > 6 ? `<li>…</li>` : ''}</ul>
@@ -2033,6 +2034,9 @@ const setSec = (id, icon, emo, title, sub, body) => `<details class="card setsec
 function vSettings() {
   if (!cloudOn() && !vSettings.done) { vSettings.done = 1; secOpen.add('cloud'); }
   return setSec('gen', 'user', '👤', T('Général', 'General'), T('Nom, langue, objectif, navigation', 'Name, language, goal, navigation'), `
+      <label>${T('Style de l\'appli', 'App style')}</label>
+      <select data-set="gameMode"><option value="1" ${GAME() ? 'selected' : ''}>⚔️ ${T('Mode jeu : XP, niveaux, rangs, quêtes', 'Game mode: XP, levels, ranks, quests')}</option><option value="0" ${GAME() ? '' : 'selected'}>📒 ${T('Classique : carnet simple, sans jeu', 'Classic: simple log, no game')}</option></select>
+      <p class="muted small" style="margin:4px 0 0">${T('En Classique, l\'XP et ton niveau continuent de se calculer en arrière-plan : si tu actives le mode jeu plus tard, tu retrouves ton vrai niveau.', 'In Classic, XP and your level keep being calculated in the background: if you turn game mode on later, you get your real level back.')}</p>
       <label>${T('Taille du texte', 'Text size')}</label>
       <select data-set="fontScale">${[['sm', T('Petit', 'Small')], ['', T('Normal', 'Normal')], ['lg', T('Grand', 'Large')], ['xl', T('Très grand', 'Extra large')]].map(([v, l]) => `<option value="${v}" ${(S.settings.fontScale || '') === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
       <label>${T('Premier jour de la semaine', 'First day of the week')}</label>
@@ -3017,7 +3021,7 @@ function vTrain() {
   let h = '';
   if (a) h += `<div class="card" style="border-color:var(--accent)"><div class="row between"><div><h3>Séance en cours</h3><span class="muted small">${esc(a.routineName)} · ⏱ <span id="elapsed2">${fmtDur(Date.now() - new Date(a.start))}</span></span></div><button class="btn primary sm" data-act="go-workout">Reprendre</button></div></div>`;
   h += todayCard();
-  syncSystem(); h += questCard(true);
+  syncSystem(); if (GAME()) h += questCard(true);
   h += weekGoal();
   h += cloudNag();
   if (deloadOn()) h += `<div class="card" style="border-color:var(--warm)"><div class="row between"><div><b>🪶 Semaine de récupération</b><br><span class="muted small">Charges −${S.settings.deload.pct} % jusqu'au ${new Date(S.settings.deload.until + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'long'})}</span></div><button class="btn sm" data-act="deload-off">Arrêter</button></div></div>`;
@@ -3359,7 +3363,7 @@ function vProfile() {
   const month = S.history.filter(h => { const d = new Date(h.date); return d.getMonth() === n0.getMonth() && d.getFullYear() === n0.getFullYear(); }).length;
   const recent = S.history.slice().reverse().slice(0, 3);
   return `<div class="row" style="gap:14px;margin-bottom:16px"><button class="avatar" data-act="avatar" aria-label="${T('Photo de profil', 'Profile photo')}">${S.settings.avatar ? `<img src="${S.settings.avatar}" alt="">` : esc((nm.trim()[0] || '?').toUpperCase())}<span class="cam">📷</span></button>
-      <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0">${esc(nm)}</h2>${(() => { if (!S.history.length) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${hu.lvl >= 10 ? clsIc(hu.cls) + ' ' + esc(clsName(hu.cls)) : esc(hu.title)}</button>`; })()}
+      <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0">${esc(nm)}</h2>${(() => { if (!S.history.length || !GAME()) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${hu.lvl >= 10 ? clsIc(hu.cls) + ' ' + esc(clsName(hu.cls)) : esc(hu.title)}</button>`; })()}
       <div class="row" style="gap:18px;flex-wrap:wrap"><div><span class="muted small">Entraînements</span><br><b>${S.history.length}</b></div><div><span class="muted small">${T('Série', 'Streak')}</span><br><b>🔥 ${streakWeeks()} sem.</b></div><div><span class="muted small">Ce mois</span><br><b>${month}</b></div></div></div></div>
     ${bodyCard()}${friendsCard()}${yearBanner()}${weekGoal()}${stagCard()}
     <div class="row between"><span>${headline}</span><select style="width:auto" data-pf="range"><option value="12" ${pfWeeks === 12 ? 'selected' : ''}>3 derniers mois</option><option value="26" ${pfWeeks === 26 ? 'selected' : ''}>6 mois</option><option value="52" ${pfWeeks === 52 ? 'selected' : ''}>1 an</option><option value="0" ${pfWeeks === 0 ? 'selected' : ''}>Tout</option></select></div>
@@ -4145,15 +4149,18 @@ function vMuscleRanks() {
 }
 
 let medFilter = 'all';
+/* Mode jeu (XP, niveaux, rangs, quêtes, donjons, boss, classes, ombres) : au choix. Tout continue de se calculer en arrière-plan. */
+const GAME = () => S.settings.game !== false;
 function vMedals() {
-  const me = medalsEarned(), {got, st, defs} = me, hu = hunter(me);
+  const me = medalsEarned(), {got: got0, st, defs: defs0} = me, hu = hunter(me);
+  const defs = GAME() ? defs0 : defs0.filter(d => d.cat !== 'sys'), got = GAME() ? got0 : Object.fromEntries(Object.entries(got0).filter(([k]) => defs.some(d => d.id === k)));
   const n = Object.keys(got).length;
   const fmtN = v => Math.round(v).toLocaleString(LOC());
   const card = d => { const ok = got[d.id], cur = Math.min(st[d.g] || 0, d.v);
     return `<div class="card medal ${ok ? 'ok' : ''}" style="--rc:${RKC[d.rk]}">${rkBadge(d.rk)}<div class="mic2">${d.ic}</div><b class="small">${esc(d.t)}</b>${d.s ? `<div class="small muted msub">${esc(d.s)}</div>` : ''}<div class="small muted">${ok ? dateFr(ok) + ' ' + new Date(ok).getFullYear() : `${fmtN(cur)} / ${fmtN(d.v)}`}</div>${ok ? '' : `<div class="goal" style="margin-top:6px"><div style="width:${Math.round(cur / d.v * 100)}%"></div></div>`}</div>`; };
   const list = defs.filter(d => medFilter === 'all' || (medFilter === 'ok' ? got[d.id] : !got[d.id]));
   const pct = Math.min(100, Math.round(hu.cur / hu.need * 100));
-  return `<div class="card sysw" style="--rc:${hu.col}">
+  return `${!GAME() ? `<div class="card"><div class="row between" style="align-items:center"><div><span class="muted small">${T('Médailles gagnées', 'Medals earned')}</span><br><b style="font-size:22px">${n}</b> <span class="muted">/ ${defs.length}</span></div><button class="btn sm" data-act="go" data-v="murank">🎯 ${T('Rangs par muscle', 'Muscle ranks')}</button></div></div>` : `<div class="card sysw" style="--rc:${hu.col}">
       <div class="sysh">[ ${T('STATUT', 'STATUS')} ]</div>
       <div class="row" style="gap:14px;align-items:center">${rkBadge(hu.rk, 'rkbig')}
         <div style="flex:1;min-width:0"><div class="muted small">${T('Niveau', 'Level')}</div><div class="lvl">${hu.lvl}</div><div class="small" style="color:var(--rc);font-weight:700">${esc(hu.title)}</div></div></div>
@@ -4164,9 +4171,9 @@ function vMedals() {
       <p class="small muted" style="margin:10px 0 0">${T('XP : séance 100 · série 5 · record 40 · médaille 250 · quête 150 · donjon 500 · boss 1 000.', 'XP: workout 100 · set 5 · record 40 · medal 250 · quest 150 · dungeon 500 · boss 1,000.')}</p>
       <div class="row" style="gap:8px;margin-top:10px"><button class="btn" style="flex:1" data-act="go" data-v="murank">🎯 ${T('Rangs par muscle', 'Muscle ranks')}</button><button class="btn" style="flex:1" data-act="go" data-v="shadows">⚔️ ${T('Ombres', 'Shadows')} (${st.sh || 0})</button></div>
     </div>
-    ${S.history.length ? '<div style="height:12px"></div>' + questCard() : ''}
+    ${S.history.length ? '<div style="height:12px"></div>' + questCard() : ''}`}
     <div class="seg" style="margin:14px 0 4px"><button class="${medFilter === 'all' ? 'on' : ''}" data-act="med-f" data-f="all">${T('Toutes', 'All')}</button><button class="${medFilter === 'ok' ? 'on' : ''}" data-act="med-f" data-f="ok">${T('Gagnées', 'Earned')} (${n})</button><button class="${medFilter === 'todo' ? 'on' : ''}" data-act="med-f" data-f="todo">${T('À débloquer', 'Locked')} (${defs.length - n})</button></div>
-    ${MCATS.map(([c, nmC]) => { const L = list.filter(d => d.cat === c); if (!L.length) return ''; const gotC = defs.filter(d => d.cat === c && got[d.id]).length, totC = defs.filter(d => d.cat === c).length;
+    ${MCATS.filter(([c]) => GAME() || c !== 'sys').map(([c, nmC]) => { const L = list.filter(d => d.cat === c); if (!L.length) return ''; const gotC = defs.filter(d => d.cat === c && got[d.id]).length, totC = defs.filter(d => d.cat === c).length;
       return `<h3 class="mcat">${T(nmC[0], nmC[1])} <span class="muted small">${gotC} / ${totC}</span></h3><div class="grid2">${L.map(card).join('')}</div>`; }).join('')}`;
 }
 
@@ -4802,8 +4809,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.15';
+const APP_VERSION = '9.16';
 const CHANGELOG = [
+  {v: '9.16', d: '2026-11-11', fr: ['📒 Nouveau : choisis ton style dans Réglages → Général. « Mode jeu » (XP, niveaux, rangs, quêtes, donjons, boss, classes) ou « Classique », un carnet simple sans jeu. Les nouveaux utilisateurs le choisissent dès l\'accueil.', 'En Classique, ton niveau continue de se calculer en arrière-plan, et tes amis ne voient pas ton rang.'],
+   en: ['📒 New: pick your style in Settings → General. “Game mode” (XP, levels, ranks, quests, dungeons, boss, classes) or “Classic”, a simple log with no game. New users choose it right at the welcome screen.', 'In Classic, your level keeps being calculated in the background, and your friends don\'t see your rank.']},
   {v: '9.15', d: '2026-11-11', fr: ['⛶ Touche le chrono de repos en bas de l\'écran : il s\'affiche maintenant en plein écran, énorme et lisible de loin, avec une barre qui descend. Touche n\'importe où pour fermer.'], en: ['⛶ Tap the rest timer at the bottom of the screen: it now shows full screen, huge and readable from afar, with a shrinking bar. Tap anywhere to close.']},
   {v: '9.14.3', d: '2026-11-11', fr: ['Corrigé : la fenêtre du chrono de repos (avec l\'anneau) restait bloquée en plein écran noir. Elle se ferme de nouveau normalement.'], en: ['Fixed: the rest timer window (with the ring) got stuck full screen in black. It closes normally again.']},
   {v: '9.14.2', d: '2026-11-11', fr: ['Profil : l\'icône d\'appareil photo sur ta photo est de nouveau visible.'], en: ['Profile: the camera icon on your photo is visible again.']},
@@ -5910,10 +5919,11 @@ function frMe() {
   return {f: {c: fr.file || 'me', me: true, n: T('Moi', 'Me')}, d: {name: (S.settings.name || '').trim() || T('Moi', 'Me'), av: S.settings.avatar || '', wk: streakWeeks(), hu: frHu(), s, p, up: fr.last}};
 }
 /* Niveau de chasseur partagé avec les amis */
-function frHu() { if (!S.history.length) return null; const x = hunter(); return {l: x.lvl, r: x.rk, xp: x.xp, c: x.cls}; }
+function frHu() { if (!S.history.length || !GAME()) return null; const x = hunter(); return {l: x.lvl, r: x.rk, xp: x.xp, c: x.cls}; }
 const huTitle = r => { const x = HRANKS.find(y => y[1] === r); return x ? T(x[2][0], x[2][1]) : ''; };
-const frLv = (d, big) => d && d.hu && d.hu.r ? (big ? `<span class="frlvb" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${rkBadge(d.hu.r, 'mrk lvrk')} ${T('Niveau', 'Level')} ${d.hu.l} · ${d.hu.c && d.hu.c !== 'none' ? clsIc(d.hu.c) + ' ' + esc(clsName(d.hu.c)) : esc(huTitle(d.hu.r))}</span>` : `<span class="frlv" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${d.hu.r} · ${T('Niv.', 'Lv.')} ${d.hu.l}</span>`) : '';
+const frLv = (d, big) => GAME() && d && d.hu && d.hu.r ? (big ? `<span class="frlvb" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${rkBadge(d.hu.r, 'mrk lvrk')} ${T('Niveau', 'Level')} ${d.hu.l} · ${d.hu.c && d.hu.c !== 'none' ? clsIc(d.hu.c) + ' ' + esc(clsName(d.hu.c)) : esc(huTitle(d.hu.r))}</span>` : `<span class="frlv" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${d.hu.r} · ${T('Niv.', 'Lv.')} ${d.hu.l}</span>`) : '';
 function frRanking() {
+  if (!GAME()) return '';
   const fr = FRS(), rows = [];
   if (frOn()) { const m = frMe(); rows.push({c: 'me', me: true, d: m.d}); }
   fr.list.forEach(f => { const c = frData[f.c]; if (c && c.d) rows.push({c: f.c, d: c.d}); });
@@ -6567,7 +6577,7 @@ document.addEventListener('click', e => {
       const items = frFeed(c), nS = (d && d.s || []).length;
       modal(`<div class="row between"><span></span><button class="btn sm" data-act="close">✕</button></div>
         <div style="text-align:center;margin-top:-8px">${d && d.av ? `<img src="${d.av}" alt="" style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid var(--accent)">` : `<span class="frav" style="width:110px;height:110px;font-size:44px">${esc(((d && d.name) || f.n || '?')[0].toUpperCase())}</span>`}
-          <h2 style="margin:8px 0 2px">${esc((d && d.name) || f.n || '')}</h2>${d && d.hu ? `<div style="margin:2px 0 6px">${frLv(d, true)}</div>` : ''}
+          <h2 style="margin:8px 0 2px">${esc((d && d.name) || f.n || '')}</h2>${GAME() && d && d.hu ? `<div style="margin:2px 0 6px">${frLv(d, true)}</div>` : ''}
           ${d ? `<p class="small muted" style="margin:0">🔥 ${d.wk || 0} ${T('sem. de suite', 'weeks in a row')} · ${nS} ${T('séance' + (nS > 1 ? 's' : ''), 'workout' + (nS > 1 ? 's' : ''))} · ${(d.p || []).length} 📸</p>` : ''}</div>
         <div style="margin-top:12px">${items.length ? items.map(frPost).join('') : `<p class="muted center">${T('Rien de partagé pour l\'instant.', 'Nothing shared yet.')}</p>`}</div>
         ${me ? `<button class="btn block" data-act="fr-code" style="margin-top:8px">${T('Mon code ami', 'My friend code')}</button>` : `<button class="btn block" data-act="fr-del" data-c="${f.c}" style="color:var(--bad);margin-top:8px">${T('Retirer de mes amis', 'Remove friend')}</button>`}`);
@@ -6705,6 +6715,7 @@ document.addEventListener('click', e => {
     case 'tm-next': if (tmp) { if (tmp.i + 1 >= tmp.seq.length) tmFinish(); else tmGoto(tmp.i + 1); } break;
     case 'tm-prev': if (tmp) tmGoto(Math.max(0, (tmp.end - Date.now()) / 1000 < tmp.seq[tmp.i].sec - 2 ? tmp.i : tmp.i - 1)); break;
     case 'wl-lang': if (b.dataset.v !== (isEN() ? 'en' : 'fr')) { S.settings.lang = b.dataset.v; save(); location.reload(); } break;
+    case 'wl-game': S.settings.game = b.dataset.v === '1'; save(); b.parentElement.querySelectorAll('.btn').forEach(x => x.classList.toggle('on', x === b)); break;
     case 'wl-unit': S.settings.unit = b.dataset.v; save(); b.parentElement.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); break;
     case 'wl-eff': S.settings.effort = b.dataset.v; S.settings.failDefault = b.dataset.v === 'fail'; save(); b.parentElement.querySelectorAll('.btn').forEach(x => x.classList.toggle('on', x === b)); break;
     case 'wl-ok': { const n = (($('#wlname') || {}).value || '').trim(); if (n) S.settings.name = n; S.settings.onboarded = true; save(); closeAll(); render(); toast(T(`👋 Bienvenue ${n}!`, `👋 Welcome ${n}!`).replace(' !', '!')); break; }
@@ -6992,6 +7003,7 @@ document.addEventListener('input', e => {
   if (t.dataset.exnote !== undefined && S.active) { S.active.exercises[+t.dataset.exnote].note = t.value; }
   if (t.dataset.set) {
     if (t.dataset.set === 'effort') { S.settings.effort = t.value; S.settings.failDefault = t.value === 'fail'; save(); return; }
+    if (t.dataset.set === 'gameMode') { S.settings.game = t.value === '1'; save(); render(); try { if (frOn()) frQueue(false); } catch (e) {} toast(GAME() ? T('⚔️ Mode jeu activé', '⚔️ Game mode on') : T('📒 Mode classique', '📒 Classic mode')); return; }
     if (t.dataset.set === 'stagOn') S.settings.stagOff = !t.checked;
     else if (t.dataset.set === 'notif') { if (t.checked) { askNotif().then(ok => { S.settings.notif = ok; save(); render(); if (ok) toast(T('⌚ Notifications activées', '⌚ Notifications on')); }); return; } S.settings.notif = false; save(); render(); return; }
     else if (t.type === 'checkbox') { S.settings[t.dataset.set] = t.checked; if (t.dataset.set === 'wake') syncWake(); }
@@ -7069,12 +7081,16 @@ window.addEventListener('resize', () => afterRender(cur()));
 
 render();
 function openWelcome() {
-  modal(`<div style="text-align:center"><div style="font-size:46px">💪</div><h2 style="margin:4px 0">${T('Bienvenue dans Carnet Muscu!', 'Welcome to Carnet Muscu!')}</h2><p class="muted small">${T('3 questions et c\'est parti. Tu pourras tout changer dans les Réglages.', '3 quick questions and you\'re set. You can change everything later in Settings.')}</p></div>
+  modal(`<div style="text-align:center"><div style="font-size:46px">💪</div><h2 style="margin:4px 0">${T('Bienvenue dans Carnet Muscu!', 'Welcome to Carnet Muscu!')}</h2><p class="muted small">${T('4 questions et c\'est parti. Tu pourras tout changer dans les Réglages.', '4 quick questions and you\'re set. You can change everything later in Settings.')}</p></div>
     <label>Langue / Language</label><div class="seg"><button class="${isEN() ? '' : 'on'}" data-act="wl-lang" data-v="fr">Français</button><button class="${isEN() ? 'on' : ''}" data-act="wl-lang" data-v="en">English</button></div>
     <label>${T('Ton prénom', 'Your first name')}</label><input id="wlname" value="${esc(S.settings.name || '')}" placeholder="${T('Ex. : Alex', 'E.g. Alex')}">
     <label>${T('Unité', 'Unit')}</label><div class="seg"><button class="${U() === 'lb' ? 'on' : ''}" data-act="wl-unit" data-v="lb">lb</button><button class="${U() === 'kg' ? 'on' : ''}" data-act="wl-unit" data-v="kg">kg</button></div>
     <label>${T('Comment fais-tu tes séries?', 'How do you train your sets?')}</label>
     <div class="menu">${EFFORTS().map(([k, l]) => `<button class="btn block ${(S.settings.effort || 'normal') === k ? 'on' : ''}" data-act="wl-eff" data-v="${k}" style="text-align:left">${l}</button>`).join('')}</div>
+    <label>${T('Quel style tu préfères?', 'Which style do you prefer?')}</label>
+    <div class="menu"><button class="btn block ${S.settings.game === false ? 'on' : ''}" data-act="wl-game" data-v="0" style="text-align:left">📒 <b>${T('Classique', 'Classic')}</b><br><span class="small" style="opacity:.75;font-weight:400">${T('Un carnet simple et efficace : tes séances, tes records, tes stats.', 'A simple, efficient log: your workouts, records and stats.')}</span></button>
+      <button class="btn block ${S.settings.game !== false ? 'on' : ''}" data-act="wl-game" data-v="1" style="text-align:left">⚔️ <b>${T('Mode jeu', 'Game mode')}</b><br><span class="small" style="opacity:.75;font-weight:400">${T('Gagne de l\'XP, monte de niveau et de rang, fais des quêtes et bats des boss.', 'Earn XP, level up and rank up, do quests and beat bosses.')}</span></button></div>
+    <p class="muted small" style="margin:4px 0 0">${T('Tu pourras changer dans Réglages → Général.', 'You can change it in Settings → General.')}</p>
     <button class="btn primary block" data-act="wl-ok" style="margin-top:14px">${T('C\'est parti!', 'Let\'s go!')}</button>`, {id: 'welcome', onclose: () => { S.settings.onboarded = true; S.settings.tourPending = true; save(); setTimeout(checkImport, 250); setTimeout(() => { if (!modals.length && !location.hash.includes('imp=') && !location.hash.includes('ami=')) welcomeBackup(); }, 400); }});
 }
 /* Après l'accueil : proposer la sauvegarde Google en un toucher (la visite guidée suit) */
