@@ -1741,7 +1741,7 @@ function vWorkout() {
   if (!a.exercises.length) return `<div class="empty">Séance vide. Ajoute ton premier exercice.</div><button class="btn primary block" data-act="add-exo">＋ Ajouter un exercice</button><div class="gap"></div><button class="btn danger block" data-act="cancel-workout">Abandonner</button>`;
   const {d: dS, n: nS} = woStats(), ce = curEx();
   const ftog = `<button class="btn sm block ftog" data-act="focus-tog">⛶ ${focusOn ? T('Voir toute la séance', 'Show the whole workout') : T('Mode focus (une série à la fois)', 'Focus mode (one set at a time)')}</button>`;
-  const prog = `<div class="wprog"><div class="row between small"><span>${ce >= 0 ? T(`Exercice ${ce + 1}/${a.exercises.length}`, `Exercise ${ce + 1}/${a.exercises.length}`) : T('✅ Tout est fait!', '✅ All done!')}</span><span class="muted">${dS}/${nS} ${T('séries', 'sets')}</span></div><div class="pbar"><div style="width:${nS ? Math.round(dS / nS * 100) : 0}%"></div></div></div>`;
+  const prog = `<div class="wprog"><div class="row between small"><span>${ce >= 0 ? T(`Exercice ${ce + 1}/${a.exercises.length}`, `Exercise ${ce + 1}/${a.exercises.length}`) : T('✅ Tout est fait!', '✅ All done!')}</span><span class="muted">${dS}/${nS} ${T('séries', 'sets')}</span></div><div class="pbar"><div style="width:${nS ? Math.round(dS / nS * 100) : 0}%"></div></div>${woQuest(a)}</div>`;
   if (focusOn) return prog + vFocus();
   return prog + ftog + (deloadOn() ? `<div class="card" style="border-color:var(--warm);padding:10px 14px"><span class="small">🪶 Semaine de récupération : charges −${S.settings.deload.pct} %</span></div>` : '') + a.exercises.map((e, ei) => {
     const last = lastFor(e.name), prev = prevFor(e.name), tm = isTimed(e);
@@ -4194,7 +4194,17 @@ function baseAvg(beforeKey) {
   const n = L.length || 1;
   return {n: L.length, sets: hsSets(L) / n, reps: hsReps(L) / n, vol: hsVol(L) / n, dur: hsDur(L) / n, ex: hsEx(L.slice(-1))};
 }
-function dailyQuest(d) {
+/* Quête du jour pendant la séance : progression en direct (séances d'aujourd'hui + séries cochées de celle-ci) */
+function woQuest(a) {
+  try {
+    if (!GAME() || !S.history.length) return '';
+    const live = {date: new Date().toISOString(), routineName: a.routineName, exercises: a.exercises.map(e => ({...e, sets: e.sets.filter(s => s.done)}))};
+    const q = dailyQuest(new Date(), [live]); if (q.rest) return '';
+    const pc = Math.min(100, Math.round(q.cur / Math.max(1, q.goal) * 100)), fmt = v => Math.round(v).toLocaleString(LOC());
+    return `<div class="row between small" style="margin-top:6px;gap:8px"><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.done ? '✅' : '✨'} ${T('Quête', 'Quest')} : ${esc(q.text)}</span><b style="flex:none;color:${q.done ? 'var(--ok)' : 'var(--text)'}">${q.done ? T('Réussie! +150 XP', 'Done! +150 XP') : fmt(q.cur) + ' / ' + fmt(q.goal)}</b></div>${q.done ? '' : `<div class="pbar" style="height:4px;margin-top:4px"><div style="width:${pc}%;background:var(--ok)"></div></div>`}`;
+  } catch (e) { return ''; }
+}
+function dailyQuest(d, extra) {
   d = d || new Date(); const k = dkey(d), di = dayIdx(d);
   if (dkey(new Date()) === k) { const p = weekPlan()[di]; if (p && p.rest && !S.history.some(x => dkey(x.date) === k)) return {k, rest: true}; }
   const b = baseAvg(k), u = U(), sd = hashStr('q' + k);
@@ -4206,7 +4216,7 @@ function dailyQuest(d) {
     {id: 'dur', ic: '⏱️', goal: Math.max(45, rnd5(b.dur || 60, 5)), t: ['Entraîne-toi # minutes', 'Train for # minutes'], cur: hsDur},
     {id: 'ex', ic: '📚', goal: Math.max(5, Math.min(8, (b.ex || 5) + 1)), t: ['Fais # exercices différents', 'Do # different exercises'], cur: hsEx}];
   if (b.vol > 0) pool.push({id: 'vol', ic: '🏗️', goal: rnd5(b.vol * 1.1, u === 'kg' ? 250 : 500), t: [`Soulève # ${u} en tout`, `Lift # ${u} in total`], cur: hsVol});
-  const q = pool[sd % pool.length], hs = S.history.filter(x => dkey(x.date) === k), cur = q.cur(hs);
+  const q = pool[sd % pool.length], hs = S.history.filter(x => dkey(x.date) === k).concat(extra || []), cur = q.cur(hs);
   return {k, ...q, cur, done: cur >= q.goal, text: T(q.t[0], q.t[1]).replace('#', q.goal.toLocaleString(LOC()))};
 }
 /* Note la quête du jour et le donjon de la semaine quand ils sont réussis. Renvoie ce qui vient d'être accompli. */
@@ -4835,8 +4845,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.18';
+const APP_VERSION = '9.19';
 const CHANGELOG = [
+  {v: '9.19', d: '2026-11-11', fr: ['✨ Mode jeu : la quête du jour s\'affiche en haut de ta séance avec ta progression en direct (ex. 185 / 200 reps). Fini les quêtes ratées à 1 rep près!'], en: ['✨ Game mode: the daily quest shows at the top of your workout with live progress (e.g. 185 / 200 reps). No more quests missed by 1 rep!']},
   {v: '9.18', d: '2026-11-11', fr: ['⚠️ Mode jeu : rater la quête du jour un jour d\'entraînement prévu coûte maintenant −10 XP. Ça compte à partir d\'aujourd\'hui seulement, rien en arrière.'], en: ['⚠️ Game mode: missing the daily quest on a planned training day now costs −10 XP. It counts from today only, nothing retroactive.']},
   {v: '9.17', d: '2026-11-11', fr: ['⚔️ Le mode jeu a maintenant son propre univers : la Guilde des aventuriers. Tu es Aventurier de rang E à S, tu deviens Initié au niveau 10, et le sommet est Légende de la Guilde.', '🗡️ L\'Armée des ombres devient ton Arsenal : chaque exercice où tu bats un record devient une arme qui monte en rang.', 'Les fenêtres du jeu prennent maintenant les couleurs de ton appli. Ton XP, ton niveau et tes médailles ne changent pas.'],
    en: ['⚔️ Game mode now has its own world: the Adventurers\' Guild. You are an E to S-rank Adventurer, you become an Initiate at level 10, and the peak is Guild Legend.', '🗡️ The Shadow Army becomes your Arsenal: every exercise where you break a record becomes a weapon that ranks up.', 'Game windows now use your app colors. Your XP, level and medals don\'t change.']},
