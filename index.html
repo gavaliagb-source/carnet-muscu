@@ -169,6 +169,8 @@ button.chip{cursor:pointer}
 .bar .fill{height:100%;background:var(--accent);border-radius:7px}
 .bar b{text-align:right;font-variant-numeric:tabular-nums}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mythm{display:flex;gap:0;align-items:stretch}.mythm .btn:first-child{flex:1;min-width:0;text-align:left;border-radius:10px 0 0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mythm .btn+.btn{border-radius:0 10px 10px 0;border-left:0;padding:0 10px}
+.sw2{display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:6px;vertical-align:-3px;border:1px solid #fff4}
 .sug{margin-top:8px;padding:8px 10px;border-radius:10px;background:var(--card2);border:1px dashed var(--accent);font-size:13px;display:flex;gap:8px;align-items:center;justify-content:space-between}
 .sw{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:6px;vertical-align:-2px;border:1px solid #fff4}
 .seg button{font-size:13px}
@@ -804,6 +806,27 @@ function load() {
   return migrate(seed());
 }
 let S = load();
+/* ---------- Mes thèmes (préréglages de couleurs créés par l'utilisateur) ---------- */
+const myThemes = () => (S.settings.myThemes = S.settings.myThemes || []);
+const thmNow = () => ({theme: S.settings.theme || 'noir', accent: S.settings.accent || '', bg: S.settings.bg || ''});
+const thmIsOn = t => { const n = thmNow(); return t.theme === n.theme && (t.accent || '') === n.accent && (t.bg || '') === n.bg; };
+function thmSwatch() {
+  const de = getComputedStyle(document.documentElement);
+  return {sbg: de.getPropertyValue('--bg').trim() || '#0f1114', sacc: de.getPropertyValue('--accent').trim() || '#c6f135'};
+}
+function thmApply(t) {
+  S.settings.theme = t.theme || 'noir';
+  if (t.accent) S.settings.accent = t.accent; else delete S.settings.accent;
+  if (t.bg) S.settings.bg = t.bg; else delete S.settings.bg;
+  save(); applyTheme(); render();
+}
+function myThemesHtml() {
+  const L = myThemes();
+  return `<label style="margin-top:16px">${T('Mes thèmes', 'My themes')}</label>
+    ${L.length ? `<div class="grid2">${L.map(t => `<div class="mythm"><button class="btn sm ${thmIsOn(t) ? 'on' : ''}" data-act="mythm" data-id="${t.id}"><span class="sw2" style="background:linear-gradient(135deg,${esc(t.sbg)} 50%,${esc(t.sacc)} 50%)"></span>${esc(t.n)}</button><button class="btn sm" data-act="mythm-menu" data-id="${t.id}" aria-label="Options">⋯</button></div>`).join('')}</div>`
+      : `<p class="muted small" style="margin:2px 0 0">${T('Choisis tes couleurs plus bas, puis enregistre-les ici pour les remettre en un clic.', 'Pick your colors below, then save them here to switch back in one tap.')}</p>`}
+    <button class="btn sm block" data-act="mythm-save" style="margin-top:8px">＋ ${T('Enregistrer mes couleurs actuelles', 'Save my current colors')}</button>`;
+}
 const THEMES = [['noir', 'Noir & lime', '#c6f135'], ['oled', 'Noir OLED', '#c6f135'], ['clair', 'Clair', '#1f9d55'], ['bleu', 'Bleu glace', '#4cc9f0'],
   ['hevy', 'Bleu Hevy', '#1e88ff'], ['rouge', 'Rouge', '#ff5a5f'], ['violet', 'Violet', '#b388ff'], ['orange', 'Orange', '#ff9f1c'], ['rose', 'Rose', '#ff6fae'], ['menthe', 'Menthe', '#3ee6b0'], ['or', 'Or', '#f5c542'], ['foret', 'Forêt', '#7bc96f'], ['auto', 'Auto (système)', 'linear-gradient(90deg,#f3f4f6 50%,#0f1114 50%)']];
 function applyTheme() {
@@ -1988,6 +2011,7 @@ function vSettings() {
       <div class="row wrap" style="margin-top:10px"><button class="btn sm" data-act="test-beep">🔊 Tester le son</button><button class="btn sm" data-act="test-lock">🔒 Test écran éteint (10 s)</button></div>`) +
   setSec('look', 'palette', '🎨', T('Apparence', 'Appearance'), T('Thème, couleurs, fond, icônes', 'Theme, colors, background, icons'), `<p class="muted small" style="margin:4px 0 0">Thèmes prêts à utiliser :</p>
       <div class="grid2" style="margin-top:10px">${THEMES.map(([k, l, c]) => `<button class="btn sm ${(S.settings.theme || 'noir') === k ? 'on' : ''}" style="text-align:left" data-act="theme" data-t="${k}"><span class="sw" style="background:${c}"></span>${l}</button>`).join('')}</div>
+      ${myThemesHtml()}
       <label style="margin-top:16px">Couleur des boutons (personnalisée)</label>
       <div class="chips">${ACCENTS.map(c => `<button class="chip" data-act="accent-pick" data-c="${c}" style="background:${c};border-color:${S.settings.accent === c ? 'var(--text)' : c};width:34px;height:34px;padding:0" aria-label="Couleur ${c}"></button>`).join('')}</div>
       <div class="row" style="margin-top:6px"><button class="btn cpbtn" data-act="cpick" data-k="accent" aria-label="${T('Choisir une couleur', 'Pick a color')}"><span style="background:${S.settings.accent || 'var(--accent)'}"></span></button>
@@ -4255,7 +4279,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.4';
+const APP_VERSION = '9.5';
 const CHANGELOG = [
   {v: '9.0', d: '2026-11-10', fr: ['Appli 3 fois plus légère : elle s\'ouvre plus vite, surtout la première fois.', 'Menus épurés : les boutons en double sont partis (horaire, programmes, partage, statistiques).', 'Profil plus simple : 3 séances récentes et une tuile Historique pour tout le reste.', 'Nouveaux utilisateurs : la sauvegarde Google est proposée dès le début.'],
    en: ['App 3 times lighter: it opens faster, especially the first time.', 'Cleaner menus: duplicate buttons are gone (schedule, programs, sharing, stats).', 'Simpler Profile: 3 recent workouts and a History tile for the rest.', 'New users: Google backup is offered right at the start.']},
@@ -5836,6 +5860,19 @@ document.addEventListener('click', e => {
     case 'chr-lap': { const t = chrNow(), prev = chr.laps.length ? chr.laps[chr.laps.length - 1].t : 0; chr.laps.push({t, d: t - prev}); chrSave(); haptic(15); chrDraw(true); break; }
     case 'chr-reset': chr = {acc: 0, start: null, laps: []}; chrSave(); chrDraw(true); break;
     case 'cpick': openColorPicker(b.dataset.k); break;
+    case 'mythm': { const t = myThemes().find(x => x.id === b.dataset.id); if (t) thmApply(t); break; }
+    case 'mythm-save': {
+      const n = (prompt(T('Nom de ton thème :', 'Name your theme:'), T('Mon thème', 'My theme') + ' ' + (myThemes().length + 1)) || '').trim(); if (!n) break;
+      myThemes().push({id: uid(), n: n.slice(0, 30), ...thmNow(), ...thmSwatch()}); save(); render(); toast(T('🎨 Thème enregistré', '🎨 Theme saved')); break; }
+    case 'mythm-menu': { const t = myThemes().find(x => x.id === b.dataset.id); if (!t) break;
+      modal(`<h2>🎨 ${esc(t.n)}</h2><div class="menu" style="margin-top:10px">
+        <button class="btn block" data-act="mythm-upd" data-id="${t.id}">🔄 ${T('Remplacer par mes couleurs actuelles', 'Replace with my current colors')}</button>
+        <button class="btn block" data-act="mythm-ren" data-id="${t.id}">✏️ ${T('Renommer', 'Rename')}</button>
+        <button class="btn danger block" data-act="mythm-del" data-id="${t.id}">🗑 ${T('Supprimer', 'Delete')}</button>
+        <button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`); break; }
+    case 'mythm-upd': { const t = myThemes().find(x => x.id === b.dataset.id); if (t) Object.assign(t, thmNow(), thmSwatch()); save(); closeAll(); render(); toast(T('🎨 Thème mis à jour', '🎨 Theme updated')); break; }
+    case 'mythm-ren': { const t = myThemes().find(x => x.id === b.dataset.id); if (!t) break; const n = (prompt(T('Nouveau nom :', 'New name:'), t.n) || '').trim(); if (n) { t.n = n.slice(0, 30); save(); } closeAll(); render(); break; }
+    case 'mythm-del': { snap(); S.settings.myThemes = myThemes().filter(x => x.id !== b.dataset.id); save(); closeAll(); render(); undoToast(T('Thème supprimé', 'Theme deleted')); break; }
     case 'cp-set': { [cpS.hh, cpS.s, cpS.v] = rgb2hsv(hex2rgb(b.dataset.c)); cpDraw(true); break; }
     case 'cp-ok': cpApply(); break;
     case 'cp-cancel': cpRestore(); closeAll(); break;
