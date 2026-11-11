@@ -1,8 +1,8 @@
-const CACHE = 'carnet-muscu-v2';
+const CACHE = 'carnet-muscu-v3';
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== 'carnet-user-icon').map(k => caches.delete(k)))));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))));
   self.clients.claim();
 });
 // Réseau d'abord (pour recevoir les mises à jour), cache si hors ligne
@@ -10,12 +10,6 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   // Google (connexion et sauvegarde Drive) : jamais en cache, ce sont des données personnelles
   if (/(^|\.)google(apis)?\.com$/.test(new URL(e.request.url).hostname)) return;
-  // Icône et manifeste aux couleurs choisies par l'utilisateur (préparés par la page dans « carnet-user-icon »)
-  const u = new URL(e.request.url);
-  if (u.origin === location.origin && /\/(icon-192\.png|icon-512\.png|manifest\.json)$/.test(u.pathname)) {
-    e.respondWith(caches.open('carnet-user-icon').then(c => c.match(u.origin + u.pathname)).then(r => r || fetch(e.request).catch(() => caches.match(e.request, {ignoreSearch: true}))));
-    return;
-  }
   e.respondWith(fetch(e.request).then(r => {
     const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r;
   }).catch(() => caches.match(e.request).then(r => r || caches.match('./index.html'))));

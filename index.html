@@ -846,44 +846,14 @@ function applyTheme() {
   if (typeof updAppIcon === 'function') updAppIcon();
 }
 
-/* ---------- Icône de l'appli aux couleurs choisies ----------
-   On dessine l'icône (haltère) avec la couleur d'accent et le fond, puis on la range dans le cache « carnet-user-icon ».
-   Le service worker sert ces versions à la place de icon-192.png, icon-512.png et manifest.json :
-   Android (Chrome) met l'icône de l'écran d'accueil à jour à sa prochaine vérification. iPhone : seulement à l'ajout sur l'écran d'accueil. */
 const cssColor = v => { const d = document.createElement('i'); d.style.color = v; d.style.display = 'none'; document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; };
-function drawAppIcon(sz, acc, bg) {
-  const c = document.createElement('canvas'); c.width = c.height = sz; const g = c.getContext('2d'), k = sz / 512;
-  g.fillStyle = bg; g.fillRect(0, 0, sz, sz); g.fillStyle = acc;
-  const rr = (x, y, w, hh, r) => { g.beginPath(); if (g.roundRect) g.roundRect(x * k, y * k, w * k, hh * k, r * k); else g.rect(x * k, y * k, w * k, hh * k); g.fill(); };
-  rr(110, 235, 292, 42, 8);                         // barre
-  rr(75, 197, 40, 118, 13); rr(397, 197, 40, 118, 13); // petits disques
-  rr(123, 165, 42, 182, 15); rr(347, 165, 42, 182, 15); // gros disques
-  return c;
-}
 let appIconT = null;
 function updAppIcon() { clearTimeout(appIconT); appIconT = setTimeout(updAppIconNow, 600); }
 async function updAppIconNow() {
+  // Icône aux couleurs de l'utilisateur retirée : on nettoie l'ancien cache et on garde l'icône d'origine.
   try {
-    const de = getComputedStyle(document.documentElement);
-    const acc = cssColor(de.getPropertyValue('--accent').trim() || '#c6f135'), bg = cssColor(de.getPropertyValue('--bg').trim() || '#0f1114');
-    const hex = x => '#' + x.match(/\d+/g).slice(0, 3).map(n => (+n).toString(16).padStart(2, '0')).join(''), key = hex(acc).slice(1) + '-' + hex(bg).slice(1);
-    const c192 = drawAppIcon(192, acc, bg), url = c192.toDataURL('image/png');
-    document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]').forEach(l => { l.href = url; });
-    if (!('caches' in window) || S.settings.iconKey === key && await caches.has('carnet-user-icon')) return;
-    const blob = cv => new Promise(ok => cv.toBlob(ok, 'image/png'));
-    const [b192, b512] = await Promise.all([blob(c192), blob(drawAppIcon(512, acc, bg))]);
-    const base = new URL('./', location.href);
-    let man = null; try { man = await (await fetch('manifest.json', {cache: 'no-store'})).json(); } catch (e) {}
-    if (!man) return;
-    man.icons = [{src: 'icon-192.png?c=' + key, sizes: '192x192', type: 'image/png'}, {src: 'icon-512.png?c=' + key, sizes: '512x512', type: 'image/png', purpose: 'any maskable'}];
-    (man.shortcuts || []).forEach(s => s.icons = [{src: 'icon-192.png?c=' + key, sizes: '192x192', type: 'image/png'}]);
-    man.background_color = man.theme_color = hex(bg);
-    const cc = await caches.open('carnet-user-icon');
-    await Promise.all([
-      cc.put(new URL('icon-192.png', base).href, new Response(b192, {headers: {'Content-Type': 'image/png'}})),
-      cc.put(new URL('icon-512.png', base).href, new Response(b512, {headers: {'Content-Type': 'image/png'}})),
-      cc.put(new URL('manifest.json', base).href, new Response(JSON.stringify(man), {headers: {'Content-Type': 'application/manifest+json'}}))]);
-    S.settings.iconKey = key; saveLocal();
+    if (S.settings.iconKey) { delete S.settings.iconKey; saveLocal(); }
+    if ('caches' in window && await caches.has('carnet-user-icon')) await caches.delete('carnet-user-icon');
   } catch (e) {}
 }
 applyTheme();
@@ -2023,8 +1993,6 @@ function vSettings() {
       <div class="row" style="margin-top:6px"><button class="btn cpbtn" data-act="cpick" data-k="accent" aria-label="${T('Choisir une couleur', 'Pick a color')}"><span style="background:${S.settings.accent || 'var(--accent)'}"></span></button>
       <span class="small muted" style="flex:1">${S.settings.accent ? 'Couleur perso : ' + esc(S.settings.accent) : 'Couleur du thème'}</span>
       ${S.settings.accent ? '<button class="btn sm" data-act="accent-reset">Remettre celle du thème</button>' : ''}</div>
-      <div class="row" style="gap:12px;margin-top:14px;align-items:center"><img src="${(document.querySelector('link[rel=apple-touch-icon]') || {}).href || 'icon-192.png'}" alt="" style="width:52px;height:52px;border-radius:14px;flex:none;border:1px solid var(--line)">
-        <span class="small muted">${T('L\'icône de l\'appli prend tes couleurs. <b>Android</b> : elle change sur l\'écran d\'accueil toute seule dans les jours qui suivent (Chrome peut te demander de confirmer). <b>iPhone</b> : seulement quand tu ajoutes l\'appli à l\'écran d\'accueil.', 'The app icon uses your colors. <b>Android</b>: it updates on your home screen by itself within a few days (Chrome may ask you to confirm). <b>iPhone</b>: only when you add the app to your home screen.')}</span></div>
       <label class="row" style="margin-top:14px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="icons" ${S.settings.icons !== false ? 'checked' : ''}> ${T('Icônes modernes (décoche pour garder les emojis)', 'Modern icons (uncheck to keep emojis)')}</label>
       <label style="margin-top:16px">${T('Couleur du fond (personnalisée)', 'Background color (custom)')}</label>
       <div class="chips">${BGS.map(c => `<button class="chip" data-act="bg-pick" data-c="${c}" style="background:${c};border-color:${S.settings.bg === c ? 'var(--accent)' : '#8886'};border-width:2px;width:34px;height:34px;padding:0" aria-label="${T('Fond', 'Background')} ${c}"></button>`).join('')}</div>
@@ -4287,7 +4255,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.3';
+const APP_VERSION = '9.4';
 const CHANGELOG = [
   {v: '9.0', d: '2026-11-10', fr: ['Appli 3 fois plus légère : elle s\'ouvre plus vite, surtout la première fois.', 'Menus épurés : les boutons en double sont partis (horaire, programmes, partage, statistiques).', 'Profil plus simple : 3 séances récentes et une tuile Historique pour tout le reste.', 'Nouveaux utilisateurs : la sauvegarde Google est proposée dès le début.'],
    en: ['App 3 times lighter: it opens faster, especially the first time.', 'Cleaner menus: duplicate buttons are gone (schedule, programs, sharing, stats).', 'Simpler Profile: 3 recent workouts and a History tile for the rest.', 'New users: Google backup is offered right at the start.']},
