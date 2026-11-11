@@ -327,6 +327,7 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 #fstimer.fin{background:var(--ok);color:#06210f;animation:btFlash 1s ease-in-out infinite}#fstimer.fin .btlab{color:#06210f}
 @keyframes btFlash{50%{filter:brightness(1.25)}}
 .btbtns{display:flex;gap:12px}.btbtns button{background:#ffffff1a;color:inherit;border:0;border-radius:14px;padding:14px 22px;font:inherit;font-size:clamp(16px,3vw,26px);font-weight:800;cursor:pointer}
+.btprog{position:absolute;left:0;right:0;top:0;height:8px;background:#ffffff14}.btprog b{display:block;height:100%;background:var(--accent);transition:width .25s linear}
 .bthint{font-size:13px;color:#9aa3ad;margin-top:1vh}#fstimer.fin .bthint{color:#06210f}
 #fdv,#ftv{cursor:zoom-in}
 .heatleg{display:flex;justify-content:center;align-items:center;gap:4px;margin-top:8px}.heatleg i{width:24px;height:10px;border-radius:3px}.heatleg span{margin:0 4px}
@@ -4801,8 +4802,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.14.3';
+const APP_VERSION = '9.15';
 const CHANGELOG = [
+  {v: '9.15', d: '2026-11-11', fr: ['⛶ Touche le chrono de repos en bas de l\'écran : il s\'affiche maintenant en plein écran, énorme et lisible de loin, avec une barre qui descend. Touche n\'importe où pour fermer.'], en: ['⛶ Tap the rest timer at the bottom of the screen: it now shows full screen, huge and readable from afar, with a shrinking bar. Tap anywhere to close.']},
   {v: '9.14.3', d: '2026-11-11', fr: ['Corrigé : la fenêtre du chrono de repos (avec l\'anneau) restait bloquée en plein écran noir. Elle se ferme de nouveau normalement.'], en: ['Fixed: the rest timer window (with the ring) got stuck full screen in black. It closes normally again.']},
   {v: '9.14.2', d: '2026-11-11', fr: ['Profil : l\'icône d\'appareil photo sur ta photo est de nouveau visible.'], en: ['Profile: the camera icon on your photo is visible again.']},
   {v: '9.14.1', d: '2026-11-11', fr: ['Quêtes : les barres de progression s\'affichent maintenant bien.'], en: ['Quests: progress bars now display properly.']},
@@ -6113,7 +6115,7 @@ let navAnim = false;
 function bigTimerOpen() {
   if (document.getElementById('fstimer')) return;
   const o = document.createElement('div'); o.id = 'fstimer';
-  o.innerHTML = `<div class="btlab">${T('REPOS', 'REST')}</div><div id="btv">${$('#tval') ? $('#tval').textContent : '0:00'}</div>
+  o.innerHTML = `<div class="btprog"><b id="btp"></b></div><div class="btlab">${T('REPOS', 'REST')}</div><div id="btv">${$('#tval') ? $('#tval').textContent : '0:00'}</div>
     <div class="btbtns"><button data-act="timer-sub">−15 s</button><button data-act="timer-add">+30 s</button><button data-act="timer-stop">${T('Passer', 'Skip')}</button></div>
     <div class="bthint">${T('Touche l\'écran pour fermer', 'Tap the screen to close')}</div>`;
   o.addEventListener('click', ev => { if (ev.target.closest('button')) return; bigTimerClose(); });
@@ -6131,6 +6133,7 @@ function bigTimerSync() {
   const t = $('#timer'), fin = t && t.classList.contains('fin'), on = t && t.classList.contains('show');
   o.classList.toggle('fin', !!fin);
   const v = document.getElementById('btv'); if (v) v.textContent = fin ? T('GO!', 'GO!') : on ? $('#tval').textContent : '0:00';
+  const pb = document.getElementById('btp'); if (pb) { const left = Math.max(0, (timerEnd - Date.now()) / 1000); pb.style.width = (fin ? 0 : Math.min(100, left / Math.max(1, timerTot) * 100)) + '%'; }
   const l = o.querySelector('.btlab'); if (l) l.textContent = fin ? T('C\'EST REPARTI', 'BACK TO WORK') : T('REPOS', 'REST');
 }
 /* ---------- Mode écran déplié (téléphone pliable, tablette) : séance à gauche, chrono et historique à droite ---------- */
@@ -6898,8 +6901,8 @@ document.addEventListener('click', e => {
     case 'timer-stop-big': closeModal(); stopTimer(); break;
     case 'timer-add': timerTot += 30; timerEnd += 30000; scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); restSW(timerEnd); tickTimer(); break;
     case 'timer-stop': stopTimer(); break;
-    case 'timer-big': openBigTimer(); break;
-    case 'timer-go': if (!S.active) break; if (cur().v === 'workout' && $('#timer').classList.contains('show') && !$('#timer').classList.contains('fin')) { openBigTimer(); break; } if ($('#timer').classList.contains('fin')) stopTimer(); if (cur().v !== 'workout') { closeAll(); openWorkout(); } else scrollCur(); break;
+    case 'timer-big': bigTimerOpen(); break;
+    case 'timer-go': if (!S.active) break; if (cur().v === 'workout' && $('#timer').classList.contains('show') && !$('#timer').classList.contains('fin')) { bigTimerOpen(); break; } if ($('#timer').classList.contains('fin')) stopTimer(); if (cur().v !== 'workout') { closeAll(); openWorkout(); } else scrollCur(); break;
 
     /* historique */
     case 'hist-mode': histMode = b.dataset.m; render(); break;
