@@ -1,0 +1,62 @@
+{
+ "name": "Carnet Muscu",
+ "short_name": "Muscu",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#0f1114",
+ "theme_color": "#0f1114",
+ "lang": "fr",
+ "icons": [
+  {
+   "src": "icon-b388ff.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-b388ff.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ],
+ "shortcuts": [
+  {
+   "name": "Séance du jour",
+   "short_name": "Séance du jour",
+   "url": "./?go=today",
+   "icons": [
+    {
+     "src": "icon-b388ff.png",
+     "sizes": "512x512",
+     "type": "image/png"
+    }
+   ]
+  },
+  {
+   "name": "Entraînement vide",
+   "short_name": "Entraînement vide",
+   "url": "./?go=empty",
+   "icons": [
+    {
+     "src": "icon-b388ff.png",
+     "sizes": "512x512",
+     "type": "image/png"
+    }
+   ]
+  },
+  {
+   "name": "Mon profil",
+   "short_name": "Profil",
+   "url": "./?go=profile",
+   "icons": [
+    {
+     "src": "icon-b388ff.png",
+     "sizes": "512x512",
+     "type": "image/png"
+    }
+   ]
+  }
+ ]
+}
