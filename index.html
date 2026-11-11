@@ -312,6 +312,13 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .fdnext{font-size:28px;font-weight:900;margin:2px 0}
 .fdtabs{display:flex;gap:6px;overflow-x:auto;margin:0 0 10px;padding-bottom:2px}.fdtabs button{flex:none;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:3px;cursor:pointer}.fdtabs button.on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
 .fdh{padding:10px 12px}
+.clsrow{display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:8px 10px;border-radius:12px;border:1px solid color-mix(in srgb,#38bdf8 30%,transparent);background:color-mix(in srgb,#38bdf8 6%,transparent);color:var(--text);font:inherit;font-size:20px;text-align:left;cursor:pointer}.clsrow>span{font-size:14px;line-height:1.25}
+.awcls{font-size:64px;line-height:1;margin:6px 0 12px;color:var(--rc);animation:awPop 1.1s cubic-bezier(.2,1.6,.4,1) .25s both;filter:drop-shadow(0 0 12px var(--rc))}
+.bossrow{margin-top:14px;padding:12px;border-radius:12px;border:1.5px solid color-mix(in srgb,#f43f5e 60%,transparent);background:color-mix(in srgb,#f43f5e 8%,transparent)}
+.bossrow.dead{border-color:color-mix(in srgb,var(--ok) 60%,transparent);background:color-mix(in srgb,var(--ok) 8%,transparent)}
+.bossh{font-size:12px;letter-spacing:2px;font-weight:800;color:#fb7185}.bossrow.dead .bossh{color:var(--ok)}
+.bossn{display:block;font-size:18px;margin:4px 0 2px}
+.bossbar{margin:8px 0 4px;height:9px}.bossbar>div{background:linear-gradient(90deg,#f43f5e,#fb923c)!important;box-shadow:0 0 8px #f43f5e}
 .ftog{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 12px}
 .lvup{border:1.5px solid #38bdf8;background:color-mix(in srgb,#38bdf8 10%,var(--card));box-shadow:0 0 18px -6px #38bdf8;text-align:center;margin:8px 0}.lvup .sysh{margin-bottom:6px}
 .ybig{text-align:center;margin:0;display:flex;flex-direction:column;gap:2px}.ybig b{font-size:26px}
@@ -1517,6 +1524,7 @@ function finishWorkout() {
   const meAfter = medalsEarned(), huAfter = hunter(meAfter), medDefs = meAfter.defs, medNew = Object.keys(meAfter.got).filter(k => !medBefore[k]).map(k => medDefs.find(d => d.id === k)).filter(Boolean);
   setTimeout(() => queueCloud(1500), 0); setTimeout(remindSync, 500);
   if (huAfter.rk !== huBefore.rk) setTimeout(() => awaken(huBefore.rk, huAfter), 900);
+  else if (huAfter.cls !== huBefore.cls && huAfter.cls !== 'none') setTimeout(() => awakenClass(huAfter.cls, huAfter), 900);
   focusOn = false; focusEx = null; foldEx = null; focusWakeSet(false);
   S.active = null; save(); stopTimer(); clearNotif(); setRoot('profile'); render(); setTimeout(() => confetti(prs.length ? 160 : 90), 200);
   modal(`<h2>Séance enregistrée 💪</h2>
@@ -1530,6 +1538,7 @@ function finishWorkout() {
       ${huAfter.rk !== huBefore.rk ? `<div style="margin:6px 0">${T('Nouveau rang', 'New rank')} : ${rkBadge(huAfter.rk, 'mrk lvrk')} <b style="color:var(--rc)">${esc(huAfter.title)}</b></div>` : ''}
       ${sysNew.quest ? `<div style="margin:6px 0">✨ ${T('Quête quotidienne accomplie', 'Daily quest complete')} <b>+150 XP</b></div>` : ''}
       ${sysNew.dungeon ? `<div style="margin:6px 0">⚔️ ${T('Donjon nettoyé', 'Dungeon cleared')} <b>+500 XP</b></div>` : ''}
+      ${sysNew.boss ? `<div style="margin:8px 0;font-size:17px">☠️ <b>${T('BOSS VAINCU!', 'BOSS DEFEATED!')}</b> ${esc(sysNew.boss.name)} <b>+1 000 XP</b></div>` : ''}
       ${prs.length ? `<div class="small" style="margin:6px 0;color:#7dd3fc">${T('Lève-toi.', 'Arise.')} ${prs.length > 1 ? T(`${prs.length} ombres renforcées`, `${prs.length} shadows strengthened`) : T('Une ombre s\'est renforcée', 'A shadow grew stronger')} : ${prs.map(r => esc(r.name)).join(', ')}</div>` : ''}
       <div class="small muted">+${(huAfter.xp - huBefore.xp).toLocaleString(LOC())} XP</div></div>
     ${medNew.length ? `<div class="card" style="border-color:var(--accent);margin:8px 0"><b>🏅 ${T(medNew.length > 1 ? 'Nouvelles médailles!' : 'Nouvelle médaille!', medNew.length > 1 ? 'New medals!' : 'New medal!')}</b>${medNew.map(d => `<div style="margin-top:6px;display:flex;align-items:center;gap:8px">${rkBadge(d.rk, 'mrk lvrk')} ${d.ic} ${esc(d.t)}</div>`).join('')}</div>` : ''}
@@ -3331,7 +3340,7 @@ function vProfile() {
   const month = S.history.filter(h => { const d = new Date(h.date); return d.getMonth() === n0.getMonth() && d.getFullYear() === n0.getFullYear(); }).length;
   const recent = S.history.slice().reverse().slice(0, 3);
   return `<div class="row" style="gap:14px;margin-bottom:16px"><button class="avatar" data-act="avatar" aria-label="${T('Photo de profil', 'Profile photo')}">${S.settings.avatar ? `<img src="${S.settings.avatar}" alt="">` : esc((nm.trim()[0] || '?').toUpperCase())}<span class="cam">📷</span></button>
-      <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0">${esc(nm)}</h2>${(() => { if (!S.history.length) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${esc(hu.title)}</button>`; })()}
+      <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0">${esc(nm)}</h2>${(() => { if (!S.history.length) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${hu.lvl >= 10 ? clsIc(hu.cls) + ' ' + esc(clsName(hu.cls)) : esc(hu.title)}</button>`; })()}
       <div class="row" style="gap:18px;flex-wrap:wrap"><div><span class="muted small">Entraînements</span><br><b>${S.history.length}</b></div><div><span class="muted small">${T('Série', 'Streak')}</span><br><b>🔥 ${streakWeeks()} sem.</b></div><div><span class="muted small">Ce mois</span><br><b>${month}</b></div></div></div></div>
     ${bodyCard()}${friendsCard()}${yearBanner()}${weekGoal()}${stagCard()}
     <div class="row between"><span>${headline}</span><select style="width:auto" data-pf="range"><option value="12" ${pfWeeks === 12 ? 'selected' : ''}>3 derniers mois</option><option value="26" ${pfWeeks === 26 ? 'selected' : ''}>6 mois</option><option value="52" ${pfWeeks === 52 ? 'selected' : ''}>1 an</option><option value="0" ${pfWeeks === 0 ? 'selected' : ''}>Tout</option></select></div>
@@ -3914,7 +3923,8 @@ function medalDefs() {
     ...L('pull', 'qst', '🧗', '# tractions au total', '# total pull-ups', [100, 500, 1000, 5000], [100, 500, 1000, 5000]),
     ...L('qd', 'sys', '✨', '# quêtes quotidiennes', '# daily quests', [1, 7, 30, 100, 365], [1, 7, 30, 100, 365]),
     ...L('dg', 'sys', '⚔️', '# donjons nettoyés', '# dungeons cleared', [1, 4, 12, 26, 52], [1, 4, 12, 26, 52]),
-    ...L('sh', 'sys', '👥', 'Armée de # ombres', 'Army of # shadows', [5, 15, 30, 50], [5, 15, 30, 50])];
+    ...L('sh', 'sys', '👥', 'Armée de # ombres', 'Army of # shadows', [5, 15, 30, 50], [5, 15, 30, 50]),
+    ...L('boss', 'sys', '☠️', 'Tueur de boss × #', 'Boss slayer × #', [1, 3, 6, 12], [1, 3, 6, 12])];
 }
 function medalsEarned(hist) {
   const H = (hist || S.history).slice().sort((a, b) => a.date.localeCompare(b.date));
@@ -3951,7 +3961,7 @@ function medalsEarned(hist) {
   });
   if (!hist) {
     const add = (g, log) => { const ks = Object.keys(log).sort(); st[g] = ks.length; defs.filter(x => x.g === g).forEach(x => { if (!got[x.id] && ks.length >= x.v) got[x.id] = log[ks[x.v - 1]] || new Date().toISOString(); }); };
-    add('qd', S.questLog || {}); add('dg', S.dungeonLog || {});
+    add('qd', S.questLog || {}); add('dg', S.dungeonLog || {}); add('boss', Object.fromEntries(Object.entries(S.bossLog || {}).map(([k, v]) => [k, v.d || v])));
     const sh = S.history.length ? shadowArmy() : []; st.sh = sh.length; const shd = sh.map(x => x.last || x.first).sort();
     defs.filter(x => x.g === 'sh').forEach(x => { if (!got[x.id] && sh.length >= x.v) got[x.id] = shd[x.v - 1] || new Date().toISOString(); });
   }
@@ -3960,13 +3970,82 @@ function medalsEarned(hist) {
 /* ---------- Système de chasseur (niveau, rang, XP) ---------- */
 const HRANKS = [[1, 'E', ['Chasseur de rang E', 'E-rank hunter']], [10, 'D', ['Chasseur de rang D', 'D-rank hunter']], [20, 'C', ['Chasseur de rang C', 'C-rank hunter']], [30, 'B', ['Chasseur de rang B', 'B-rank hunter']], [45, 'A', ['Chasseur de rang A', 'A-rank hunter']], [60, 'S', ['Chasseur de rang S', 'S-rank hunter']], [80, 'S+', ['Chasseur de niveau national', 'National-level hunter']], [100, 'M', ['Monarque des Ombres', 'Shadow Monarch']]];
 const xpAt = L => 60 * (L - 1) * (L - 1);
+/* ---------- Classes de chasseur : Éveillé au niveau 10, classe selon ton style au niveau 40 ---------- */
+const HCLASSES = {
+  none: ['🔒', ['Sans classe', 'No class'], ['Ton éveil arrive au niveau 10.', 'Your awakening comes at level 10.']],
+  awk: ['✨', ['Éveillé', 'Awakened'], ['Ta vraie classe se révélera au niveau 40, selon ta façon de t\'entraîner.', 'Your true class reveals itself at level 40, based on how you train.']],
+  war: ['⚔️', ['Guerrier', 'Warrior'], ['Charges lourdes et peu de répétitions : la force brute.', 'Heavy loads and low reps: raw strength.']],
+  tank: ['🛡️', ['Tank', 'Tank'], ['Énormément de séries par séance : rien ne t\'arrête.', 'Huge number of sets per workout: nothing stops you.']],
+  asn: ['⚡', ['Assassin', 'Assassin'], ['Beaucoup de cardio et de répétitions : vitesse et endurance.', 'Lots of cardio and reps: speed and endurance.']],
+  mage: ['📚', ['Mage', 'Mage'], ['Une grande variété d\'exercices : maître de la technique.', 'A wide variety of exercises: master of technique.']],
+  ftr: ['💪', ['Combattant', 'Fighter'], ['Équilibré en tout : force, volume et constance.', 'Balanced in everything: strength, volume and consistency.']],
+  mon: ['👑', ['Monarque des Ombres', 'Shadow Monarch'], ['Le sommet. Niveau 100 atteint.', 'The peak. Level 100 reached.']]};
+function classStyle() {
+  const H = S.history; if (!H.length) return null;
+  let rN = 0, rS = 0, sets = 0, cardio = 0; const ex = new Set();
+  H.forEach(x => { let c = false; x.exercises.forEach(e => { const ws = work(e.sets); if (!ws.length) return; ex.add(norm(e.name)); sets += ws.length; if (isCardio(e)) c = true; ws.forEach(s => { if (s.u !== 's' && s.u !== 'c' && +s.w > 0 && +s.r > 0) { rS += +s.r; rN++; } }); }); if (c) cardio++; });
+  return {reps: rN ? rS / rN : 10, sets: sets / H.length, cardio: cardio / H.length, ex: ex.size};
+}
+function hClass(lvl) {
+  if (lvl >= 100) return 'mon'; if (lvl < 10) return 'none'; if (lvl < 40) return 'awk';
+  const s = classStyle(); if (!s) return 'ftr';
+  if (s.cardio >= .3) return 'asn'; if (s.reps <= 7) return 'war'; if (s.sets >= 24) return 'tank'; if (s.ex >= 60) return 'mage';
+  if (s.reps >= 13) return 'asn';
+  return 'ftr';
+}
+const clsName = c => { const x = HCLASSES[c] || HCLASSES.none; return T(x[1][0], x[1][1]); };
+const clsIc = c => (HCLASSES[c] || HCLASSES.none)[0];
+const clsDesc = c => { const x = HCLASSES[c] || HCLASSES.none; return T(x[2][0], x[2][1]); };
+function awakenClass(c, hu) {
+  const o = document.createElement('div'); o.id = 'awaken'; o.style.setProperty('--rc', hu.col);
+  o.innerHTML = `<div class="awk"><div class="sysh">[ ${T('SYSTÈME', 'SYSTEM')} ]</div><div class="awt" style="font-size:22px;letter-spacing:5px">${c === 'awk' ? T('ÉVEIL', 'AWAKENING') : T('CHANGEMENT DE CLASSE', 'CLASS CHANGE')}</div>
+    <div class="awcls">${clsIc(c)}</div><div class="awn"><b style="color:var(--rc);font-size:22px">${esc(clsName(c))}</b></div>
+    <div class="muted small" style="margin-top:8px">${esc(clsDesc(c))}</div>
+    <div class="muted small awtap">${T('Touche pour continuer', 'Tap to continue')}</div></div>`;
+  o.addEventListener('click', () => { o.classList.add('out'); setTimeout(() => o.remove(), 350); });
+  document.body.appendChild(o);
+  if (S.settings.haptic !== false) haptic([60, 80, 60, 80, 300]);
+}
+/* ---------- Boss du mois : battre ton 1RM estimé sur ton exercice principal ---------- */
+const BOSSES = [['Le Gardien de pierre', 'The Stone Guardian'], ['Le Chevalier de sang', 'The Blood Knight'], ['La Reine des glaces', 'The Ice Queen'], ['Le Seigneur des fourmis', 'The Ant Lord'],
+  ['Le Cerbère des portes', 'The Gate Cerberus'], ['Le Géant de fer', 'The Iron Giant'], ['Le Démon du château', 'The Castle Demon'], ['Le Roi des loups', 'The Wolf King'],
+  ['L\'Archer spectral', 'The Spectral Archer'], ['Le Colosse', 'The Colossus'], ['Le Monarque déchu', 'The Fallen Monarch'], ['Le Dragon noir', 'The Black Dragon']];
+const bLog = () => (S.bossLog = S.bossLog || {});
+function monthBoss() {
+  const now = new Date(), k = now.getFullYear() + '-' + pad2(now.getMonth() + 1), ms = new Date(now.getFullYear(), now.getMonth(), 1);
+  let b = S.boss && S.boss.k === k ? S.boss : null;
+  if (!b) {
+    const past = S.history.filter(x => +new Date(x.date) < +ms && +new Date(x.date) > +ms - 90 * 864e5), cnt = new Map(), best = new Map();
+    past.forEach(x => x.exercises.forEach(e => { if (isCardio(e)) return; const ws = work(e.sets).filter(s => s.u !== 's' && +s.w > 0 && +s.r > 0 && +s.r <= 12); if (!ws.length) return; const nn = norm(e.name); cnt.set(nn, (cnt.get(nn) || 0) + 1); const v = Math.max(...ws.map(s => e1rm(s.w, s.r))); const o = best.get(nn); if (!o || v > o.v) best.set(nn, {v, name: e.name}); }));
+    const top = [...cnt.entries()].filter(([, n]) => n >= 3).sort((a, b) => b[1] - a[1])[0];
+    if (!top) return null;
+    const bb = best.get(top[0]), step = U() === 'kg' ? 2.5 : 5;
+    b = {k, ex: bb.name, target: Math.ceil(bb.v * 1.025 / step) * step, from: Math.round(bb.v), nm: BOSSES[(now.getFullYear() * 12 + now.getMonth()) % BOSSES.length]};
+    S.boss = b; save();
+  }
+  const ms2 = +ms, hs = S.history.filter(x => +new Date(x.date) >= ms2);
+  let cur = 0, when = null;
+  hs.slice().sort((a, c) => a.date.localeCompare(c.date)).forEach(x => x.exercises.forEach(e => { if (norm(e.name) !== norm(b.ex)) return; work(e.sets).filter(s => s.u !== 's').forEach(s => { const v = e1rm(s.w, s.r); if (v > cur) cur = v; if (!when && v >= b.target) when = x.date; }); }));
+  const left = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate() + 1;
+  return {...b, cur, done: !!when, when, left, name: T(b.nm[0], b.nm[1])};
+}
+function bossRow() {
+  const b = monthBoss(); if (!b) return '';
+  const base = b.from * .85, hp = b.done ? 0 : Math.max(0, Math.min(100, Math.round((b.target - b.cur) / Math.max(1, b.target - base) * 100)));
+  return `<div class="bossrow ${b.done ? 'dead' : ''}"><div class="row between" style="align-items:center"><span class="bossh">☠ ${T('BOSS DU MOIS', 'BOSS OF THE MONTH')}</span><span class="small muted">${b.done ? `<b style="color:var(--ok)">${T('VAINCU', 'DEFEATED')}</b>` : `${b.left} ${T('j restants', 'days left')} · +1 000 XP`}</span></div>
+    <b class="bossn">${esc(b.name)}</b>
+    <div class="small">${T('Pour le vaincre : un 1RM estimé de', 'To defeat it: an estimated 1RM of')} <b>${b.target} ${U()}</b> ${T('au', 'on')} <b>${esc(b.ex)}</b> <span class="muted">(${T('ton meilleur', 'your best')} : ${b.from})</span></div>
+    <div class="goal bossbar"><div style="width:${hp}%"></div></div>
+    <div class="row between small muted"><span>${T('PV du boss', 'Boss HP')}</span><span>${b.done ? T('0 PV', '0 HP') : `${T('ce mois-ci', 'this month')} : ${Math.round(b.cur)} / ${b.target} ${U()}`}</span></div></div>`;
+}
+
 function hunter(me) {
   me = me || medalsEarned();
   const st = me.st, nm = Object.keys(me.got).length;
-  const xp = Math.round(st.n * 100 + st.sets * 5 + st.pr * 40 + nm * 250 + (st.qd || 0) * 150 + (st.dg || 0) * 500);
+  const xp = Math.round(st.n * 100 + st.sets * 5 + st.pr * 40 + nm * 250 + (st.qd || 0) * 150 + (st.dg || 0) * 500 + (st.boss || 0) * 1000);
   const lvl = Math.floor(Math.sqrt(xp / 60)) + 1;
   const r = HRANKS.filter(x => lvl >= x[0]).pop(), nx = HRANKS.find(x => x[0] > lvl);
-  return {xp, lvl, rk: r[1], title: T(r[2][0], r[2][1]), col: RKC[r[1]], cur: xp - xpAt(lvl), need: xpAt(lvl + 1) - xpAt(lvl), nextRank: nx ? {lvl: nx[0], rk: nx[1]} : null, st, nm};
+  return {xp, lvl, rk: r[1], cls: hClass(lvl), title: T(r[2][0], r[2][1]), col: RKC[r[1]], cur: xp - xpAt(lvl), need: xpAt(lvl + 1) - xpAt(lvl), nextRank: nx ? {lvl: nx[0], rk: nx[1]} : null, st, nm};
 }
 const rkBadge = (rk, cls = 'mrk') => `<span class="${cls}" style="--rc:${RKC[rk]}">${rk}</span>`;
 let medFilter = 'all';
@@ -3982,10 +4061,11 @@ function vMedals() {
       <div class="sysh">[ ${T('STATUT', 'STATUS')} ]</div>
       <div class="row" style="gap:14px;align-items:center">${rkBadge(hu.rk, 'rkbig')}
         <div style="flex:1;min-width:0"><div class="muted small">${T('Niveau', 'Level')}</div><div class="lvl">${hu.lvl}</div><div class="small" style="color:var(--rc);font-weight:700">${esc(hu.title)}</div></div></div>
+      <button class="clsrow" data-act="cls-info">${clsIc(hu.cls)} <span><span class="muted small">${T('Classe', 'Class')}</span><br><b>${esc(clsName(hu.cls))}</b></span><span class="muted small" style="margin-left:auto">${hu.lvl < 10 ? T('Éveil au niv. 10', 'Awakens at lv. 10') : hu.lvl < 40 ? T('Classe au niv. 40', 'Class at lv. 40') : 'ⓘ'}</span></button>
       <div class="goal sysbar"><div style="width:${pct}%"></div></div>
       <div class="row between small muted"><span>${fmtN(hu.cur)} / ${fmtN(hu.need)} XP</span><span>${hu.nextRank ? T(`Rang ${hu.nextRank.rk} au niveau ${hu.nextRank.lvl}`, `Rank ${hu.nextRank.rk} at level ${hu.nextRank.lvl}`) : T('Rang maximal atteint', 'Max rank reached')}</span></div>
       <div class="sysstats"><div><span>${T('FOR', 'STR')}</span><b>${fmtN(st.b3)}</b><i>${U()}</i></div><div><span>${T('END', 'END')}</span><b>${fmtN(st.hr)}</b><i>h</i></div><div><span>${T('CON', 'CON')}</span><b>${st.wk}</b><i>${T('sem.', 'wk')}</i></div><div><span>${T('MÉD', 'MED')}</span><b>${n}</b><i>/ ${defs.length}</i></div></div>
-      <p class="small muted" style="margin:10px 0 0">${T('XP : séance 100 · série 5 · record 40 · médaille 250 · quête 150 · donjon 500.', 'XP: workout 100 · set 5 · record 40 · medal 250 · quest 150 · dungeon 500.')}</p>
+      <p class="small muted" style="margin:10px 0 0">${T('XP : séance 100 · série 5 · record 40 · médaille 250 · quête 150 · donjon 500 · boss 1 000.', 'XP: workout 100 · set 5 · record 40 · medal 250 · quest 150 · dungeon 500 · boss 1,000.')}</p>
       <button class="btn block" data-act="go" data-v="shadows" style="margin-top:10px">⚔️ ${T('Armée des ombres', 'Shadow army')} (${st.sh || 0})</button>
     </div>
     ${S.history.length ? '<div style="height:12px"></div>' + questCard() : ''}
@@ -4030,7 +4110,8 @@ function syncSystem() {
   const out = {}, q = dailyQuest(), dg = weekDungeon();
   if (q.done && !qLog()[q.k]) { qLog()[q.k] = new Date().toISOString(); out.quest = q; }
   if (dg.done && !dLog()[dg.k]) { dLog()[dg.k] = new Date().toISOString(); out.dungeon = dg; }
-  if (out.quest || out.dungeon) save();
+  const bo = monthBoss(); if (bo && bo.done && !bLog()[bo.k]) { bLog()[bo.k] = {d: bo.when, ex: bo.ex, t: bo.target}; out.boss = bo; }
+  if (out.quest || out.dungeon || out.boss) save();
   return out;
 }
 function questPenalty() {
@@ -4065,7 +4146,7 @@ function questCard(compact) {
   const dh = `<div class="qrow" style="margin-top:12px"><span class="qic">${rkBadge(dg.rk, 'mrk lvrk')}</span><div style="flex:1;min-width:0"><b>${T('Donjon de rang', 'Rank')} ${dg.rk}${T('', ' dungeon')} · ${esc(dg.text)}</b>${sysBar(dg.cur, dg.goal)}<div class="row between small muted"><span>${dg.fmt(Math.min(dg.cur, dg.goal))} / ${dg.fmt(dg.goal)}</span><span>${dg.done ? `<b style="color:var(--ok)">${T('DONJON NETTOYÉ', 'DUNGEON CLEARED')}</b>` : `${dg.left} ${T('j restants', 'days left')} · +500 XP`}</span></div></div></div>`;
   return `<div class="card sysw qcard"><div class="sysh">[ ${T('QUÊTE QUOTIDIENNE', 'DAILY QUEST')} ]</div>${qh}
     ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Pénalité : la quête d\'hier a échoué. Pour te racheter, survis à la zone de pénalité… ou accomplis celle d\'aujourd\'hui.', 'Penalty: yesterday\'s quest failed. Survive the penalty zone… or complete today\'s quest.')}</div>` : ''}
-    ${dh}</div>`;
+    ${dh}${bossRow()}</div>`;
 }
 /* ----- Armée des ombres ----- */
 const SHR = [[1, 'E'], [5, 'D'], [10, 'C'], [20, 'B'], [35, 'A'], [50, 'S']];
@@ -4616,8 +4697,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.11';
+const APP_VERSION = '9.12';
 const CHANGELOG = [
+  {v: '9.12', d: '2026-11-11', fr: ['✨ Classes : tu deviens Éveillé au niveau 10, puis au niveau 40 le Système te donne ta classe selon ton style : Guerrier, Tank, Assassin, Mage ou Combattant. Tes amis la voient aussi.', '☠️ Boss du mois : bats ton 1RM estimé sur ton exercice principal pour le vaincre (+1 000 XP). Il est dans la carte de quête.'], en: ['✨ Classes: you become Awakened at level 10, then at level 40 the System gives you a class based on your style: Warrior, Tank, Assassin, Mage or Fighter. Friends see it too.', '☠️ Boss of the month: beat your estimated 1RM on your main lift to defeat it (+1,000 XP). It is in the quest card.']},
   {v: '9.11', d: '2026-11-11', fr: ['📱 Mode écran déplié : sur un téléphone pliable ouvert (ou une tablette), ta séance est à gauche et à droite tu as un gros chrono de repos, ta prochaine série et l\'historique de l\'exercice (dernières fois, records, courbe du 1RM). Touche un exercice pour voir le sien.'], en: ['📱 Unfolded screen mode: on an open foldable (or a tablet), your workout is on the left and on the right a big rest timer, your next set and the exercise history (previous times, records, 1RM curve). Tap an exercise to see its own.']},
   {v: '9.10', d: '2026-11-11', fr: ['👥 Tes amis voient ton niveau et ton rang de chasseur, et tu vois les leurs : dans le fil, sur leur profil et dans le nouveau Classement des chasseurs (onglet Amis).', 'Les titres à choisir sont retirés : ton titre suit simplement ton rang.'], en: ['👥 Friends see your hunter level and rank, and you see theirs: in the feed, on their profile and in the new Hunter ranking (Friends tab).', 'Selectable titles are removed: your title simply follows your rank.']},
   {v: '9.9', d: '2026-11-11', fr: ['✨ Quête quotidienne du Système (+150 XP) et donjon de la semaine (+500 XP), dans l\'onglet Entraînement.', '🏷 Titres : chaque médaille débloque un titre à afficher sous ton nom (touche ton titre dans Médailles).', '⚔️ Armée des ombres : chaque exercice où tu bats un record devient une ombre qui monte en rang.', '🌟 Écran d\'éveil quand tu changes de rang.', '⛶ Mode focus pendant la séance : une série à la fois, gros boutons et gros chrono.', '⚖️ Statistiques → Comparer deux périodes : ta force maintenant contre il y a 1 à 12 mois.', '🔔 Réglages → Rappels d\'entraînement, même appli fermée.', 'Raccourcis : appui long sur l\'icône → Statut du chasseur ou Quête du jour.'], en: ['✨ Daily quest from the System (+150 XP) and weekly dungeon (+500 XP), in the Workout tab.', '🏷 Titles: each medal unlocks a title shown under your name (tap your title in Medals).', '⚔️ Shadow army: each exercise where you break a record becomes a shadow that ranks up.', '🌟 Awakening screen when your rank changes.', '⛶ Focus mode during workouts: one set at a time, big buttons and big timer.', '⚖️ Statistics → Compare two periods: your strength now vs 1 to 12 months ago.', '🔔 Settings → Workout reminders, even with the app closed.', 'Shortcuts: long-press the icon → Hunter status or Daily quest.']},
@@ -5717,9 +5799,9 @@ function frMe() {
   return {f: {c: fr.file || 'me', me: true, n: T('Moi', 'Me')}, d: {name: (S.settings.name || '').trim() || T('Moi', 'Me'), av: S.settings.avatar || '', wk: streakWeeks(), hu: frHu(), s, p, up: fr.last}};
 }
 /* Niveau de chasseur partagé avec les amis */
-function frHu() { if (!S.history.length) return null; const x = hunter(); return {l: x.lvl, r: x.rk, xp: x.xp}; }
+function frHu() { if (!S.history.length) return null; const x = hunter(); return {l: x.lvl, r: x.rk, xp: x.xp, c: x.cls}; }
 const huTitle = r => { const x = HRANKS.find(y => y[1] === r); return x ? T(x[2][0], x[2][1]) : ''; };
-const frLv = (d, big) => d && d.hu && d.hu.r ? (big ? `<span class="frlvb" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${rkBadge(d.hu.r, 'mrk lvrk')} ${T('Niveau', 'Level')} ${d.hu.l} · ${esc(huTitle(d.hu.r))}</span>` : `<span class="frlv" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${d.hu.r} · ${T('Niv.', 'Lv.')} ${d.hu.l}</span>`) : '';
+const frLv = (d, big) => d && d.hu && d.hu.r ? (big ? `<span class="frlvb" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${rkBadge(d.hu.r, 'mrk lvrk')} ${T('Niveau', 'Level')} ${d.hu.l} · ${d.hu.c && d.hu.c !== 'none' ? clsIc(d.hu.c) + ' ' + esc(clsName(d.hu.c)) : esc(huTitle(d.hu.r))}</span>` : `<span class="frlv" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${d.hu.r} · ${T('Niv.', 'Lv.')} ${d.hu.l}</span>`) : '';
 function frRanking() {
   const fr = FRS(), rows = [];
   if (frOn()) { const m = frMe(); rows.push({c: 'me', me: true, d: m.d}); }
@@ -5728,7 +5810,7 @@ function frRanking() {
   if (L.length < 2) return '';
   const old = rows.filter(r => !r.d.hu).map(r => r.d.name);
   return `<div class="card sysw" style="margin:0 0 12px"><div class="sysh">[ ${T('CLASSEMENT', 'RANKING')} ]</div>
-    ${L.map((r, i) => `<button class="frrk ${r.me ? 'me' : ''}" data-act="fr-who" data-c="${r.c}" style="--rc:${RKC[r.d.hu.r]}"><b class="frpos">${i + 1}</b>${frAv(r.d, r.c, 'sm')}<span style="flex:1;min-width:0;text-align:left"><b>${esc(r.me ? T('Moi', 'Me') : r.d.name)}</b><br><span class="small muted">${esc(huTitle(r.d.hu.r))}</span></span><span style="text-align:right">${rkBadge(r.d.hu.r, 'mrk lvrk')}<br><span class="small"><b>${T('Niv.', 'Lv.')} ${r.d.hu.l}</b></span></span></button>`).join('')}
+    ${L.map((r, i) => `<button class="frrk ${r.me ? 'me' : ''}" data-act="fr-who" data-c="${r.c}" style="--rc:${RKC[r.d.hu.r]}"><b class="frpos">${i + 1}</b>${frAv(r.d, r.c, 'sm')}<span style="flex:1;min-width:0;text-align:left"><b>${esc(r.me ? T('Moi', 'Me') : r.d.name)}</b><br><span class="small muted">${r.d.hu.c && r.d.hu.c !== 'none' ? clsIc(r.d.hu.c) + ' ' + esc(clsName(r.d.hu.c)) : esc(huTitle(r.d.hu.r))}</span></span><span style="text-align:right">${rkBadge(r.d.hu.r, 'mrk lvrk')}<br><span class="small"><b>${T('Niv.', 'Lv.')} ${r.d.hu.l}</b></span></span></button>`).join('')}
     ${old.length ? `<p class="small muted" style="margin:8px 0 0">${T('Pas encore de niveau pour', 'No level yet for')} ${esc(old.join(', '))} : ${T('leur appli doit être à jour (9.10 ou plus).', 'their app must be up to date (9.10 or later).')}</p>` : ''}</div>`;
 }
 function frItems(f, d) { const out = []; (d.s || []).forEach(s => out.push({f, d, s})); (d.p || []).forEach(ph => out.push({f, d, s: {id: ph.id, d: ph.d + 'T12:00:00', ph}})); return out; }
@@ -6155,6 +6237,7 @@ Object.assign(ICP, {
 ICP.crown = '<path d="M11.56 3.27a.5.5 0 0 1 .88 0l2.95 5.6a1 1 0 0 0 1.52.29L21.18 5.5a.5.5 0 0 1 .8.52L19.15 16.3a1 1 0 0 1-.95.7H5.8a1 1 0 0 1-.96-.7L2.02 6.02a.5.5 0 0 1 .8-.52l4.27 3.66a1 1 0 0 0 1.52-.29z"/><path d="M5 21h14"/>';
 ICP.pullup = '<path d="M3 4h18"/><circle cx="12" cy="9.5" r="2"/><path d="m8 4 2 7.5h4L16 4"/><path d="M12 11.5v5.5"/><path d="m9 21 3-4 3 4"/>';
 ICP.swords = '<path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/><path d="M14.5 6.5 18 3h3v3l-3.5 3.5"/><path d="m5 14 4 4"/><path d="m7 17-3 3"/><path d="m3 19 2 2"/>';
+ICP.skull = '<path d="m12.5 17-.5-1-.5 1h1z"/><path d="M15 22a1 1 0 0 0 1-1v-1a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20v1a1 1 0 0 0 1 1z"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="12" r="1"/>';
 if (!ICP.flag) ICP.flag = '<path d="M4 22V4"/><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1"/>';
 if (!ICP.pause) ICP.pause = '<rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/>';
 const EMO_ALL = {'✅': ['ccheck', 'var(--ok)'], '☑': ['checksq'], '⚠': ['alert', 'var(--warm)'], '⏱': ['timer'], '⏲': ['timer'], '📁': ['folder'], '☁': ['cloud'], '🔥': ['flame', '#ff8a3d'],
@@ -6167,7 +6250,7 @@ const EMO_ALL = {'✅': ['ccheck', 'var(--ok)'], '☑': ['checksq'], '⚠': ['al
   '🏅': ['medal', '#f5c542'], '🥇': ['medal', '#f5c542'], '🏗': ['hammer'], '👋': ['hand'], '👆': ['hand'], '👏': ['thumb'], '👍': ['thumb'], '🔔': ['bell'], '🔕': ['belloff'],
   '🛠': ['wrench'], '🔧': ['wrench'], '🕓': ['clock'], '🕐': ['clock'], '🚀': ['rocket'], '📏': ['ruler'], '📐': ['ruler'], '📎': ['paperclip'], '🧭': ['compass'], '🔢': ['hash'],
   '🏁': ['flag'], '😄': ['smile'], '🎓': ['cap'], '🎯': ['target'], '🕸': ['radar'], '🛏': ['bed'], '📩': ['mail'], '⏸': ['pause'], '▶': ['play'], '🔎': ['search'], '🔍': ['search'],
-  '👁': ['eye'], '🧹': ['eraser'], '🛡': ['shield'], '👑': ['crown', '#f5c542'], '🧗': ['pullup'], '⚔': ['swords'], '🤝': ['users'], '❤️‍🔥': ['flame', '#ff8a3d']};
+  '👁': ['eye'], '🧹': ['eraser'], '🛡': ['shield'], '👑': ['crown', '#f5c542'], '🧗': ['pullup'], '⚔': ['swords'], '☠': ['skull', '#fb7185'], '🤝': ['users'], '❤️‍🔥': ['flame', '#ff8a3d']};
 const EMO_RE = new RegExp('(' + Object.keys(EMO_ALL).sort((a, b) => b.length - a.length).join('|') + ')[\\uFE0F\\u200D]*', 'gu');
 const EMO_SKIP = 'select,option,textarea,input,script,style,title,canvas,[data-noic]';
 function iconizeAll(root) {
@@ -6389,6 +6472,13 @@ document.addEventListener('click', e => {
       const base = s2[k2] === '' || s2[k2] == null ? (k2 === 'r' ? +s2.ph || 0 : 0) : +String(s2[k2]).replace(',', '.') || 0;
       s2[k2] = String(Math.max(0, Math.round((base + +b.dataset.d * step) * 100) / 100)); save(); render(); break; }
     case 'cmp-m': cmpM = +b.dataset.m; render(); break;
+    case 'cls-info': { const hu = hunter(), s = classStyle();
+      modal(`<h2>${clsIc(hu.cls)} ${esc(clsName(hu.cls))}</h2><p class="muted">${esc(clsDesc(hu.cls))}</p>
+        <p class="small" style="margin:12px 0 6px"><b>${T('Les classes', 'The classes')}</b></p>
+        ${['war', 'tank', 'asn', 'mage', 'ftr'].map(c => `<div class="small" style="margin:6px 0">${clsIc(c)} <b>${esc(clsName(c))}</b> — <span class="muted">${esc(clsDesc(c))}</span></div>`).join('')}
+        <p class="small muted" style="margin-top:12px">${T('Au niveau 10 tu deviens Éveillé. Au niveau 40, le Système choisit ta classe d\'après ton style, et elle peut changer si ton entraînement change. Au niveau 100 : Monarque des Ombres.', 'At level 10 you become Awakened. At level 40, the System picks your class from your style, and it can change if your training changes. At level 100: Shadow Monarch.')}</p>
+        ${s ? `<p class="small muted">${T('Ton style', 'Your style')} : ${s.reps.toFixed(1)} ${T('reps par série', 'reps per set')} · ${Math.round(s.sets)} ${T('séries par séance', 'sets per workout')} · ${Math.round(s.cardio * 100)} % ${T('de séances avec cardio', 'of workouts with cardio')} · ${s.ex} ${T('exercices différents', 'different exercises')}</p>` : ''}
+        <button class="btn block" data-act="close">${T('Fermer', 'Close')}</button>`); break; }
     case 'fold-ex': foldEx = +b.dataset.e; foldPaint(); { const t = document.getElementById('wex' + foldEx); if (t) t.scrollIntoView({block: 'start', behavior: 'smooth'}); } break;
     case 'remind-test': remindTest(); break;
     case 'mythm': { const t = myThemes().find(x => x.id === b.dataset.id); if (t) thmApply(t); break; }
