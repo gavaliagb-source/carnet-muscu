@@ -4845,8 +4845,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.21.3';
+const APP_VERSION = '9.21.4';
 const CHANGELOG = [
+  {v: '9.21.4', d: '2026-11-11', fr: ['Les emojis n\'apparaissent plus une fraction de seconde à l\'ouverture : les icônes sont posées avant le premier affichage.'], en: ['Emojis no longer flash for a split second on launch: icons are applied before the first paint.']},
   {v: '9.21.3', d: '2026-11-11', fr: ['Réglages : l\'option des emojis est retirée, les icônes modernes sont toujours utilisées.'], en: ['Settings: the emoji option is removed, modern icons are always used.']},
   {v: '9.21.2', d: '2026-11-11', fr: ['⚔️ Boss : « Comment le battre » est maintenant repliable — touche pour voir les options.'], en: ['⚔️ Boss: “How to beat it” is now collapsible — tap to see the options.']},
   {v: '9.21.1', d: '2026-11-11', fr: ['⚔️ Boss : les options sont plus claires (ex. « 95 lb pour 3 reps »), une par ligne.'], en: ['⚔️ Boss: clearer options (e.g. “95 lb for 3 reps”), one per line.']},
@@ -6274,7 +6275,7 @@ function render() {
   updWobar();
   updElapsed();
   justChk = null;
-  if (!icoObs) setTimeout(startIconObs, 0);
+  if (!icoObs) { try { startIconObs(); } catch (e) { setTimeout(startIconObs, 0); } }
   document.body.classList.toggle('focusing', !!(focusOn && S.active && cur().v === 'workout'));
   if (navAnim) { navAnim = false; const a = $('#app'); a.classList.remove('enter'); void a.offsetWidth; a.classList.add('enter'); }
   syncWake();
