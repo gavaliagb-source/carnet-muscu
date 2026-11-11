@@ -4036,9 +4036,9 @@ function awakenClass(c, hu) {
   if (S.settings.haptic !== false) haptic([60, 80, 60, 80, 300]);
 }
 /* ---------- Boss du mois : battre ton 1RM estimé sur ton exercice principal ---------- */
-const BOSSES = [['Le Gardien de pierre', 'The Stone Guardian'], ['Le Chevalier de sang', 'The Blood Knight'], ['La Reine des glaces', 'The Ice Queen'], ['Le Seigneur des fourmis', 'The Ant Lord'],
-  ['Le Cerbère des portes', 'The Gate Cerberus'], ['Le Géant de fer', 'The Iron Giant'], ['Le Démon du château', 'The Castle Demon'], ['Le Roi des loups', 'The Wolf King'],
-  ['L\'Archer spectral', 'The Spectral Archer'], ['Le Colosse', 'The Colossus'], ['Le Roi déchu', 'The Fallen King'], ['Le Dragon noir', 'The Black Dragon']];
+const BOSSES = [['Le Golem de fer forgé', 'The Ironforged Golem'], ['La Liche des marais', 'The Swamp Lich'], ['Le Minotaure enragé', 'The Raging Minotaur'], ['L\'Hydre des cavernes', 'The Cavern Hydra'],
+  ['Le Titan de granit', 'The Granite Titan'], ['La Wyverne de cendre', 'The Ash Wyvern'], ['Le Kraken des abysses', 'The Abyssal Kraken'], ['Le Seigneur des orages', 'The Storm Lord'],
+  ['Le Béhémoth', 'The Behemoth'], ['La Sorcière de jade', 'The Jade Witch'], ['Le Phénix noir', 'The Black Phoenix'], ['Le Dragon d\'obsidienne', 'The Obsidian Dragon']];
 const bLog = () => (S.bossLog = S.bossLog || {});
 function monthBoss() {
   const now = new Date(), k = now.getFullYear() + '-' + pad2(now.getMonth() + 1), ms = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -4054,7 +4054,7 @@ function monthBoss() {
     b = {k, v: 2, ex: bb.name, target: Math.ceil(bb.v * 1.025 / step) * step, from: Math.round(bb.v), nm: BOSSES[(now.getFullYear() * 12 + now.getMonth()) % BOSSES.length]};
     S.boss = b; save();
   }
-  if (b.nm && b.nm[0] === 'Le Monarque déchu') { b.nm = ['Le Roi déchu', 'The Fallen King']; save(); } // ancien nom
+  if (b.nm && !BOSSES.some(x => x[0] === b.nm[0])) { b.nm = BOSSES[(new Date().getFullYear() * 12 + new Date().getMonth()) % BOSSES.length]; save(); } // anciens noms de boss
   const ms2 = +ms, hs = S.history.filter(x => +new Date(x.date) >= ms2);
   let cur = 0, when = null;
   hs.slice().sort((a, c) => a.date.localeCompare(c.date)).forEach(x => x.exercises.forEach(e => { if (norm(e.name) !== norm(b.ex)) return; work(e.sets).filter(s => s.u !== 's').forEach(s => { const v = e1rm(s.w, s.r); if (v > cur) cur = v; if (!when && v >= b.target) when = x.date; }); }));
@@ -4845,8 +4845,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.19';
+const APP_VERSION = '9.20';
 const CHANGELOG = [
+  {v: '9.20', d: '2026-11-11', fr: ['☠️ 12 nouveaux boss du mois : le Golem de fer forgé, la Liche des marais, le Minotaure enragé, l\'Hydre des cavernes, le Titan de granit, la Wyverne de cendre, le Kraken des abysses, le Seigneur des orages, le Béhémoth, la Sorcière de jade, le Phénix noir et le Dragon d\'obsidienne.'], en: ['☠️ 12 new monthly bosses: the Ironforged Golem, the Swamp Lich, the Raging Minotaur, the Cavern Hydra, the Granite Titan, the Ash Wyvern, the Abyssal Kraken, the Storm Lord, the Behemoth, the Jade Witch, the Black Phoenix and the Obsidian Dragon.']},
   {v: '9.19', d: '2026-11-11', fr: ['✨ Mode jeu : la quête du jour s\'affiche en haut de ta séance avec ta progression en direct (ex. 185 / 200 reps). Fini les quêtes ratées à 1 rep près!'], en: ['✨ Game mode: the daily quest shows at the top of your workout with live progress (e.g. 185 / 200 reps). No more quests missed by 1 rep!']},
   {v: '9.18', d: '2026-11-11', fr: ['⚠️ Mode jeu : rater la quête du jour un jour d\'entraînement prévu coûte maintenant −10 XP. Ça compte à partir d\'aujourd\'hui seulement, rien en arrière.'], en: ['⚠️ Game mode: missing the daily quest on a planned training day now costs −10 XP. It counts from today only, nothing retroactive.']},
   {v: '9.17', d: '2026-11-11', fr: ['⚔️ Le mode jeu a maintenant son propre univers : la Guilde des aventuriers. Tu es Aventurier de rang E à S, tu deviens Initié au niveau 10, et le sommet est Légende de la Guilde.', '🗡️ L\'Armée des ombres devient ton Arsenal : chaque exercice où tu bats un record devient une arme qui monte en rang.', 'Les fenêtres du jeu prennent maintenant les couleurs de ton appli. Ton XP, ton niveau et tes médailles ne changent pas.'],
