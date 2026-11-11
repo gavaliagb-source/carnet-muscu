@@ -230,7 +230,8 @@ button.chip{cursor:pointer}
 .cday.today:not(.has) .dn{color:var(--accent);font-weight:700}
 .cday.today.has .dn{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--accent)}
 .wstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:12px 0 4px}
-.wday{background:var(--card2);border-radius:8px;padding:6px 2px;text-align:center;font-size:11px;min-width:0}
+.wday{background:var(--card2);border:0;border-radius:8px;padding:6px 2px;text-align:center;font:inherit;font-size:11px;color:var(--text);min-width:0;cursor:pointer}.wday:not([data-act]){cursor:default}.wday[data-act]:active{filter:brightness(1.25)}
+.tlink{cursor:pointer}.tlink .chev{color:var(--muted);font-weight:400;margin-left:4px}
 .wday.past{opacity:.55}.cycrow{padding:6px 0;border-bottom:1px solid var(--line)}
 .cycprev{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.cycprev div{background:var(--card2);border-radius:8px;padding:5px 2px;text-align:center;font-size:10px;min-width:0}.cycprev b{display:block;color:var(--muted);font-weight:600}.cycprev span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cycprev .rest{opacity:.6}
 .wday b{display:block;font-size:11px;color:var(--muted);font-weight:600}
@@ -2711,10 +2712,12 @@ function todayCard() {
   if (cycleOn()) { const sq = cycSeq(15); for (let k = 1; k < sq.length; k++) if (sq[k].r) { const j = dayIdx(sq[k].d); nxt = T(`Prochaine séance : ${k === 1 ? 'demain' : days()[j].toLowerCase()} — ${esc(sq[k].r.name)}`, `Next session: ${k === 1 ? 'tomorrow' : days()[j]} — ${esc(sq[k].r.name)}`); break; } }
   else for (let k = 1; k <= 7; k++) { const j = (di + k) % 7, rr = wp[j].r; if (rr) { nxt = T(`Prochaine séance : ${k === 1 ? 'demain' : days()[j].toLowerCase()} — ${esc(rr.name)}`, `Next session: ${k === 1 ? 'tomorrow' : days()[j]} — ${esc(rr.name)}`); break; } }
   let main = `<div class="muted small">${T("Aujourd'hui", 'Today')} · ${days()[di]}${cycleOn() ? ' · 🔁 ' + T('cycle', 'cycle') : ''}</div>`;
-  if (r) main += `<h2 style="margin:4px 0 10px">${esc(r.name)}</h2>${doneToday ? '<p class="small" style="color:var(--ok);margin:0 0 8px">✅ Séance faite aujourd\'hui</p>' : ''}${doneToday && cycleOn() ? `<p class="muted small" style="margin:0">${nxt}</p>` : `<button class="btn primary block" data-act="start" data-rid="${r.id}">▶ Lancer la séance d'aujourd'hui</button>`}`;
+  if (r) main += `<h2 class="tlink" style="margin:4px 0 10px" data-act="open-routine" data-rid="${r.id}">${esc(r.name)}<span class="chev">›</span></h2>${doneToday ? '<p class="small" style="color:var(--ok);margin:0 0 8px">✅ Séance faite aujourd\'hui</p>' : ''}${doneToday && cycleOn() ? `<p class="muted small" style="margin:0">${nxt}</p>` : `<button class="btn primary block" data-act="start" data-rid="${r.id}">▶ Lancer la séance d'aujourd'hui</button>`}`;
   else if (wp[di].rest) main += `<h2 style="margin:4px 0">😴 Jour de repos</h2><p class="muted small" style="margin:4px 0 0">${nxt || 'Récupère bien.'}</p>`;
   else main += `<h2 style="margin:4px 0">Rien de prévu</h2><p class="muted small" style="margin:4px 0 0">${nxt}</p>`;
-  const strip = days().map((d, i) => { const p = wp[i]; return `<div class="wday ${i === di ? 'on' : ''} ${p.past ? 'past' : ''}"><b>${d.slice(0, 3)}</b><span>${p.r ? (p.done && i !== di ? '✓ ' : '') + esc(p.r.name) : p.rest ? '😴' : '—'}</span></div>`; }).join('');
+  const strip = days().map((d, i) => { const p = wp[i], dd = new Date(); dd.setDate(dd.getDate() + i - di); const k = dkey(dd), hasH = i <= di && S.history.some(x => dkey(x.date) === k);
+    const act = hasH ? `data-act="cal2-day" data-d="${k}"` : p.r && p.r.id ? `data-act="open-routine" data-rid="${p.r.id}"` : 'tabindex="-1"';
+    return `<button class="wday ${i === di ? 'on' : ''} ${p.past ? 'past' : ''}" ${act}><b>${d.slice(0, 3)}</b><span>${p.r ? (p.done && i !== di ? '✓ ' : '') + esc(p.r.name) : p.rest ? '😴' : '—'}</span></button>`; }).join('');
   return `<div class="card today">${main}<div class="wstrip">${strip}</div><button class="linkbtn" data-act="sched-edit">${IC('calendar', '📅', 18)} Modifier mon horaire</button></div>`;
 }
 function openSched() {
@@ -4284,7 +4287,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.2';
+const APP_VERSION = '9.3';
 const CHANGELOG = [
   {v: '9.0', d: '2026-11-10', fr: ['Appli 3 fois plus légère : elle s\'ouvre plus vite, surtout la première fois.', 'Menus épurés : les boutons en double sont partis (horaire, programmes, partage, statistiques).', 'Profil plus simple : 3 séances récentes et une tuile Historique pour tout le reste.', 'Nouveaux utilisateurs : la sauvegarde Google est proposée dès le début.'],
    en: ['App 3 times lighter: it opens faster, especially the first time.', 'Cleaner menus: duplicate buttons are gone (schedule, programs, sharing, stats).', 'Simpler Profile: 3 recent workouts and a History tile for the rest.', 'New users: Google backup is offered right at the start.']},
