@@ -34,6 +34,30 @@
       ]
     },
     {
+      "name": "Quête du jour",
+      "short_name": "Quête du jour",
+      "url": "./?go=quest",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Statut du chasseur",
+      "short_name": "Statut",
+      "url": "./?go=medals",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
       "name": "Entraînement vide",
       "short_name": "Entraînement vide",
       "url": "./?go=empty",
