@@ -4074,8 +4074,8 @@ function bossRow() {
 function hunter(me) {
   me = me || medalsEarned();
   const st = me.st, nm = Object.keys(me.got).length;
-  const xp = Math.round(st.n * 100 + st.sets * 5 + st.pr * 40 + nm * 250 + (st.qd || 0) * 150 + (st.dg || 0) * 500 + (st.boss || 0) * 1000);
-  const lvl = Math.floor(Math.sqrt(xp / 60)) + 1;
+  const xp = Math.round(st.n * 100 + st.sets * 5 + st.pr * 40 + nm * 250 + (st.qd || 0) * 150 + (st.dg || 0) * 500 + (st.boss || 0) * 1000 - Object.keys(S.qFail || {}).length * QFAIL_XP);
+  const lvl = Math.floor(Math.sqrt(Math.max(0, xp) / 60)) + 1;
   const r = HRANKS.filter(x => lvl >= x[0]).pop(), nx = HRANKS.find(x => x[0] > lvl);
   return {xp, lvl, rk: r[1], cls: hClass(lvl), title: T(r[2][0], r[2][1]), col: RKC[r[1]], cur: xp - xpAt(lvl), need: xpAt(lvl + 1) - xpAt(lvl), nextRank: nx ? {lvl: nx[0], rk: nx[1]} : null, st, nm};
 }
@@ -4169,7 +4169,7 @@ function vMedals() {
       <div class="goal sysbar"><div style="width:${pct}%"></div></div>
       <div class="row between small muted"><span>${fmtN(hu.cur)} / ${fmtN(hu.need)} XP</span><span>${hu.nextRank ? T(`Rang ${hu.nextRank.rk} au niveau ${hu.nextRank.lvl}`, `Rank ${hu.nextRank.rk} at level ${hu.nextRank.lvl}`) : T('Rang maximal atteint', 'Max rank reached')}</span></div>
       <div class="sysstats"><div><span>${T('FOR', 'STR')}</span><b>${fmtN(st.b3)}</b><i>${U()}</i></div><div><span>${T('END', 'END')}</span><b>${fmtN(st.hr)}</b><i>h</i></div><div><span>${T('CON', 'CON')}</span><b>${st.wk}</b><i>${T('sem.', 'wk')}</i></div><div><span>${T('MÉD', 'MED')}</span><b>${n}</b><i>/ ${defs.length}</i></div></div>
-      <p class="small muted" style="margin:10px 0 0">${T('XP : séance 100 · série 5 · record 40 · médaille 250 · quête 150 · donjon 500 · boss 1 000.', 'XP: workout 100 · set 5 · record 40 · medal 250 · quest 150 · dungeon 500 · boss 1,000.')}</p>
+      <p class="small muted" style="margin:10px 0 0">${T('XP : séance 100 · série 5 · record 40 · médaille 250 · quête 150 · donjon 500 · boss 1 000 · quête ratée −10.', 'XP: workout 100 · set 5 · record 40 · medal 250 · quest 150 · dungeon 500 · boss 1,000 · missed quest −10.')}</p>
       <div class="row" style="gap:8px;margin-top:10px"><button class="btn" style="flex:1" data-act="go" data-v="murank">🎯 ${T('Rangs par muscle', 'Muscle ranks')}</button><button class="btn" style="flex:1" data-act="go" data-v="shadows">⚔️ ${T('Arsenal', 'Arsenal')} (${st.sh || 0})</button></div>
     </div>
     ${S.history.length ? '<div style="height:12px"></div>' + questCard() : ''}`}
@@ -4210,7 +4210,33 @@ function dailyQuest(d) {
   return {k, ...q, cur, done: cur >= q.goal, text: T(q.t[0], q.t[1]).replace('#', q.goal.toLocaleString(LOC()))};
 }
 /* Note la quête du jour et le donjon de la semaine quand ils sont réussis. Renvoie ce qui vient d'être accompli. */
+/* Quêtes ratées : −10 XP chacune. Une quête est ratée si c'était un jour d'entraînement prévu et qu'elle n'a pas été accomplie.
+   On compte seulement à partir du jour où cette règle existe (S.qStart), jamais en arrière. */
+const QFAIL_XP = 10;
+const qFail = () => (S.qFail = S.qFail || {});
+function plannedDay(d) {
+  const i = dayIdx(d);
+  if (cycleOn()) return !!(S.cycle && S.cycle.days && S.cycle.days[i]);
+  const v = S.schedule && S.schedule[i]; return !!v && v !== 'rest' && S.routines.some(r => r.id === v);
+}
+function syncQuestFails() {
+  if (!S.history.length) return;
+  const today = dkey(new Date());
+  if (!S.qStart) { S.qStart = today; save(); return; }
+  const d = new Date(S.qChk && S.qChk > S.qStart ? S.qChk : S.qStart); d.setHours(12, 0, 0, 0);
+  let changed = false;
+  for (let n = 0; n < 60 && dkey(d) < today; n++, d.setDate(d.getDate() + 1)) {
+    const k = dkey(d); if (k < S.qStart || qLog()[k] || qFail()[k]) continue;
+    const trained = S.history.some(x => dkey(x.date) === k);
+    if (!plannedDay(d) && !trained) continue;
+    if (dailyQuest(new Date(d)).done) { qLog()[k] = new Date(d).toISOString(); changed = true; continue; }
+    qFail()[k] = 1; changed = true;
+  }
+  if (S.qChk !== today) { S.qChk = today; changed = true; }
+  if (changed) save();
+}
 function syncSystem() {
+  syncQuestFails();
   const out = {}, q = dailyQuest(), dg = weekDungeon();
   if (q.done && !qLog()[q.k]) { qLog()[q.k] = new Date().toISOString(); out.quest = q; }
   if (dg.done && !dLog()[dg.k]) { dLog()[dg.k] = new Date().toISOString(); out.dungeon = dg; }
@@ -4219,9 +4245,8 @@ function syncSystem() {
   return out;
 }
 function questPenalty() {
-  const di = dayIdx(new Date()); if (di === 0 || !S.history.length) return false;
-  const p = weekPlan()[di - 1], y = new Date(); y.setDate(y.getDate() - 1);
-  return !!(p && p.r && !p.rest && !qLog()[dkey(y)]);
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  return !!qFail()[dkey(y)];
 }
 function weekDungeon() {
   const ws = weekStart(new Date()), k = dkey(ws), sd = hashStr('d' + k), u = U();
@@ -4256,9 +4281,9 @@ function questCard(compact) {
       ${q.rest ? chip('🌙', T('Repos', 'Rest'), 100, true) : chip(q.ic, T('Quête', 'Quest'), pc(q.cur, q.goal), q.done)}
       ${chip(rkBadge(dg.rk, 'mrk lvrk'), T('Donjon', 'Dungeon'), pc(dg.cur, dg.goal), dg.done)}
       ${bo ? chip('☠️', 'Boss', pc(bo.cur - bo.from * .85, bo.target - bo.from * .85), bo.done) : ''}</div>
-      ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Pénalité en cours : accomplis la quête d\'aujourd\'hui.', 'Penalty active: complete today\'s quest.')}</div>` : ''}</div>`;
+      ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −10 XP.', 'Yesterday\'s quest failed: −10 XP.')}</div>` : ''}</div>`;
   return `<div class="card sysw qcard">${head}<div style="height:10px"></div>${qh}
-    ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : accomplis celle d\'aujourd\'hui pour te racheter.', 'Yesterday\'s quest failed: complete today\'s to make up for it.')}</div>` : ''}
+    ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −10 XP. Ne rate pas celle d\'aujourd\'hui!', 'Yesterday\'s quest failed: −10 XP. Don\'t miss today\'s!')}</div>` : ''}
     ${dh}${bossRow()}</div>`;
 }
 /* ----- Armée des ombres ----- */
@@ -4810,8 +4835,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.17.1';
+const APP_VERSION = '9.18';
 const CHANGELOG = [
+  {v: '9.18', d: '2026-11-11', fr: ['⚠️ Mode jeu : rater la quête du jour un jour d\'entraînement prévu coûte maintenant −10 XP. Ça compte à partir d\'aujourd\'hui seulement, rien en arrière.'], en: ['⚠️ Game mode: missing the daily quest on a planned training day now costs −10 XP. It counts from today only, nothing retroactive.']},
   {v: '9.17', d: '2026-11-11', fr: ['⚔️ Le mode jeu a maintenant son propre univers : la Guilde des aventuriers. Tu es Aventurier de rang E à S, tu deviens Initié au niveau 10, et le sommet est Légende de la Guilde.', '🗡️ L\'Armée des ombres devient ton Arsenal : chaque exercice où tu bats un record devient une arme qui monte en rang.', 'Les fenêtres du jeu prennent maintenant les couleurs de ton appli. Ton XP, ton niveau et tes médailles ne changent pas.'],
    en: ['⚔️ Game mode now has its own world: the Adventurers\' Guild. You are an E to S-rank Adventurer, you become an Initiate at level 10, and the peak is Guild Legend.', '🗡️ The Shadow Army becomes your Arsenal: every exercise where you break a record becomes a weapon that ranks up.', 'Game windows now use your app colors. Your XP, level and medals don\'t change.']},
   {v: '9.16', d: '2026-11-11', fr: ['📒 Nouveau : choisis ton style dans Réglages → Général. « Mode jeu » (XP, niveaux, rangs, quêtes, donjons, boss, classes) ou « Classique », un carnet simple sans jeu. Les nouveaux utilisateurs le choisissent dès l\'accueil.', 'En Classique, ton niveau continue de se calculer en arrière-plan, et tes amis ne voient pas ton rang.'],
