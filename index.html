@@ -321,6 +321,21 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .bossbar{margin:8px 0 4px;height:9px}.bossbar>div{background:linear-gradient(90deg,#f43f5e,#fb923c)!important;box-shadow:0 0 8px #f43f5e}
 .mrrow{display:flex;align-items:center;gap:10px;width:100%;margin:6px 0;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--rc);border-radius:12px;color:var(--text);font:inherit;cursor:pointer}
 .mrrow.on{border-color:var(--rc)}.mrbars{display:grid;grid-template-columns:56px 1fr auto;gap:8px;align-items:center;margin-top:4px}.mrbars .goal{height:6px;margin:0}.mrbars .goal>span{display:block;height:100%;border-radius:3px;background:var(--rc)}
+#bigtimer{position:fixed;inset:0;z-index:9998;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;cursor:pointer;animation:awIn .25s ease both;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
+#bigtimer .btlab{font-size:clamp(20px,5vw,44px);font-weight:800;letter-spacing:.3em;color:#9aa3ad}
+#btv{font-size:min(38vw,62vh);font-weight:900;line-height:.9;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+#bigtimer.fin{background:var(--ok);color:#06210f;animation:btFlash 1s ease-in-out infinite}#bigtimer.fin .btlab{color:#06210f}
+@keyframes btFlash{50%{filter:brightness(1.25)}}
+.btbtns{display:flex;gap:12px}.btbtns button{background:#ffffff1a;color:inherit;border:0;border-radius:14px;padding:14px 22px;font:inherit;font-size:clamp(16px,3vw,26px);font-weight:800;cursor:pointer}
+.bthint{font-size:13px;color:#9aa3ad;margin-top:1vh}#bigtimer.fin .bthint{color:#06210f}
+#fdv,#ftv{cursor:zoom-in}
+.heatleg{display:flex;justify-content:center;align-items:center;gap:4px;margin-top:8px}.heatleg i{width:24px;height:10px;border-radius:3px}.heatleg span{margin:0 4px}
+.qhead{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:none;border:0;padding:0;cursor:pointer;color:inherit;font:inherit}.qchev{color:#7dd3fc;font-size:14px}
+.qmin{padding:12px 14px}.qchips{display:flex;gap:8px;margin-top:10px}
+.qchip{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;border-radius:10px;border:1px solid color-mix(in srgb,#38bdf8 30%,transparent);font-size:12px;color:var(--text)}
+.qchip>span{white-space:nowrap}.qchip .mrk{border-width:1.5px}.qchip i{display:block;width:80%;height:4px;border-radius:2px;background:var(--line);overflow:hidden}.qchip i b{display:block;height:100%;background:#38bdf8}
+.qchip.ok{border-color:color-mix(in srgb,var(--ok) 60%,transparent)}.qchip.ok i b{background:var(--ok)}
+.bossh{white-space:nowrap}
 .ftog{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 12px}
 .lvup{border:1.5px solid #38bdf8;background:color-mix(in srgb,#38bdf8 10%,var(--card));box-shadow:0 0 18px -6px #38bdf8;text-align:center;margin:8px 0}.lvup .sysh{margin-bottom:6px}
 .ybig{text-align:center;margin:0;display:flex;flex-direction:column;gap:2px}.ybig b{font-size:26px}
@@ -1635,12 +1650,12 @@ function timerDone() {
   const swc = navigator.serviceWorker && navigator.serviceWorker.controller;
   if (swc && notifOn()) swc.postMessage({type: 'rest-fire', at: timerEnd, title: T('✅ Repos terminé', '✅ Rest over'), body: T('À toi : ', 'Your turn: ') + nextSetInfo()});
   else notify(T('✅ Repos terminé', '✅ Rest over'), T('À toi : ', 'Your turn: ') + nextSetInfo());
-  const el = $('#timer'); el.classList.add('show', 'fin');
+  const el = $('#timer'); el.classList.add('show', 'fin'); setTimeout(bigTimerSync, 0);
   $('#tlab').textContent = T('✅ Repos terminé', '✅ Rest over'); $('#tval').textContent = '';
   const onWo = cur().v === 'workout';
   $('#tbtns').innerHTML = (onWo ? '' : `<button data-act="timer-go">↩ ${T('Retour à la séance', 'Back to workout')}</button>`) + `<button data-act="timer-stop">OK</button>`;
   haptic([300, 150, 300]);
-  clearTimeout(timerFinT); timerFinT = setTimeout(() => { el.classList.remove('show', 'fin'); }, 20000);
+  clearTimeout(timerFinT); timerFinT = setTimeout(() => { el.classList.remove('show', 'fin'); bigTimerClose(); }, 20000);
 }
 function startTimer(sec) {
   timerEnd = Date.now() + sec * 1000; timerTot = sec;
@@ -1680,9 +1695,10 @@ function tickTimer() {
   $('#tval').textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
   const ftv = $('#ftv'); if (ftv) ftv.textContent = $('#tval').textContent;
   const fdv = $('#fdv'); if (fdv) fdv.textContent = $('#tval').textContent;
+  bigTimerSync();
   if (left <= 0) timerDone();
 }
-function stopTimer() { clearInterval(timerInt); cancelBeeps(); restSW(0); clearNotif(); clearTimeout(timerFinT); $('#timer').classList.remove('show', 'fin'); if (focusOn && S.active && cur().v === 'workout') setTimeout(render, 0); else setTimeout(foldPaint, 0); }
+function stopTimer() { bigTimerClose(); clearInterval(timerInt); cancelBeeps(); restSW(0); clearNotif(); clearTimeout(timerFinT); $('#timer').classList.remove('show', 'fin'); if (focusOn && S.active && cur().v === 'workout') setTimeout(render, 0); else setTimeout(foldPaint, 0); }
 
 /* ===================== Vues ===================== */
 const exl = n => `<span class="exlink" data-act="exo" data-n="${esc(n)}">${esc(n)}</span>`;
@@ -3416,10 +3432,15 @@ const BODY_B = BODY_BASE.concat([['p', 'traps', '54,44 86,44 92,58 70,82 48,58']
   ['e', 'triceps', 30, 88, 8, 16], ['e', 'triceps', 110, 88, 8, 16], ['e', 'forearms', 29, 124, 7, 17], ['e', 'forearms', 111, 124, 7, 17],
   ['e', 'abductors', 47, 148, 5, 10], ['e', 'abductors', 93, 148, 5, 10], ['e', 'glutes', 59, 152, 12, 13], ['e', 'glutes', 81, 152, 12, 13],
   ['e', 'hamstrings', 57, 194, 10, 30], ['e', 'hamstrings', 83, 194, 10, 30], ['e', 'calves', 57, 250, 9, 24], ['e', 'calves', 83, 250, 9, 24]]);
+const HEAT = ['#38bdf8', '#34d399', '#facc15', '#fb923c', '#ef4444'];
+const heatLv = (v, max) => v > 0 ? Math.min(4, Math.floor(v / max * 5 - 1e-9)) : -1;
+function heatLegend() {
+  return `<div class="heatleg"><span class="small muted">${T('Peu', 'Little')}</span>${HEAT.map(c => `<i style="background:${c}"></i>`).join('')}<span class="small muted">${T('Beaucoup', 'A lot')}</span></div>`;
+}
 function bodySVG(shapes, vals, max, dx) {
   return shapes.map(([t, m, ...g]) => {
     const v = m ? (vals[m] || 0) : 0;
-    const st = !m ? 'fill:var(--card2)' : v > 0 ? `fill:var(--accent);fill-opacity:${(0.25 + 0.75 * Math.min(1, v / max)).toFixed(2)}` : 'fill:var(--line)';
+    const lv = heatLv(v, max), st = !m ? 'fill:var(--card2)' : lv >= 0 ? `fill:${HEAT[lv]};stroke:var(--bg);stroke-width:1` : 'fill:var(--line)';
     if (t === 'c') return `<circle cx="${g[0] + dx}" cy="${g[1]}" r="${g[2]}" style="${st}"/>`;
     if (t === 'e') return `<ellipse cx="${g[0] + dx}" cy="${g[1]}" rx="${g[2]}" ry="${g[3]}" style="${st}"/>`;
     if (t === 'r') return `<rect x="${g[0] + dx}" y="${g[1]}" width="${g[2]}" height="${g[3]}" rx="${g[4]}" style="${st}"/>`;
@@ -3436,9 +3457,9 @@ function vBodyMap() {
   return `<div class="seg">${seg}</div>
     <div class="card"><svg viewBox="0 0 300 312" width="100%" role="img" aria-label="Carte des muscles travaillés">${bodySVG(BODY_F, out, max, 0)}${bodySVG(BODY_B, out, max, 160)}
       <text x="70" y="308" text-anchor="middle" style="fill:var(--muted);font-size:12px">Avant</text><text x="230" y="308" text-anchor="middle" style="fill:var(--muted);font-size:12px">Arrière</text></svg>
-      <div class="row" style="justify-content:center;gap:8px;margin-top:6px"><span class="small muted">Peu</span><span style="width:120px;height:10px;border-radius:5px;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 25%,transparent),var(--accent))"></span><span class="small muted">Beaucoup</span></div></div>
+      ${heatLegend()}</div>
     <div class="card"><h3>Séries par muscle</h3><p class="muted small" style="margin:2px 0 8px">${sessions} séance${sessions > 1 ? 's' : ''} sur ${bmP} jours</p>
-    ${rows.length ? rows.map(([m, v]) => `<div class="bar"><span>${esc(musN(m))}</span><div class="track"><div class="fill" style="width:${Math.max(3, v / max * 100)}%"></div></div><b>${f1c(v)}</b></div>`).join('') : '<div class="empty">Aucune donnée pour cette période.</div>'}</div>`;
+    ${rows.length ? rows.map(([m, v]) => `<div class="bar"><span>${esc(musN(m))}</span><div class="track"><div class="fill" style="width:${Math.max(3, v / max * 100)}%;background:${HEAT[Math.max(0, heatLv(v, max))]}"></div></div><b>${f1c(v)}</b></div>`).join('') : '<div class="empty">Aucune donnée pour cette période.</div>'}</div>`;
 }
 let topP = 90;
 function vTopEx() {
@@ -4016,14 +4037,16 @@ const BOSSES = [['Le Gardien de pierre', 'The Stone Guardian'], ['Le Chevalier d
 const bLog = () => (S.bossLog = S.bossLog || {});
 function monthBoss() {
   const now = new Date(), k = now.getFullYear() + '-' + pad2(now.getMonth() + 1), ms = new Date(now.getFullYear(), now.getMonth(), 1);
-  let b = S.boss && S.boss.k === k ? S.boss : null;
+  let b = S.boss && S.boss.k === k && S.boss.v === 2 && !(S.bossLog || {})[k] ? S.boss : S.boss && S.boss.k === k && (S.bossLog || {})[k] ? S.boss : null;
   if (!b) {
     const past = S.history.filter(x => +new Date(x.date) < +ms && +new Date(x.date) > +ms - 90 * 864e5), cnt = new Map(), best = new Map();
     past.forEach(x => x.exercises.forEach(e => { if (isCardio(e)) return; const ws = work(e.sets).filter(s => s.u !== 's' && +s.w > 0 && +s.r > 0 && +s.r <= 12); if (!ws.length) return; const nn = norm(e.name); cnt.set(nn, (cnt.get(nn) || 0) + 1); const v = Math.max(...ws.map(s => e1rm(s.w, s.r))); const o = best.get(nn); if (!o || v > o.v) best.set(nn, {v, name: e.name}); }));
-    const top = [...cnt.entries()].filter(([, n]) => n >= 3).sort((a, b) => b[1] - a[1])[0];
+    const isBig = nn => MR_STD.some(r => r[0](nn) && !r[3]) || /presse|leg press|hip thrust|rowing|row\b|developpe|press/.test(nn) && !/lateral|elevation|curl|extension|oiseau|fly|ecarte|mollet|calf/.test(nn);
+    const cands = [...cnt.entries()].filter(([nn, n]) => n >= 3);
+    const top = cands.filter(([nn]) => MR_STD.some(r => r[0](nn) && !r[3])).sort((a, b) => b[1] - a[1])[0] || cands.filter(([nn]) => isBig(nn)).sort((a, b) => best.get(b[0]).v - best.get(a[0]).v)[0] || cands.sort((a, b) => best.get(b[0]).v - best.get(a[0]).v)[0];
     if (!top) return null;
     const bb = best.get(top[0]), step = U() === 'kg' ? 2.5 : 5;
-    b = {k, ex: bb.name, target: Math.ceil(bb.v * 1.025 / step) * step, from: Math.round(bb.v), nm: BOSSES[(now.getFullYear() * 12 + now.getMonth()) % BOSSES.length]};
+    b = {k, v: 2, ex: bb.name, target: Math.ceil(bb.v * 1.025 / step) * step, from: Math.round(bb.v), nm: BOSSES[(now.getFullYear() * 12 + now.getMonth()) % BOSSES.length]};
     S.boss = b; save();
   }
   const ms2 = +ms, hs = S.history.filter(x => +new Date(x.date) >= ms2);
@@ -4035,7 +4058,7 @@ function monthBoss() {
 function bossRow() {
   const b = monthBoss(); if (!b) return '';
   const base = b.from * .85, hp = b.done ? 0 : Math.max(0, Math.min(100, Math.round((b.target - b.cur) / Math.max(1, b.target - base) * 100)));
-  return `<div class="bossrow ${b.done ? 'dead' : ''}"><div class="row between" style="align-items:center"><span class="bossh">☠ ${T('BOSS DU MOIS', 'BOSS OF THE MONTH')}</span><span class="small muted">${b.done ? `<b style="color:var(--ok)">${T('VAINCU', 'DEFEATED')}</b>` : `${b.left} ${T('j restants', 'days left')} · +1 000 XP`}</span></div>
+  return `<div class="bossrow ${b.done ? 'dead' : ''}"><div class="row between" style="align-items:center;gap:8px;flex-wrap:wrap"><span class="bossh">☠ ${T('BOSS DU MOIS', 'BOSS OF THE MONTH')}</span><span class="small muted" style="margin-left:auto">${b.done ? `<b style="color:var(--ok)">${T('VAINCU', 'DEFEATED')}</b>` : `${b.left} ${T('j restants', 'days left')} · +1 000 XP`}</span></div>
     <b class="bossn">${esc(b.name)}</b>
     <div class="small">${T('Pour le vaincre : un 1RM estimé de', 'To defeat it: an estimated 1RM of')} <b>${b.target} ${U()}</b> ${T('au', 'on')} <b>${esc(b.ex)}</b> <span class="muted">(${T('ton meilleur', 'your best')} : ${b.from})</span></div>
     <div class="goal bossbar"><div style="width:${hp}%"></div></div>
@@ -4081,7 +4104,7 @@ function muscleRanks() {
 function mrSVG(shapes, res, dx, sel) {
   return shapes.map(([t, m, ...g]) => {
     const r = m && res[m];
-    const st = !m ? 'fill:var(--card2)' : r && r.rk ? `fill:${RKC[r.rk]};fill-opacity:${m === sel ? 1 : .78};${m === sel ? 'stroke:#fff;stroke-width:1.5' : ''}` : `fill:var(--line);${m === sel ? 'stroke:#fff;stroke-width:1.5' : ''}`;
+    const st = !m ? 'fill:var(--card2)' : r && r.rk ? `fill:${RKC[r.rk]};stroke:${m === sel ? 'var(--text)' : 'var(--bg)'};stroke-width:${m === sel ? 2 : 1}` : `fill:var(--line);stroke:${m === sel ? 'var(--text)' : 'var(--bg)'};stroke-width:${m === sel ? 2 : 1}`;
     const a = m ? ` data-act="mr-pick" data-m="${m}" style="${st};cursor:pointer"` : ` style="${st}"`;
     if (t === 'c') return `<circle cx="${g[0] + dx}" cy="${g[1]}" r="${g[2]}"${a}/>`;
     if (t === 'e') return `<ellipse cx="${g[0] + dx}" cy="${g[1]}" rx="${g[2]}" ry="${g[3]}"${a}/>`;
@@ -4216,7 +4239,16 @@ function questCard(compact) {
     ? `<div class="qrow"><span class="qic">${'🌙'}</span><div style="flex:1"><b>${T('Jour de repos', 'Rest day')}</b><div class="small muted">${T('Le Système te laisse récupérer aujourd\'hui. Pas de quête.', 'The System lets you recover today. No quest.')}</div></div></div>`
     : `<div class="qrow"><span class="qic">${q.ic}</span><div style="flex:1;min-width:0"><b>${esc(q.text)}</b>${sysBar(q.cur, q.goal)}<div class="row between small muted"><span>${Math.min(q.cur, q.goal).toLocaleString(LOC())} / ${q.goal.toLocaleString(LOC())}</span><span>${q.done ? `<b style="color:var(--ok)">${T('ACCOMPLIE', 'COMPLETE')}</b>` : '+150 XP'}</span></div></div></div>`;
   const dh = `<div class="qrow" style="margin-top:12px"><span class="qic">${rkBadge(dg.rk, 'mrk lvrk')}</span><div style="flex:1;min-width:0"><b>${T('Donjon de rang', 'Rank')} ${dg.rk}${T('', ' dungeon')} · ${esc(dg.text)}</b>${sysBar(dg.cur, dg.goal)}<div class="row between small muted"><span>${dg.fmt(Math.min(dg.cur, dg.goal))} / ${dg.fmt(dg.goal)}</span><span>${dg.done ? `<b style="color:var(--ok)">${T('DONJON NETTOYÉ', 'DUNGEON CLEARED')}</b>` : `${dg.left} ${T('j restants', 'days left')} · +500 XP`}</span></div></div></div>`;
-  return `<div class="card sysw qcard"><div class="sysh">[ ${T('QUÊTE QUOTIDIENNE', 'DAILY QUEST')} ]</div>${qh}
+  const open = S.settings.qOpen === true, bo = monthBoss();
+  const pc = (a, b) => Math.min(100, Math.round(a / Math.max(1, b) * 100));
+  const chip = (ic, label, pct, done) => `<span class="qchip ${done ? 'ok' : ''}">${ic}<span>${label}</span><i><b style="width:${done ? 100 : pct}%"></b></i></span>`;
+  const head = `<button class="qhead" data-act="q-tog" aria-expanded="${open}"><span class="sysh" style="margin:0">[ ${T('QUÊTES', 'QUESTS')} ]</span><span class="qchev">${open ? '▴' : '▾'}</span></button>`;
+  if (!open) return `<div class="card sysw qcard qmin">${head}<div class="qchips">
+      ${q.rest ? chip('🌙', T('Repos', 'Rest'), 100, true) : chip(q.ic, T('Quête', 'Quest'), pc(q.cur, q.goal), q.done)}
+      ${chip(rkBadge(dg.rk, 'mrk lvrk'), T('Donjon', 'Dungeon'), pc(dg.cur, dg.goal), dg.done)}
+      ${bo ? chip('☠️', 'Boss', pc(bo.cur - bo.from * .85, bo.target - bo.from * .85), bo.done) : ''}</div>
+      ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Pénalité en cours : accomplis la quête d\'aujourd\'hui.', 'Penalty active: complete today\'s quest.')}</div>` : ''}</div>`;
+  return `<div class="card sysw qcard">${head}<div style="height:10px"></div>${qh}
     ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Pénalité : la quête d\'hier a échoué. Pour te racheter, survis à la zone de pénalité… ou accomplis celle d\'aujourd\'hui.', 'Penalty: yesterday\'s quest failed. Survive the penalty zone… or complete today\'s quest.')}</div>` : ''}
     ${dh}${bossRow()}</div>`;
 }
@@ -4282,7 +4314,7 @@ function vFocus() {
     <div class="fset">${allDone ? `✅ ${T('Exercice terminé', 'Exercise done')}` : s.t === 'W' ? T('Échauffement', 'Warm-up') : `${T('Série', 'Set')} ${k} / ${works.length}`}</div>
     <div class="fdots">${e.sets.map((x, i) => `<i class="${x.done ? 'on' : ''} ${i === si && !allDone ? 'cur' : ''} ${x.t === 'W' ? 'w' : ''}"></i>`).join('')}</div>
     <div class="small muted" style="text-align:center;margin-bottom:10px">${pv ? `${T('Dernière fois', 'Last time')} : ${pv.w === '' || pv.w == null || +pv.w === 0 ? BWL() : pv.w}×${pv.r}${tm ? ' s' : ''}` : T('Première fois', 'First time')}</div>
-    ${resting ? `<div class="frest"><span class="small muted">${T('Repos', 'Rest')}</span><b id="ftv">${Math.floor(left / 60)}:${pad2(left % 60)}</b><div class="row" style="gap:8px;justify-content:center"><button class="btn sm" data-act="timer-sub">−15 s</button><button class="btn sm" data-act="timer-add">+30 s</button><button class="btn sm primary" data-act="timer-stop">${T('Passer', 'Skip')}</button></div></div>` : ''}
+    ${resting ? `<div class="frest"><span class="small muted">${T('Repos', 'Rest')}</span><b id="ftv" data-act="bigtimer">${Math.floor(left / 60)}:${pad2(left % 60)}</b><div class="row" style="gap:8px;justify-content:center"><button class="btn sm" data-act="timer-sub">−15 s</button><button class="btn sm" data-act="timer-add">+30 s</button><button class="btn sm primary" data-act="timer-stop">${T('Passer', 'Skip')}</button></div></div>` : ''}
     ${allDone ? '' : `<div class="fgrid">
       <div class="fbox"><span class="small muted">${U()}</span><div class="fstep"><button class="btn" data-act="f-step" data-k="w" data-d="-1" data-e="${ei}" data-s="${si}">−</button><input inputmode="decimal" value="${esc(s.w)}" placeholder="—" data-in="w" data-e="${ei}" data-s="${si}"><button class="btn" data-act="f-step" data-k="w" data-d="1" data-e="${ei}" data-s="${si}">+</button></div></div>
       <div class="fbox"><span class="small muted">${tm ? T('Secondes', 'Seconds') : 'Reps'}</span><div class="fstep"><button class="btn" data-act="f-step" data-k="r" data-d="-1" data-e="${ei}" data-s="${si}">−</button><input inputmode="numeric" value="${esc(s.r)}" placeholder="${esc(s.ph)}" data-in="r" data-e="${ei}" data-s="${si}"><button class="btn" data-act="f-step" data-k="r" data-d="1" data-e="${ei}" data-s="${si}">+</button></div></div></div>
@@ -4769,8 +4801,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.13';
+const APP_VERSION = '9.14';
 const CHANGELOG = [
+  {v: '9.14', d: '2026-11-11', fr: ['Carte des muscles : 5 couleurs bien différentes (bleu → rouge) au lieu d\'une seule couleur plus ou moins pâle.', 'Quêtes : la carte est maintenant repliée par défaut (quête, donjon et boss en petit). Touche-la pour l\'ouvrir.', 'Boss du mois : il se base maintenant sur un grand exercice (couché, squat, soulevé de terre…), pas sur une élévation latérale.', '⛶ Touche le gros chrono de repos (écran déplié ou mode focus) pour l\'afficher en plein écran, lisible de loin.'], en: ['Muscle map: 5 clearly different colors (blue → red) instead of one color more or less faded.', 'Quests: the card is now collapsed by default (quest, dungeon and boss in small). Tap it to open.', 'Boss of the month: now based on a big lift (bench, squat, deadlift…), not a lateral raise.', '⛶ Tap the big rest timer (unfolded screen or focus mode) to show it full screen, readable from afar.']},
   {v: '9.13', d: '2026-11-11', fr: ['🎯 Rangs par muscle : une silhouette où chaque muscle a son rang (E à S) selon ta force et ton volume, avec tes points forts et tes points faibles. Dans Médailles et dans Statistiques.'], en: ['🎯 Muscle ranks: a body map where each muscle has its own rank (E to S) based on your strength and volume, with your strongest and weakest points. In Medals and Statistics.']},
   {v: '9.12', d: '2026-11-11', fr: ['✨ Classes : tu deviens Éveillé au niveau 10, puis au niveau 40 le Système te donne ta classe selon ton style : Guerrier, Tank, Assassin, Mage ou Combattant. Tes amis la voient aussi.', '☠️ Boss du mois : bats ton 1RM estimé sur ton exercice principal pour le vaincre (+1 000 XP). Il est dans la carte de quête.'], en: ['✨ Classes: you become Awakened at level 10, then at level 40 the System gives you a class based on your style: Warrior, Tank, Assassin, Mage or Fighter. Friends see it too.', '☠️ Boss of the month: beat your estimated 1RM on your main lift to defeat it (+1,000 XP). It is in the quest card.']},
   {v: '9.11', d: '2026-11-11', fr: ['📱 Mode écran déplié : sur un téléphone pliable ouvert (ou une tablette), ta séance est à gauche et à droite tu as un gros chrono de repos, ta prochaine série et l\'historique de l\'exercice (dernières fois, records, courbe du 1RM). Touche un exercice pour voir le sien.'], en: ['📱 Unfolded screen mode: on an open foldable (or a tablet), your workout is on the left and on the right a big rest timer, your next set and the exercise history (previous times, records, 1RM curve). Tap an exercise to see its own.']},
@@ -6073,6 +6106,30 @@ function headerRight(v) {
   return '';
 }
 let navAnim = false;
+/* ---------- Chrono plein écran : lisible de loin ---------- */
+function bigTimerOpen() {
+  if (document.getElementById('bigtimer')) return;
+  const o = document.createElement('div'); o.id = 'bigtimer';
+  o.innerHTML = `<div class="btlab">${T('REPOS', 'REST')}</div><div id="btv">${$('#tval') ? $('#tval').textContent : '0:00'}</div>
+    <div class="btbtns"><button data-act="timer-sub">−15 s</button><button data-act="timer-add">+30 s</button><button data-act="timer-stop">${T('Passer', 'Skip')}</button></div>
+    <div class="bthint">${T('Touche l\'écran pour fermer', 'Tap the screen to close')}</div>`;
+  o.addEventListener('click', ev => { if (ev.target.closest('button')) return; bigTimerClose(); });
+  document.body.appendChild(o); bigTimerSync();
+  try { if (document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen({navigationUI: 'hide'}).catch(() => {}); } catch (e) {}
+  focusWakeSet(true);
+}
+function bigTimerClose() {
+  const o = document.getElementById('bigtimer'); if (!o) return; o.remove();
+  try { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch (e) {}
+  if (!focusOn) focusWakeSet(false);
+}
+function bigTimerSync() {
+  const o = document.getElementById('bigtimer'); if (!o) return;
+  const t = $('#timer'), fin = t && t.classList.contains('fin'), on = t && t.classList.contains('show');
+  o.classList.toggle('fin', !!fin);
+  const v = document.getElementById('btv'); if (v) v.textContent = fin ? T('GO!', 'GO!') : on ? $('#tval').textContent : '0:00';
+  const l = o.querySelector('.btlab'); if (l) l.textContent = fin ? T('C\'EST REPARTI', 'BACK TO WORK') : T('REPOS', 'REST');
+}
 /* ---------- Mode écran déplié (téléphone pliable, tablette) : séance à gauche, chrono et historique à droite ---------- */
 let foldEx = null;
 const foldWide = () => S.settings.fold !== false && innerWidth >= 700;
@@ -6096,7 +6153,7 @@ function foldSide() {
   let si = e.sets.findIndex(s => !s.done), works = e.sets.filter(x => x.t !== 'W');
   const nx = si >= 0 ? e.sets[si] : null, k = nx ? (nx.t === 'W' ? 0 : works.indexOf(nx) + 1) : 0;
   const top = resting
-    ? `<div class="fdcard frest2"><span class="small muted">${T('Repos', 'Rest')}</span><b id="fdv">${Math.floor(left / 60)}:${pad2(left % 60)}</b><div class="row" style="gap:8px;justify-content:center"><button class="btn sm" data-act="timer-sub">−15 s</button><button class="btn sm" data-act="timer-add">+30 s</button><button class="btn sm primary" data-act="timer-stop">${T('Passer', 'Skip')}</button></div></div>`
+    ? `<div class="fdcard frest2"><span class="small muted">${T('Repos', 'Rest')} · ${T('touche le chrono pour le plein écran', 'tap the timer for full screen')}</span><b id="fdv" data-act="bigtimer" title="${T('Plein écran', 'Full screen')}">${Math.floor(left / 60)}:${pad2(left % 60)}</b><div class="row" style="gap:8px;justify-content:center"><button class="btn sm" data-act="timer-sub">−15 s</button><button class="btn sm" data-act="timer-add">+30 s</button><button class="btn sm primary" data-act="timer-stop">${T('Passer', 'Skip')}</button></div></div>`
     : `<div class="fdcard"><span class="small muted">${T('Prochaine série', 'Next set')}</span><div class="fdnext">${nx ? (nx.t === 'W' ? T('Échauffement', 'Warm-up') : `${T('Série', 'Set')} ${k} / ${works.length}`) : `✅ ${T('Exercice terminé', 'Exercise done')}`}</div><div class="small muted">${esc(e.name)}</div></div>`;
   const rec = computeRecords().find(r => norm(r.name) === norm(e.name));
   const ss = exSessions(e.name).slice().sort((a, b) => b.h.date.localeCompare(a.h.date)).filter(x => x.h.id !== A.id).slice(0, 5);
@@ -6545,6 +6602,8 @@ document.addEventListener('click', e => {
       const base = s2[k2] === '' || s2[k2] == null ? (k2 === 'r' ? +s2.ph || 0 : 0) : +String(s2[k2]).replace(',', '.') || 0;
       s2[k2] = String(Math.max(0, Math.round((base + +b.dataset.d * step) * 100) / 100)); save(); render(); break; }
     case 'cmp-m': cmpM = +b.dataset.m; render(); break;
+    case 'bigtimer': bigTimerOpen(); break;
+    case 'q-tog': S.settings.qOpen = !(S.settings.qOpen === true); save(); render(); break;
     case 'mr-pick': mrSel = mrSel === b.dataset.m ? null : b.dataset.m; render(); break;
     case 'cls-info': { const hu = hunter(), s = classStyle();
       modal(`<h2>${clsIc(hu.cls)} ${esc(clsName(hu.cls))}</h2><p class="muted">${esc(clsDesc(hu.cls))}</p>
