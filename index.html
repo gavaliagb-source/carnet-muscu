@@ -318,7 +318,7 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .bossrow.dead{border-color:color-mix(in srgb,var(--ok) 60%,transparent);background:color-mix(in srgb,var(--ok) 8%,transparent)}
 .bossh{font-size:12px;letter-spacing:2px;font-weight:800;color:#fb7185}.bossrow.dead .bossh{color:var(--ok)}
 .bossn{display:block;font-size:18px;margin:4px 0 2px}
-.bossbar{margin:8px 0 4px;height:9px}.bossbar>div{background:linear-gradient(90deg,#f43f5e,#fb923c)!important;box-shadow:0 0 8px #f43f5e}
+.bosshow{margin:6px 0;padding:6px 8px;border-radius:8px;background:color-mix(in srgb,var(--accent) 10%,transparent)}.bossbar{margin:8px 0 4px;height:9px}.bossbar>div{background:linear-gradient(90deg,#f43f5e,#fb923c)!important;box-shadow:0 0 8px #f43f5e}
 .mrrow{display:flex;align-items:center;gap:10px;width:100%;margin:6px 0;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--rc);border-radius:12px;color:var(--text);font:inherit;cursor:pointer}
 .mrrow.on{border-color:var(--rc)}.mrbars{display:grid;grid-template-columns:56px 1fr auto;gap:8px;align-items:center;margin-top:4px}.mrbars .goal{height:6px;margin:0}.mrbars .goal>span{display:block;height:100%;border-radius:3px;background:var(--rc)}
 #fstimer{position:fixed;inset:0;z-index:9998;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;cursor:pointer;animation:awIn .25s ease both;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
@@ -4067,6 +4067,7 @@ function bossRow() {
   return `<div class="bossrow ${b.done ? 'dead' : ''}"><div class="row between" style="align-items:center;gap:8px;flex-wrap:wrap"><span class="bossh">☠ ${T('BOSS DU MOIS', 'BOSS OF THE MONTH')}</span><span class="small muted" style="margin-left:auto">${b.done ? `<b style="color:var(--ok)">${T('VAINCU', 'DEFEATED')}</b>` : `${b.left} ${T('j restants', 'days left')} · +1 000 XP`}</span></div>
     <b class="bossn">${esc(b.name)}</b>
     <div class="small">${T('Pour le vaincre : un 1RM estimé de', 'To defeat it: an estimated 1RM of')} <b>${b.target} ${U()}</b> ${T('au', 'on')} <b>${esc(b.ex)}</b> <span class="muted">(${T('ton meilleur', 'your best')} : ${b.from})</span></div>
+    ${b.done ? '' : (() => { const st = U() === 'kg' ? 2.5 : 5; const ex = [3, 5, 8].map(r => `<b>${Math.ceil(b.target / (1 + r / 30) / st) * st} ${U()} × ${r}</b>`).join(' · '); return `<div class="small bosshow">⚔️ <b>${T('Comment le battre', 'How to beat it')}</b> : ${T('fais', 'do')} <b>${T('une seule série', 'a single set')}</b> ${T('au', 'of')} ${esc(b.ex)} ${T('avec une de ces combinaisons (ou mieux)', 'with one of these combos (or better)')} : ${ex}<br><span class="muted">${T('Ajoute l’exercice à ta séance, échauffe-toi bien et vise la série de ton choix. Le boss tombe dès que la série est enregistrée.', 'Add the exercise to your workout, warm up well and go for the set of your choice. The boss falls as soon as the set is logged.')}</span></div>`; })()}
     <div class="goal bossbar"><div style="width:${hp}%"></div></div>
     <div class="row between small muted"><span>${T('PV du boss', 'Boss HP')}</span><span>${b.done ? T('0 PV', '0 HP') : `${T('ce mois-ci', 'this month')} : ${Math.round(b.cur)} / ${b.target} ${U()}`}</span></div></div>`;
 }
@@ -4845,8 +4846,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.20';
+const APP_VERSION = '9.21';
 const CHANGELOG = [
+  {v: '9.21', d: '2026-11-11', fr: ['⚔️ La carte du boss explique maintenant comment le battre : une seule série suffit, avec des exemples de poids × reps à viser (ex. 3, 5 ou 8 reps).'], en: ['⚔️ The boss card now explains how to beat it: a single set is enough, with example weight × reps targets (e.g. 3, 5 or 8 reps).']},
   {v: '9.20', d: '2026-11-11', fr: ['☠️ 12 nouveaux boss du mois : le Golem de fer forgé, la Liche des marais, le Minotaure enragé, l\'Hydre des cavernes, le Titan de granit, la Wyverne de cendre, le Kraken des abysses, le Seigneur des orages, le Béhémoth, la Sorcière de jade, le Phénix noir et le Dragon d\'obsidienne.'], en: ['☠️ 12 new monthly bosses: the Ironforged Golem, the Swamp Lich, the Raging Minotaur, the Cavern Hydra, the Granite Titan, the Ash Wyvern, the Abyssal Kraken, the Storm Lord, the Behemoth, the Jade Witch, the Black Phoenix and the Obsidian Dragon.']},
   {v: '9.19', d: '2026-11-11', fr: ['✨ Mode jeu : la quête du jour s\'affiche en haut de ta séance avec ta progression en direct (ex. 185 / 200 reps). Fini les quêtes ratées à 1 rep près!'], en: ['✨ Game mode: the daily quest shows at the top of your workout with live progress (e.g. 185 / 200 reps). No more quests missed by 1 rep!']},
   {v: '9.18', d: '2026-11-11', fr: ['⚠️ Mode jeu : rater la quête du jour un jour d\'entraînement prévu coûte maintenant −10 XP. Ça compte à partir d\'aujourd\'hui seulement, rien en arrière.'], en: ['⚠️ Game mode: missing the daily quest on a planned training day now costs −10 XP. It counts from today only, nothing retroactive.']},
