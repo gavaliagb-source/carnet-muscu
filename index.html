@@ -3976,7 +3976,7 @@ function vExDetail() {
     <div class="card">${pts.length ? '<canvas id="chart"></canvas>' : '<div class="empty">Pas encore de données pour ce graphique.</div>'}${exMetric === 'vol' ? '' : predictHtml(pts, exMetric === 'reps' ? 'reps' : 'w')}<div class="chips" style="margin-bottom:0">${chips}</div></div>
     ${maxTable(rec)}
     <p class="muted" style="margin:16px 0 8px">Historique</p>
-    ${ss.length ? ss.slice().reverse().slice(0, 30).map(({h, e}) => `<div class="card"><div class="row between"><b>${esc(h.routineName)}</b><span class="tag">${new Date(h.date).toLocaleDateString(LOC(), {day: 'numeric', month: 'short', year: 'numeric'})}</span></div>
+    ${ss.length ? ss.slice().reverse().slice(0, 30).map(({h, e}) => `<div class="card"><div class="row between"><b>${esc(h.routineName)}</b><span class="row" style="gap:6px"><span class="tag">${new Date(h.date).toLocaleDateString(LOC(), {day: 'numeric', month: 'short', year: 'numeric'})}</span><button class="btn sm" data-act="hist-edit" data-hid="${h.id}" aria-label="${T('Modifier', 'Edit')}">✏️</button></span></div>
       <div class="small" style="margin-top:6px">${(() => { let n = 0; return e.sets.map(s => `<div class="row between" style="padding:2px 0"><span class="muted">${s.t === 'W' ? 'Échauffement' : 'Série ' + (++n)}</span><span>${fmtSet(s, true)}</span></div>`).join(''); })()}</div></div>`).join('') : '<div class="empty">Tu n\'as pas encore fait cet exercice.</div>'}`;
 }
 
@@ -4065,7 +4065,7 @@ function livePR(ei, si) {
   if (!hs.length) return false;
   const others = e.sets.filter((x, j) => j !== si && x.done && !isW(x));
   const all = hs.concat(others);
-  if (w > 0) { const v = e1rm(w, r), b = Math.max(0, ...all.map(x => e1rm(x.w, x.r))); if (b > 0 && v > b + 1e-9) return true; const same = all.filter(x => +x.w === w), recent = same.some(x => !x._t || Date.now() - x._t <= REP_PR_DAYS * 864e5); return recent && r > Math.max(...same.map(x => +x.r || 0)); }
+  if (w > 0) { const v = e1rm(w, r), b = Math.max(0, ...all.map(x => e1rm(x.w, x.r))); if (b > 0 && v > b + 1e-9) return true; const same = all.filter(x => +x.w === w && (!x._t || Date.now() - x._t <= REP_PR_DAYS * 864e5)); return same.some(x => x._t) && r > Math.max(...same.map(x => +x.r || 0)); }
   const bw = all.filter(x => !(+x.w > 0)); return bw.length > 0 && r > Math.max(...bw.map(x => +x.r || 0));
 }
 
@@ -4300,9 +4300,11 @@ function prScore(ws, t = Date.now()) {
   return {v: wt.length ? Math.max(...wt.map(s => e1rm(s.w, s.r))) : 0, b: bw.length ? Math.max(...bw.map(s => +s.r || 0)) : 0, wr};
 }
 /* Record si : meilleur 1RM estimé, OU plus de reps au poids du corps, OU plus de reps qu'avant à la même charge (ex. 30 lb × 11 après 30 lb × 10) */
-const repPrAt = (cur, prev) => Object.keys(cur.wr || {}).find(k => prev.wr && prev.wr[k] && cur.wr[k].r > prev.wr[k].r && cur.wr[k].t - prev.wr[k].t <= REP_PR_DAYS * 864e5);
+/* Meilleur nombre de reps à une charge, seulement parmi les séances des 3 derniers mois (null si pas fait à ce poids récemment) */
+const bestAtW = (prev, k, t) => { const l = ((prev && prev.wr && prev.wr[k]) || []).filter(e => e.t <= t && t - e.t <= REP_PR_DAYS * 864e5); return l.length ? Math.max(...l.map(e => e.r)) : null; };
+const repPrAt = (cur, prev) => Object.keys(cur.wr || {}).find(k => { const b = bestAtW(prev, k, cur.wr[k].t); return b != null && cur.wr[k].r > b; });
 const prBeat = (cur, prev) => (cur.v > 0 && prev.v > 0 && cur.v > prev.v + 1e-9) || (cur.b > 0 && prev.b > 0 && cur.b > prev.b) || repPrAt(cur, prev) != null;
-const prMerge = (o, c) => { o = o || {v: 0, b: 0, wr: {}}; const wr = {...o.wr}; Object.keys(c.wr || {}).forEach(k => { wr[k] = {r: Math.max(wr[k] ? wr[k].r : 0, c.wr[k].r), t: Math.max(wr[k] ? wr[k].t : 0, c.wr[k].t)}; }); return {v: Math.max(o.v, c.v), b: Math.max(o.b, c.b), wr}; };
+const prMerge = (o, c) => { o = o || {v: 0, b: 0, wr: {}}; const wr = {...o.wr}; Object.keys(c.wr || {}).forEach(k => { wr[k] = (wr[k] || []).concat([{r: c.wr[k].r, t: c.wr[k].t}]); }); return {v: Math.max(o.v, c.v), b: Math.max(o.b, c.b), wr}; };
 function sessPRs(h) {
   const prs = [];
   h.exercises.forEach(e => {
@@ -4793,7 +4795,7 @@ function prExplain() {
     else {
       const parts = [];
       if (cur.v > 0) parts.push(T(`1RM estimé ${Math.round(cur.v)} (ton meilleur : ${Math.round(pv.v)})`, `Est. 1RM ${Math.round(cur.v)} (your best: ${Math.round(pv.v)})`));
-      Object.keys(cur.wr).forEach(w => { const p = pv.wr[w]; if (p) parts.push(T(`${w} ${U()} : ${cur.wr[w].r} reps (ton meilleur à ce poids : ${p.r}${cur.wr[w].t - p.t > REP_PR_DAYS * 864e5 ? ', mais pas fait depuis plus de 3 mois' : ''})`, `${w} ${U()}: ${cur.wr[w].r} reps (your best at this weight: ${p.r}${cur.wr[w].t - p.t > REP_PR_DAYS * 864e5 ? ', but not done in 3+ months' : ''})`)); else parts.push(T(`${w} ${U()} : jamais fait avant à ce poids`, `${w} ${U()}: never done at this weight before`)); });
+      Object.keys(cur.wr).forEach(w => { const p = bestAtW(pv, w, cur.wr[w].t); if (p != null) parts.push(T(`${w} ${U()} : ${cur.wr[w].r} reps (ton meilleur à ce poids, 3 derniers mois : ${p})`, `${w} ${U()}: ${cur.wr[w].r} reps (your best at this weight, last 3 months: ${p})`)); else if (pv.wr[w]) parts.push(T(`${w} ${U()} : pas fait à ce poids dans les 3 derniers mois`, `${w} ${U()}: not done at this weight in the last 3 months`)); else parts.push(T(`${w} ${U()} : jamais fait avant à ce poids`, `${w} ${U()}: never done at this weight before`)); });
       if (cur.b > 0) parts.push(T(`poids du corps : ${cur.b} reps (ton meilleur : ${pv.b || '—'})`, `bodyweight: ${cur.b} reps (your best: ${pv.b || '—'})`));
       why = parts.join(' · ');
     }
@@ -5371,8 +5373,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.37.5';
+const APP_VERSION = '9.38';
 const CHANGELOG = [
+  {v: '9.38', d: '2026-11-12', fr: ['🏆 Record de reps à la même charge : on compare maintenant à ton meilleur à ce poids dans les 3 derniers mois seulement (un vieux record ne te bloque plus).', '✏️ Dans l\'historique d\'un exercice, un bouton ✏️ sur chaque séance pour corriger une erreur de saisie.'], en: ['🏆 Rep record at the same weight: now compared to your best at that weight in the last 3 months only (an old record no longer blocks you).', '✏️ In an exercise\'s history, a ✏️ button on each workout to fix a typo.']},
   {v: '9.37.4', d: '2026-11-12', fr: ['🔍 Quête « Bats un record » : un bouton « Quoi battre? » montre, pour chaque exercice fait aujourd\'hui, ton résultat et le meilleur à dépasser.'], en: ['🔍 “Break a record” quest: a “What to beat?” button shows, for each exercise done today, your result and the best to beat.']},
   {v: '9.37.3', d: '2026-11-12', fr: ['🏆 Un record de reps à la même charge compte seulement si tu as fait cette charge dans les 3 derniers mois (pas de record « facile » en reprenant un vieux poids léger).'], en: ['🏆 A rep record at the same weight only counts if you did that weight in the last 3 months (no “easy” record by going back to an old light weight).']},
   {v: '9.37.2', d: '2026-11-12', fr: ['🏆 Nouveau type de record : plus de reps qu\'avant à la même charge (ex. 30 lb × 11 après 30 lb × 10). Il compte pour la quête « Bats un record », l\'XP et les médailles, comme les autres records.'], en: ['🏆 New record type: more reps than before at the same weight (e.g. 30 lb × 11 after 30 lb × 10). It counts for the “Break a record” quest, XP and medals like other records.']},
