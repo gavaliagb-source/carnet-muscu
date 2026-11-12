@@ -4804,11 +4804,11 @@ function prExplain() {
     const nx = prMerge(pv, cur), now2 = Date.now(), goals = [];
     Object.keys(cur.wr).sort((x, y) => +y - +x).slice(0, 2).forEach(w => { const bb = bestAtW(nx, w, now2); if (bb != null) goals.push(`${w} ${U()} × ${bb + 1}`); });
     if (cur.v > 0) { const W = Math.max(...Object.keys(cur.wr).map(Number)), r = Math.floor(30 * (nx.v / W - 1) + 1e-9) + 1, rr = bestAtW(nx, String(W), now2);
-      if (r > 0 && r <= 20 && (rr == null || r < rr + 1)) goals.push(`${W} ${U()} × ${r} (${T('meilleur 1RM', 'best 1RM')})`);
-      const W2 = W + (U() === 'kg' ? 2.5 : 5), r2 = Math.floor(30 * (nx.v / W2 - 1) + 1e-9) + 1; if (r2 > 0 && r2 <= 15) goals.push(`${W2} ${U()} × ${r2} (${T('meilleur 1RM', 'best 1RM')})`); }
+      if (r > 0 && r <= 20 && (rr == null || r < rr + 1)) goals.push(`${W} ${U()} × ${r}`);
+      const W2 = W + (U() === 'kg' ? 2.5 : 5), r2 = Math.floor(30 * (nx.v / W2 - 1) + 1e-9) + 1; if (r2 > 0 && r2 <= 15) goals.push(`${W2} ${U()} × ${r2}`); }
     if (cur.b > 0) goals.push(`${(nx.b || cur.b) + 1} reps`);
-    const goal = goals.length ? `<div class="small prgoal">🎯 ${T('Prochaine fois, un de ceux-ci = record', 'Next time, any of these = record')} : <b>${goals.map(esc).join(` ${T('ou', 'or')} `)}</b></div>` : '';
-    rows.push(`<div class="prx ${ok ? 'ok' : ''}"><b>${ok ? '🏆' : '·'} ${esc(e.name)}</b><div class="small muted">${esc(why)}</div>${goal}</div>`);
+    const goal = goals.length ? `<div class="small prgoal">🎯 ${T('Prochaine fois, fais', 'Next time, do')} <b>${esc(goals[0])}</b>${goals.length > 1 ? ` <span class="muted">(${T('ou', 'or')} ${goals.slice(1).map(esc).join(` ${T('ou', 'or')} `)})</span>` : ''}</div>` : '';
+    rows.push(`<div class="prx ${ok ? 'ok' : ''}"><b>${ok ? '🏆' : '·'} ${esc(e.name)}</b>${goal}<div class="small muted" style="margin-top:4px">${T('Détail', 'Details')} : ${esc(why)}</div></div>`);
   }));
   return rows.join('');
 }
@@ -5382,8 +5382,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.38.1';
+const APP_VERSION = '9.38.2';
 const CHANGELOG = [
+  {v: '9.38.2', d: '2026-11-12', fr: ['🎯 « Quoi battre? » plus simple : l\'objectif en vert d\'abord, le détail en dessous.'], en: ['🎯 Simpler “What to beat?”: the green goal first, details below.']},
   {v: '9.38.1', d: '2026-11-12', fr: ['🎯 « Quoi battre? » te dit maintenant exactement quoi faire la prochaine fois pour avoir un record (ex. 30 lb × 13).'], en: ['🎯 “What to beat?” now tells you exactly what to do next time to get a record (e.g. 30 lb × 13).']},
   {v: '9.38', d: '2026-11-12', fr: ['🏆 Record de reps à la même charge : on compare maintenant à ton meilleur à ce poids dans les 3 derniers mois seulement (un vieux record ne te bloque plus).', '✏️ Dans l\'historique d\'un exercice, un bouton ✏️ sur chaque séance pour corriger une erreur de saisie.'], en: ['🏆 Rep record at the same weight: now compared to your best at that weight in the last 3 months only (an old record no longer blocks you).', '✏️ In an exercise\'s history, a ✏️ button on each workout to fix a typo.']},
   {v: '9.37.4', d: '2026-11-12', fr: ['🔍 Quête « Bats un record » : un bouton « Quoi battre? » montre, pour chaque exercice fait aujourd\'hui, ton résultat et le meilleur à dépasser.'], en: ['🔍 “Break a record” quest: a “What to beat?” button shows, for each exercise done today, your result and the best to beat.']},
@@ -7580,7 +7581,7 @@ document.addEventListener('click', e => {
     case 'rtheme': { const t = REWARD_THEMES.find(x => x.id === b.dataset.id); if (!t) break; S.settings.theme = 'noir'; S.settings.accent = t.acc; S.settings.bg = t.bg; save(); applyTheme(); armRefresh(); toast(T(`🎨 Thème ${t.n[0]}`, `🎨 ${t.n[1]} theme`)); break; }
     case 'noop': toast(T('🔒 Monte de niveau pour le débloquer', '🔒 Level up to unlock it')); break;
     case 'pr-why': modal(`<div class="row between"><h2 style="margin:0">🏆 ${T('Tes records d\'aujourd\'hui', 'Today\'s records')}</h2><button class="btn sm" data-act="close">✕</button></div>
-      <p class="small muted">${T('Un record = un meilleur 1RM estimé, OU plus de reps qu\'avant à la même charge (fait dans les 3 derniers mois), OU plus de reps au poids du corps.', 'A record = a better estimated 1RM, OR more reps than before at the same weight (done in the last 3 months), OR more bodyweight reps.')}</p>${prExplain()}`); break;
+      <p class="small muted">${T('Pour réussir la quête : à ta prochaine séance, fais <b>ce qui est en vert</b> sur <b>un seul</b> exercice. C\'est tout!', 'To complete the quest: next workout, do <b>what is in green</b> on <b>just one</b> exercise. That\'s it!')}</p>${prExplain()}`); break;
     case 'hist-more': { const y = scrollY; histLim += 60; render(); window.scrollTo(0, y); break; }
     case 'ch-new': closeAll(); chNew(b.dataset.c); break;
     case 'ch-f': chDraft.f = b.dataset.c; chPaint(); break;
