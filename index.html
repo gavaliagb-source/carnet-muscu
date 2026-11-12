@@ -316,6 +316,14 @@ button.chip{cursor:pointer}
 .bn-royal{background:radial-gradient(circle at 85% 15%,#ffd54a66,transparent 50%),linear-gradient(150deg,#3b1a5e,#1a0d2b)}.bn-legend{background:linear-gradient(120deg,#b26bff55,#ffd54a44,#4cc9f055,#b26bff55);background-size:300% 300%;animation:bnMove 8s ease-in-out infinite}@keyframes bnMove{50%{background-position:100% 50%}}
 .pfhead.bn{margin:-4px -6px 16px}.bn .pfstats{gap:4px 12px}.frhero.bn{padding:14px 10px;margin-top:0!important}.emb{font-size:.85em;vertical-align:middle}
 @media (prefers-reduced-motion: reduce){.bn-legend{animation:none}}
+.gfold{padding:12px 14px}.gfh{display:flex;align-items:center;gap:8px;width:100%;background:none;border:0;color:inherit;padding:2px 0;cursor:pointer}.gfh .gfsub{margin-left:auto}.gfold.open .gfh{margin-bottom:12px}
+.armtabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -2px;padding:2px}.armtabs::-webkit-scrollbar{display:none}.armtabs button{flex:none;padding:7px 12px;border-radius:999px;border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);background:none;color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.5px;text-transform:uppercase}.armtabs button.on{background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent);border-color:var(--accent);box-shadow:0 0 10px color-mix(in srgb,var(--accent) 35%,transparent)}
+.armgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px 8px;padding-top:6px}
+.armit{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 4px 8px;border-radius:10px;border:1.5px solid color-mix(in srgb,var(--rr) 55%,transparent);background:linear-gradient(180deg,color-mix(in srgb,var(--rr) 14%,var(--card2)),var(--card2) 70%);color:var(--text);text-align:center;box-shadow:inset 0 0 12px color-mix(in srgb,var(--rr) 12%,transparent)}
+.armit.on{border-color:var(--rr);box-shadow:0 0 12px color-mix(in srgb,var(--rr) 55%,transparent),inset 0 0 14px color-mix(in srgb,var(--rr) 25%,transparent)}
+.armit.locked{filter:grayscale(.7);opacity:.55}.armprev{min-height:30px;display:flex;align-items:center;justify-content:center}.armn{font-size:13px;font-weight:700;line-height:1.2}.armr{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--rr)}.armit.locked .armr{text-transform:none;letter-spacing:0;font-weight:600;color:var(--muted)}
+.armeq{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:900;letter-spacing:1px;padding:2px 6px;border-radius:6px;background:var(--rr);color:#111}
+.armtt{font-weight:900;color:var(--rr);font-size:18px}.sw2.big{width:30px;height:30px}.rardot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
 .bossline{background:color-mix(in srgb,#fb7185 12%,transparent);border:1px solid color-mix(in srgb,#fb7185 55%,transparent);border-radius:10px;padding:7px 10px;margin:8px 0 2px;font-size:13px}.bossline.dead{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .bosskill{text-align:center;padding:6px 0}.bkskull{font-size:64px;line-height:1;color:#fb7185;animation:bkhit .9s ease-out both}.bkskull .ico{width:72px;height:72px}
 @keyframes bkhit{0%{transform:scale(.3) rotate(-20deg);opacity:0}35%{transform:scale(1.35) rotate(8deg);opacity:1}55%{transform:scale(.9) rotate(-6deg)}70%{transform:scale(1.05) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:.85;filter:grayscale(.6)}}
@@ -4689,7 +4697,7 @@ function questCard(compact) {
     ? `<div class="qrow"><span class="qic">${'🌙'}</span><div style="flex:1"><b>${T('Jour de repos', 'Rest day')}</b><div class="small muted">${T('La Guilde te laisse récupérer aujourd\'hui. Pas de quête.', 'The Guild lets you rest today. No quest.')}</div></div></div>`
     : `<div class="qrow"><span class="qic">${q.ic}</span><div style="flex:1;min-width:0"><b>${esc(q.text)}</b>${sysBar(q.cur, q.goal)}<div class="row between small muted"><span>${Math.min(q.cur, q.goal).toLocaleString(LOC())} / ${q.goal.toLocaleString(LOC())}</span><span>${q.done ? `<b style="color:var(--ok)">${T('ACCOMPLIE', 'COMPLETE')}</b>` : '+150 XP'}</span></div></div></div>`;
   const dh = `<div class="qrow" style="margin-top:12px"><span class="qic">${rkBadge(dg.rk, 'mrk lvrk')}</span><div style="flex:1;min-width:0"><b>${T('Donjon de rang', 'Rank')} ${dg.rk}${T('', ' dungeon')} · ${esc(dg.text)}</b>${sysBar(dg.cur, dg.goal)}<div class="row between small muted"><span>${dg.fmt(Math.min(dg.cur, dg.goal))} / ${dg.fmt(dg.goal)}</span><span>${dg.done ? `<b style="color:var(--ok)">${T('DONJON NETTOYÉ', 'DUNGEON CLEARED')}</b>` : `${dg.left} ${T('j restants', 'days left')} · +500 XP`}</span></div></div></div>`;
-  const open = compact === 'full' || S.settings.qOpen === true, bo = monthBoss();
+  const open = compact === 'full' || compact === 'inner' || S.settings.qOpen === true, bo = monthBoss();
   const pc = (a, b) => Math.min(100, Math.round(a / Math.max(1, b) * 100));
   const chip = (ic, label, pct, done) => `<span class="qchip ${done ? 'ok' : ''}"><span class="qci">${ic}</span><span>${label}</span><i><b style="width:${done ? 100 : pct}%"></b></i></span>`;
   const head = compact === 'full' ? `<div class="sysh" style="margin:0">[ ${T('QUÊTES', 'QUESTS')} ]</div>` : `<button class="qhead" data-act="q-tog" aria-expanded="${open}"><span class="sysh" style="margin:0">[ ${T('QUÊTES', 'QUESTS')} ]</span><span class="qchev">${open ? '▴' : '▾'}</span></button>`;
@@ -4698,6 +4706,7 @@ function questCard(compact) {
       ${chip(rkBadge(dg.rk, 'mrk lvrk'), T('Donjon', 'Dungeon'), pc(dg.cur, dg.goal), dg.done)}
       ${bo ? chip('☠️', 'Boss', pc(bo.cur - bo.from * .85, bo.target - bo.from * .85), bo.done) : ''}</div>
       ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −10 XP.', 'Yesterday\'s quest failed: −10 XP.')}</div>` : ''}</div>`;
+  if (compact === 'inner') return `${qh}${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −10 XP. Ne rate pas celle d\'aujourd\'hui!', 'Yesterday\'s quest failed: −10 XP. Don\'t miss today\'s!')}</div>` : ''}${dh}${bossRow()}`;
   return `<div class="card sysw qcard">${head}<div style="height:10px"></div>${qh}
     ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −10 XP. Ne rate pas celle d\'aujourd\'hui!', 'Yesterday\'s quest failed: −10 XP. Don\'t miss today\'s!')}</div>` : ''}
     ${dh}${bossRow()}</div>`;
@@ -5251,8 +5260,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.31';
+const APP_VERSION = '9.32';
 const CHANGELOG = [
+  {v: '9.32', d: '2026-11-12', fr: ['⚔️ Guilde plus compacte : les Quêtes et l\'Armurerie (toutes les récompenses) se replient. Touche pour ouvrir, l\'appli se souvient de ton choix.', '🛡️ L\'Armurerie, façon jeu : onglets (Titres, Cadres, Auras, Victoires, Bannières, Emblèmes, Thèmes), objets avec une rareté (Commun, Rare, Épique, Légendaire) et l\'objet équipé marqué « ÉQUIPÉ ».'], en: ['⚔️ More compact Guild: Quests and the Armory (all rewards) fold up. Tap to open, the app remembers your choice.', '🛡️ The Armory, game style: tabs (Titles, Frames, Auras, Victories, Banners, Emblems, Themes), items with a rarity (Common, Rare, Epic, Legendary) and the equipped item marked “EQUIPPED”.']},
   {v: '9.31', d: '2026-11-12', fr: ['✨ Nouveaux cosmétiques à débloquer dans la Guilde : effets en cochant une série (Étincelles, Éclair, Flammes, Poussière d\'or, Cosmique), célébrations de fin de séance (Feux d\'artifice, Pluie d\'étoiles, Brasier, Pluie d\'or), bannières de profil (Aube, Nuit étoilée, Forge, Antre du dragon, Tempête, Trône, Légende) et emblèmes à côté de ton nom. Tes amis voient ta bannière et ton emblème.'], en: ['✨ New unlockable cosmetics in the Guild: set check effects (Sparks, Lightning, Flames, Gold dust, Cosmic), workout celebrations (Fireworks, Star shower, Blaze, Golden rain), profile banners (Dawn, Starry night, Forge, Dragon\'s lair, Storm, Throne, Legend) and emblems next to your name. Friends see your banner and emblem.']},
   {v: '9.30', d: '2026-11-12', fr: ['🏷️ Titres : tes médailles débloquent des titres (Tueur de boss, Légende du squat, Lève-tôt…). Choisis-en un dans la Guilde : il s\'affiche après ton rang (ex. « Aventurier de rang B · Tueur de boss »), aussi chez tes amis.', '🖼️ Cadres de photo à débloquer : Lueur (niv. 25), Arc-en-ciel (50), Flammes (75), Légendaire (100).', '🎨 Thèmes de la Guilde à débloquer : Bronze (niv. 20), Argent (30), Or royal (45), Rubis (60), Aurore (80), Légende (100).', '📲 Raccourci de l\'icône : « Quête du jour » et « Statut » ouvrent maintenant la Guilde.'], en: ['🏷️ Titles: your medals unlock titles (Boss slayer, Squat legend, Early bird…). Pick one in the Guild: it shows after your rank, to your friends too.', '🖼️ Unlockable photo frames: Glow (lv. 25), Rainbow (50), Flames (75), Legendary (100).', '🎨 Unlockable Guild themes: Bronze (lv. 20), Silver (30), Royal gold (45), Ruby (60), Aurora (80), Legend (100).', '📲 Icon shortcuts: “Daily quest” and “Status” now open the Guild.']},
   {v: '9.29.1', d: '2026-11-12', fr: ['🎨 Le thème bleu s\'appelle maintenant « Bleu électrique » (mêmes couleurs).'], en: ['🎨 The blue theme is now called “Electric blue” (same colors).']},
@@ -6682,32 +6692,63 @@ function myCos(kind) { if (!GAME()) return ''; const v = (S.settings.cos || {})[
 const BANNERS = ['dawn', 'night', 'forge', 'dragon', 'storm', 'royal', 'legend'];
 const bannerCls = b => b && BANNERS.includes(b) ? ' bn bn-' + b : '';
 const emblemOf = e => e && COS.emblem.some(x => x.id === e && x.id) ? `<span class="emb">${e}</span>` : '';
-function cosSection(kind, title, prev) {
-  const cur = (S.settings.cos || {})[kind] || '';
-  return `<b style="display:block;margin-top:14px">${title}</b><div class="cosgrid">${COS[kind].map(x => { const q = cosReq(x.r);
-    return `<button class="cospick ${cur === x.id ? 'on' : ''} ${q.ok ? '' : 'locked'}" data-act="${q.ok ? 'cos-set' : 'cos-how'}" data-k="${kind}" data-id="${x.id}" data-h="${esc(q.why)}">${prev(x)}<span class="small">${esc(T(x.n[0], x.n[1]))}</span>${q.ok ? '' : `<span class="small muted">🔒 ${esc(q.why)}</span>`}</button>`; }).join('')}</div>`;
+/* ----- L'Armurerie : toutes les récompenses, rangées par onglets, avec une rareté façon jeu ----- */
+const RAR = [['Commun', 'Common', '#9aa3ad'], ['Rare', 'Rare', '#38bdf8'], ['Épique', 'Epic', '#a78bfa'], ['Légendaire', 'Legendary', '#f5c542']];
+const RKR = {E: 0, D: 0, C: 1, B: 2, A: 3, S: 3};
+function rarOf(r) { // rareté selon la difficulté à débloquer
+  if (r.l) return r.l <= 20 ? 0 : r.l <= 45 ? 1 : r.l <= 75 ? 2 : 3;
+  const me = medalsEarned(), d = me.defs.filter(x => x.g === r.m[0]).sort((a, b) => a.v - b.v)[r.m[1]];
+  return d ? RKR[d.rk] ?? 1 : 1;
 }
-function cosCards() {
-  if (!GAME()) return '';
-  return cosSection('fx', T('Effet en cochant une série', 'Set check effect'), x => `<span class="cosfx fxv-${x.id || 'none'}"></span>`) +
-    `<button class="btn sm" style="margin-top:6px" data-act="cos-try" data-k="fx">▶ ${T('Essayer', 'Try it')}</button>` +
-    cosSection('cele', T('Célébration de fin de séance', 'Workout celebration'), x => `<span class="cosfx cel-${x.id || 'none'}"></span>`) +
-    `<button class="btn sm" style="margin-top:6px" data-act="cos-try" data-k="cele">▶ ${T('Essayer', 'Try it')}</button>` +
-    cosSection('banner', T('Bannière de profil', 'Profile banner'), x => `<span class="cosbn${bannerCls(x.id)}"></span>`) +
-    cosSection('emblem', T('Emblème à côté de ton nom', 'Emblem next to your name'), x => `<span class="cosem">${x.id || '—'}</span>`);
+let armTab = 'title';
+function armItem({on, ok, why, rar, prev, name, act, k, id}) {
+  const R = RAR[rar];
+  return `<button class="armit ${on ? 'on' : ''} ${ok ? '' : 'locked'}" style="--rr:${R[2]}" data-act="${ok ? act : 'cos-how'}" data-k="${k || ''}" data-id="${esc(id)}" data-h="${esc(why)}">
+    <span class="armprev">${prev}</span><span class="armn">${esc(name)}</span><span class="armr">${ok ? T(R[0], R[1]) : '🔒 ' + esc(why)}</span>${on ? `<span class="armeq">${T('ÉQUIPÉ', 'EQUIPPED')}</span>` : ''}</button>`;
+}
+const titleDef = (me, g, i) => g === 'n1' ? me.defs.find(x => x.id === 'n1') : me.defs.filter(x => x.g === g).sort((a, b) => a.v - b.v)[i];
+function armoryBody() {
+  const lv = myLvl(), me = medalsEarned(), cos = S.settings.cos || {};
+  const tabs = [['title', T('Titres', 'Titles')], ['frame', T('Cadres', 'Frames')], ['fx', T('Auras', 'Auras')], ['cele', T('Victoires', 'Victories')], ['banner', T('Bannières', 'Banners')], ['emblem', T('Emblèmes', 'Emblems')], ['theme', T('Thèmes', 'Themes')]];
+  let items = [], hint = '';
+  if (armTab === 'title') {
+    const cur = S.settings.title || '';
+    hint = T('Ton titre s\'affiche après ton rang, sur ton profil et chez tes amis.', 'Your title shows after your rank, on your profile and to your friends.');
+    items = [armItem({on: !cur, ok: true, why: '', rar: 0, prev: '—', name: T('Aucun', 'None'), act: 'title-set', id: ''})].concat(TITLES.map(([g, i, t]) => {
+      const d = titleDef(me, g, i); if (!d) return '';
+      return {ok: !!me.got[d.id], rar: RKR[d.rk] ?? 1, h: armItem({on: cur === g + i, ok: !!me.got[d.id], why: d.t, rar: RKR[d.rk] ?? 1, prev: `<span class="armtt">« »</span>`, name: T(t[0], t[1]), act: 'title-set', id: g + i})}; }).filter(Boolean).sort((a, b) => b.ok - a.ok || a.rar - b.rar).map(x => x.h));
+  } else if (armTab === 'frame') {
+    hint = T('Le cadre autour de ta photo. Tes amis le voient.', 'The frame around your photo. Your friends see it.');
+    items = FRAMES.map(f => armItem({on: (S.settings.frame || '') === f.id, ok: lv >= f.l, why: `${T('Niv.', 'Lv.')} ${f.l}`, rar: rarOf({l: f.l}), prev: `<span class="frav sm rkf${f.id ? ' frm-' + f.id : ''}" style="--rkc:${hunter().col}">${esc(((S.settings.name || 'M').trim()[0] || 'M').toUpperCase())}</span>`, name: T(f.n[0], f.n[1]), act: 'frame-set', id: f.id}));
+  } else if (armTab === 'theme') {
+    hint = T('Les couleurs de toute l\'appli.', 'The colors of the whole app.');
+    items = REWARD_THEMES.map(t => armItem({on: (S.settings.accent || '').toLowerCase() === t.acc && (S.settings.bg || '').toLowerCase() === t.bg, ok: lv >= t.l, why: `${T('Niv.', 'Lv.')} ${t.l}`, rar: rarOf({l: t.l}), prev: `<span class="sw2 big" style="background:linear-gradient(135deg,${t.bg} 50%,${t.acc} 50%)"></span>`, name: T(t.n[0], t.n[1]), act: 'rtheme', id: t.id}));
+  } else {
+    const prev = {fx: x => `<span class="cosfx fxv-${x.id || 'none'}"></span>`, cele: x => `<span class="cosfx cel-${x.id || 'none'}"></span>`, banner: x => `<span class="cosbn${bannerCls(x.id)}"></span>`, emblem: x => `<span class="cosem">${x.id || '—'}</span>`}[armTab];
+    hint = {fx: T('L\'effet quand tu coches une série.', 'The effect when you check a set.'), cele: T('La fête à la fin de ta séance.', 'The party at the end of your workout.'), banner: T('Le fond derrière ton nom sur ton profil. Tes amis le voient.', 'The background behind your name on your profile. Friends see it.'), emblem: T('Le symbole à côté de ton nom. Tes amis le voient.', 'The symbol next to your name. Friends see it.')}[armTab];
+    items = COS[armTab].map(x => { const q = cosReq(x.r); return armItem({on: (cos[armTab] || '') === x.id, ok: q.ok, why: q.why, rar: x.id ? rarOf(x.r) : 0, prev: prev(x), name: T(x.n[0], x.n[1]), act: 'cos-set', k: armTab, id: x.id}); });
+  }
+  const tr = ['fx', 'cele'].includes(armTab) ? `<button class="btn sm" style="margin-top:10px" data-act="cos-try" data-k="${armTab}">▶ ${T('Essayer', 'Try it')}</button>` : '';
+  return `<div class="armtabs">${tabs.map(([k, l]) => `<button class="${armTab === k ? 'on' : ''}" data-act="arm-tab" data-t="${k}">${l}</button>`).join('')}</div>
+    <p class="small muted" style="margin:8px 0">${hint}</p><div class="armgrid">${items.join('')}</div>${tr}
+    <div class="row small muted" style="gap:10px;margin-top:10px;flex-wrap:wrap">${RAR.map(r => `<span><i class="rardot" style="background:${r[2]}"></i>${T(r[0], r[1])}</span>`).join('')}</div>`;
+}
+function armoryCount() {
+  const lv = myLvl(), me = medalsEarned(); let ok = 0, tot = 0;
+  TITLES.forEach(([g, i]) => { const d = titleDef(me, g, i); if (d) { tot++; if (me.got[d.id]) ok++; } });
+  FRAMES.concat(REWARD_THEMES).forEach(f => { if (!f.id) return; tot++; if (lv >= f.l) ok++; });
+  Object.values(COS).forEach(L => L.forEach(x => { if (!x.id) return; tot++; if (cosReq(x.r).ok) ok++; }));
+  return [ok, tot];
+}
+/* Section repliable façon fenêtre de jeu (l'état ouvert/fermé est retenu) */
+function gFold(id, title, sub, body) {
+  const open = (S.settings.gOpen || {})[id];
+  return `<div class="card sysw gfold ${open ? 'open' : ''}"><button class="gfh" data-act="g-fold" data-id="${id}" aria-expanded="${!!open}"><span class="sysh" style="margin:0">[ ${title} ]</span><span class="gfsub small muted">${sub}</span><span class="qchev">${open ? '▴' : '▾'}</span></button>${open ? `<div class="gfb">${body()}</div>` : ''}</div>`;
 }
 function rewardsCard() {
   if (!GAME()) return '';
-  const lv = myLvl(), tl = titleList(), okT = tl.filter(t => t.ok), cur = S.settings.title || '';
-  const lock = l => `<span class="small muted">🔒 ${T('Niv.', 'Lv.')} ${l}</span>`;
-  return `<div class="card"><div class="sysh" style="margin:0 0 8px">[ ${T('RÉCOMPENSES', 'REWARDS')} ]</div>
-    <b>${T('Mon titre', 'My title')}</b> <span class="small muted">${okT.length} / ${tl.length}</span>
-    <p class="small muted" style="margin:2px 0 6px">${T('S\'affiche après ton rang, sur ton profil et chez tes amis.', 'Shown after your rank, on your profile and to your friends.')}</p>
-    <div class="chips">${`<button class="chip ${!cur ? 'on' : ''}" data-act="title-set" data-id="">${T('Aucun', 'None')}</button>`}${tl.map(t => t.ok ? `<button class="chip ${cur === t.id ? 'on' : ''}" data-act="title-set" data-id="${t.id}">${esc(t.t)}</button>` : `<button class="chip locked" data-act="title-how" data-h="${esc(t.how)}" data-t="${esc(t.t)}">🔒 ${esc(t.t)}</button>`).join('')}</div>
-    <b style="display:block;margin-top:14px">${T('Cadre de photo', 'Photo frame')}</b>
-    <div class="frgrid">${FRAMES.map(f => { const ok = lv >= f.l, on = (S.settings.frame || '') === f.id; return `<button class="frpick ${on ? 'on' : ''} ${ok ? '' : 'locked'}" data-act="${ok ? 'frame-set' : 'noop'}" data-id="${f.id}"><span class="frav sm rkf${f.id ? ' frm-' + f.id : ''}" style="--rkc:${hunter().col}">${esc(((S.settings.name || 'M').trim()[0] || 'M').toUpperCase())}</span><span class="small">${esc(T(f.n[0], f.n[1]))}</span>${ok ? '' : lock(f.l)}</button>`; }).join('')}</div>
-    <b style="display:block;margin-top:14px">${T('Thèmes de la Guilde', 'Guild themes')}</b>
-    <div class="grid2" style="margin-top:6px">${REWARD_THEMES.map(t => { const ok = lv >= t.l, on = (S.settings.accent || '').toLowerCase() === t.acc && (S.settings.bg || '').toLowerCase() === t.bg; return `<button class="btn sm ${on ? 'on' : ''}" style="text-align:left;${ok ? '' : 'opacity:.55'}" data-act="${ok ? 'rtheme' : 'noop'}" data-id="${t.id}"><span class="sw2" style="background:linear-gradient(135deg,${t.bg} 50%,${t.acc} 50%)"></span> ${esc(T(t.n[0], t.n[1]))} ${ok ? '' : lock(t.l)}</button>`; }).join('')}</div>${cosCards()}</div>`;
+  const [ok, tot] = armoryCount();
+  return gFold('arm', T('ARMURERIE', 'ARMORY'), `${ok} / ${tot} ${T('débloqués', 'unlocked')}`, armoryBody);
 }
 /* ===================== Onglet Guilde (mode jeu) : tout ce qui touche au jeu au même endroit ===================== */
 function statusCard() {
@@ -6728,7 +6769,8 @@ function vGuild() {
   if (!S.history.length) return `<div class="empty">${T('Ta première séance t\'inscrit à la Guilde : niveau, rang, quêtes et boss commencent ici.', 'Your first workout signs you up to the Guild: level, rank, quests and bosses start here.')}<br><button class="btn primary sm" data-tab="train" style="margin-top:12px">${T('Démarrer une séance', 'Start a workout')}</button></div>`;
   syncSystem(); evCheck(); setTimeout(evAnnounce, 0);
   const fr = FRS().list.length;
-  return `${statusCard()}${eventCard()}${questCard('full')}
+  const q = dailyQuest(), dg = weekDungeon(), bo = monthBoss(), nd = (q.rest || q.done ? 1 : 0) + (dg.done ? 1 : 0) + (bo && bo.done ? 1 : 0);
+  return `${statusCard()}${eventCard()}${gFold('quests', T('QUÊTES', 'QUESTS'), `${nd} / ${bo ? 3 : 2} ${T('accomplies', 'complete')}`, () => questCard('inner'))}
     ${fr ? `${raidCard()}${seasonCard()}` : `<div class="card"><b>${IC('users', '👥')} ${T('Raids et saisons', 'Raids and seasons')}</b><p class="small muted" style="margin:4px 0 8px">${T('Ajoute des amis pour combattre des boss de raid ensemble et te mesurer à eux chaque mois.', 'Add friends to fight raid bosses together and compete every month.')}</p><button class="btn sm" data-act="go" data-v="friends">${T('Mes amis', 'My friends')}</button></div>`}
     ${rewardsCard()}
     <div class="grid2" style="margin-top:4px"><button class="btn tile" data-act="go" data-v="shadows">${IC('swords', '⚔️')} ${T('Arsenal', 'Arsenal')}</button><button class="btn tile" data-act="go" data-v="murank">${IC('target', '🎯')} ${T('Rangs par muscle', 'Muscle ranks')}</button><button class="btn tile" data-act="go" data-v="medals">${IC('medal', '🏅')} ${T('Médailles', 'Medals')}</button><button class="btn tile" data-act="go" data-v="friends">${IC('users', '👥')} ${T('Amis et défis', 'Friends & challenges')}</button></div>`;
@@ -7336,6 +7378,8 @@ document.addEventListener('click', e => {
     case 'start-express': startExpress(b.dataset.rid); break;
     case 'title-set': S.settings.title = b.dataset.id; save(); render(); if (frOn()) frQueue(false); toast(b.dataset.id ? T(`🏷️ Titre : ${titleOf(b.dataset.id)}`, `🏷️ Title: ${titleOf(b.dataset.id)}`) : T('Titre retiré', 'Title removed')); break;
     case 'title-how': toast(T(`🔒 « ${b.dataset.t} » : débloque la médaille « ${b.dataset.h} »`, `🔒 “${b.dataset.t}”: unlock the medal “${b.dataset.h}”`)); break;
+    case 'g-fold': { S.settings.gOpen = S.settings.gOpen || {}; S.settings.gOpen[b.dataset.id] = !S.settings.gOpen[b.dataset.id]; save(); render(); break; }
+    case 'arm-tab': armTab = b.dataset.t; render(); break;
     case 'cos-set': S.settings.cos = S.settings.cos || {}; S.settings.cos[b.dataset.k] = b.dataset.id; save(); render(); if (frOn() && ['banner', 'emblem'].includes(b.dataset.k)) frQueue(false); if (b.dataset.k === 'fx') { const x = document.querySelector(`.cospick.on[data-k="fx"]`); if (x) setFx(x, false); } if (b.dataset.k === 'cele') confetti(120); break;
     case 'cos-how': toast(T(`🔒 Se débloque avec : ${b.dataset.h}`, `🔒 Unlocks with: ${b.dataset.h}`)); break;
     case 'cos-try': if (b.dataset.k === 'fx') setFx(b, false); else confetti(120); break;
