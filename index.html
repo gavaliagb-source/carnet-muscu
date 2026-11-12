@@ -302,6 +302,20 @@ button.chip{cursor:pointer}
 .frgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:6px}.frpick{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--text)}.frpick.on{border-color:var(--accent)}.frpick.locked{opacity:.55}
 .chip.locked{opacity:.5}.pftitle{color:var(--rc,var(--accent));font-weight:700;margin-top:4px}
 @media (prefers-reduced-motion: reduce){.frm-aurora,.frm-flame,.frm-legend,.frm-glow{animation:none}}
+.fxp{position:fixed;z-index:9999;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;pointer-events:none;animation:fxP .7s cubic-bezier(.2,.7,.3,1) forwards;box-shadow:0 0 6px currentColor}.fxp.star{clip-path:polygon(50% 0,61% 38%,100% 50%,61% 62%,50% 100%,39% 62%,0 50%,39% 38%);width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:0}
+@keyframes fxP{0%{transform:translate(0,0) scale(1.2);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+.fxring{position:fixed;z-index:9998;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;pointer-events:none;border:2px solid #fff176;animation:fxR .5s ease-out forwards}.fxring.fx-cosmic{border-color:#b388ff;box-shadow:0 0 14px #4cc9f0}
+@keyframes fxR{to{transform:scale(4.5);opacity:0}}
+.cosgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:6px}.cospick{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--text);text-align:center}.cospick.on{border-color:var(--accent)}.cospick.locked{opacity:.5}
+.cosfx{width:28px;height:28px;border-radius:50%;background:radial-gradient(circle,#fff 0 3px,transparent 4px)}.fxv-spark{background:radial-gradient(circle,#fff 0 3px,transparent 4px),conic-gradient(from 0deg,#fff3c4 0 8%,transparent 0 25%,#fff3c4 0 33%,transparent 0 50%,#fff3c4 0 58%,transparent 0 75%,#fff3c4 0 83%,transparent 0)}.fxv-bolt{background:radial-gradient(circle,#fff176 0 5px,transparent 6px),radial-gradient(circle,transparent 9px,#4fc3f7 10px 11px,transparent 12px)}.fxv-fire{background:radial-gradient(circle at 50% 70%,#ffd54f 0 4px,#ff9100 5px 8px,#ff3d00 9px 11px,transparent 12px)}.fxv-gold{background:radial-gradient(circle,#ffd54a 0 3px,transparent 4px),radial-gradient(circle at 20% 30%,#ffb300 0 2px,transparent 3px),radial-gradient(circle at 80% 70%,#fff3c4 0 2px,transparent 3px)}.fxv-cosmic{background:radial-gradient(circle,#fff 0 2px,transparent 3px),conic-gradient(#b388ff,#4cc9f0,#ff6fae,#b388ff);border-radius:50%}
+.cel-none{background:linear-gradient(45deg,var(--accent) 25%,#ff6fae 25% 50%,#7dd3fc 50% 75%,#ffc857 75%)}.cel-fireworks{background:radial-gradient(circle,#fff 0 2px,transparent 3px),repeating-conic-gradient(#ff5a5f 0 10deg,transparent 0 30deg)}.cel-stars{background:radial-gradient(circle at 30% 30%,#fff 0 2px,transparent 3px),radial-gradient(circle at 70% 60%,#fff3c4 0 3px,transparent 4px),#1a2540}.cel-fire{background:linear-gradient(0deg,#ff3d00,#ffd54f)}.cel-gold{background:linear-gradient(180deg,#fff3c4,#ffb300)}
+.cosbn{width:72px;height:28px;border-radius:8px;background:var(--card);border:1px solid var(--line)}.cosem{font-size:22px;line-height:28px;height:28px}
+.bn{border-radius:16px;padding:12px;position:relative;overflow:hidden;background-size:200% 200%}
+.bn-dawn{background:linear-gradient(135deg,#ff8a6555,#ffd36e40 60%,#8ec5ff30)}.bn-night{background:radial-gradient(circle at 15% 30%,#fff 0 1px,transparent 2px),radial-gradient(circle at 70% 20%,#fff 0 1px,transparent 2px),radial-gradient(circle at 45% 75%,#fff 0 1px,transparent 2px),radial-gradient(circle at 88% 65%,#fff 0 1px,transparent 2px),linear-gradient(160deg,#0b1a3a,#2a1550)}
+.bn-forge{background:radial-gradient(circle at 80% 120%,#ff6f00aa,transparent 60%),linear-gradient(160deg,#2a1208,#120a06)}.bn-dragon{background:repeating-radial-gradient(circle at 0 100%,#5a0f14 0 10px,#3a080c 10px 20px),linear-gradient(#0000,#0000)}.bn-storm{background:repeating-linear-gradient(115deg,#ffffff10 0 2px,transparent 2px 14px),linear-gradient(160deg,#16243d,#0b1220)}
+.bn-royal{background:radial-gradient(circle at 85% 15%,#ffd54a66,transparent 50%),linear-gradient(150deg,#3b1a5e,#1a0d2b)}.bn-legend{background:linear-gradient(120deg,#b26bff55,#ffd54a44,#4cc9f055,#b26bff55);background-size:300% 300%;animation:bnMove 8s ease-in-out infinite}@keyframes bnMove{50%{background-position:100% 50%}}
+.pfhead.bn{margin:-4px -6px 16px}.bn .pfstats{gap:4px 12px}.frhero.bn{padding:14px 10px;margin-top:0!important}.emb{font-size:.85em;vertical-align:middle}
+@media (prefers-reduced-motion: reduce){.bn-legend{animation:none}}
 .bossline{background:color-mix(in srgb,#fb7185 12%,transparent);border:1px solid color-mix(in srgb,#fb7185 55%,transparent);border-radius:10px;padding:7px 10px;margin:8px 0 2px;font-size:13px}.bossline.dead{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .bosskill{text-align:center;padding:6px 0}.bkskull{font-size:64px;line-height:1;color:#fb7185;animation:bkhit .9s ease-out both}.bkskull .ico{width:72px;height:72px}
 @keyframes bkhit{0%{transform:scale(.3) rotate(-20deg);opacity:0}35%{transform:scale(1.35) rotate(8deg);opacity:1}55%{transform:scale(.9) rotate(-6deg)}70%{transform:scale(1.05) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:.85;filter:grayscale(.6)}}
@@ -1534,19 +1548,42 @@ function confetti(n = 90) {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const c = document.createElement('canvas'); c.className = 'confetti'; c.width = innerWidth * devicePixelRatio; c.height = innerHeight * devicePixelRatio; document.body.appendChild(c);
   const g = c.getContext('2d'), dpr = devicePixelRatio, acc = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c6f135';
-  const cols = [acc, '#ffffff', '#ffc857', '#7dd3fc', '#ff6fae'];
-  const ps = Array.from({length: n}, () => ({x: innerWidth / 2 + (Math.random() - 0.5) * 80, y: innerHeight * 0.35, vx: (Math.random() - 0.5) * 11, vy: -Math.random() * 11 - 4, r: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.4, s: 5 + Math.random() * 5, c: cols[Math.random() * cols.length | 0]}));
-  const t0 = performance.now();
+  const st = typeof myCos === 'function' ? myCos('cele') : '';
+  const cols = st === 'gold' ? ['#ffd54a', '#ffb300', '#fff3c4', '#e6a700'] : st === 'stars' ? ['#ffffff', '#fff3c4', '#b3e5ff', acc] : st === 'fire' ? ['#ff3d00', '#ff9100', '#ffd54f', '#ff6f00'] : [acc, '#ffffff', '#ffc857', '#7dd3fc', '#ff6fae'];
+  const mk = (x, y, radial) => { const a = Math.random() * 6.28, sp = 3 + Math.random() * 7; return {x, y, vx: radial ? Math.cos(a) * sp : (Math.random() - 0.5) * 11, vy: radial ? Math.sin(a) * sp : -Math.random() * 11 - 4, r: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.4, s: 5 + Math.random() * 5, c: cols[Math.random() * cols.length | 0], d: 0}; };
+  let ps = [];
+  if (st === 'fireworks') [0, 1, 2].forEach(i => { const x = innerWidth * (0.25 + 0.25 * i), y = innerHeight * (0.22 + 0.1 * (i % 2)); for (let j = 0; j < n / 3; j++) { const p = mk(x, y, true); p.d = i * 18; ps.push(p); } });
+  else if (st === 'gold') ps = Array.from({length: n}, () => ({...mk(Math.random() * innerWidth, -20 - Math.random() * innerHeight * 0.4, false), vx: (Math.random() - 0.5) * 2, vy: 2 + Math.random() * 3}));
+  else ps = Array.from({length: n}, () => mk(innerWidth / 2 + (Math.random() - 0.5) * 80, innerHeight * 0.35, false));
+  const t0 = performance.now(), dur = st === 'gold' ? 2200 : st === 'fireworks' ? 2000 : 1600, grav = st === 'gold' ? 0.05 : st === 'fireworks' ? 0.12 : 0.32;
+  let fr = 0;
   (function f(t) {
-    const k = (t - t0) / 1600; g.clearRect(0, 0, c.width, c.height);
-    ps.forEach(p => { p.vy += 0.32; p.x += p.vx; p.y += p.vy; p.r += p.vr; g.save(); g.globalAlpha = Math.max(0, 1 - k); g.translate(p.x * dpr, p.y * dpr); g.rotate(p.r); g.fillStyle = p.c; g.fillRect(-p.s * dpr / 2, -p.s * dpr / 4, p.s * dpr, p.s * dpr / 2); g.restore(); });
+    const k = (t - t0) / dur; g.clearRect(0, 0, c.width, c.height); fr++;
+    ps.forEach(p => { if (fr < p.d) return; p.vy += grav; p.x += p.vx; p.y += p.vy; p.r += p.vr; if (st === 'fireworks') { p.vx *= .97; p.vy *= .97; } g.save(); g.globalAlpha = Math.max(0, 1 - k); g.translate(p.x * dpr, p.y * dpr); g.rotate(p.r); g.fillStyle = p.c;
+      if (st === 'stars') { g.beginPath(); for (let i = 0; i < 10; i++) { const rr = (i % 2 ? .45 : 1) * p.s * dpr * .7, a = i * Math.PI / 5; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } g.fill(); }
+      else if (st === 'fireworks' || st === 'fire') { g.beginPath(); g.arc(0, 0, p.s * dpr * .3, 0, 7); g.fill(); }
+      else g.fillRect(-p.s * dpr / 2, -p.s * dpr / 4, p.s * dpr, p.s * dpr / 2); g.restore(); });
     if (k < 1) requestAnimationFrame(f); else c.remove();
   })(t0);
 }
 /* Petit texte qui s'envole quand on coche une série : +XP (mode jeu) ou le volume (classique) */
+/* Effet visuel au moment de cocher une série (cosmétique à débloquer dans la Guilde) */
+function setFx(b, pr) {
+  const fx = typeof myCos === 'function' ? myCos('fx') : ''; if (!fx && !pr) return;
+  const P = {spark: ['#ffffff', '#fff3c4', 'var(--accent)'], bolt: ['#fff176', '#ffffff', '#4fc3f7'], fire: ['#ff3d00', '#ff9100', '#ffd54f'], gold: ['#ffd54a', '#ffb300', '#fff3c4'], cosmic: ['#b388ff', '#4cc9f0', '#ff6fae', '#ffffff']}[fx] || ['#f5c542', '#ffffff'];
+  const r = b.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, n = fx === 'cosmic' ? 16 : 11;
+  if (fx === 'bolt' || fx === 'cosmic') { const ring = document.createElement('div'); ring.className = 'fxring fx-' + fx; ring.style.left = cx + 'px'; ring.style.top = cy + 'px'; document.body.appendChild(ring); setTimeout(() => ring.remove(), 600); }
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('i'), a = (i / n) * 6.28 + Math.random() * .4, dist = 22 + Math.random() * 26, up = fx === 'fire';
+    d.className = 'fxp' + (fx === 'gold' || fx === 'cosmic' ? ' star' : '');
+    d.style.cssText = `left:${cx}px;top:${cy}px;background:${P[i % P.length]};color:${P[i % P.length]};--dx:${(Math.cos(a) * dist * (up ? .5 : 1)).toFixed(1)}px;--dy:${(up ? -(20 + Math.random() * 40) : Math.sin(a) * dist).toFixed(1)}px;animation-duration:${(fx === 'fire' ? .8 : .6) + Math.random() * .25}s`;
+    document.body.appendChild(d); setTimeout(() => d.remove(), 1100);
+  }
+}
 function setFloat(ei, si, e, s) {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const b = document.querySelector(`[data-act="done"][data-e="${ei}"][data-s="${si}"]`); if (!b) return;
+  setFx(b, !!s.pr);
   let txt = '', gold = !!s.pr;
   if (GAME()) { if (s.t === 'W') return; txt = s.pr ? '+45 XP 🏆' : '+5 XP'; }
   else { if (s.pr) txt = T('Record! 🏆', 'Record! 🏆'); else { if (s.t === 'W' || s.u === 's' || s.u === 'c' || !(+s.w > 0) || !(+s.r > 0)) return; txt = `+${Math.round(+s.w * +s.r).toLocaleString(LOC())} ${U()}`; } }
@@ -3668,9 +3705,9 @@ function vProfile() {
   const n0 = new Date();
   const month = S.history.filter(h => { const d = new Date(h.date); return d.getMonth() === n0.getMonth() && d.getFullYear() === n0.getFullYear(); }).length;
   const recent = S.history.slice().reverse().slice(0, 3);
-  return `<div class="row" style="gap:14px;margin-bottom:16px"><button class="avatar${S.history.length ? rkFrame(GAME() ? hunter().rk : '', myFrame()) : ''}" data-act="avatar" aria-label="${T('Photo de profil', 'Profile photo')}">${S.settings.avatar ? `<img src="${S.settings.avatar}" alt="">` : esc((nm.trim()[0] || '?').toUpperCase())}<span class="cam">📷</span></button>
-      <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0">${esc(nm)}</h2>${(() => { if (!S.history.length || !GAME()) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${hu.lvl >= 10 ? clsIc(hu.cls) + ' ' + esc(clsName(hu.cls)) : esc(hu.title)}</button><div class="small pftitle" style="--rc:${hu.col}">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div>`; })()}
-      <div class="pfstats"><div><span class="muted small">Entraînements</span><br><b>${S.history.length}</b></div><div><span class="muted small">${T('Série', 'Streak')}</span><br><b>🔥 ${streakWeeks()} sem.</b></div><div><span class="muted small">Ce mois</span><br><b>${month}</b></div></div></div></div>
+  return `<div class="row pfhead${bannerCls(myCos('banner'))}" style="gap:14px;margin-bottom:16px"><button class="avatar${S.history.length ? rkFrame(GAME() ? hunter().rk : '', myFrame()) : ''}" data-act="avatar" aria-label="${T('Photo de profil', 'Profile photo')}">${S.settings.avatar ? `<img src="${S.settings.avatar}" alt="">` : esc((nm.trim()[0] || '?').toUpperCase())}<span class="cam">📷</span></button>
+      <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0">${esc(nm)} ${emblemOf(myCos('emblem'))}</h2>${(() => { if (!S.history.length || !GAME()) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${hu.lvl >= 10 ? clsIc(hu.cls) + ' ' + esc(clsName(hu.cls)) : esc(hu.title)}</button><div class="small pftitle" style="--rc:${hu.col}">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div>`; })()}
+      <div class="pfstats"><div><span class="muted small">${T('Séances', 'Workouts')}</span><br><b>${S.history.length}</b></div><div><span class="muted small">${T('Série', 'Streak')}</span><br><b>🔥 ${streakWeeks()} sem.</b></div><div><span class="muted small">Ce mois</span><br><b>${month}</b></div></div></div></div>
     ${bodyCard()}${friendsCard()}${yearBanner()}${stagCard()}
     ${!S.history.length ? '' : `<div class="card pfchart"><div class="seg" style="margin:0 0 12px">${[['act', T('Activité', 'Activity')], ['dur', T('Durée', 'Time')], ['vol', 'Volume'], ['reps', T('Réps', 'Reps')]].map(([k, l]) => `<button class="${pfMetric === k ? 'on' : ''}" data-act="pf-metric" data-m="${k}">${l}</button>`).join('')}</div>
     ${pfMetric === 'act' ? actGrid(true) : `<div class="row between"><span>${headline}</span><select style="width:auto" data-pf="range"><option value="12" ${pfWeeks === 12 ? 'selected' : ''}>3 derniers mois</option><option value="26" ${pfWeeks === 26 ? 'selected' : ''}>6 mois</option><option value="52" ${pfWeeks === 52 ? 'selected' : ''}>1 an</option><option value="0" ${pfWeeks === 0 ? 'selected' : ''}>Tout</option></select></div>
@@ -5214,8 +5251,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.30';
+const APP_VERSION = '9.31';
 const CHANGELOG = [
+  {v: '9.31', d: '2026-11-12', fr: ['✨ Nouveaux cosmétiques à débloquer dans la Guilde : effets en cochant une série (Étincelles, Éclair, Flammes, Poussière d\'or, Cosmique), célébrations de fin de séance (Feux d\'artifice, Pluie d\'étoiles, Brasier, Pluie d\'or), bannières de profil (Aube, Nuit étoilée, Forge, Antre du dragon, Tempête, Trône, Légende) et emblèmes à côté de ton nom. Tes amis voient ta bannière et ton emblème.'], en: ['✨ New unlockable cosmetics in the Guild: set check effects (Sparks, Lightning, Flames, Gold dust, Cosmic), workout celebrations (Fireworks, Star shower, Blaze, Golden rain), profile banners (Dawn, Starry night, Forge, Dragon\'s lair, Storm, Throne, Legend) and emblems next to your name. Friends see your banner and emblem.']},
   {v: '9.30', d: '2026-11-12', fr: ['🏷️ Titres : tes médailles débloquent des titres (Tueur de boss, Légende du squat, Lève-tôt…). Choisis-en un dans la Guilde : il s\'affiche après ton rang (ex. « Aventurier de rang B · Tueur de boss »), aussi chez tes amis.', '🖼️ Cadres de photo à débloquer : Lueur (niv. 25), Arc-en-ciel (50), Flammes (75), Légendaire (100).', '🎨 Thèmes de la Guilde à débloquer : Bronze (niv. 20), Argent (30), Or royal (45), Rubis (60), Aurore (80), Légende (100).', '📲 Raccourci de l\'icône : « Quête du jour » et « Statut » ouvrent maintenant la Guilde.'], en: ['🏷️ Titles: your medals unlock titles (Boss slayer, Squat legend, Early bird…). Pick one in the Guild: it shows after your rank, to your friends too.', '🖼️ Unlockable photo frames: Glow (lv. 25), Rainbow (50), Flames (75), Legendary (100).', '🎨 Unlockable Guild themes: Bronze (lv. 20), Silver (30), Royal gold (45), Ruby (60), Aurora (80), Legend (100).', '📲 Icon shortcuts: “Daily quest” and “Status” now open the Guild.']},
   {v: '9.29.1', d: '2026-11-12', fr: ['🎨 Le thème bleu s\'appelle maintenant « Bleu électrique » (mêmes couleurs).'], en: ['🎨 The blue theme is now called “Electric blue” (same colors).']},
   {v: '9.29', d: '2026-11-12', fr: ['🏅 Beaucoup de nouvelles médailles. La Guilde : niveaux 10 à 100, quêtes de suite, Rédemption, plus de donjons et de boss, armes de rang S, raids, défis gagnés, champion de saison, événements et double XP. Ailleurs : une nouvelle catégorie Cardio, records en une séance, séries en une séance, double séance et séance du Nouvel An.', '✏️ La médaille « jours de suite » parle maintenant de jours d\'entraînement (ce n\'était pas des quêtes).'], en: ['🏅 Lots of new medals. The Guild: levels 10 to 100, quest streaks, Redemption, more dungeons and bosses, S-rank weapons, raids, challenges won, season champion, events and double XP. Elsewhere: a new Cardio category, records in one workout, sets in one workout, two-a-day and New Year\'s workout.', '✏️ The “days in a row” medal now refers to training days (they weren\'t quests).']},
@@ -6351,7 +6389,7 @@ function frMe() {
   return {f: {c: fr.file || 'me', me: true, n: T('Moi', 'Me')}, d: {name: (S.settings.name || '').trim() || T('Moi', 'Me'), av: S.settings.avatar || '', wk: streakWeeks(), hu: frHu(), s, p, up: fr.last, cw: Object.keys(S.seasonWon || {}).filter(k => S.seasonWon[k])}};
 }
 /* Niveau de chasseur partagé avec les amis */
-function frHu() { if (!S.history.length || !GAME()) return null; const x = hunter(); return {l: x.lvl, r: x.rk, xp: x.xp, c: x.cls, t: S.settings.title && myTitle() ? S.settings.title : '', f: myFrame()}; }
+function frHu() { if (!S.history.length || !GAME()) return null; const x = hunter(); return {l: x.lvl, r: x.rk, xp: x.xp, c: x.cls, t: S.settings.title && myTitle() ? S.settings.title : '', f: myFrame(), b: myCos('banner'), e: myCos('emblem')}; }
 const huTitle = r => { const x = HRANKS.find(y => y[1] === r); return x ? T(x[2][0], x[2][1]) : ''; };
 const frLv = (d, big) => GAME() && d && d.hu && d.hu.r ? (big ? `<span class="frlvb" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${rkBadge(d.hu.r, 'mrk lvrk')} ${T('Niveau', 'Level')} ${d.hu.l} · ${d.hu.c && d.hu.c !== 'none' ? clsIc(d.hu.c) + ' ' + esc(clsName(d.hu.c)) : esc(huTitle(d.hu.r))}</span><div class="small pftitle" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${esc(huTitle(d.hu.r))}${d.hu.t && titleOf(d.hu.t) ? ` · « ${esc(titleOf(d.hu.t))} »` : ''}</div>` : `<span class="frlv" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${d.hu.r} · ${T('Niv.', 'Lv.')} ${d.hu.l}</span>`) : '';
 function frRanking() {
@@ -6623,6 +6661,41 @@ const FRAMES = [
   {id: 'flame', n: ['Flammes', 'Flames'], l: 75}, {id: 'legend', n: ['Légendaire', 'Legendary'], l: 100}];
 const myLvl = () => S.history.length ? hunter().lvl : 1;
 const myFrame = () => { const f = S.settings.frame || ''; const x = FRAMES.find(y => y.id === f); return GAME() && x && myLvl() >= x.l ? f : ''; };
+/* ----- Autres cosmétiques : effets de série, célébration, bannière de profil, emblème ----- */
+const COS = {
+  fx: [{id: '', n: ['Classique', 'Classic'], r: {l: 1}}, {id: 'spark', n: ['Étincelles', 'Sparks'], r: {l: 15}}, {id: 'bolt', n: ['Éclair', 'Lightning'], r: {l: 35}},
+    {id: 'fire', n: ['Flammes', 'Flames'], r: {l: 55}}, {id: 'gold', n: ['Poussière d\'or', 'Gold dust'], r: {m: ['shs', 0]}}, {id: 'cosmic', n: ['Cosmique', 'Cosmic'], r: {l: 90}}],
+  cele: [{id: '', n: ['Confettis', 'Confetti'], r: {l: 1}}, {id: 'fireworks', n: ['Feux d\'artifice', 'Fireworks'], r: {m: ['boss', 0]}}, {id: 'stars', n: ['Pluie d\'étoiles', 'Star shower'], r: {m: ['n', 3]}},
+    {id: 'fire', n: ['Brasier', 'Blaze'], r: {m: ['wk', 3]}}, {id: 'gold', n: ['Pluie d\'or', 'Golden rain'], r: {l: 45}}],
+  banner: [{id: '', n: ['Aucune', 'None'], r: {l: 1}}, {id: 'dawn', n: ['Aube', 'Dawn'], r: {l: 10}}, {id: 'night', n: ['Nuit étoilée', 'Starry night'], r: {l: 30}},
+    {id: 'forge', n: ['Forge', 'Forge'], r: {m: ['pr', 2]}}, {id: 'dragon', n: ['Antre du dragon', 'Dragon\'s lair'], r: {m: ['boss', 2]}}, {id: 'storm', n: ['Tempête', 'Storm'], r: {m: ['raid', 0]}},
+    {id: 'royal', n: ['Trône', 'Throne'], r: {m: ['sea', 0]}}, {id: 'legend', n: ['Légende', 'Legend'], r: {l: 100}}],
+  emblem: [{id: '', n: ['Aucun', 'None'], r: {l: 1}}, {id: '⭐', n: ['Étoile', 'Star'], r: {l: 20}}, {id: '🔥', n: ['Flamme', 'Flame'], r: {m: ['wk', 2]}}, {id: '⚡', n: ['Éclair', 'Bolt'], r: {m: ['dbl', 0]}},
+    {id: '☠️', n: ['Crâne', 'Skull'], r: {m: ['boss', 1]}}, {id: '⚔️', n: ['Épées', 'Swords'], r: {m: ['chw', 1]}}, {id: '🛡️', n: ['Bouclier', 'Shield'], r: {m: ['raid', 1]}},
+    {id: '🏆', n: ['Trophée', 'Trophy'], r: {m: ['pr', 3]}}, {id: '👑', n: ['Couronne', 'Crown'], r: {m: ['sea', 0]}}]};
+function cosReq(r) { // {ok, why}
+  if (r.l) return {ok: myLvl() >= r.l, why: `${T('Niv.', 'Lv.')} ${r.l}`};
+  const me = medalsEarned(), d = me.defs.filter(x => x.g === r.m[0]).sort((a, b) => a.v - b.v)[r.m[1]];
+  return d ? {ok: !!me.got[d.id], why: d.t} : {ok: false, why: '?'};
+}
+function myCos(kind) { if (!GAME()) return ''; const v = (S.settings.cos || {})[kind] || '', x = (COS[kind] || []).find(y => y.id === v); return x && cosReq(x.r).ok ? v : ''; }
+const BANNERS = ['dawn', 'night', 'forge', 'dragon', 'storm', 'royal', 'legend'];
+const bannerCls = b => b && BANNERS.includes(b) ? ' bn bn-' + b : '';
+const emblemOf = e => e && COS.emblem.some(x => x.id === e && x.id) ? `<span class="emb">${e}</span>` : '';
+function cosSection(kind, title, prev) {
+  const cur = (S.settings.cos || {})[kind] || '';
+  return `<b style="display:block;margin-top:14px">${title}</b><div class="cosgrid">${COS[kind].map(x => { const q = cosReq(x.r);
+    return `<button class="cospick ${cur === x.id ? 'on' : ''} ${q.ok ? '' : 'locked'}" data-act="${q.ok ? 'cos-set' : 'cos-how'}" data-k="${kind}" data-id="${x.id}" data-h="${esc(q.why)}">${prev(x)}<span class="small">${esc(T(x.n[0], x.n[1]))}</span>${q.ok ? '' : `<span class="small muted">🔒 ${esc(q.why)}</span>`}</button>`; }).join('')}</div>`;
+}
+function cosCards() {
+  if (!GAME()) return '';
+  return cosSection('fx', T('Effet en cochant une série', 'Set check effect'), x => `<span class="cosfx fxv-${x.id || 'none'}"></span>`) +
+    `<button class="btn sm" style="margin-top:6px" data-act="cos-try" data-k="fx">▶ ${T('Essayer', 'Try it')}</button>` +
+    cosSection('cele', T('Célébration de fin de séance', 'Workout celebration'), x => `<span class="cosfx cel-${x.id || 'none'}"></span>`) +
+    `<button class="btn sm" style="margin-top:6px" data-act="cos-try" data-k="cele">▶ ${T('Essayer', 'Try it')}</button>` +
+    cosSection('banner', T('Bannière de profil', 'Profile banner'), x => `<span class="cosbn${bannerCls(x.id)}"></span>`) +
+    cosSection('emblem', T('Emblème à côté de ton nom', 'Emblem next to your name'), x => `<span class="cosem">${x.id || '—'}</span>`);
+}
 function rewardsCard() {
   if (!GAME()) return '';
   const lv = myLvl(), tl = titleList(), okT = tl.filter(t => t.ok), cur = S.settings.title || '';
@@ -6634,7 +6707,7 @@ function rewardsCard() {
     <b style="display:block;margin-top:14px">${T('Cadre de photo', 'Photo frame')}</b>
     <div class="frgrid">${FRAMES.map(f => { const ok = lv >= f.l, on = (S.settings.frame || '') === f.id; return `<button class="frpick ${on ? 'on' : ''} ${ok ? '' : 'locked'}" data-act="${ok ? 'frame-set' : 'noop'}" data-id="${f.id}"><span class="frav sm rkf${f.id ? ' frm-' + f.id : ''}" style="--rkc:${hunter().col}">${esc(((S.settings.name || 'M').trim()[0] || 'M').toUpperCase())}</span><span class="small">${esc(T(f.n[0], f.n[1]))}</span>${ok ? '' : lock(f.l)}</button>`; }).join('')}</div>
     <b style="display:block;margin-top:14px">${T('Thèmes de la Guilde', 'Guild themes')}</b>
-    <div class="grid2" style="margin-top:6px">${REWARD_THEMES.map(t => { const ok = lv >= t.l, on = (S.settings.accent || '').toLowerCase() === t.acc && (S.settings.bg || '').toLowerCase() === t.bg; return `<button class="btn sm ${on ? 'on' : ''}" style="text-align:left;${ok ? '' : 'opacity:.55'}" data-act="${ok ? 'rtheme' : 'noop'}" data-id="${t.id}"><span class="sw2" style="background:linear-gradient(135deg,${t.bg} 50%,${t.acc} 50%)"></span> ${esc(T(t.n[0], t.n[1]))} ${ok ? '' : lock(t.l)}</button>`; }).join('')}</div></div>`;
+    <div class="grid2" style="margin-top:6px">${REWARD_THEMES.map(t => { const ok = lv >= t.l, on = (S.settings.accent || '').toLowerCase() === t.acc && (S.settings.bg || '').toLowerCase() === t.bg; return `<button class="btn sm ${on ? 'on' : ''}" style="text-align:left;${ok ? '' : 'opacity:.55'}" data-act="${ok ? 'rtheme' : 'noop'}" data-id="${t.id}"><span class="sw2" style="background:linear-gradient(135deg,${t.bg} 50%,${t.acc} 50%)"></span> ${esc(T(t.n[0], t.n[1]))} ${ok ? '' : lock(t.l)}</button>`; }).join('')}</div>${cosCards()}</div>`;
 }
 /* ===================== Onglet Guilde (mode jeu) : tout ce qui touche au jeu au même endroit ===================== */
 function statusCard() {
@@ -7263,6 +7336,9 @@ document.addEventListener('click', e => {
     case 'start-express': startExpress(b.dataset.rid); break;
     case 'title-set': S.settings.title = b.dataset.id; save(); render(); if (frOn()) frQueue(false); toast(b.dataset.id ? T(`🏷️ Titre : ${titleOf(b.dataset.id)}`, `🏷️ Title: ${titleOf(b.dataset.id)}`) : T('Titre retiré', 'Title removed')); break;
     case 'title-how': toast(T(`🔒 « ${b.dataset.t} » : débloque la médaille « ${b.dataset.h} »`, `🔒 “${b.dataset.t}”: unlock the medal “${b.dataset.h}”`)); break;
+    case 'cos-set': S.settings.cos = S.settings.cos || {}; S.settings.cos[b.dataset.k] = b.dataset.id; save(); render(); if (frOn() && ['banner', 'emblem'].includes(b.dataset.k)) frQueue(false); if (b.dataset.k === 'fx') { const x = document.querySelector(`.cospick.on[data-k="fx"]`); if (x) setFx(x, false); } if (b.dataset.k === 'cele') confetti(120); break;
+    case 'cos-how': toast(T(`🔒 Se débloque avec : ${b.dataset.h}`, `🔒 Unlocks with: ${b.dataset.h}`)); break;
+    case 'cos-try': if (b.dataset.k === 'fx') setFx(b, false); else confetti(120); break;
     case 'frame-set': S.settings.frame = b.dataset.id; save(); render(); if (frOn()) frQueue(false); break;
     case 'rtheme': { const t = REWARD_THEMES.find(x => x.id === b.dataset.id); if (!t) break; S.settings.theme = 'noir'; S.settings.accent = t.acc; S.settings.bg = t.bg; save(); applyTheme(); render(); toast(T(`🎨 Thème ${t.n[0]}`, `🎨 ${t.n[1]} theme`)); break; }
     case 'noop': toast(T('🔒 Monte de niveau pour le débloquer', '🔒 Level up to unlock it')); break;
@@ -7287,8 +7363,8 @@ document.addEventListener('click', e => {
       const f = me ? frMe().f : FRS().list.find(x => x.c === c), d = me ? frMe().d : frData[c] && frData[c].d; if (!f) break;
       const items = frFeed(c), nS = (d && d.s || []).length;
       modal(`<div class="row between"><span></span><button class="btn sm" data-act="close">✕</button></div>
-        <div style="text-align:center;margin-top:-8px">${d && d.av ? `<img src="${d.av}" alt="" style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid var(--accent)">` : `<span class="frav" style="width:110px;height:110px;font-size:44px">${esc(((d && d.name) || f.n || '?')[0].toUpperCase())}</span>`}
-          <h2 style="margin:8px 0 2px">${esc((d && d.name) || f.n || '')} ${GAME() ? seasonTrophies(d) : ''}</h2>${GAME() && d && d.hu ? `<div style="margin:2px 0 6px">${frLv(d, true)}</div>` : ''}
+        <div class="frhero${GAME() && d && d.hu ? bannerCls(d.hu.b) : ''}" style="text-align:center;margin-top:-8px">${d && d.av ? `<img src="${d.av}" alt="" style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid var(--accent)">` : `<span class="frav" style="width:110px;height:110px;font-size:44px">${esc(((d && d.name) || f.n || '?')[0].toUpperCase())}</span>`}
+          <h2 style="margin:8px 0 2px">${esc((d && d.name) || f.n || '')} ${GAME() && d && d.hu ? emblemOf(d.hu.e) : ''} ${GAME() ? seasonTrophies(d) : ''}</h2>${GAME() && d && d.hu ? `<div style="margin:2px 0 6px">${frLv(d, true)}</div>` : ''}
           ${d ? `<p class="small muted" style="margin:0">🔥 ${d.wk || 0} ${T('sem. de suite', 'weeks in a row')} · ${nS} ${T('séance' + (nS > 1 ? 's' : ''), 'workout' + (nS > 1 ? 's' : ''))} · ${(d.p || []).length} 📸</p>` : ''}</div>
         <div style="margin-top:12px">${items.length ? items.map(frPost).join('') : `<p class="muted center">${T('Rien de partagé pour l\'instant.', 'Nothing shared yet.')}</p>`}</div>
         ${me ? `<button class="btn block" data-act="fr-code" style="margin-top:8px">${T('Mon code ami', 'My friend code')}</button>` : `<button class="btn primary block" data-act="ch-new" data-c="${f.c}" style="margin-top:8px">⚔️ ${T('Défier', 'Challenge')} ${esc((d && d.name) || f.n || '')}</button><button class="btn block" data-act="fr-del" data-c="${f.c}" style="color:var(--bad);margin-top:8px">${T('Retirer de mes amis', 'Remove friend')}</button>`}`);
