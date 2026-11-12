@@ -3599,9 +3599,23 @@ function evProg(e) {
   if (q.k === 'car') return Math.round(hs.reduce((t, h) => t + h.exercises.reduce((u, x) => u + x.sets.reduce((v, s) => v + (s.u === 'c' ? (+s.r || 0) : 0), 0), 0), 0));
   return Math.round(hs.reduce((t, h) => t + sessVol(h), 0) * (U() === 'kg' ? 1 : 1 / 2.20462));
 }
+const EV_START = '2026-11-12'; // les événements comptent à partir de leur arrivée dans l'appli (pas rétroactif)
 function evCheck() {
   if (!GAME()) return;
-  eventsAround().filter(e => e.q && e.a <= new Date()).forEach(e => { if (evProg(e) >= e.q.g) giveXp('ev', e.id, e.q.xp, T(`🎉 Événement réussi : ${e.n[0]}! +${e.q.xp} XP`, `🎉 Event complete: ${e.n[1]}! +${e.q.xp} XP`)); });
+  if (!S.evFix) { // retire l'XP donnée par erreur pour des événements passés
+    const old = new Set(eventsAround().filter(e => dkey(e.b) <= EV_START).map(e => e.id));
+    S.xpb = (S.xpb || []).filter(x => !(x.k === 'ev' && old.has(x.id))); S.evFix = 1; save();
+  }
+  const now = new Date();
+  eventsAround().filter(e => e.q && e.a <= now && dkey(e.b) > EV_START && now < new Date(+e.b + 3 * 864e5)).forEach(e => {
+    if (evProg(e) >= e.q.g && giveXp('ev', e.id, e.q.xp, '')) setTimeout(() => evWin(e), 400);
+  });
+}
+function evWin(e) {
+  confetti();
+  modal(`<div style="text-align:center"><div class="sysh" style="color:#f5c542">[ ${T('ÉVÉNEMENT RÉUSSI', 'EVENT COMPLETE')} ]</div><div style="font-size:46px;margin:8px 0">🎪</div>
+    <h2 style="margin:0 0 6px">${esc(T(e.n[0], e.n[1]))}</h2><p class="small muted" style="margin:0 0 10px">${esc(T(e.d[0], e.d[1])).replace('{g}', '')}</p>
+    <b style="color:var(--ok);font-size:20px">+${e.q.xp} XP</b><button class="btn primary block" style="margin-top:14px" data-act="close">${T('Super!', 'Awesome!')}</button></div>`);
 }
 function evDoubleXp(h) { // appelée à la fin d'une séance
   const e = evNow(new Date(h.date)); if (!e || !e.x2) return 0;
@@ -5159,8 +5173,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.26';
+const APP_VERSION = '9.26.1';
 const CHANGELOG = [
+  {v: '9.26.1', d: '2026-11-12', fr: ['🎪 Correction : les événements passés (avant leur arrivée dans l\'appli) ne donnent plus d\'XP, et l\'XP donnée par erreur est retirée. Un événement réussi s\'affiche maintenant avec son nom en grand.'], en: ['🎪 Fix: past events (before they arrived in the app) no longer give XP, and XP given by mistake is removed. A completed event now shows its name in a popup.']},
   {v: '9.26', d: '2026-11-12', fr: ['📌 Les notes sont maintenant attachées à l\'exercice : la même note s\'affiche dans toutes tes routines et séances libres (tes anciennes notes ont été reprises).', '🏋️ Les poids suivent l\'exercice : peu importe la routine, tu repars du poids de ta dernière fois. La page de la routine et l\'éditeur montrent ces poids à jour. Si tu changes un poids dans la routine, c\'est lui qui compte à la prochaine séance.'], en: ['📌 Notes are now attached to the exercise: the same note shows in all your routines and free workouts (your old notes were kept).', '🏋️ Weights follow the exercise: whatever the routine, you start from your last weight. The routine page and editor show these up-to-date weights. If you change a weight in the routine, that one counts next workout.']},
   {v: '9.25', d: '2026-11-12', fr: ['⚡ Version express : sur la page d\'une routine, un bouton la fait tenir en moins de temps (2 séries par exercice, supersets, repos plus courts), avec la durée estimée.', '📈 Prédiction : sur la page d\'un exercice et dans tes mesures, l\'app prolonge ta courbe en pointillé et te dit où tu seras dans 8 semaines, plus la date de ton prochain cap (ex. 225 lb).', '🎪 Événements (mode jeu) : week-end double XP chaque fin de mois, et des événements spéciaux pendant l\'année (Nouvel An, Halloween, Noël…) avec leur propre quête.'], en: ['⚡ Express version: on a routine\'s page, a button makes it fit in less time (2 sets per exercise, supersets, shorter rest), with the estimated duration.', '📈 Prediction: on an exercise page and in your measurements, the app extends your curve with a dotted line and tells you where you\'ll be in 8 weeks, plus the date of your next milestone (e.g. 225 lb).', '🎪 Events (game mode): a double XP weekend at the end of every month, and special events through the year (New Year, Halloween, Christmas…) with their own quest.']},
   {v: '9.24', d: '2026-11-12', fr: ['✨ Quand tu coches une série, un petit « +5 XP » s\'envole (en mode Classique : le volume de la série, ou « Record! » en or).', '🎬 Écran de fin de séance animé : les blocs apparaissent un à un, les chiffres comptent, et en mode jeu la barre d\'XP se remplit jusqu\'au niveau suivant.', '🛡️ Mode jeu : un cadre aux couleurs de ton rang autour de ta photo et de celle de tes amis (il brille dès le rang S).', '⭕ Anneaux de la semaine dans Entraînement : séances, volume et cardio, comparés à ta moyenne.', '🟩 Grille d\'activité des 6 derniers mois dans le Profil.', '📈 Graphiques plus beaux : courbes lissées avec dégradé, records en points dorés, barres qui montent.', '↔️ Les écrans glissent quand tu avances, reviens ou changes d\'onglet.'], en: ['✨ When you check a set, a little “+5 XP” floats up (in Classic mode: the set\'s volume, or a gold “Record!”).', '🎬 Animated workout summary: blocks appear one by one, numbers count up, and in game mode the XP bar fills toward the next level.', '🛡️ Game mode: a frame in your rank\'s color around your photo and your friends\' (it glows from rank S).', '⭕ Weekly rings in Workout: workouts, volume and cardio, compared to your average.', '🟩 6-month activity grid in Profile.', '📈 Nicer charts: smooth curves with a gradient, records as gold dots, bars that grow.', '↔️ Screens slide when you go forward, back or switch tabs.']},
