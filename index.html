@@ -356,6 +356,11 @@ button.chip{cursor:pointer}
 .rkf.frm-void{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#000,#7c3aed,#000,#22d3ee,#000);filter:drop-shadow(0 0 9px #7c3aed)}
 .rkf.frm-ice,.rkf.frm-gold,.rkf.frm-sakura,.rkf.frm-shadow,.rkf.frm-emerald,.rkf.frm-thunder,.rkf.frm-blood,.rkf.frm-champion,.rkf.frm-void{border:3px solid transparent;background-clip:padding-box,border-box;background-origin:border-box;animation:frSpin 4s linear infinite}
 .avatar.rkf.frm-ice,.avatar.rkf.frm-gold,.avatar.rkf.frm-sakura,.avatar.rkf.frm-shadow,.avatar.rkf.frm-emerald,.avatar.rkf.frm-thunder,.avatar.rkf.frm-blood,.avatar.rkf.frm-champion,.avatar.rkf.frm-void{border-width:4px}
+.armfade{animation:armF .22s ease}@keyframes armF{from{opacity:.25;transform:translateY(4px)}to{opacity:1;transform:none}}
+.fxp.leaf{border-radius:0 70% 0 70%;width:9px;height:9px}
+.flash{position:fixed;inset:0;z-index:9997;background:#e0f2ff;pointer-events:none;animation:flashA .7s ease-out forwards}@keyframes flashA{0%{opacity:.75}15%{opacity:0}25%{opacity:.5}100%{opacity:0}}
+.fxv-frost{background:radial-gradient(circle,#fff 0 3px,transparent 4px),radial-gradient(circle,transparent 9px,#7dd3fc 10px 11px,transparent 12px)}.fxv-leaf{background:radial-gradient(circle at 35% 40%,#4ade80 0 4px,transparent 5px),radial-gradient(circle at 65% 60%,#a3e635 0 4px,transparent 5px)}.fxv-blood{background:radial-gradient(circle,#fca5a5 0 3px,#ef4444 4px 7px,#7f1d1d 8px 11px,transparent 12px)}.fxv-shadow{background:radial-gradient(circle,#a78bfa 0 3px,#6d28d9 4px 8px,#1a1030 9px 12px,transparent 13px)}.fxv-prism{background:conic-gradient(#ff5a5f,#ffcc33,#3ee6b0,#4cc9f0,#b388ff,#ff5a5f)}.fxv-holy{background:radial-gradient(circle,#fff 0 4px,#fff3c4 5px 8px,#ffd54a55 9px 13px,transparent 14px)}.fxv-void{background:radial-gradient(circle,#000 0 5px,#7c3aed 6px 9px,#22d3ee 10px 11px,transparent 12px)}
+.cel-snow{background:radial-gradient(circle at 30% 30%,#fff 0 2px,transparent 3px),radial-gradient(circle at 70% 65%,#fff 0 2px,transparent 3px),radial-gradient(circle at 45% 80%,#e0f7ff 0 2px,transparent 3px),#1a2a3a}.cel-sakura{background:radial-gradient(ellipse at 30% 40%,#ffb3d1 0 4px,transparent 5px),radial-gradient(ellipse at 70% 65%,#ff8fc0 0 4px,transparent 5px),#2a1520}.cel-rainbow{background:conic-gradient(#ff5a5f,#ff9f1c,#ffcc33,#3ee6b0,#4cc9f0,#b388ff,#ff5a5f)}.cel-storm{background:linear-gradient(135deg,transparent 45%,#fde047 45% 55%,transparent 55%),linear-gradient(#16243d,#0b1220)}.cel-galaxy{background:radial-gradient(circle,#fff 0 2px,transparent 3px),radial-gradient(circle,#b388ff 0,#4cc9f0 40%,#0b0614 70%)}
 .bossline{background:color-mix(in srgb,#fb7185 12%,transparent);border:1px solid color-mix(in srgb,#fb7185 55%,transparent);border-radius:10px;padding:7px 10px;margin:8px 0 2px;font-size:13px}.bossline.dead{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .bosskill{text-align:center;padding:6px 0}.bkskull{font-size:64px;line-height:1;color:#fb7185;animation:bkhit .9s ease-out both}.bkskull .ico{width:72px;height:72px}
 @keyframes bkhit{0%{transform:scale(.3) rotate(-20deg);opacity:0}35%{transform:scale(1.35) rotate(8deg);opacity:1}55%{transform:scale(.9) rotate(-6deg)}70%{transform:scale(1.05) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:.85;filter:grayscale(.6)}}
@@ -1589,33 +1594,37 @@ function confetti(n = 90) {
   const c = document.createElement('canvas'); c.className = 'confetti'; c.width = innerWidth * devicePixelRatio; c.height = innerHeight * devicePixelRatio; document.body.appendChild(c);
   const g = c.getContext('2d'), dpr = devicePixelRatio, acc = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c6f135';
   const st = typeof myCos === 'function' ? myCos('cele') : '';
-  const cols = st === 'gold' ? ['#ffd54a', '#ffb300', '#fff3c4', '#e6a700'] : st === 'stars' ? ['#ffffff', '#fff3c4', '#b3e5ff', acc] : st === 'fire' ? ['#ff3d00', '#ff9100', '#ffd54f', '#ff6f00'] : [acc, '#ffffff', '#ffc857', '#7dd3fc', '#ff6fae'];
+  const cols = st === 'gold' ? ['#ffd54a', '#ffb300', '#fff3c4', '#e6a700'] : st === 'stars' ? ['#ffffff', '#fff3c4', '#b3e5ff', acc] : st === 'fire' ? ['#ff3d00', '#ff9100', '#ffd54f', '#ff6f00'] : st === 'snow' ? ['#ffffff', '#e0f7ff', '#cfe8ff'] : st === 'sakura' ? ['#ffb3d1', '#ff8fc0', '#fff0f6'] : st === 'storm' ? ['#fde047', '#38bdf8', '#ffffff'] : st === 'galaxy' ? ['#b388ff', '#4cc9f0', '#ffffff', '#ff6fae'] : st === 'rainbow' ? ['#ff5a5f', '#ff9f1c', '#ffcc33', '#3ee6b0', '#4cc9f0', '#b388ff'] : [acc, '#ffffff', '#ffc857', '#7dd3fc', '#ff6fae'];
+  if (st === 'storm') { const fl = document.createElement('div'); fl.className = 'flash'; document.body.appendChild(fl); setTimeout(() => fl.remove(), 700); }
   const mk = (x, y, radial) => { const a = Math.random() * 6.28, sp = 3 + Math.random() * 7; return {x, y, vx: radial ? Math.cos(a) * sp : (Math.random() - 0.5) * 11, vy: radial ? Math.sin(a) * sp : -Math.random() * 11 - 4, r: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.4, s: 5 + Math.random() * 5, c: cols[Math.random() * cols.length | 0], d: 0}; };
   let ps = [];
   if (st === 'fireworks') [0, 1, 2].forEach(i => { const x = innerWidth * (0.25 + 0.25 * i), y = innerHeight * (0.22 + 0.1 * (i % 2)); for (let j = 0; j < n / 3; j++) { const p = mk(x, y, true); p.d = i * 18; ps.push(p); } });
-  else if (st === 'gold') ps = Array.from({length: n}, () => ({...mk(Math.random() * innerWidth, -20 - Math.random() * innerHeight * 0.4, false), vx: (Math.random() - 0.5) * 2, vy: 2 + Math.random() * 3}));
+  else if (st === 'galaxy') for (let j = 0; j < n; j++) { const p = mk(innerWidth / 2, innerHeight * 0.4, true); p.vx *= 1.3; p.vy *= 1.3; ps.push(p); }
+  else if (st === 'gold' || st === 'snow' || st === 'sakura') ps = Array.from({length: n}, () => ({...mk(Math.random() * innerWidth, -20 - Math.random() * innerHeight * 0.4, false), vx: (Math.random() - 0.5) * 2, vy: 2 + Math.random() * 3}));
   else ps = Array.from({length: n}, () => mk(innerWidth / 2 + (Math.random() - 0.5) * 80, innerHeight * 0.35, false));
-  const t0 = performance.now(), dur = st === 'gold' ? 2200 : st === 'fireworks' ? 2000 : 1600, grav = st === 'gold' ? 0.05 : st === 'fireworks' ? 0.12 : 0.32;
+  const t0 = performance.now(), dur = ['gold', 'snow', 'sakura'].includes(st) ? 2600 : ['fireworks', 'galaxy'].includes(st) ? 2000 : 1600, grav = ['gold', 'snow', 'sakura'].includes(st) ? (st === 'gold' ? 0.05 : 0.015) : st === 'galaxy' ? 0 : st === 'fireworks' ? 0.12 : 0.32;
   let fr = 0;
   (function f(t) {
     const k = (t - t0) / dur; g.clearRect(0, 0, c.width, c.height); fr++;
-    ps.forEach(p => { if (fr < p.d) return; p.vy += grav; p.x += p.vx; p.y += p.vy; p.r += p.vr; if (st === 'fireworks') { p.vx *= .97; p.vy *= .97; } g.save(); g.globalAlpha = Math.max(0, 1 - k); g.translate(p.x * dpr, p.y * dpr); g.rotate(p.r); g.fillStyle = p.c;
-      if (st === 'stars') { g.beginPath(); for (let i = 0; i < 10; i++) { const rr = (i % 2 ? .45 : 1) * p.s * dpr * .7, a = i * Math.PI / 5; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } g.fill(); }
-      else if (st === 'fireworks' || st === 'fire') { g.beginPath(); g.arc(0, 0, p.s * dpr * .3, 0, 7); g.fill(); }
+    ps.forEach(p => { if (fr < p.d) return; p.vy += grav; p.x += p.vx; p.y += p.vy; p.r += p.vr; if (st === 'fireworks' || st === 'galaxy') { p.vx *= .97; p.vy *= .97; } if (st === 'snow' || st === 'sakura') p.vx = Math.sin((t - t0) / 400 + p.r) * 1.2; g.save(); g.globalAlpha = Math.max(0, 1 - k); g.translate(p.x * dpr, p.y * dpr); g.rotate(p.r); g.fillStyle = p.c;
+      if (st === 'stars' || st === 'galaxy') { g.beginPath(); for (let i = 0; i < 10; i++) { const rr = (i % 2 ? .45 : 1) * p.s * dpr * .7, a = i * Math.PI / 5; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } g.fill(); }
+      else if (st === 'sakura') { g.beginPath(); g.ellipse(0, 0, p.s * dpr * .55, p.s * dpr * .3, 0, 0, 7); g.fill(); }
+      else if (st === 'fireworks' || st === 'fire' || st === 'snow') { g.beginPath(); g.arc(0, 0, p.s * dpr * .3, 0, 7); g.fill(); }
       else g.fillRect(-p.s * dpr / 2, -p.s * dpr / 4, p.s * dpr, p.s * dpr / 2); g.restore(); });
     if (k < 1) requestAnimationFrame(f); else c.remove();
   })(t0);
 }
 /* Petit texte qui s'envole quand on coche une série : +XP (mode jeu) ou le volume (classique) */
 /* Effet visuel au moment de cocher une série (cosmétique à débloquer dans la Guilde) */
-function setFx(b, pr) {
-  const fx = typeof myCos === 'function' ? myCos('fx') : ''; if (!fx && !pr) return;
-  const P = {spark: ['#ffffff', '#fff3c4', 'var(--accent)'], bolt: ['#fff176', '#ffffff', '#4fc3f7'], fire: ['#ff3d00', '#ff9100', '#ffd54f'], gold: ['#ffd54a', '#ffb300', '#fff3c4'], cosmic: ['#b388ff', '#4cc9f0', '#ff6fae', '#ffffff']}[fx] || ['#f5c542', '#ffffff'];
-  const r = b.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, n = fx === 'cosmic' ? 16 : 11;
-  if (fx === 'bolt' || fx === 'cosmic') { const ring = document.createElement('div'); ring.className = 'fxring fx-' + fx; ring.style.left = cx + 'px'; ring.style.top = cy + 'px'; document.body.appendChild(ring); setTimeout(() => ring.remove(), 600); }
+function setFx(b, pr, force) {
+  const fx = force !== undefined ? force : typeof myCos === 'function' ? myCos('fx') : ''; if (!fx && !pr) return;
+  const P = {spark: ['#ffffff', '#fff3c4', 'var(--accent)'], bolt: ['#fff176', '#ffffff', '#4fc3f7'], fire: ['#ff3d00', '#ff9100', '#ffd54f'], gold: ['#ffd54a', '#ffb300', '#fff3c4'], cosmic: ['#b388ff', '#4cc9f0', '#ff6fae', '#ffffff'],
+    frost: ['#e0f7ff', '#7dd3fc', '#ffffff'], leaf: ['#4ade80', '#a3e635', '#166534'], blood: ['#ef4444', '#7f1d1d', '#fca5a5'], shadow: ['#6d28d9', '#1a1030', '#a78bfa'], prism: ['#ff5a5f', '#ffcc33', '#3ee6b0', '#4cc9f0', '#b388ff'], holy: ['#ffffff', '#fff3c4', '#ffd54a'], void: ['#000000', '#7c3aed', '#22d3ee']}[fx] || ['#f5c542', '#ffffff'];
+  const r = b.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, n = ['cosmic', 'prism', 'void', 'holy'].includes(fx) ? 16 : 11;
+  if (['bolt', 'cosmic', 'holy', 'void', 'frost'].includes(fx)) { const ring = document.createElement('div'); ring.className = 'fxring fx-' + fx; ring.style.left = cx + 'px'; ring.style.top = cy + 'px'; document.body.appendChild(ring); setTimeout(() => ring.remove(), 600); }
   for (let i = 0; i < n; i++) {
-    const d = document.createElement('i'), a = (i / n) * 6.28 + Math.random() * .4, dist = 22 + Math.random() * 26, up = fx === 'fire';
-    d.className = 'fxp' + (fx === 'gold' || fx === 'cosmic' ? ' star' : '');
+    const d = document.createElement('i'), a = (i / n) * 6.28 + Math.random() * .4, dist = 22 + Math.random() * 26, up = fx === 'fire' || fx === 'holy' || fx === 'shadow';
+    d.className = 'fxp' + (['gold', 'cosmic', 'frost', 'prism', 'holy'].includes(fx) ? ' star' : fx === 'leaf' ? ' leaf' : '');
     d.style.cssText = `left:${cx}px;top:${cy}px;background:${P[i % P.length]};color:${P[i % P.length]};--dx:${(Math.cos(a) * dist * (up ? .5 : 1)).toFixed(1)}px;--dy:${(up ? -(20 + Math.random() * 40) : Math.sin(a) * dist).toFixed(1)}px;animation-duration:${(fx === 'fire' ? .8 : .6) + Math.random() * .25}s`;
     document.body.appendChild(d); setTimeout(() => d.remove(), 1100);
   }
@@ -5292,8 +5301,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.34.1';
+const APP_VERSION = '9.35';
 const CHANGELOG = [
+  {v: '9.35', d: '2026-11-12', fr: ['✨ 7 nouvelles auras (Givre, Nature, Sang, Ombre, Prisme, Lumière sacrée, Néant) et 5 nouvelles victoires (Neige, Pétales, Arc-en-ciel, Orage, Galaxie).', '⚡ Armurerie fluide : changer d\'onglet ou équiper un objet ne recharge plus la page et la barre d\'onglets reste où elle est.'], en: ['✨ 7 new auras (Frost, Nature, Blood, Shadow, Prism, Holy light, Void) and 5 new victories (Snowfall, Petals, Rainbow, Thunderstorm, Galaxy).', '⚡ Smooth Armory: switching tabs or equipping no longer reloads the page and the tab bar stays where it is.']},
   {v: '9.34.1', d: '2026-11-12', fr: ['⏱️ Le grand minuteur de repos n\'affiche plus le message « Faites glisser l\'écran… pour quitter le mode Plein écran ».'], en: ['⏱️ The big rest timer no longer shows the “swipe to exit full screen” message.']},
   {v: '9.34', d: '2026-11-12', fr: ['🖼️ 9 nouveaux cadres à débloquer : Givre, Doré, Sakura, Ombre, Émeraude, Foudre, Sang de dragon, Champion et Néant.', '🐛 Glisser les onglets de l\'Armurerie ne change plus de page.'], en: ['🖼️ 9 new unlockable frames: Frost, Golden, Sakura, Shadow, Emerald, Thunder, Dragon blood, Champion and Void.', '🐛 Swiping the Armory tabs no longer changes the page.']},
   {v: '9.33.1', d: '2026-11-12', fr: ['⚔️ Guilde : retour au style fenêtres de jeu ([ STATUT ], [ QUÊTES ]…), mais chaque fenêtre se replie en douceur et elles sont bien espacées.'], en: ['⚔️ Guild: back to the game-window style ([ STATUS ], [ QUESTS ]…), but each window folds smoothly and they are nicely spaced.']},
@@ -6713,9 +6723,13 @@ const myFrame = () => { const f = S.settings.frame || ''; const x = FRAMES.find(
 /* ----- Autres cosmétiques : effets de série, célébration, bannière de profil, emblème ----- */
 const COS = {
   fx: [{id: '', n: ['Classique', 'Classic'], r: {l: 1}}, {id: 'spark', n: ['Étincelles', 'Sparks'], r: {l: 15}}, {id: 'bolt', n: ['Éclair', 'Lightning'], r: {l: 35}},
-    {id: 'fire', n: ['Flammes', 'Flames'], r: {l: 55}}, {id: 'gold', n: ['Poussière d\'or', 'Gold dust'], r: {m: ['shs', 0]}}, {id: 'cosmic', n: ['Cosmique', 'Cosmic'], r: {l: 90}}],
+    {id: 'fire', n: ['Flammes', 'Flames'], r: {l: 55}}, {id: 'gold', n: ['Poussière d\'or', 'Gold dust'], r: {m: ['shs', 0]}}, {id: 'cosmic', n: ['Cosmique', 'Cosmic'], r: {l: 90}},
+    {id: 'frost', n: ['Givre', 'Frost'], r: {l: 25}}, {id: 'leaf', n: ['Nature', 'Nature'], r: {m: ['csess', 0]}}, {id: 'blood', n: ['Sang', 'Blood'], r: {m: ['boss', 0]}, rar: 2},
+    {id: 'shadow', n: ['Ombre', 'Shadow'], r: {m: ['night', 0]}}, {id: 'prism', n: ['Prisme', 'Prism'], r: {l: 65}}, {id: 'holy', n: ['Lumière sacrée', 'Holy light'], r: {m: ['sea', 0]}, rar: 3}, {id: 'void', n: ['Néant', 'Void'], r: {l: 100}}],
   cele: [{id: '', n: ['Confettis', 'Confetti'], r: {l: 1}}, {id: 'fireworks', n: ['Feux d\'artifice', 'Fireworks'], r: {m: ['boss', 0]}}, {id: 'stars', n: ['Pluie d\'étoiles', 'Star shower'], r: {m: ['n', 3]}},
-    {id: 'fire', n: ['Brasier', 'Blaze'], r: {m: ['wk', 3]}}, {id: 'gold', n: ['Pluie d\'or', 'Golden rain'], r: {l: 45}}],
+    {id: 'fire', n: ['Brasier', 'Blaze'], r: {m: ['wk', 3]}}, {id: 'gold', n: ['Pluie d\'or', 'Golden rain'], r: {l: 45}},
+    {id: 'snow', n: ['Neige', 'Snowfall'], r: {l: 20}}, {id: 'sakura', n: ['Pétales', 'Petals'], r: {m: ['wknd', 1]}}, {id: 'rainbow', n: ['Arc-en-ciel', 'Rainbow'], r: {m: ['pr', 2]}},
+    {id: 'storm', n: ['Orage', 'Thunderstorm'], r: {m: ['raid', 0]}, rar: 2}, {id: 'galaxy', n: ['Galaxie', 'Galaxy'], r: {l: 80}}],
   banner: [{id: '', n: ['Aucune', 'None'], r: {l: 1}}, {id: 'dawn', n: ['Aube', 'Dawn'], r: {l: 10}}, {id: 'night', n: ['Nuit étoilée', 'Starry night'], r: {l: 30}},
     {id: 'forge', n: ['Forge', 'Forge'], r: {m: ['pr', 2]}}, {id: 'dragon', n: ['Antre du dragon', 'Dragon\'s lair'], r: {m: ['boss', 2]}}, {id: 'storm', n: ['Tempête', 'Storm'], r: {m: ['raid', 0]}},
     {id: 'royal', n: ['Trône', 'Throne'], r: {m: ['sea', 0]}}, {id: 'legend', n: ['Légende', 'Legend'], r: {l: 100}}],
@@ -6746,7 +6760,7 @@ function armItem({on, ok, why, rar, prev, name, act, k, id}) {
     <span class="armprev">${prev}</span><span class="armn">${esc(name)}</span><span class="armr">${ok ? T(R[0], R[1]) : '🔒 ' + esc(why)}</span>${on ? `<span class="armeq">${T('ÉQUIPÉ', 'EQUIPPED')}</span>` : ''}</button>`;
 }
 const titleDef = (me, g, i) => g === 'n1' ? me.defs.find(x => x.id === 'n1') : me.defs.filter(x => x.g === g).sort((a, b) => a.v - b.v)[i];
-function armoryBody() {
+function armoryBody(onlyContent) {
   const lv = myLvl(), me = medalsEarned(), cos = S.settings.cos || {};
   const tabs = [['title', T('Titres', 'Titles')], ['frame', T('Cadres', 'Frames')], ['fx', T('Auras', 'Auras')], ['cele', T('Victoires', 'Victories')], ['banner', T('Bannières', 'Banners')], ['emblem', T('Emblèmes', 'Emblems')], ['theme', T('Thèmes', 'Themes')]];
   let items = [], hint = '';
@@ -6765,12 +6779,22 @@ function armoryBody() {
   } else {
     const prev = {fx: x => `<span class="cosfx fxv-${x.id || 'none'}"></span>`, cele: x => `<span class="cosfx cel-${x.id || 'none'}"></span>`, banner: x => `<span class="cosbn${bannerCls(x.id)}"></span>`, emblem: x => `<span class="cosem">${x.id || '—'}</span>`}[armTab];
     hint = {fx: T('L\'effet quand tu coches une série.', 'The effect when you check a set.'), cele: T('La fête à la fin de ta séance.', 'The party at the end of your workout.'), banner: T('Le fond derrière ton nom sur ton profil. Tes amis le voient.', 'The background behind your name on your profile. Friends see it.'), emblem: T('Le symbole à côté de ton nom. Tes amis le voient.', 'The symbol next to your name. Friends see it.')}[armTab];
-    items = COS[armTab].map(x => { const q = cosReq(x.r); return armItem({on: (cos[armTab] || '') === x.id, ok: q.ok, why: q.why, rar: x.id ? rarOf(x.r) : 0, prev: prev(x), name: T(x.n[0], x.n[1]), act: 'cos-set', k: armTab, id: x.id}); });
+    items = COS[armTab].map(x => { const q = cosReq(x.r); return armItem({on: (cos[armTab] || '') === x.id, ok: q.ok, why: q.why, rar: x.id ? x.rar ?? rarOf(x.r) : 0, prev: prev(x), name: T(x.n[0], x.n[1]), act: 'cos-set', k: armTab, id: x.id}); });
   }
   const tr = ['fx', 'cele'].includes(armTab) ? `<button class="btn sm" style="margin-top:10px" data-act="cos-try" data-k="${armTab}">▶ ${T('Essayer', 'Try it')}</button>` : '';
+  const content = `<p class="small muted" style="margin:8px 0">${hint}</p><div class="armgrid">${items.join('')}</div>${tr}`;
+  if (onlyContent) return content;
   return `<div class="armtabs">${tabs.map(([k, l]) => `<button class="${armTab === k ? 'on' : ''}" data-act="arm-tab" data-t="${k}">${l}</button>`).join('')}</div>
-    <p class="small muted" style="margin:8px 0">${hint}</p><div class="armgrid">${items.join('')}</div>${tr}
+    <div class="armcontent">${content}</div>
     <div class="row small muted" style="gap:10px;margin-top:10px;flex-wrap:wrap">${RAR.map(r => `<span><i class="rardot" style="background:${r[2]}"></i>${T(r[0], r[1])}</span>`).join('')}</div>`;
+}
+/* Rafraîchit seulement le contenu de l'Armurerie (sans recharger la page ni remettre les onglets au début) */
+function armRefresh(anim) {
+  const c = document.querySelector('.armcontent'); if (!c) { render(); return; }
+  c.innerHTML = armoryBody(true); if (anim) { c.classList.remove('armfade'); void c.offsetWidth; c.classList.add('armfade'); }
+  document.querySelectorAll('.armtabs button').forEach(x => x.classList.toggle('on', x.dataset.t === armTab));
+  const st = document.getElementById('gstatus'); if (st) { const t = document.createElement('div'); t.innerHTML = statusCard(); st.replaceWith(t.firstElementChild); }
+  const sm = document.querySelector('details[data-gid="arm"] .gswh small'); if (sm) { const [ok, tot] = armoryCount(); sm.textContent = `${ok} / ${tot} ${T('récompenses débloquées', 'rewards unlocked')}`; }
 }
 function armoryCount() {
   const lv = myLvl(), me = medalsEarned(); let ok = 0, tot = 0;
@@ -6792,7 +6816,7 @@ function rewardsCard() {
 /* ===================== Onglet Guilde (mode jeu) : tout ce qui touche au jeu au même endroit ===================== */
 function statusCard() {
   const me = medalsEarned(), {st, defs} = me, n = Object.keys(me.got).length, hu = hunter(me), fmtN = v => Math.round(v).toLocaleString(LOC()), pct = Math.min(100, Math.round(hu.cur / hu.need * 100));
-  return `<div class="card sysw gwin" style="--rc:${hu.col}">
+  return `<div class="card sysw gwin" id="gstatus" style="--rc:${hu.col}">
       <div class="sysh">[ ${T('STATUT', 'STATUS')} ]</div>
       <div class="row" style="gap:14px;align-items:center">${rkBadge(hu.rk, 'rkbig')}
         <div style="flex:1;min-width:0"><div class="muted small">${T('Niveau', 'Level')}</div><div class="lvl">${hu.lvl}</div><div class="small" style="color:var(--rc);font-weight:700">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div></div></div>
@@ -7430,16 +7454,16 @@ document.addEventListener('click', e => {
     case 'fr-add-ok': frAdd(($('#frin') || {}).value); break;
     case 'fr-refresh': toast('↻'); frLoad(true); break;
     case 'start-express': startExpress(b.dataset.rid); break;
-    case 'title-set': S.settings.title = b.dataset.id; save(); render(); if (frOn()) frQueue(false); toast(b.dataset.id ? T(`🏷️ Titre : ${titleOf(b.dataset.id)}`, `🏷️ Title: ${titleOf(b.dataset.id)}`) : T('Titre retiré', 'Title removed')); break;
+    case 'title-set': S.settings.title = b.dataset.id; save(); armRefresh(); if (frOn()) frQueue(false); toast(b.dataset.id ? T(`🏷️ Titre : ${titleOf(b.dataset.id)}`, `🏷️ Title: ${titleOf(b.dataset.id)}`) : T('Titre retiré', 'Title removed')); break;
     case 'title-how': toast(T(`🔒 « ${b.dataset.t} » : débloque la médaille « ${b.dataset.h} »`, `🔒 “${b.dataset.t}”: unlock the medal “${b.dataset.h}”`)); break;
     case 'g-fold': { S.settings.gOpen = S.settings.gOpen || {}; S.settings.gOpen[b.dataset.id] = !S.settings.gOpen[b.dataset.id]; save(); render(); break; }
-    case 'arm-tab': { armTab = b.dataset.t; const ab = document.querySelector('.armbody'); if (ab) ab.innerHTML = armoryBody(); else render(); break; }
+    case 'arm-tab': { armTab = b.dataset.t; armRefresh(true); b.scrollIntoView({inline: 'nearest', block: 'nearest', behavior: 'smooth'}); break; }
     case 'xp-info': modal(`<h2>${T('Comment gagner de l\'XP', 'How to earn XP')}</h2><div class="xpl">${[[T('Séance', 'Workout'), 100], [T('Série', 'Set'), 5], [T('Record', 'Record'), 40], [T('Médaille', 'Medal'), 250], [T('Quête du jour', 'Daily quest'), 150], [T('Donjon', 'Dungeon'), 500], ['Boss', 1000], [T('Raid réussi', 'Raid cleared'), 400], [T('Défi gagné', 'Challenge won'), 300], [T('Quête ratée', 'Missed quest'), -10]].map(([l, v]) => `<div class="row between"><span>${l}</span><b style="color:${v < 0 ? 'var(--warm)' : 'var(--ok)'}">${v > 0 ? '+' : '−'}${Math.abs(v).toLocaleString(LOC())} XP</b></div>`).join('')}</div><p class="small muted">${T('Les événements donnent aussi des bonus (double XP, quêtes spéciales).', 'Events also give bonuses (double XP, special quests).')}</p><button class="btn primary block" data-act="close">OK</button>`); break;
-    case 'cos-set': S.settings.cos = S.settings.cos || {}; S.settings.cos[b.dataset.k] = b.dataset.id; save(); render(); if (frOn() && ['banner', 'emblem'].includes(b.dataset.k)) frQueue(false); if (b.dataset.k === 'fx') { const x = document.querySelector(`.cospick.on[data-k="fx"]`); if (x) setFx(x, false); } if (b.dataset.k === 'cele') confetti(120); break;
+    case 'cos-set': S.settings.cos = S.settings.cos || {}; S.settings.cos[b.dataset.k] = b.dataset.id; save(); armRefresh(); if (frOn() && ['banner', 'emblem'].includes(b.dataset.k)) frQueue(false); if (b.dataset.k === 'fx') { const x = document.querySelector('.armit.on'); if (x) setFx(x, false, b.dataset.id); } if (b.dataset.k === 'cele') confetti(120); break;
     case 'cos-how': toast(T(`🔒 Se débloque avec : ${b.dataset.h}`, `🔒 Unlocks with: ${b.dataset.h}`)); break;
     case 'cos-try': if (b.dataset.k === 'fx') setFx(b, false); else confetti(120); break;
-    case 'frame-set': S.settings.frame = b.dataset.id; save(); render(); if (frOn()) frQueue(false); break;
-    case 'rtheme': { const t = REWARD_THEMES.find(x => x.id === b.dataset.id); if (!t) break; S.settings.theme = 'noir'; S.settings.accent = t.acc; S.settings.bg = t.bg; save(); applyTheme(); render(); toast(T(`🎨 Thème ${t.n[0]}`, `🎨 ${t.n[1]} theme`)); break; }
+    case 'frame-set': S.settings.frame = b.dataset.id; save(); armRefresh(); if (frOn()) frQueue(false); break;
+    case 'rtheme': { const t = REWARD_THEMES.find(x => x.id === b.dataset.id); if (!t) break; S.settings.theme = 'noir'; S.settings.accent = t.acc; S.settings.bg = t.bg; save(); applyTheme(); armRefresh(); toast(T(`🎨 Thème ${t.n[0]}`, `🎨 ${t.n[1]} theme`)); break; }
     case 'noop': toast(T('🔒 Monte de niveau pour le débloquer', '🔒 Level up to unlock it')); break;
     case 'hist-more': { const y = scrollY; histLim += 60; render(); window.scrollTo(0, y); break; }
     case 'ch-new': closeAll(); chNew(b.dataset.c); break;
