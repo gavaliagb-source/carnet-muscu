@@ -137,7 +137,7 @@ canvas{width:100%;height:210px;display:block}
 .stat b{display:block;font-size:20px}
 .hist summary{list-style:none;cursor:pointer}
 .hist summary::-webkit-details-marker{display:none}
-.empty{text-align:center;color:var(--muted);padding:30px 10px}
+.empty{position:relative;text-align:center;color:var(--muted);padding:30px 16px;line-height:1.45}.empty::before{content:'';display:block;width:64px;height:64px;margin:0 auto 12px;border-radius:50%;background:color-mix(in srgb,var(--accent) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 30%,transparent)}.empty::after{content:'';position:absolute;top:47px;left:50%;width:30px;height:30px;transform:translateX(-50%);background:var(--accent);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.4 14.4 9.6 9.6'/%3E%3Cpath d='M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z'/%3E%3Cpath d='m21.5 21.5-1.4-1.4'/%3E%3Cpath d='M3.9 3.9 2.5 2.5'/%3E%3Cpath d='M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.4 14.4 9.6 9.6'/%3E%3Cpath d='M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z'/%3E%3Cpath d='m21.5 21.5-1.4-1.4'/%3E%3Cpath d='M3.9 3.9 2.5 2.5'/%3E%3Cpath d='M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z'/%3E%3C/svg%3E") center/contain no-repeat}
 .gap{height:8px}
 .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px;margin-bottom:12px;gap:3px}
 .seg button{flex:1;background:none;border:0;color:var(--muted);padding:9px 4px;border-radius:9px;font-size:14px;font-weight:600}
@@ -280,11 +280,11 @@ button.chip{cursor:pointer}
 .rkf-S,.rkf-Sp,.rkf-M{animation:rkGlow 2.4s ease-in-out infinite}.avatar.rkf-S,.avatar.rkf-Sp,.avatar.rkf-M{animation:rkGlowB 2.4s ease-in-out infinite}
 @keyframes rkGlow{0%,100%{box-shadow:0 0 0 2px var(--card),0 0 0 4.5px var(--rkc),0 0 8px 1px color-mix(in srgb,var(--rkc) 40%,transparent)}50%{box-shadow:0 0 0 2px var(--card),0 0 0 4.5px var(--rkc),0 0 18px 6px color-mix(in srgb,var(--rkc) 70%,transparent)}}
 @keyframes rkGlowB{0%,100%{box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--rkc),0 0 10px 2px color-mix(in srgb,var(--rkc) 40%,transparent)}50%{box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--rkc),0 0 24px 8px color-mix(in srgb,var(--rkc) 70%,transparent)}}
-.rings{display:flex;align-items:center;gap:14px}.rings svg{flex:none}.ringp{animation:ringIn 1s cubic-bezier(.2,.8,.2,1) both}@keyframes ringIn{from{stroke-dashoffset:var(--c)}}
+.rings{display:flex;align-items:center;gap:14px}.rings svg{flex:none}.rings.anim .ringp{animation:ringIn 1s cubic-bezier(.2,.8,.2,1) both}@keyframes ringIn{from{stroke-dashoffset:var(--c)}}
 .rgrow{display:flex;align-items:baseline;gap:6px;font-size:13px;margin-top:3px}.rgrow i{width:9px;height:9px;border-radius:50%;flex:none;align-self:center}.rgrow b{margin-left:auto}
 .agw{overflow:hidden;margin-top:10px}.agm{display:grid;font-size:10px;color:var(--muted);margin-bottom:3px}.agm span{white-space:nowrap}.agg{display:flex;gap:3px}.agc{display:flex;flex-direction:column;gap:3px;flex:1}
 .ag{display:block;aspect-ratio:1;border-radius:3px;background:var(--card2)}.agc .ag{width:100%}.row>.ag{width:11px;height:11px;display:inline-block}.ag.fut{background:transparent}.ag.l1{background:color-mix(in srgb,var(--accent) 30%,var(--card2))}.ag.l2{background:color-mix(in srgb,var(--accent) 55%,var(--card2))}.ag.l3{background:color-mix(in srgb,var(--accent) 80%,var(--card2))}.ag.l4{background:var(--accent);box-shadow:0 0 6px color-mix(in srgb,var(--accent) 60%,transparent)}
-.bars .bar{transform-box:fill-box;transform-origin:bottom;animation:barUp .55s cubic-bezier(.2,.8,.2,1) both}@keyframes barUp{from{transform:scaleY(0)}}
+.bars.anim .bar{transform-box:fill-box;transform-origin:bottom;animation:barUp .55s cubic-bezier(.2,.8,.2,1) both}@keyframes barUp{from{transform:scaleY(0)}}
 @media (prefers-reduced-motion: reduce){.ringp,.bars .bar,.finin,.rkf{animation:none!important}}
 .evcard{border-color:color-mix(in srgb,#f5c542 60%,transparent);background:linear-gradient(135deg,color-mix(in srgb,#f5c542 10%,var(--card)),var(--card))}.evcard .sysh{color:#f5c542}.evcard .goal>div{background:#f5c542}
 .evx2{display:inline-block;font-weight:900;font-size:20px;letter-spacing:1px;color:#f5c542;text-shadow:0 0 12px color-mix(in srgb,#f5c542 60%,transparent);animation:evP 1.8s ease-in-out infinite}@keyframes evP{50%{transform:scale(1.08)}}
@@ -469,7 +469,7 @@ body.selon main{padding-bottom:170px}
 .cvbig span,.cvsm span{display:block;color:var(--muted);font-size:12px}.cvbig b{display:block;font-size:40px;line-height:1.1;color:var(--accent)}.cvbig small,.cvsm small{color:var(--muted);font-size:11px}
 .cvsm{text-align:center;min-width:70px}.cvsm b{display:block;font-size:20px}
 .seg{display:flex;gap:6px}.seg .btn{flex:1}
-nav button{font-size:11px}
+nav button{font-size:11px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cardiobtn{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:12px 14px;border-radius:16px;border:1px dashed color-mix(in srgb,var(--accent) 60%,transparent);background:color-mix(in srgb,var(--accent) 8%,var(--card));color:var(--text);font:inherit;text-align:left;cursor:pointer}
 .cardiobtn .ci{width:42px;height:42px;border-radius:12px;background:color-mix(in srgb,var(--accent) 22%,transparent);display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
 .cardiobtn b{display:block}.cardiobtn small{color:var(--muted)}.cardiobtn .ar{margin-left:auto;color:var(--muted);font-size:22px}
@@ -995,7 +995,7 @@ function save() { saveLocal(); if (typeof queueCloud === 'function') queueCloud(
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 
 /* ---------- Navigation façon Hevy (pile d'écrans) ---------- */
-const ROOT_TABS = ['train', 'stretch', 'cardio', 'timers', 'profile'];
+const ROOT_TABS = ['train', 'stretch', 'cardio', 'timers', 'guild', 'profile'];
 function lastTab() { try { const t = localStorage.getItem('cm-tab'); return ROOT_TABS.includes(t) ? t : 'train'; } catch (e) { return 'train'; } }
 let stack = S.active ? [{v: 'train'}, {v: 'workout'}] : [{v: lastTab()}];
 /* Garde l'onglet et la position quand on rafraîchit la page */
@@ -1978,7 +1978,7 @@ function vProgress() {
 }
 function vExProgress() {
   const names = exerciseNames();
-  if (!names.length) return '<div class="empty">Tes graphiques apparaîtront après ta première séance.</div>';
+  if (!names.length) return `<div class="empty">Tes graphiques apparaîtront après ta première séance.<br><button class="btn primary sm" data-tab="train" style="margin-top:12px">${T('Démarrer une séance', 'Start a workout')}</button></div>`;
   if (!progEx || !names.includes(progEx)) progEx = names[0];
   const pts = S.history.map(h => {
     const e = h.exercises.find(x => norm(x.name) === norm(progEx));
@@ -2020,7 +2020,7 @@ function computeRecords() {
 }
 function vRecords() {
   const recs = computeRecords();
-  if (!recs.length) return '<div class="empty">Tes records apparaîtront après ta première séance.</div>';
+  if (!recs.length) return `<div class="empty">Tes records apparaîtront après ta première séance.<br><button class="btn primary sm" data-tab="train" style="margin-top:12px">${T('Démarrer une séance', 'Start a workout')}</button></div>`;
   if (recSort === 'az') recs.sort((a, b) => a.name.localeCompare(b.name, 'fr')); else recs.sort((a, b) => b.date.localeCompare(a.date));
   const recent = d => Date.now() - new Date(d) <= 14 * 864e5;
   const n30 = recs.filter(r => Date.now() - new Date(r.date) <= 30 * 864e5).length;
@@ -2535,7 +2535,7 @@ function drawChart(pts, proj = []) {
       g.beginPath(); g.arc(bx, by, 4, 0, 7); g.strokeStyle = accent; g.lineWidth = 2; g.stroke(); g.fillStyle = accent; g.font = 'bold 11px sans-serif'; g.textAlign = 'right'; g.fillText(Math.round(pts[n0].v).toLocaleString(LOC()), bx - 6, by - 8); }
     g.restore();
   };
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches || P.length < 2) { paint(1); return; }
+  if (!ANIM || matchMedia('(prefers-reduced-motion: reduce)').matches || P.length < 2) { paint(1); return; }
   const a0 = performance.now(); (function f(t) { const k = Math.min(1, (t - a0) / 650); paint(1 - Math.pow(1 - k, 3)); if (k < 1) requestAnimationFrame(f); })(a0);
 }
 function chartPoints() {
@@ -2822,8 +2822,9 @@ function cloudCard() {
 function cloudNag() {
   if (cloudOn() || (gdOn() && S.gd.last && Date.now() - new Date(S.gd.last) < 7 * 864e5) || !S.history.length || (S.settings.nagUntil && Date.now() < S.settings.nagUntil)) return '';
   const lb = S.settings.lastBackup; if (lb && Date.now() - new Date(lb) < 7 * 864e5) return '';
-  return `<div class="card" style="border-style:dashed"><b>💾 ${lb ? T('Sauvegarde de la semaine', 'Weekly backup') : T('Protège tes données', 'Protect your data')}</b><p class="muted small" style="margin:4px 0 8px">${lb ? T('Ta dernière sauvegarde date de ', 'Your last backup was ') + ago(lb) + T('. Ça prend 10 secondes.', '. It takes 10 seconds.') : T('Si tu perds ou changes de téléphone, tes séances partent avec. Fais une sauvegarde (Google Drive, Fichiers ou courriel) : ça prend 10 secondes.', 'If you lose or change phones, your workouts go with it. Make a backup (Google Drive, Files or email): it takes 10 seconds.')}</p>
-    ${gdReady() && !gdOn() ? `<button class="btn primary sm block" data-act="gd-connect" style="margin-bottom:8px"><b>G</b>&nbsp; ${T('Sauvegarde automatique avec Google', 'Automatic backup with Google')}</button>` : ''}<div class="row"><button class="btn ${gdReady() && !gdOn() ? '' : 'primary'} sm" data-act="${gdOn() ? 'gd-push' : 'export'}">💾 ${T('Sauvegarder maintenant', 'Back up now')}</button><button class="btn sm" data-act="nag-later">${T('Plus tard', 'Later')}</button></div></div>`;
+  const g = gdReady() && !gdOn();
+  return `<div class="card nag"><div class="row" style="gap:10px;align-items:center"><span class="nagic">💾</span><div style="flex:1;min-width:0"><b>${lb ? T('Sauvegarde de la semaine', 'Weekly backup') : T('Protège tes données', 'Protect your data')}</b><div class="small muted">${lb ? T('Dernière : ', 'Last: ') + ago(lb) : T('Si tu changes de téléphone, tout part avec.', 'If you change phones, everything goes with it.')}</div></div><button class="btn sm ghost" data-act="nag-later" aria-label="${T('Plus tard', 'Later')}">✕</button></div>
+    <div class="row" style="gap:8px;margin-top:8px">${g ? `<button class="btn primary sm" style="flex:1" data-act="gd-connect"><b>G</b>&nbsp; ${T('Auto avec Google', 'Auto with Google')}</button>` : ''}<button class="btn ${g ? '' : 'primary'} sm" style="flex:1" data-act="${gdOn() ? 'gd-push' : 'export'}">${T('Sauvegarder', 'Back up')}</button></div></div>`;
   return `<div class="card" style="border-style:dashed"><b>☁️ Protège tes données</b><p class="muted small" style="margin:4px 0 8px">Active la sauvegarde automatique pour ne rien perdre si tu changes de téléphone.</p>
     <div class="row"><button class="btn primary sm" data-act="go" data-v="settings">Activer (2 min)</button><button class="btn sm" data-act="nag-later">Plus tard</button></div></div>`;
 }
@@ -2913,7 +2914,7 @@ const schedR = i => { const p = weekPlan()[i]; return p && p.r && p.r.id ? p.r :
 function todayCard() {
   const sc = S.schedule || [];
   if (!cycleOn() && !sc.some(x => x === 'rest' || S.routines.some(r => r.id === x)))
-    return `<button class="btn block" data-act="sched-edit" style="margin-bottom:10px;text-align:left">📅 ${T('Planifier ma semaine', 'Plan my week')} <span class="muted small">${T('(lundi : Upper, mardi : repos…)', '(Monday: Upper, Tuesday: rest…)')}</span></button>`;
+    return S.history.length ? '' : `<button class="btn block" data-act="sched-edit" style="margin-bottom:10px;text-align:left">📅 ${T('Planifier ma semaine', 'Plan my week')} <span class="muted small">${T('(lundi : Upper, mardi : repos…)', '(Monday: Upper, Tuesday: rest…)')}</span></button>`;
   const di = dayIdx(new Date()), wp = weekPlan(), r = wp[di].r && wp[di].r.id ? wp[di].r : null;
   const doneToday = S.history.some(x => dkey(x.date) === dkey(new Date()));
   let nxt = '';
@@ -3132,7 +3133,7 @@ function vTrain() {
   let h = '';
   if (a) h += `<div class="card" style="border-color:var(--accent)"><div class="row between"><div><h3>Séance en cours</h3><span class="muted small">${esc(a.routineName)} · ⏱ <span id="elapsed2">${fmtDur(Date.now() - new Date(a.start))}</span></span></div><button class="btn primary sm" data-act="go-workout">Reprendre</button></div></div>`;
   h += todayCard();
-  syncSystem(); if (GAME()) { evCheck(); h += eventCard(); h += questCard(true); setTimeout(evAnnounce, 0); }
+  syncSystem(); if (GAME()) { evCheck(); h += guildStrip(); setTimeout(evAnnounce, 0); }
   h += weekRings();
   h += cloudNag();
   if (deloadOn()) h += `<div class="card" style="border-color:var(--warm)"><div class="row between"><div><b>🪶 Semaine de récupération</b><br><span class="muted small">Charges −${S.settings.deload.pct} % jusqu'au ${new Date(S.settings.deload.until + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'long'})}</span></div><button class="btn sm" data-act="deload-off">Arrêter</button></div></div>`;
@@ -3292,7 +3293,7 @@ function vRoutineDetail() {
   return `<h2 style="font-size:22px">${esc(r.name)}</h2>
     <p class="muted small" style="margin:0 0 12px">📁 ${esc(r.folder || DEF_FOLDER)} · ${r.exercises.length} exercice${r.exercises.length > 1 ? 's' : ''}${lastH ? ' · dernière fois le ' + dateFr(lastH.date) : ''}</p>
     <button class="btn primary block" data-act="start" data-rid="${r.id}">▶ Démarrer la routine</button>${expressBtn(r)}
-    <div class="card" style="margin-top:12px">${ss.length ? '<canvas id="chart"></canvas>' : '<div class="empty" style="padding:16px">Le graphique apparaîtra après ta première séance de cette routine.</div>'}
+    <div class="card" style="margin-top:12px">${ss.length ? '<canvas id="chart"></canvas>' : '<div class="empty">Le graphique apparaîtra après ta première séance de cette routine.</div>'}
       <div class="chips" style="margin-bottom:0">${chips}</div></div>
     <div class="row between" style="margin:16px 0 0"><span class="muted">Exercices</span><button class="linkbtn" data-act="edit-routine" data-rid="${r.id}">Modifier la routine</button></div>
     ${r.exercises.map(e => `<div class="rex ${e.ss ? 'ssl' : ''}" ${ssSty(e)}>
@@ -3397,7 +3398,7 @@ function saveRoutineDraft() {
 }
 
 /* ---------- Profil ---------- */
-let pfMetric = 'dur', pfWeeks = 12, pfSel = null;
+let pfMetric = 'act', pfWeeks = 12, pfSel = null;
 function weekly(n) {
   const ws = weekStart(new Date()), out = [];
   for (let i = n - 1; i >= 0; i--) { const s = new Date(ws); s.setDate(s.getDate() - 7 * i); const e = new Date(s); e.setDate(e.getDate() + 7); out.push({s, e, dur: 0, vol: 0, reps: 0, n: 0}); }
@@ -3424,7 +3425,7 @@ function barsSVG(vals, labels, fmt, tips, sel) {
       g += `<text x="${lx.toFixed(1)}" y="${H - 6}" text-anchor="${anc}" style="fill:var(--muted);font-size:10px;pointer-events:none">${labels[i]}</text>`;
     }
   });
-  return `<div class="chartw"><svg width="40" height="${H}" class="yax">${ax}</svg><div class="chs" id="chs"><svg width="${W}" height="${H}" role="img" aria-label="${T('Graphique hebdomadaire', 'Weekly chart')}" class="bars"><defs><linearGradient id="bgr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent)" stop-opacity=".45"/></linearGradient></defs>${g}</svg></div></div>`;
+  return `<div class="chartw"><svg width="40" height="${H}" class="yax">${ax}</svg><div class="chs" id="chs"><svg width="${W}" height="${H}" role="img" aria-label="${T('Graphique hebdomadaire', 'Weekly chart')}" class="bars${ANIM ? ' anim' : ''}"><defs><linearGradient id="bgr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent)" stop-opacity=".45"/></linearGradient></defs>${g}</svg></div></div>`;
 }
 function allWeeks() {
   if (!S.history.length) return 12;
@@ -3454,13 +3455,13 @@ function weekRings() {
   const vf = v => v >= 10000 ? (Math.round(v / 100) / 10) + 'k' : Math.round(v).toLocaleString(LOC());
   const row = (col, l, v, g) => `<div class="rgrow"><i style="background:${col}"></i><span class="muted">${l}</span><b>${v}</b><span class="muted">/ ${g}</span></div>`;
   const all = R.every(x => x[0] >= 1);
-  return `<div class="card rings"><svg viewBox="0 0 100 100" width="96" height="96" aria-hidden="true"><defs><filter id="rglow"><feGaussianBlur stdDeviation="1.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>${ring(R[0][0], R[0][1], 42)}${ring(R[1][0], R[1][1], 31)}${ring(R[2][0], R[2][1], 20)}</svg>
+  return `<div class="card rings${ANIM ? ' anim' : ''}"><svg viewBox="0 0 100 100" width="96" height="96" aria-hidden="true"><defs><filter id="rglow"><feGaussianBlur stdDeviation="1.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>${ring(R[0][0], R[0][1], 42)}${ring(R[1][0], R[1][1], 31)}${ring(R[2][0], R[2][1], 20)}</svg>
     <div style="flex:1;min-width:0"><b>${all ? T('🔥 Semaine complète!', '🔥 Full week!') : T('Ma semaine', 'My week')}</b>
     ${row('var(--accent)', T('Séances', 'Workouts'), cur.n, gN)}${row('#38bdf8', T('Volume', 'Volume'), vf(cur.vol), vf(gV) + ' ' + U())}${row('#fb7185', T('Cardio', 'Cardio'), Math.round(cur.car), gC + ' min')}
-    <div class="muted small" style="margin-top:4px">${S.settings.goal ? '' : T('Objectifs = ta moyenne des 4 dernières semaines', 'Goals = your average of the last 4 weeks')}</div></div></div>`;
+    ${!cycleOn() && !(S.schedule || []).some(x => x === 'rest' || S.routines.some(r => r.id === x)) ? `<button class="linkbtn small" style="margin-top:6px" data-act="sched-edit">📅 ${T('Planifier ma semaine', 'Plan my week')}</button>` : S.settings.goal ? '' : `<div class="muted small" style="margin-top:4px">${T('Objectifs = ta moyenne des 4 dernières semaines', 'Goals = your average of the last 4 weeks')}</div>`}</div></div>`;
 }
 /* ---------- Grille d'activité de l'année ---------- */
-function actGrid() {
+function actGrid(inner) {
   if (!S.history.length) return '';
   const vol = {}; S.history.forEach(h => { const k = dkey(new Date(h.date)); vol[k] = (vol[k] || 0) + Math.max(1, sessVol(h)); });
   const vals = Object.values(vol).sort((a, b) => a - b), q = f => vals[Math.min(vals.length - 1, Math.floor(vals.length * f))];
@@ -3473,7 +3474,7 @@ function actGrid() {
     const m = new Date(d - 7 * 864e5).getMonth(); if (m !== lastM) { mLab += `<span style="grid-column:${ci + 1}">${new Date(2026, m, 1).toLocaleDateString(LOC(), {month: 'short'}).replace('.', '')}</span>`; lastM = m; }
     cols += `<div class="agc">${c}</div>`; ci++;
   }
-  return `<div class="card"><div class="row between"><b>${T('Mon activité', 'My activity')}</b><span class="muted small">${act} ${T('jours actifs', 'active days')} · 6 ${T('mois', 'months')}</span></div>
+  return `${inner ? '<div>' : '<div class="card">'}<div class="row between"><b>${T('Mon activité', 'My activity')}</b><span class="muted small">${act} ${T('jours actifs', 'active days')} · 6 ${T('mois', 'months')}</span></div>
     <div class="agw"><div class="agm" style="grid-template-columns:repeat(${ci},1fr)">${mLab}</div><div class="agg">${cols}</div></div>
     <div class="row small muted" style="justify-content:flex-end;gap:4px;margin-top:6px">${T('Léger', 'Light')} <i class="ag l1"></i><i class="ag l2"></i><i class="ag l3"></i><i class="ag l4"></i> ${T('Intense', 'Hard')}</div></div>`;
 }
@@ -3660,10 +3661,10 @@ function vProfile() {
   return `<div class="row" style="gap:14px;margin-bottom:16px"><button class="avatar${S.history.length ? rkFrame(GAME() ? hunter().rk : '') : ''}" data-act="avatar" aria-label="${T('Photo de profil', 'Profile photo')}">${S.settings.avatar ? `<img src="${S.settings.avatar}" alt="">` : esc((nm.trim()[0] || '?').toUpperCase())}<span class="cam">📷</span></button>
       <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0">${esc(nm)}</h2>${(() => { if (!S.history.length || !GAME()) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${hu.lvl >= 10 ? clsIc(hu.cls) + ' ' + esc(clsName(hu.cls)) : esc(hu.title)}</button>`; })()}
       <div class="pfstats"><div><span class="muted small">Entraînements</span><br><b>${S.history.length}</b></div><div><span class="muted small">${T('Série', 'Streak')}</span><br><b>🔥 ${streakWeeks()} sem.</b></div><div><span class="muted small">Ce mois</span><br><b>${month}</b></div></div></div></div>
-    ${bodyCard()}${friendsCard()}${yearBanner()}${actGrid()}${stagCard()}
-    <div class="row between"><span>${headline}</span><select style="width:auto" data-pf="range"><option value="12" ${pfWeeks === 12 ? 'selected' : ''}>3 derniers mois</option><option value="26" ${pfWeeks === 26 ? 'selected' : ''}>6 mois</option><option value="52" ${pfWeeks === 52 ? 'selected' : ''}>1 an</option><option value="0" ${pfWeeks === 0 ? 'selected' : ''}>Tout</option></select></div>
-    <div class="card" style="padding:10px 6px 4px;margin-top:8px">${barsSVG(vals, labels, fmtV, window._chtips, pfSel)}<div class="chtip" id="chtip">${pfSel != null ? window._chtips[pfSel] : T('Touche une barre pour voir le détail · glisse pour voir avant', 'Tap a bar for details · swipe to see earlier weeks')}</div></div>
-    <div class="chips">${[['dur', 'Durée'], ['vol', 'Volume'], ['reps', 'Réps']].map(([k, l]) => `<button class="chip ${pfMetric === k ? 'on' : ''}" data-act="pf-metric" data-m="${k}">${l}</button>`).join('')}</div>
+    ${bodyCard()}${friendsCard()}${yearBanner()}${stagCard()}
+    ${!S.history.length ? '' : `<div class="card pfchart"><div class="seg" style="margin:0 0 12px">${[['act', T('Activité', 'Activity')], ['dur', T('Durée', 'Time')], ['vol', 'Volume'], ['reps', T('Réps', 'Reps')]].map(([k, l]) => `<button class="${pfMetric === k ? 'on' : ''}" data-act="pf-metric" data-m="${k}">${l}</button>`).join('')}</div>
+    ${pfMetric === 'act' ? actGrid(true) : `<div class="row between"><span>${headline}</span><select style="width:auto" data-pf="range"><option value="12" ${pfWeeks === 12 ? 'selected' : ''}>3 derniers mois</option><option value="26" ${pfWeeks === 26 ? 'selected' : ''}>6 mois</option><option value="52" ${pfWeeks === 52 ? 'selected' : ''}>1 an</option><option value="0" ${pfWeeks === 0 ? 'selected' : ''}>Tout</option></select></div>
+    <div style="margin-top:8px">${barsSVG(vals, labels, fmtV, window._chtips, pfSel)}<div class="chtip" id="chtip">${pfSel != null ? window._chtips[pfSel] : T('Touche une barre pour voir le détail · glisse pour voir avant', 'Tap a bar for details · swipe to see earlier weeks')}</div></div>`}</div>`}
     <p class="muted" style="margin:16px 0 8px">Tableau de bord</p>
     <div class="grid2">
       <button class="btn tile" data-act="go" data-v="stats">${IC('chart', '📈')} ${T('Statistiques', 'Statistics')}</button>
@@ -3674,13 +3675,13 @@ function vProfile() {
       <button class="btn tile" data-act="go" data-v="recov">${IC('pulse', '💪')} ${T('Récupération', 'Recovery')}</button>
     </div>
     <p class="muted" style="margin:20px 0 8px">${T('Séances récentes', 'Recent workouts')}</p>
-    ${recent.length ? recent.map(h => histCard(h)).join('') + `<button class="btn block" data-act="go" data-v="history">${T(`Tout l'historique (${S.history.length}) · séance oubliée`, `Full history (${S.history.length}) · forgotten workout`)}</button>` : `<div class="empty">${T('Aucune séance encore.', 'No workouts yet.')}</div><button class="btn block" data-act="hist-new">＋ ${T('Ajouter une séance oubliée', 'Add a forgotten workout')}</button>`}`;
+    ${recent.length ? recent.map(h => histCard(h)).join('') + `<button class="btn block" data-act="go" data-v="history">${T(`Tout l'historique (${S.history.length}) · séance oubliée`, `Full history (${S.history.length}) · forgotten workout`)}</button>` : `<div class="empty">${T('Aucune séance encore.', 'No workouts yet.')}<button class="btn primary sm" data-tab="train" style="margin-top:12px">${T('Démarrer une séance', 'Start a workout')}</button></div><button class="btn block" data-act="hist-new">＋ ${T('Ajouter une séance oubliée', 'Add a forgotten workout')}</button>`}`;
 }
 let histLim = 40;
 function vHistAll() {
   const L = S.history.slice().reverse(), more = L.length - histLim;
   return `<button class="btn sm block" data-act="hist-new" style="margin-bottom:12px">＋ ${T('Ajouter une séance oubliée', 'Add a missed workout')}</button>` +
-    (L.length ? L.slice(0, histLim).map(h => histCard(h)).join('') + (more > 0 ? `<button class="btn block" data-act="hist-more">${T(`Voir plus (${more} autres)`, `Show more (${more} more)`)}</button>` : '') : `<div class="empty">${T('Aucune séance encore.', 'No workouts yet.')}</div>`);
+    (L.length ? L.slice(0, histLim).map(h => histCard(h)).join('') + (more > 0 ? `<button class="btn block" data-act="hist-more">${T(`Voir plus (${more} autres)`, `Show more (${more} more)`)}</button>` : '') : `<div class="empty">${T('Aucune séance encore.', 'No workouts yet.')}<button class="btn primary sm" data-tab="train" style="margin-top:12px">${T('Démarrer une séance', 'Start a workout')}</button></div>`);
 }
 
 /* ---------- Statistiques ---------- */
@@ -3849,7 +3850,7 @@ function vExDetail() {
       <button class="btn sm" data-act="exo" data-n="${esc(name)}">📖 Instructions et lien</button></div>
     ${rec ? `<div class="row" style="align-items:stretch;margin-bottom:12px">${rec.best ? `<div class="stat"><span class="muted small">Top série</span><b class="pr">${rec.best.w}×${rec.best.r}</b></div><div class="stat"><span class="muted small">1RM estimé</span><b>${Math.round(rec.best.v)}</b></div><div class="stat"><span class="muted small">Charge max</span><b>${rec.heavy ? rec.heavy.w : '—'}</b></div>` : `<div class="stat"><span class="muted small">Réps max</span><b class="pr">${rec.reps.r}</b></div><div class="stat"><span class="muted small">Séances</span><b>${rec.count}</b></div>`}</div>` : ''}
     ${stagBtn(name)}
-    <div class="card">${pts.length ? '<canvas id="chart"></canvas>' : '<div class="empty" style="padding:16px">Pas encore de données pour ce graphique.</div>'}${exMetric === 'vol' ? '' : predictHtml(pts, exMetric === 'reps' ? 'reps' : 'w')}<div class="chips" style="margin-bottom:0">${chips}</div></div>
+    <div class="card">${pts.length ? '<canvas id="chart"></canvas>' : '<div class="empty">Pas encore de données pour ce graphique.</div>'}${exMetric === 'vol' ? '' : predictHtml(pts, exMetric === 'reps' ? 'reps' : 'w')}<div class="chips" style="margin-bottom:0">${chips}</div></div>
     ${maxTable(rec)}
     <p class="muted" style="margin:16px 0 8px">Historique</p>
     ${ss.length ? ss.slice().reverse().slice(0, 30).map(({h, e}) => `<div class="card"><div class="row between"><b>${esc(h.routineName)}</b><span class="tag">${new Date(h.date).toLocaleDateString(LOC(), {day: 'numeric', month: 'short', year: 'numeric'})}</span></div>
@@ -4494,18 +4495,7 @@ function vMedals() {
     return `<div class="card medal ${ok ? 'ok' : ''}" style="--rc:${RKC[d.rk]}">${rkBadge(d.rk)}<div class="mic2">${d.ic}</div><b class="small">${esc(d.t)}</b>${d.s ? `<div class="small muted msub">${esc(d.s)}</div>` : ''}<div class="small muted">${ok ? dateFr(ok) + ' ' + new Date(ok).getFullYear() : `${fmtN(cur)} / ${fmtN(d.v)}`}</div>${ok ? '' : `<div class="goal" style="margin-top:6px"><div style="width:${Math.round(cur / d.v * 100)}%"></div></div>`}</div>`; };
   const list = defs.filter(d => medFilter === 'all' || (medFilter === 'ok' ? got[d.id] : !got[d.id]));
   const pct = Math.min(100, Math.round(hu.cur / hu.need * 100));
-  return `${!GAME() ? `<div class="card"><div class="row between" style="align-items:center"><div><span class="muted small">${T('Médailles gagnées', 'Medals earned')}</span><br><b style="font-size:22px">${n}</b> <span class="muted">/ ${defs.length}</span></div><button class="btn sm" data-act="go" data-v="murank">🎯 ${T('Rangs par muscle', 'Muscle ranks')}</button></div></div>` : `<div class="card sysw" style="--rc:${hu.col}">
-      <div class="sysh">[ ${T('STATUT', 'STATUS')} ]</div>
-      <div class="row" style="gap:14px;align-items:center">${rkBadge(hu.rk, 'rkbig')}
-        <div style="flex:1;min-width:0"><div class="muted small">${T('Niveau', 'Level')}</div><div class="lvl">${hu.lvl}</div><div class="small" style="color:var(--rc);font-weight:700">${esc(hu.title)}</div></div></div>
-      <button class="clsrow" data-act="cls-info">${clsIc(hu.cls)} <span><span class="muted small">${T('Classe', 'Class')}</span><br><b>${esc(clsName(hu.cls))}</b></span><span class="muted small" style="margin-left:auto">${hu.lvl < 10 ? T('Initié au niv. 10', 'Initiate at lv. 10') : hu.lvl < 40 ? T('Classe au niv. 40', 'Class at lv. 40') : 'ⓘ'}</span></button>
-      <div class="goal sysbar"><div style="width:${pct}%"></div></div>
-      <div class="row between small muted"><span>${fmtN(hu.cur)} / ${fmtN(hu.need)} XP</span><span>${hu.nextRank ? T(`Rang ${hu.nextRank.rk} au niveau ${hu.nextRank.lvl}`, `Rank ${hu.nextRank.rk} at level ${hu.nextRank.lvl}`) : T('Rang maximal atteint', 'Max rank reached')}</span></div>
-      <div class="sysstats"><div><span>${T('FOR', 'STR')}</span><b>${fmtN(st.b3)}</b><i>${U()}</i></div><div><span>${T('END', 'END')}</span><b>${fmtN(st.hr)}</b><i>h</i></div><div><span>${T('CON', 'CON')}</span><b>${st.wk}</b><i>${T('sem.', 'wk')}</i></div><div><span>${T('MÉD', 'MED')}</span><b>${n}</b><i>/ ${defs.length}</i></div></div>
-      <p class="small muted" style="margin:10px 0 0">${T('XP : séance 100 · série 5 · record 40 · médaille 250 · quête 150 · donjon 500 · boss 1 000 · quête ratée −10.', 'XP: workout 100 · set 5 · record 40 · medal 250 · quest 150 · dungeon 500 · boss 1,000 · missed quest −10.')}</p>
-      <div class="row" style="gap:8px;margin-top:10px"><button class="btn" style="flex:1" data-act="go" data-v="murank">🎯 ${T('Rangs par muscle', 'Muscle ranks')}</button><button class="btn" style="flex:1" data-act="go" data-v="shadows">⚔️ ${T('Arsenal', 'Arsenal')} (${st.sh || 0})</button></div>
-    </div>
-    ${S.history.length ? '<div style="height:12px"></div>' + questCard() : ''}`}
+  return `${true ? `<div class="card"><div class="row between" style="align-items:center"><div><span class="muted small">${T('Médailles gagnées', 'Medals earned')}</span><br><b style="font-size:22px">${n}</b> <span class="muted">/ ${defs.length}</span></div><button class="btn sm" data-act="go" data-v="murank">🎯 ${T('Rangs par muscle', 'Muscle ranks')}</button></div></div>` : ''}
     <div class="seg" style="margin:14px 0 4px"><button class="${medFilter === 'all' ? 'on' : ''}" data-act="med-f" data-f="all">${T('Toutes', 'All')}</button><button class="${medFilter === 'ok' ? 'on' : ''}" data-act="med-f" data-f="ok">${T('Gagnées', 'Earned')} (${n})</button><button class="${medFilter === 'todo' ? 'on' : ''}" data-act="med-f" data-f="todo">${T('À débloquer', 'Locked')} (${defs.length - n})</button></div>
     ${MCATS.filter(([c]) => GAME() || c !== 'sys').map(([c, nmC]) => { const L = list.filter(d => d.cat === c); if (!L.length) return ''; const gotC = defs.filter(d => d.cat === c && got[d.id]).length, totC = defs.filter(d => d.cat === c).length;
       return `<h3 class="mcat">${T(nmC[0], nmC[1])} <span class="muted small">${gotC} / ${totC}</span></h3><div class="grid2">${L.map(card).join('')}</div>`; }).join('')}`;
@@ -4616,10 +4606,10 @@ function questCard(compact) {
     ? `<div class="qrow"><span class="qic">${'🌙'}</span><div style="flex:1"><b>${T('Jour de repos', 'Rest day')}</b><div class="small muted">${T('La Guilde te laisse récupérer aujourd\'hui. Pas de quête.', 'The Guild lets you rest today. No quest.')}</div></div></div>`
     : `<div class="qrow"><span class="qic">${q.ic}</span><div style="flex:1;min-width:0"><b>${esc(q.text)}</b>${sysBar(q.cur, q.goal)}<div class="row between small muted"><span>${Math.min(q.cur, q.goal).toLocaleString(LOC())} / ${q.goal.toLocaleString(LOC())}</span><span>${q.done ? `<b style="color:var(--ok)">${T('ACCOMPLIE', 'COMPLETE')}</b>` : '+150 XP'}</span></div></div></div>`;
   const dh = `<div class="qrow" style="margin-top:12px"><span class="qic">${rkBadge(dg.rk, 'mrk lvrk')}</span><div style="flex:1;min-width:0"><b>${T('Donjon de rang', 'Rank')} ${dg.rk}${T('', ' dungeon')} · ${esc(dg.text)}</b>${sysBar(dg.cur, dg.goal)}<div class="row between small muted"><span>${dg.fmt(Math.min(dg.cur, dg.goal))} / ${dg.fmt(dg.goal)}</span><span>${dg.done ? `<b style="color:var(--ok)">${T('DONJON NETTOYÉ', 'DUNGEON CLEARED')}</b>` : `${dg.left} ${T('j restants', 'days left')} · +500 XP`}</span></div></div></div>`;
-  const open = S.settings.qOpen === true, bo = monthBoss();
+  const open = compact === 'full' || S.settings.qOpen === true, bo = monthBoss();
   const pc = (a, b) => Math.min(100, Math.round(a / Math.max(1, b) * 100));
   const chip = (ic, label, pct, done) => `<span class="qchip ${done ? 'ok' : ''}">${ic}<span>${label}</span><i><b style="width:${done ? 100 : pct}%"></b></i></span>`;
-  const head = `<button class="qhead" data-act="q-tog" aria-expanded="${open}"><span class="sysh" style="margin:0">[ ${T('QUÊTES', 'QUESTS')} ]</span><span class="qchev">${open ? '▴' : '▾'}</span></button>`;
+  const head = compact === 'full' ? `<div class="sysh" style="margin:0">[ ${T('QUÊTES', 'QUESTS')} ]</div>` : `<button class="qhead" data-act="q-tog" aria-expanded="${open}"><span class="sysh" style="margin:0">[ ${T('QUÊTES', 'QUESTS')} ]</span><span class="qchev">${open ? '▴' : '▾'}</span></button>`;
   if (!open) return `<div class="card sysw qcard qmin">${head}<div class="qchips">
       ${q.rest ? chip('🌙', T('Repos', 'Rest'), 100, true) : chip(q.ic, T('Quête', 'Quest'), pc(q.cur, q.goal), q.done)}
       ${chip(rkBadge(dg.rk, 'mrk lvrk'), T('Donjon', 'Dungeon'), pc(dg.cur, dg.goal), dg.done)}
@@ -4761,7 +4751,7 @@ function yearStats(y) {
 }
 function vYear() {
   const ys = [...new Set(S.history.map(h => new Date(h.date).getFullYear()))].sort();
-  if (!ys.length) return `<div class="empty">${T('Ton bilan apparaîtra après ta première séance.', 'Your review will appear after your first workout.')}</div>`;
+  if (!ys.length) return `<div class="empty">${T('Ton bilan apparaîtra après ta première séance.', 'Your review will appear after your first workout.')}<button class="btn primary sm" data-tab="train" style="margin-top:12px">${T('Démarrer une séance', 'Start a workout')}</button></div>`;
   const y = yrSel && ys.includes(yrSel) ? yrSel : ys[ys.length - 1], st = yearStats(y);
   const big = (ic, v, l) => `<div class="card ybig"><div class="mic2">${ic}</div><b>${v}</b><span class="muted small">${l}</span></div>`;
   const mName = st.n ? new Date(y, st.bestM, 1).toLocaleDateString(LOC(), {month: 'long'}) : '—';
@@ -5178,8 +5168,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.27.2';
+const APP_VERSION = '9.28';
 const CHANGELOG = [
+  {v: '9.28', d: '2026-11-12', fr: ['⚔️ Mode jeu : nouvel onglet Guilde en bas, avec tout le jeu au même endroit (niveau et rang, quêtes, donjon, boss, événements, raid, saison, arsenal, rangs par muscle). L\'onglet Entraînement garde juste une petite bande Guilde.', '🧹 Onglet Entraînement plus léger : « Planifier ma semaine » est dans la carte Ma semaine, et le rappel de sauvegarde est plus compact.', '📊 Profil : l\'activité et le graphique des semaines sont réunis dans une seule carte (Activité, Durée, Volume, Réps).', '🎨 Les dernières icônes en emoji sont remplacées par des icônes modernes, et les écrans vides ont une illustration et un bouton pour commencer.', '📈 Les graphiques s\'animent seulement quand tu ouvres l\'écran, plus à chaque toucher.'], en: ['⚔️ Game mode: new Guild tab at the bottom with the whole game in one place (level and rank, quests, dungeon, boss, events, raid, season, arsenal, muscle ranks). The Workout tab keeps just a small Guild strip.', '🧹 Lighter Workout tab: “Plan my week” lives in the My week card, and the backup reminder is more compact.', '📊 Profile: activity and the weekly chart are combined in one card (Activity, Time, Volume, Reps).', '🎨 The last emoji icons are replaced with modern icons, and empty screens have an illustration and a button to get started.', '📈 Charts animate only when you open the screen, not on every tap.']},
   {v: '9.27.2', d: '2026-11-12', fr: ['🗣️ Le coach vocal est retiré.'], en: ['🗣️ The voice coach has been removed.']},
   {v: '9.27.1', d: '2026-11-12', fr: ['🗣️ Coach vocal : il dit « répétitions » en entier, parle un peu plus lentement et choisit la meilleure voix française de ton téléphone.'], en: ['🗣️ Voice coach: speaks a bit slower and picks the best voice on your phone.']},
   {v: '9.27', d: '2026-11-12', fr: ['⚡ Appli plus rapide : le Bilan de l\'année s\'ouvre ~60 fois plus vite, le Profil, les Médailles et l\'Historique 2 à 6 fois plus vite (l\'historique affiche 40 séances, puis « Voir plus »). Si ton réseau est lent, l\'appli s\'ouvre tout de suite avec la version déjà téléchargée.', '🧹 Finitions : chiffres du profil sur une ligne, boutons des séances qui ne débordent plus, pourcentages qui ne se coupent plus, records du mois sans doublon, prédiction adaptée à ton historique, textes anglais manquants.', '🎮 Mode classique : les médailles du mode jeu (quêtes, donjons, boss, arsenal) sont cachées.'], en: ['⚡ Faster app: Year in review opens ~60× faster, Profile, Medals and History 2 to 6× faster (history shows 40 workouts, then “Show more”). On a slow network, the app opens right away with the version already downloaded.', '🧹 Polish: profile numbers on one line, workout buttons no longer overflow, percentages no longer wrap, monthly records without duplicates, prediction fitted to your history, missing English text.', '🎮 Classic mode: game-mode medals (quests, dungeons, bosses, arsenal) are hidden.']},
@@ -6556,6 +6547,39 @@ function frSocial() {
   return o;
 }
 function socialCheck() { try { seasonCheck(); raidCheck(); chCheck(); } catch (e) {} }
+/* ===================== Onglet Guilde (mode jeu) : tout ce qui touche au jeu au même endroit ===================== */
+function statusCard() {
+  const me = medalsEarned(), {st, defs} = me, n = Object.keys(me.got).length, hu = hunter(me), fmtN = v => Math.round(v).toLocaleString(LOC()), pct = Math.min(100, Math.round(hu.cur / hu.need * 100));
+  return `<div class="card sysw" style="--rc:${hu.col}">
+      <div class="sysh">[ ${T('STATUT', 'STATUS')} ]</div>
+      <div class="row" style="gap:14px;align-items:center">${rkBadge(hu.rk, 'rkbig')}
+        <div style="flex:1;min-width:0"><div class="muted small">${T('Niveau', 'Level')}</div><div class="lvl">${hu.lvl}</div><div class="small" style="color:var(--rc);font-weight:700">${esc(hu.title)}</div></div></div>
+      <button class="clsrow" data-act="cls-info">${clsIc(hu.cls)} <span><span class="muted small">${T('Classe', 'Class')}</span><br><b>${esc(clsName(hu.cls))}</b></span><span class="muted small" style="margin-left:auto">${hu.lvl < 10 ? T('Initié au niv. 10', 'Initiate at lv. 10') : hu.lvl < 40 ? T('Classe au niv. 40', 'Class at lv. 40') : 'ⓘ'}</span></button>
+      <div class="goal sysbar"><div style="width:${pct}%"></div></div>
+      <div class="row between small muted"><span>${fmtN(hu.cur)} / ${fmtN(hu.need)} XP</span><span>${hu.nextRank ? T(`Rang ${hu.nextRank.rk} au niveau ${hu.nextRank.lvl}`, `Rank ${hu.nextRank.rk} at level ${hu.nextRank.lvl}`) : T('Rang maximal atteint', 'Max rank reached')}</span></div>
+      <div class="sysstats"><div><span>${T('FOR', 'STR')}</span><b>${fmtN(st.b3)}</b><i>${U()}</i></div><div><span>${T('END', 'END')}</span><b>${fmtN(st.hr)}</b><i>h</i></div><div><span>${T('CON', 'CON')}</span><b>${st.wk}</b><i>${T('sem.', 'wk')}</i></div><div><span>${T('MÉD', 'MED')}</span><b>${n}</b><i>/ ${defs.length}</i></div></div>
+      <p class="small muted" style="margin:10px 0 0">${T('XP : séance 100 · série 5 · record 40 · médaille 250 · quête 150 · donjon 500 · boss 1 000 · quête ratée −10.', 'XP: workout 100 · set 5 · record 40 · medal 250 · quest 150 · dungeon 500 · boss 1,000 · missed quest −10.')}</p>
+    </div>`;
+}
+function vGuild() {
+  if (!GAME()) { setRoot('train'); return vTrain(); }
+  if (!S.history.length) return `<div class="empty">${T('Ta première séance t\'inscrit à la Guilde : niveau, rang, quêtes et boss commencent ici.', 'Your first workout signs you up to the Guild: level, rank, quests and bosses start here.')}<br><button class="btn primary sm" data-tab="train" style="margin-top:12px">${T('Démarrer une séance', 'Start a workout')}</button></div>`;
+  syncSystem(); evCheck(); setTimeout(evAnnounce, 0);
+  const fr = FRS().list.length;
+  return `${statusCard()}${eventCard()}${questCard('full')}
+    ${fr ? `${raidCard()}${seasonCard()}` : `<div class="card"><b>${IC('users', '👥')} ${T('Raids et saisons', 'Raids and seasons')}</b><p class="small muted" style="margin:4px 0 8px">${T('Ajoute des amis pour combattre des boss de raid ensemble et te mesurer à eux chaque mois.', 'Add friends to fight raid bosses together and compete every month.')}</p><button class="btn sm" data-act="go" data-v="friends">${T('Mes amis', 'My friends')}</button></div>`}
+    <div class="grid2" style="margin-top:4px"><button class="btn tile" data-act="go" data-v="shadows">${IC('swords', '⚔️')} ${T('Arsenal', 'Arsenal')}</button><button class="btn tile" data-act="go" data-v="murank">${IC('target', '🎯')} ${T('Rangs par muscle', 'Muscle ranks')}</button><button class="btn tile" data-act="go" data-v="medals">${IC('medal', '🏅')} ${T('Médailles', 'Medals')}</button><button class="btn tile" data-act="go" data-v="friends">${IC('users', '👥')} ${T('Amis et défis', 'Friends & challenges')}</button></div>`;
+}
+/* Bande compacte dans Entraînement : un coup d'œil, et on touche pour ouvrir la Guilde */
+function guildStrip() {
+  if (!GAME() || !S.history.length) return '';
+  const q = dailyQuest(), dg = weekDungeon(), bo = monthBoss(), ev = evNow(), hu = hunter();
+  const pc = (a, b) => Math.min(100, Math.round(a / Math.max(1, b) * 100));
+  const chip = (ic, label, pct, done) => `<span class="qchip ${done ? 'ok' : ''}">${ic}<span>${label}</span><i><b style="width:${done ? 100 : pct}%"></b></i></span>`;
+  return `<div class="card sysw qcard qmin gstrip" data-tab="guild" role="button"><div class="row between"><span class="sysh" style="margin:0">[ ${T('GUILDE', 'GUILD')} ]</span><span class="small muted">${T('Niv.', 'Lv.')} ${hu.lvl} ›</span></div>
+    <div class="qchips">${q.rest ? chip('🌙', T('Repos', 'Rest'), 100, true) : chip(q.ic, T('Quête', 'Quest'), pc(q.cur, q.goal), q.done)}${chip(rkBadge(dg.rk, 'mrk lvrk'), T('Donjon', 'Dungeon'), pc(dg.cur, dg.goal), dg.done)}${bo ? chip('☠️', 'Boss', pc(bo.cur - bo.from * .85, bo.target - bo.from * .85), bo.done) : ''}</div>
+    ${ev ? `<div class="small" style="margin-top:8px;color:#f5c542">🎪 ${esc(T(ev.n[0], ev.n[1]))} ${T('en cours', 'live')}</div>` : questPenalty() && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −10 XP.', 'Yesterday\'s quest failed: −10 XP.')}</div>` : ''}</div>`;
+}
 function vFriends() {
   const fr = FRS(), feed = frFeed(), rec = frReceived();
   setTimeout(() => frLoad(), 50);
@@ -6572,7 +6596,7 @@ function vFriends() {
     : `<p class="muted center" style="margin:30px 16px">${T('Ajoute un ami avec son code pour voir ses séances ici.', 'Add a friend with their code to see their workouts here.')}</p>`;
   setTimeout(socialCheck, 0);
   const cmRec = frCmReceived(), cmHtml = cmRec.length ? `<div class="card"><span class="muted small">💬 ${T('Commentaires reçus', 'Comments received')}</span>${cmRec.map(x => `<div class="small" style="margin-top:6px"><b>${esc(x.n)}</b> : ${esc(x.t)} <span class="muted">· ${x.d ? frAgo(x.d) : ''}</span></div>`).join('')}</div>` : '';
-  return `${meCard}${friends}${chCard()}${raidCard()}${seasonCard()}${frRanking()}${recHtml}${cmHtml}
+  return `${meCard}${friends}${chCard()}${frRanking()}${recHtml}${cmHtml}
     <div class="row between" style="margin:14px 0 8px"><b>${T('Fil des amis', 'Friends feed')}</b>${fr.list.length ? `<button class="btn sm ghost" data-act="fr-refresh">↻ ${T('Actualiser', 'Refresh')}</button>` : ''}</div>
     ${feedHtml}
     ${frOn() ? `<details class="card"><summary><b>🔒 ${T('Ce que tes amis voient', 'What friends see')}</b></summary>
@@ -6680,7 +6704,7 @@ const VIEWS = {
   stats: ['Statistiques', () => vStats()], 'st-vol': ['Séries par muscle', () => vVolume()], 'st-radar': ['Répartition musculaire', () => vRadar()],
   'st-body': ['Carte des muscles', () => vBodyMap()], 'st-top': ['Principaux exercices', () => vTopEx()], 'st-rec': ['Records personnels', () => vRecords()],
   'st-month': ['Rapport mensuel', () => vMonth()], exercises: ['Exercices', () => vExList()], exdetail: ['Exercice', () => vExDetail()],
-  measures: ['Corps et progrès', () => vBody()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], friends: ['Amis', () => vFriends()], cardio: ['Cardio', () => vCardio()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], murank: ['Rangs par muscle', () => vMuscleRanks()], shadows: ['Arsenal', () => vShadows()], compare: ['Comparer deux périodes', () => vCompare()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()]
+  measures: ['Corps et progrès', () => vBody()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], friends: ['Amis', () => vFriends()], cardio: ['Cardio', () => vCardio()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], murank: ['Rangs par muscle', () => vMuscleRanks()], shadows: ['Arsenal', () => vShadows()], compare: ['Comparer deux périodes', () => vCompare()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()], guild: ['Guilde', () => vGuild()]
 };
 function headerRight(v) {
   if (v === 'calendar') return `<button class="hbtn calmode" data-act="cal-mode">${calMode === 'year' ? T('Année', 'Year') : T('Mois', 'Month')} ▾</button>`;
@@ -6750,7 +6774,7 @@ function foldSide() {
       ${foldSpark(e.name)}</div>
     <p class="muted small" style="margin:14px 0 6px">${T('Dernières fois', 'Previous times')}</p>
     ${ss.length ? ss.map(({h: hs, e: ex}) => { let n = 0; return `<div class="fdcard fdh"><div class="row between"><b class="small">${esc(hs.routineName || '')}</b><span class="tag">${new Date(hs.date).toLocaleDateString(LOC(), {day: 'numeric', month: 'short'})}</span></div>${ex.sets.map(s => `<div class="row between small" style="padding:1px 0"><span class="muted">${s.t === 'W' ? T('Échauff.', 'Warm-up') : T('Série', 'Set') + ' ' + (++n)}</span><span>${fmtSet(s, true)}</span></div>`).join('')}</div>`; }).join('')
-      : `<div class="empty" style="padding:14px">${T('Première fois pour cet exercice.', 'First time doing this exercise.')}</div>`}`;
+      : `<div class="empty">${T('Première fois pour cet exercice.', 'First time doing this exercise.')}</div>`}`;
 }
 function foldPaint() {
   const on = foldActive(); document.body.classList.toggle('fold', on);
@@ -6773,7 +6797,9 @@ document.addEventListener('focusin', ev => {
 let foldWas = null;
 addEventListener('resize', () => { const w = foldActive(); if (w !== foldWas) { foldWas = w; if (cur().v === 'workout') render(); } });
 
+let animNext = true, ANIM = true; // les graphiques s'animent seulement à l'ouverture d'un écran (pas à chaque mise à jour)
 function render() {
+  ANIM = !!navAnim || animNext; animNext = false;
   if (selR && cur().v !== 'train') { selR = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
   if (selH && !HVIEWS.includes(cur().v)) { selH = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
   if (selX && cur().v !== selXView(selX.k)) { selX = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
@@ -6835,6 +6861,11 @@ setInterval(updElapsed, 1000);
 
 /* ===================== Icônes (style Lucide, dessinées en SVG) ===================== */
 const ICP = {
+  chat: '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+  pin: '<path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>',
+  tent: '<path d="M3.5 21 14 3"/><path d="M20.5 21 10 3"/><path d="M15.5 21 12 15l-3.5 6"/><path d="M2 21h20"/>',
+  dot: '<circle cx="12" cy="12" r="5" fill="currentColor"/>',
+  focus: '<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/>',
   dumbbell: '<path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/>',
   user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
   gear: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
@@ -6967,7 +6998,7 @@ const EMO_ALL = {'✅': ['ccheck', 'var(--ok)'], '☑': ['checksq'], '⚠': ['al
   '🏅': ['medal', '#f5c542'], '🥇': ['medal', '#f5c542'], '🏗': ['hammer'], '👋': ['hand'], '👆': ['hand'], '👏': ['thumb'], '👍': ['thumb'], '🔔': ['bell'], '🔕': ['belloff'],
   '🛠': ['wrench'], '🔧': ['wrench'], '🕓': ['clock'], '🕐': ['clock'], '🚀': ['rocket'], '📏': ['ruler'], '📐': ['ruler'], '📎': ['paperclip'], '🧭': ['compass'], '🔢': ['hash'],
   '🏁': ['flag'], '😄': ['smile'], '🎓': ['cap'], '🎯': ['target'], '🕸': ['radar'], '🛏': ['bed'], '📩': ['mail'], '⏸': ['pause'], '▶': ['play'], '🔎': ['search'], '🔍': ['search'],
-  '👁': ['eye'], '🧹': ['eraser'], '🛡': ['shield'], '👑': ['crown', '#f5c542'], '🧗': ['pullup'], '⚔': ['swords'], '☠': ['skull', '#fb7185'], '🤝': ['users'], '❤️‍🔥': ['flame', '#ff8a3d']};
+  '👁': ['eye'], '🧹': ['eraser'], '🛡': ['shield'], '👑': ['crown', '#f5c542'], '🧗': ['pullup'], '⚔': ['swords'], '☠': ['skull', '#fb7185'], '🤝': ['users'], '❤️‍🔥': ['flame', '#ff8a3d'], '💬': ['chat'], '📌': ['pin'], '🎪': ['tent', '#f5c542'], '🟢': ['dot', 'var(--ok)'], '⛶': ['focus'], '🗡': ['swords']};
 const EMO_RE = new RegExp('(' + Object.keys(EMO_ALL).sort((a, b) => b.length - a.length).join('|') + ')[\\uFE0F\\u200D]*', 'gu');
 const EMO_SKIP = 'select,option,textarea,input,script,style,title,canvas,[data-noic]';
 function iconizeAll(root) {
@@ -7003,7 +7034,7 @@ const iconsOn = () => true;
 const ic = (k, sz = 20) => `<svg class="ico" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICP[k] || ''}</svg>`;
 const IC = (k, emo, sz) => iconsOn() ? ic(k, sz) : emo;
 function renderChrome() {
-  const nav = $('#nav'); if (nav) nav.innerHTML = `<button data-tab="train"><span class="ic">${IC('dumbbell', '🏋️', 22)}</span>${T('Entraînement', 'Workout')}</button><button data-tab="stretch"><span class="ic">${IC('yoga', '🧘', 22)}</span>${T('Étirements', 'Stretch')}</button><button data-tab="cardio"><span class="ic">${IC('heartp', '❤️', 22)}</span>Cardio</button><button data-tab="timers"><span class="ic">${IC('timer', '⏱', 22)}</span>${T('Intervalles', 'Intervals')}</button><button data-tab="profile"><span class="ic">${IC('user', '👤', 22)}</span>${T('Profil', 'Profile')}</button>`;
+  const nav = $('#nav'); if (nav) nav.innerHTML = `<button data-tab="train"><span class="ic">${IC('dumbbell', '🏋️', 22)}</span>${GAME() ? T('Muscu', 'Workout') : T('Entraînement', 'Workout')}</button><button data-tab="stretch"><span class="ic">${IC('yoga', '🧘', 22)}</span>${T('Étirements', 'Stretch')}</button><button data-tab="cardio"><span class="ic">${IC('heartp', '❤️', 22)}</span>Cardio</button><button data-tab="timers"><span class="ic">${IC('timer', '⏱', 22)}</span>${T('Intervalles', 'Intervals')}</button>${GAME() ? `<button data-tab="guild"><span class="ic">${IC('swords', '⚔️', 22)}</span>${T('Guilde', 'Guild')}</button>` : ''}<button data-tab="profile"><span class="ic">${IC('user', '👤', 22)}</span>${T('Profil', 'Profile')}</button>`;
   const bk = $('#back'); if (bk) bk.innerHTML = IC('back', '←', 22);
 }
 
@@ -7012,7 +7043,7 @@ function renderChrome() {
 let swp = null;
 function swipeTarget(dx) {
   if (stack.length > 1) return dx > 0 ? 'back' : null;
-  const TABS = ['train', 'stretch', 'cardio', 'timers', 'profile'], i = TABS.indexOf(stack[0].v);
+  const TABS = ['train', 'stretch', 'cardio', 'timers', ...(GAME() ? ['guild'] : []), 'profile'], i = TABS.indexOf(stack[0].v);
   if (i < 0) return null;
   return dx < 0 ? (TABS[i + 1] || null) : (TABS[i - 1] || null);
 }
@@ -7333,15 +7364,15 @@ document.addEventListener('click', e => {
     case 'rename-folder': renameFolder(b.dataset.f); break;
     case 'del-folder': deleteFolder(b.dataset.f); break;
     case 'save-as-routine': saveAsRoutine(b.dataset.hid); break;
-    case 'pf-metric': pfMetric = b.dataset.m; render(); break;
+    case 'pf-metric': pfMetric = b.dataset.m; animNext = true; render(); break;
     case 'bar': {
       const i = +b.dataset.i; pfSel = pfSel === i ? null : i;
       document.querySelectorAll('#chs [data-act="bar"] rect:last-child').forEach((r, j) => r.style.opacity = pfSel == null || pfSel === j ? 1 : 0.45);
       const tp = $('#chtip'); if (tp) tp.innerHTML = pfSel != null ? window._chtips[pfSel] : '';
       break;
     }
-    case 'rt-metric': rtMetric = b.dataset.m; render(); break;
-    case 'ex-metric': exMetric = b.dataset.m; render(); break;
+    case 'rt-metric': rtMetric = b.dataset.m; animNext = true; render(); break;
+    case 'ex-metric': exMetric = b.dataset.m; animNext = true; render(); break;
     case 'rad-p': radP = +b.dataset.p; render(); break;
     case 'bm-p': bmP = +b.dataset.p; render(); break;
     case 'top-p': topP = +b.dataset.p; render(); break;
