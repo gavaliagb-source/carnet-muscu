@@ -339,6 +339,12 @@ button.chip{cursor:pointer}
 .gfb>.card{margin:0;padding:0;border:0;background:none;box-shadow:none}.gfb>.card>.sysh,.gfb>.card>.row>.sysh{display:none}
 .xpl{display:flex;flex-direction:column;gap:8px;margin:10px 0}
 @media (prefers-reduced-motion: reduce){.gfb{animation:none}.gchev{transition:none}}
+.gwin{margin:0 0 12px!important}.glist{gap:0}
+.gsw{padding:12px 14px}.gsw>summary{list-style:none;display:flex;align-items:center;gap:8px;cursor:pointer;-webkit-tap-highlight-color:transparent}.gsw>summary::-webkit-details-marker{display:none}
+.gswh{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding-left:22px}.gswh small{color:var(--muted);font-size:12px}
+.gsw .gchev{width:22px;font-size:14px;text-align:center}.gsw[open]>summary .gchev{transform:rotate(180deg)}.gsw[open]>summary{margin-bottom:12px}
+.gsw .gfb{padding:0}
+.gtiles{gap:10px}.gtile{display:flex;align-items:center;gap:10px;text-align:left;padding:12px}.gtile b{display:block;font-size:14px}.gtile small{display:block;color:var(--muted);font-size:11.5px;font-weight:500}
 .bossline{background:color-mix(in srgb,#fb7185 12%,transparent);border:1px solid color-mix(in srgb,#fb7185 55%,transparent);border-radius:10px;padding:7px 10px;margin:8px 0 2px;font-size:13px}.bossline.dead{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .bosskill{text-align:center;padding:6px 0}.bkskull{font-size:64px;line-height:1;color:#fb7185;animation:bkhit .9s ease-out both}.bkskull .ico{width:72px;height:72px}
 @keyframes bkhit{0%{transform:scale(.3) rotate(-20deg);opacity:0}35%{transform:scale(1.35) rotate(8deg);opacity:1}55%{transform:scale(.9) rotate(-6deg)}70%{transform:scale(1.05) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:.85;filter:grayscale(.6)}}
@@ -5275,8 +5281,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.33';
+const APP_VERSION = '9.33.1';
 const CHANGELOG = [
+  {v: '9.33.1', d: '2026-11-12', fr: ['⚔️ Guilde : retour au style fenêtres de jeu ([ STATUT ], [ QUÊTES ]…), mais chaque fenêtre se replie en douceur et elles sont bien espacées.'], en: ['⚔️ Guild: back to the game-window style ([ STATUS ], [ QUESTS ]…), but each window folds smoothly and they are nicely spaced.']},
   {v: '9.33', d: '2026-11-12', fr: ['✨ Nouvelle page Guilde, plus propre et fluide : ton statut en haut, puis une liste de sections (Quêtes, Raid, Saison, Armurerie, Arsenal, Rangs, Médailles, Amis) qui s\'ouvrent en douceur, sans recharger la page. Le détail de l\'XP s\'ouvre en touchant ta barre d\'XP.'], en: ['✨ New Guild page, cleaner and smoother: your status on top, then a list of sections (Quests, Raid, Season, Armory, Arsenal, Ranks, Medals, Friends) that open smoothly without reloading. XP details open when you tap your XP bar.']},
   {v: '9.32', d: '2026-11-12', fr: ['⚔️ Guilde plus compacte : les Quêtes et l\'Armurerie (toutes les récompenses) se replient. Touche pour ouvrir, l\'appli se souvient de ton choix.', '🛡️ L\'Armurerie, façon jeu : onglets (Titres, Cadres, Auras, Victoires, Bannières, Emblèmes, Thèmes), objets avec une rareté (Commun, Rare, Épique, Légendaire) et l\'objet équipé marqué « ÉQUIPÉ ».'], en: ['⚔️ More compact Guild: Quests and the Armory (all rewards) fold up. Tap to open, the app remembers your choice.', '🛡️ The Armory, game style: tabs (Titles, Frames, Auras, Victories, Banners, Emblems, Themes), items with a rarity (Common, Rare, Epic, Legendary) and the equipped item marked “EQUIPPED”.']},
   {v: '9.31', d: '2026-11-12', fr: ['✨ Nouveaux cosmétiques à débloquer dans la Guilde : effets en cochant une série (Étincelles, Éclair, Flammes, Poussière d\'or, Cosmique), célébrations de fin de séance (Feux d\'artifice, Pluie d\'étoiles, Brasier, Pluie d\'or), bannières de profil (Aube, Nuit étoilée, Forge, Antre du dragon, Tempête, Trône, Légende) et emblèmes à côté de ton nom. Tes amis voient ta bannière et ton emblème.'], en: ['✨ New unlockable cosmetics in the Guild: set check effects (Sparks, Lightning, Flames, Gold dust, Cosmic), workout celebrations (Fireworks, Star shower, Blaze, Golden rain), profile banners (Dawn, Starry night, Forge, Dragon\'s lair, Storm, Throne, Legend) and emblems next to your name. Friends see your banner and emblem.']},
@@ -6769,22 +6776,22 @@ function rewardsCard() {
 /* ===================== Onglet Guilde (mode jeu) : tout ce qui touche au jeu au même endroit ===================== */
 function statusCard() {
   const me = medalsEarned(), {st, defs} = me, n = Object.keys(me.got).length, hu = hunter(me), fmtN = v => Math.round(v).toLocaleString(LOC()), pct = Math.min(100, Math.round(hu.cur / hu.need * 100));
-  return `<div class="ghero" style="--rc:${hu.col}">
-    <div class="row" style="gap:14px;align-items:center">${rkBadge(hu.rk, 'rkbig')}
-      <div style="flex:1;min-width:0"><div class="glv"><span>${T('Niveau', 'Level')}</span><b>${hu.lvl}</b></div>
-        <div class="gtitle">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div>
-        <button class="gcls" data-act="cls-info">${clsIc(hu.cls)} ${esc(clsName(hu.cls))}<span class="muted"> · ${hu.lvl < 10 ? T('classe au niv. 10', 'class at lv. 10') : hu.lvl < 40 ? T('vraie classe au niv. 40', 'true class at lv. 40') : 'ⓘ'}</span></button></div></div>
-    <button class="gxp" data-act="xp-info"><div class="goal sysbar"><div style="width:${pct}%"></div></div>
-      <div class="row between small muted"><span>${fmtN(hu.cur)} / ${fmtN(hu.need)} XP ⓘ</span><span>${hu.nextRank ? T(`Rang ${hu.nextRank.rk} au niv. ${hu.nextRank.lvl}`, `Rank ${hu.nextRank.rk} at lv. ${hu.nextRank.lvl}`) : T('Rang maximal', 'Max rank')}</span></div></button>
-    <div class="sysstats"><div><span>${T('FOR', 'STR')}</span><b>${fmtN(st.b3)}</b><i>${U()}</i></div><div><span>${T('END', 'END')}</span><b>${fmtN(st.hr)}</b><i>h</i></div><div><span>${T('CON', 'CON')}</span><b>${st.wk}</b><i>${T('sem.', 'wk')}</i></div><div><span>${T('MÉD', 'MED')}</span><b>${n}</b><i>/ ${defs.length}</i></div></div>
-  </div>`;
+  return `<div class="card sysw gwin" style="--rc:${hu.col}">
+      <div class="sysh">[ ${T('STATUT', 'STATUS')} ]</div>
+      <div class="row" style="gap:14px;align-items:center">${rkBadge(hu.rk, 'rkbig')}
+        <div style="flex:1;min-width:0"><div class="muted small">${T('Niveau', 'Level')}</div><div class="lvl">${hu.lvl}</div><div class="small" style="color:var(--rc);font-weight:700">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div></div></div>
+      <button class="clsrow" data-act="cls-info">${clsIc(hu.cls)} <span><span class="muted small">${T('Classe', 'Class')}</span><br><b>${esc(clsName(hu.cls))}</b></span><span class="muted small" style="margin-left:auto">${hu.lvl < 10 ? T('Initié au niv. 10', 'Initiate at lv. 10') : hu.lvl < 40 ? T('Classe au niv. 40', 'Class at lv. 40') : 'ⓘ'}</span></button>
+      <button class="gxp" data-act="xp-info"><div class="goal sysbar"><div style="width:${pct}%"></div></div>
+      <div class="row between small muted"><span>${fmtN(hu.cur)} / ${fmtN(hu.need)} XP ⓘ</span><span>${hu.nextRank ? T(`Rang ${hu.nextRank.rk} au niveau ${hu.nextRank.lvl}`, `Rank ${hu.nextRank.rk} at level ${hu.nextRank.lvl}`) : T('Rang maximal atteint', 'Max rank reached')}</span></div></button>
+      <div class="sysstats"><div><span>${T('FOR', 'STR')}</span><b>${fmtN(st.b3)}</b><i>${U()}</i></div><div><span>${T('END', 'END')}</span><b>${fmtN(st.hr)}</b><i>h</i></div><div><span>${T('CON', 'CON')}</span><b>${st.wk}</b><i>${T('sem.', 'wk')}</i></div><div><span>${T('MÉD', 'MED')}</span><b>${n}</b><i>/ ${defs.length}</i></div></div>
+    </div>`;
 }
 /* Section de la Guilde : une ligne façon menu de jeu, qui s'ouvre en douceur (sans recharger la page) */
 function gSec(id, ic, title, sub, body) {
   const open = (S.settings.gOpen || {})[id];
-  return `<details class="gsec" data-gid="${id}" ${open ? 'open' : ''}><summary><span class="gic">${ic}</span><span class="gtx"><b>${title}</b><small>${sub}</small></span><span class="gchev">›</span></summary><div class="gfb">${body()}</div></details>`;
+  return `<details class="card sysw gwin gsw" data-gid="${id}" ${open ? 'open' : ''}><summary><span class="gswh"><span class="sysh" style="margin:0">[ ${title.toUpperCase()} ]</span><small>${sub}</small></span><span class="gchev">▾</span></summary><div class="gfb">${body()}</div></details>`;
 }
-const gLink = (v, ic, title, sub) => `<button class="gsec glink" data-act="go" data-v="${v}"><span class="gic">${ic}</span><span class="gtx"><b>${title}</b><small>${sub}</small></span><span class="gchev">›</span></button>`;
+const gLink = (v, ic, title, sub) => `<button class="btn tile gtile" data-act="go" data-v="${v}">${ic} <span><b>${title}</b><small>${sub}</small></span></button>`;
 function vGuild() {
   if (!GAME()) { setRoot('train'); return vTrain(); }
   if (!S.history.length) return `<div class="empty">${T('Ta première séance t\'inscrit à la Guilde : niveau, rang, quêtes et boss commencent ici.', 'Your first workout signs you up to the Guild: level, rank, quests and bosses start here.')}<br><button class="btn primary sm" data-tab="train" style="margin-top:12px">${T('Démarrer une séance', 'Start a workout')}</button></div>`;
@@ -6799,7 +6806,7 @@ function vGuild() {
     ${gSec('raid', '🛡️', T('Raid de guilde', 'Guild raid'), raidSub, () => fr ? raidCard() : noFr)}
     ${gSec('season', '👑', T('Saison', 'Season'), seaSub, () => fr ? seasonCard() || `<p class="small muted" style="margin:0">${T('La saison commence dès qu\'un ami a l\'appli à jour.', 'The season starts as soon as a friend has the app up to date.')}</p>` : noFr)}
     ${gSec('arm', '⚔️', T('Armurerie', 'Armory'), `${aOk} / ${aTot} ${T('récompenses débloquées', 'rewards unlocked')}`, () => `<div class="armbody">${armoryBody()}</div>`)}
-    ${gLink('shadows', '🗡', T('Arsenal', 'Arsenal'), `${sh} ${T(sh > 1 ? 'armes forgées' : 'arme forgée', sh > 1 ? 'weapons forged' : 'weapon forged')}`)}
+    </div><div class="grid2 gtiles">${gLink('shadows', '🗡', T('Arsenal', 'Arsenal'), `${sh} ${T(sh > 1 ? 'armes forgées' : 'arme forgée', sh > 1 ? 'weapons forged' : 'weapon forged')}`)}
     ${gLink('murank', '🎯', T('Rangs par muscle', 'Muscle ranks'), T('Tes points forts et faibles', 'Your strong and weak points'))}
     ${gLink('medals', '🏅', T('Médailles', 'Medals'), `${Object.keys(medalsEarned().got).length} / ${medalsEarned().defs.length}`)}
     ${gLink('friends', '👥', T('Amis et défis', 'Friends & challenges'), fr ? `${fr} ${T(fr > 1 ? 'amis' : 'ami', fr > 1 ? 'friends' : 'friend')}` : T('Ajoute tes chums', 'Add your buddies'))}</div>`;
