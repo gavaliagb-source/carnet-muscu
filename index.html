@@ -1078,10 +1078,12 @@ function incFor(name) {
 }
 const INC_OPTS = () => S.settings.unit === 'kg' ? [0.5, 1, 1.25, 2, 2.5, 5] : [1, 2.5, 5, 10];
 function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('⚠️ Sauvegarde impossible'); } }
-function save() { saveLocal(); if (typeof queueCloud === 'function') queueCloud(); if (typeof gdQueue === 'function') gdQueue(); }
+function save() {
+  RC = {}; saveLocal(); if (typeof queueCloud === 'function') queueCloud(); if (typeof gdQueue === 'function') gdQueue(); }
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 
 /* ---------- Navigation façon Hevy (pile d'écrans) ---------- */
+var RC = {}; // petit cache remis à zéro à chaque affichage et à chaque sauvegarde (évite de recalculer 50 fois la même chose)
 const ROOT_TABS = ['train', 'stretch', 'cardio', 'timers', 'guild', 'profile'];
 function lastTab() { try { const t = localStorage.getItem('cm-tab'); return ROOT_TABS.includes(t) ? t : 'train'; } catch (e) { return 'train'; } }
 let stack = S.active ? [{v: 'train'}, {v: 'workout'}] : [{v: lastTab()}];
@@ -1723,7 +1725,7 @@ function finishWorkout() {
     else if (nv === 0 && pv === 0) { const nr = Math.max(...ws.map(s => +s.r)), pr = Math.max(...prevSets.map(s => +s.r)); if (nr > pr) prs.push({name: e.name, from: pr + ' reps', to: nr + ' reps'}); }
   });
   const meBefore = medalsEarned(), medBefore = meBefore.got, huBefore = hunter(meBefore);
-  S.history.push({id, routineId: a.routineId, routineName: a.routineName, date: a.start, duration: Math.round((Date.now() - new Date(a.start)) / 60000), exercises});
+  S.history.push({id, routineId: a.routineId, routineName: a.routineName, date: a.start, duration: Math.round((Date.now() - new Date(a.start)) / 60000), exercises}); RC = {};
   const wasFree = !a.routineId;
   const rtR = S.routines.find(x => x.id === a.routineId), rtCh = routineChanges(a, rtR);
   window._rtUpd = rtCh.length ? {rid: a.routineId, ex: JSON.parse(JSON.stringify(a.exercises))} : null;
@@ -2401,7 +2403,7 @@ function saveEditor() {
   if (!d.exercises.length) { toast('Ajoute au moins une série avec des reps'); return false; }
   d.duration = +d.duration || 0; delete d.isNew;
   const i = S.history.findIndex(x => x.id === d.id);
-  if (i >= 0) S.history[i] = d; else S.history.push(d);
+  if (i >= 0) S.history[i] = d; else S.history.push(d); RC = {};
   S.history.sort((a, b) => a.date.localeCompare(b.date));
   save(); return true;
 }
@@ -2530,7 +2532,7 @@ function importHevyCsv(txt) {
   const all = [...map.values()]; importBad = all.filter(s => !s.date).length;
   const add = all.filter(s => s.date && s.exercises.some(e => e.sets.length) && !known.has(s.date.slice(0, 16)));
   add.forEach(s => { delete s._ss; fixSS(s.exercises); });
-  S.history.push(...add); S.history.sort((a, b) => a.date.localeCompare(b.date));
+  S.history.push(...add); S.history.sort((a, b) => a.date.localeCompare(b.date)); RC = {};
   return add.length;
 }
 /* Import CSV des autres applis (Strong, FitNotes, etc.) : on repère les colonnes par leur nom */
@@ -2573,7 +2575,7 @@ function importOtherCsv(txt) {
   const all = [...map.values()]; importBad = all.filter(s => !s.date).length;
   const add = all.filter(s => s.date && s.exercises.some(e => e.sets.length) && !known.has(s.date.slice(0, 16)));
   add.forEach(s => s.exercises = s.exercises.filter(e => e.sets.length));
-  S.history.push(...add); S.history.sort((a, b) => a.date.localeCompare(b.date));
+  S.history.push(...add); S.history.sort((a, b) => a.date.localeCompare(b.date)); RC = {};
   return add.length;
 }
 function importFile(file) {
@@ -4511,7 +4513,8 @@ const BOSSES = [['Le Golem de fer forgé', 'The Ironforged Golem'], ['La Liche d
   ['Le Titan de granit', 'The Granite Titan'], ['La Wyverne de cendre', 'The Ash Wyvern'], ['Le Kraken des abysses', 'The Abyssal Kraken'], ['Le Seigneur des orages', 'The Storm Lord'],
   ['Le Béhémoth', 'The Behemoth'], ['La Sorcière de jade', 'The Jade Witch'], ['Le Phénix noir', 'The Black Phoenix'], ['Le Dragon d\'obsidienne', 'The Obsidian Dragon']];
 const bLog = () => (S.bossLog = S.bossLog || {});
-function monthBoss() {
+function monthBoss() { return RC.mb || (RC.mb = monthBoss0()); }
+function monthBoss0() {
   const now = new Date(), k = now.getFullYear() + '-' + pad2(now.getMonth() + 1), ms = new Date(now.getFullYear(), now.getMonth(), 1);
   let b = S.boss && S.boss.k === k && S.boss.v === 2 && !(S.bossLog || {})[k] ? S.boss : S.boss && S.boss.k === k && (S.bossLog || {})[k] ? S.boss : null;
   if (!b) {
@@ -4666,7 +4669,7 @@ const hsVol = hs => hs.reduce((n, x) => n + sessVol(x), 0);
 const hsDur = hs => hs.reduce((n, x) => n + (+x.duration || 0), 0);
 const hsPush = hs => hs.reduce((n, x) => n + x.exercises.filter(e => isPushUp(norm(e.name))).reduce((m, e) => m + work(e.sets).reduce((a, s) => a + (+s.r || 0), 0), 0), 0);
 const hsEx = hs => new Set(hs.flatMap(x => x.exercises.filter(e => work(e.sets).length).map(e => norm(e.name)))).size;
-const hsPR = hs => hs.reduce((n, x) => n + sessPRs(x).length, 0);
+const hsPR = hs => hs.reduce((n, x) => n + (S.history.includes(x) ? (prCounts().get(x.id) || 0) : sessPRs(x).length), 0); // séances enregistrées : calcul rapide
 const qLog = () => (S.questLog = S.questLog || {}), dLog = () => (S.dungeonLog = S.dungeonLog || {});
 function baseAvg(beforeKey) {
   const L = S.history.filter(x => dkey(x.date) < beforeKey).slice(-20);
@@ -4683,7 +4686,11 @@ function woQuest(a) {
     return `<div class="row between small" style="margin-top:6px;gap:8px"><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.done ? '✅' : '✨'} ${T('Quête', 'Quest')} : ${esc(q.text)}</span><b style="flex:none;color:${q.done ? 'var(--ok)' : 'var(--text)'}">${q.done ? T('Réussie! +150 XP', 'Done! +150 XP') : fmt(q.cur) + ' / ' + fmt(q.goal)}</b></div>${q.done ? '' : `<div class="pbar" style="height:4px;margin-top:4px"><div style="width:${pc}%;background:var(--ok)"></div></div>`}`;
   } catch (e) { return ''; }
 }
-function dailyQuest(d, extra) {
+function dailyQuest(d, extra) { // version mémorisée pendant un affichage (appelée souvent)
+  if (d === undefined && extra === undefined) return RC.dq || (RC.dq = dailyQuest0());
+  return dailyQuest0(d, extra);
+}
+function dailyQuest0(d, extra) {
   d = d || new Date(); const k = dkey(d), di = dayIdx(d);
   if (dkey(new Date()) === k) { const p = weekPlan()[di]; if (p && p.rest && !S.history.some(x => dkey(x.date) === k)) return {k, rest: true}; }
   const b = baseAvg(k), u = U(), sd = hashStr('q' + k);
@@ -4737,7 +4744,8 @@ function questPenalty() {
   const y = new Date(); y.setDate(y.getDate() - 1);
   return !!qFail()[dkey(y)];
 }
-function weekDungeon() {
+function weekDungeon() { return RC.wd || (RC.wd = weekDungeon0()); }
+function weekDungeon0() {
   const ws = weekStart(new Date()), k = dkey(ws), sd = hashStr('d' + k), u = U();
   const past = S.history.filter(x => x.date < ws.toISOString() && +new Date(x.date) > +ws - 56 * 864e5), wkN = 8;
   const per = past.length / wkN;
@@ -5325,8 +5333,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.36.1';
+const APP_VERSION = '9.37';
 const CHANGELOG = [
+  {v: '9.37', d: '2026-11-12', fr: ['⚡ La Guilde s\'ouvre 2 à 4 fois plus vite (les quêtes, le niveau et ton profil d\'ami ne sont plus recalculés plusieurs fois à chaque affichage), et la liste d\'amis aussi.'], en: ['⚡ The Guild opens 2 to 4× faster (quests, level and your friend profile are no longer recomputed several times per screen), and the friends list too.']},
   {v: '9.36.1', d: '2026-11-12', fr: ['🐛 En glissant d\'une page à l\'autre, l\'écran ne se décale plus : la barre du bas, le minuteur de repos et la séance en cours restent bien en place.'], en: ['🐛 Swiping between pages no longer shifts the screen: the bottom bar, rest timer and current workout bar stay in place.']},
   {v: '9.36', d: '2026-11-12', fr: ['🔥 Nouvelle rareté MYTHIQUE (bordure arc-en-ciel animée) : des récompenses très dures à avoir. Cadres Phénix, Éternel et Céleste, auras Supernova et Souffle du dragon, victoires Pluie de météores et Jugement divin, bannières Olympe et Abysses, emblèmes Diamant et Dragon, et 6 titres mythiques (Dieu du fer, Inarrêtable, Seigneur des donjons…).', '❄️ Les auras Givre et Éclair sont maintenant bien différentes : Givre fait tomber des cristaux de glace dans un halo bleu, Éclair fait claquer un éclair jaune.'], en: ['🔥 New MYTHIC rarity (animated rainbow border): very hard rewards. Phoenix, Eternal and Celestial frames, Supernova and Dragon breath auras, Meteor shower and Divine judgment victories, Olympus and Abyss banners, Diamond and Dragon emblems, and 6 mythic titles (God of iron, Unstoppable, Dungeon lord…).']},
   {v: '9.35', d: '2026-11-12', fr: ['✨ 7 nouvelles auras (Givre, Nature, Sang, Ombre, Prisme, Lumière sacrée, Néant) et 5 nouvelles victoires (Neige, Pétales, Arc-en-ciel, Orage, Galaxie).', '⚡ Armurerie fluide : changer d\'onglet ou équiper un objet ne recharge plus la page et la barre d\'onglets reste où elle est.'], en: ['✨ 7 new auras (Frost, Nature, Blood, Shadow, Prism, Holy light, Void) and 5 new victories (Snowfall, Petals, Rainbow, Thunderstorm, Galaxy).', '⚡ Smooth Armory: switching tabs or equipping no longer reloads the page and the tab bar stays where it is.']},
@@ -6310,7 +6319,7 @@ function cvSave() {
   const n = T(...CV_KINDS.find(x => x[0] === cv.k)[2]), names = {walk: 'Tapis roulant (marche)', run: 'Tapis roulant (course)', bike: 'Vélo stationnaire', ell: 'Elliptique', stair: 'Escaliers (StairMaster)', row: 'Rameur', rope: 'Corde à sauter'};
   const set = {w: '', r: Math.round(r.min), u: 'c', kc: r.kcal, st: Math.round(r.steps / 10) * 10};
   if (['walk', 'run'].includes(cv.k)) { set.km = Math.round((kmU() === 'mi' ? r.realKm / 1.609 : r.realKm) * 100) / 100; if (+cv.inc) set.inc = +cv.inc; if (r.realSteps) set.steps = r.realSteps; } else if (+cv.level) set.inc = +cv.level;
-  S.history.push({id: uid(), routineName: 'Cardio', date: new Date(Date.now() - r.min * 60000).toISOString(), duration: Math.round(r.min), exercises: [{name: names[cv.k] || n, sets: [set]}]});
+  S.history.push({id: uid(), routineName: 'Cardio', date: new Date(Date.now() - r.min * 60000).toISOString(), duration: Math.round(r.min), exercises: [{name: names[cv.k] || n, sets: [set]}]}); RC = {};
   S.history.sort((a, b) => a.date.localeCompare(b.date));
   save(); render(); toast(T('✅ Cardio ajouté à ton historique', '✅ Cardio added to your history')); if (frOn()) frPublish(true);
 }
@@ -6340,6 +6349,15 @@ function frAvatar() {
   return new Promise(ok => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = c.height = 160; const g = c.getContext('2d'), s = Math.min(im.width, im.height); g.drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, 160, 160); ok(c.toDataURL('image/jpeg', .75)); }; im.onerror = () => ok(''); im.src = a; });
 }
 /* Résumé d'une séance pour les amis */
+/* Meilleur 1RM estimé d'un exercice avant la séance n° i (index calculé une fois, puis recherche rapide) */
+let bbMemo = null;
+function bestBefore(name, i) {
+  const k = S.history.length + '|' + (S.history.length && S.history[S.history.length - 1].id);
+  if (!bbMemo || bbMemo.k !== k) { const m = new Map(); S.history.forEach((h, idx) => h.exercises.forEach(e => { const ws = work(e.sets); if (!ws.length) return; const v = Math.max(...ws.map(s => e1rm(s.w, s.r))), nn = norm(e.name); let a = m.get(nn); if (!a) m.set(nn, a = []); a.push([idx, Math.max(v, a.length ? a[a.length - 1][1] : -Infinity)]); })); bbMemo = {k, m}; }
+  const a = bbMemo.m.get(norm(name)); if (!a) return null;
+  let lo = 0, hi = a.length - 1, r = -1; while (lo <= hi) { const mid = (lo + hi) >> 1; if (a[mid][0] < i) { r = mid; lo = mid + 1; } else hi = mid - 1; }
+  return r < 0 ? null : a[r][1];
+}
 function frSess(hs, i) {
   const fr = FRS(), before = S.history.slice(0, i);
   let pr = 0;
@@ -6351,8 +6369,8 @@ function frSess(hs, i) {
     const best = ws.reduce((b, s) => e1rm(s.w, s.r) > e1rm(b.w, b.r) ? s : b, ws[0]);
     if (e1rm(best.w, best.r) > 0) {
       if (!fr.noW) { o.w = +best.w; o.r = +best.r; o.u = U(); }
-      const prev = before.flatMap(x => x.exercises.filter(y => norm(y.name) === norm(e.name)).flatMap(y => work(y.sets)));
-      if (prev.length && e1rm(best.w, best.r) > Math.max(...prev.map(s => e1rm(s.w, s.r)))) { pr++; o.pr = 1; }
+      const pb = bestBefore(e.name, i);
+      if (pb != null && e1rm(best.w, best.r) > pb) { pr++; o.pr = 1; }
     } else o.r = Math.max(...ws.map(s => +s.r || 0));
     return o;
   }).filter(Boolean);
@@ -6465,6 +6483,10 @@ async function frLoad(force) {
 /* fil : séances des amis, plus récentes d'abord */
 /* Ma propre « carte » (pour voir mes posts dans le fil, comme mes amis les voient) */
 function frMe() {
+  if (RC.frMe) return RC.frMe;
+  return (RC.frMe = frMe0());
+}
+function frMe0() {
   const fr = FRS(), hide = new Set(fr.hide || []);
   const s = S.history.map((x, i) => [x, i]).filter(([x]) => !hide.has(x.id) && new Date(x.date) > Date.now() - 45 * 864e5).slice(-15).map(([x, i]) => Object.assign(frSess(x, i), x.ph ? {phId: x.ph} : {}));
   const p = (S.photos || []).filter(x => (fr.ph || []).includes(x.id)).slice(-8).map(x => ({id: x.id, d: x.d, phId: x.id}));
@@ -6560,8 +6582,8 @@ function seasonXp(m) {
   const k = m + '|' + S.history.length + '|' + (S.xpb || []).length + '|' + Object.keys(S.questLog || {}).length + '|' + Object.keys(S.dungeonLog || {}).length + '|' + Object.keys(S.bossLog || {}).length + '|' + Object.keys(S.qFail || {}).length;
   if (sxMemo.has(k)) return sxMemo.get(k);
   const a = +monStart(m), b = +monEnd(m);
-  const A = medalsEarned(S.history.filter(h => +new Date(h.date) < b)).st, B = medalsEarned(S.history.filter(h => +new Date(h.date) < a)).st;
-  let xp = (A.n - B.n) * 100 + (A.sets - B.sets) * 5 + (A.pr - B.pr) * 40;
+  const pc = prCounts(), hm = S.history.filter(h => { const t = +new Date(h.date); return t >= a && t < b; });
+  let xp = hm.length * 100 + hm.reduce((t, h) => t + h.exercises.reduce((u, e) => u + work(e.sets).length, 0), 0) * 5 + hm.reduce((t, h) => t + (pc.get(h.id) || 0), 0) * 40;
   const inM = v => String(v || '').slice(0, 7) === m;
   try { xp += Object.values(medalsEarned().got).filter(inM).length * 250; } catch (e) {}
   xp += Object.keys(S.questLog || {}).filter(inM).length * 150 + Object.keys(S.dungeonLog || {}).filter(inM).length * 500;
@@ -6746,7 +6768,7 @@ const FRAMES = [
   {id: 'blood', n: ['Sang de dragon', 'Dragon blood'], r: {m: ['boss', 1]}, rar: 2}, {id: 'champion', n: ['Champion', 'Champion'], r: {m: ['sea', 0]}, rar: 3}, {id: 'flame', n: ['Flammes', 'Flames'], r: {l: 75}},
   {id: 'void', n: ['Néant', 'Void'], r: {l: 90}}, {id: 'legend', n: ['Légendaire', 'Legendary'], r: {l: 100}},
   {id: 'phoenix', n: ['Phénix', 'Phoenix'], r: {m: ['boss', 4]}, rar: 4}, {id: 'eternal', n: ['Éternel', 'Eternal'], r: {m: ['n', 6]}, rar: 4}, {id: 'celestial', n: ['Céleste', 'Celestial'], r: {all: [{l: 100}, {m: ['qrow', 3]}]}, rar: 4}];
-const myLvl = () => S.history.length ? hunter().lvl : 1;
+const myLvl = () => RC.lvl ?? (RC.lvl = S.history.length ? hunter().lvl : 1);
 const myFrame = () => { const f = S.settings.frame || ''; const x = FRAMES.find(y => y.id === f); return GAME() && x && x.id && cosReq(x.r).ok ? f : ''; };
 /* ----- Autres cosmétiques : effets de série, célébration, bannière de profil, emblème ----- */
 const COS = {
@@ -6823,6 +6845,7 @@ function armoryBody(onlyContent) {
 }
 /* Rafraîchit seulement le contenu de l'Armurerie (sans recharger la page ni remettre les onglets au début) */
 function armRefresh(anim) {
+  RC = {};
   const c = document.querySelector('.armcontent'); if (!c) { render(); return; }
   c.innerHTML = armoryBody(true); if (anim) { c.classList.remove('armfade'); void c.offsetWidth; c.classList.add('armfade'); }
   document.querySelectorAll('.armtabs button').forEach(x => x.classList.toggle('on', x.dataset.t === armTab));
@@ -7115,6 +7138,7 @@ addEventListener('resize', () => { const w = foldActive(); if (w !== foldWas) { 
 document.addEventListener('toggle', e => { const d = e.target; if (!d || !d.dataset || !d.dataset.gid) return; S.settings.gOpen = S.settings.gOpen || {}; S.settings.gOpen[d.dataset.gid] = d.open; save(); }, true);
 let animNext = true, ANIM = true; // les graphiques s'animent seulement à l'ouverture d'un écran (pas à chaque mise à jour)
 function render() {
+  RC = {};
   ANIM = !!navAnim || animNext; animNext = false;
   if (selR && cur().v !== 'train') { selR = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
   if (selH && !HVIEWS.includes(cur().v)) { selH = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
