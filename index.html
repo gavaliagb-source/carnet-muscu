@@ -4489,7 +4489,7 @@ function medalsEarned0(hist) {
     st.redeem = red ? 1 : 0; if (red && !got.redeem1) got.redeem1 = red + 'T12:00';
     // niveau : calculé sans les médailles de niveau (sinon elles se donneraient de l'XP entre elles)
     const nm0 = Object.keys(got).filter(k => !/^lvl/.test(k)).length;
-    const xp0 = st.n * 100 + st.sets * 5 + st.pr * 40 + nm0 * 250 + (st.qd || 0) * 150 + (st.dg || 0) * 500 + (st.boss || 0) * 1000 - Object.keys(qf).length * QFAIL_XP + (typeof xpBonus === 'function' ? xpBonus() : 0);
+    const xp0 = st.n * 100 + st.sets * 5 + st.pr * 40 + nm0 * 250 + (st.qd || 0) * 150 + (st.dg || 0) * 500 + (st.boss || 0) * 1000 - qFailSum(qf) + (typeof xpBonus === 'function' ? xpBonus() : 0);
     st.lvl = Math.floor(Math.sqrt(Math.max(0, xp0) / 60)) + 1; defs.filter(x => x.g === 'lvl').forEach(x => { if (!got[x.id] && st.lvl >= x.v) got[x.id] = now; });
   }
   return {got, st, defs};
@@ -4592,7 +4592,7 @@ function bossRow() {
 function hunter(me) {
   me = me || medalsEarned();
   const st = me.st, nm = Object.keys(me.got).filter(k => !/^lvl/.test(k)).length;
-  const xp = Math.round(st.n * 100 + st.sets * 5 + st.pr * 40 + nm * 250 + (st.qd || 0) * 150 + (st.dg || 0) * 500 + (st.boss || 0) * 1000 - Object.keys(S.qFail || {}).length * QFAIL_XP + (typeof xpBonus === 'function' ? xpBonus() : 0));
+  const xp = Math.round(st.n * 100 + st.sets * 5 + st.pr * 40 + nm * 250 + (st.qd || 0) * 150 + (st.dg || 0) * 500 + (st.boss || 0) * 1000 - qFailSum(S.qFail) + (typeof xpBonus === 'function' ? xpBonus() : 0));
   const lvl = Math.floor(Math.sqrt(Math.max(0, xp) / 60)) + 1;
   const r = HRANKS.filter(x => lvl >= x[0]).pop(), nx = HRANKS.find(x => x[0] > lvl);
   return {xp, lvl, rk: r[1], cls: hClass(lvl), title: T(r[2][0], r[2][1]), col: RKC[r[1]], cur: xp - xpAt(lvl), need: xpAt(lvl + 1) - xpAt(lvl), nextRank: nx ? {lvl: nx[0], rk: nx[1]} : null, st, nm};
@@ -4731,9 +4731,11 @@ function dailyQuest0(d, extra) {
   return {k, ...q, cur, done: cur >= q.goal, text: T(q.t[0], q.t[1]).replace('#', q.goal.toLocaleString(LOC()))};
 }
 /* Note la quête du jour et le donjon de la semaine quand ils sont réussis. Renvoie ce qui vient d'être accompli. */
-/* Quêtes ratées : −10 XP chacune. Une quête est ratée si c'était un jour d'entraînement prévu et qu'elle n'a pas été accomplie.
+/* Quêtes ratées : −100 XP chacune (−10 avant la v9.40). Une quête est ratée si c'était un jour d'entraînement prévu et qu'elle n'a pas été accomplie.
    On compte seulement à partir du jour où cette règle existe (S.qStart), jamais en arrière. */
-const QFAIL_XP = 10;
+const QFAIL_XP = 100; // les anciennes quêtes ratées (valeur 1, avant la v9.40) gardent −10 XP
+const qfXP = v => v === 1 || v === true ? 10 : +v || 0;
+const qFailSum = (o, f) => Object.keys(o || {}).filter(f || (() => true)).reduce((a, k) => a + qfXP(o[k]), 0);
 const qFail = () => (S.qFail = S.qFail || {});
 function plannedDay(d) {
   const i = dayIdx(d);
@@ -4751,7 +4753,7 @@ function syncQuestFails() {
     const trained = S.history.some(x => dkey(x.date) === k);
     if (!plannedDay(d) && !trained) continue;
     if (dailyQuest(new Date(d)).done) { qLog()[k] = new Date(d).toISOString(); changed = true; continue; }
-    qFail()[k] = 1; changed = true;
+    qFail()[k] = QFAIL_XP; changed = true;
   }
   if (S.qChk !== today) { S.qChk = today; changed = true; }
   if (changed) save();
@@ -4842,10 +4844,10 @@ function questCard(compact) {
       ${q.rest ? chip('🌙', T('Repos', 'Rest'), 100, true) : chip(q.ic, T('Quête', 'Quest'), pc(q.cur, q.goal), q.done)}
       ${chip(rkBadge(dg.rk, 'mrk lvrk'), T('Donjon', 'Dungeon'), pc(dg.cur, dg.goal), dg.done)}
       ${bo ? chip('☠️', 'Boss', pc(bo.cur - bo.from * .85, bo.target - bo.from * .85), bo.done) : ''}</div>
-      ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −10 XP.', 'Yesterday\'s quest failed: −10 XP.')}</div>` : ''}</div>`;
-  if (compact === 'inner') return `${qh}${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −10 XP. Ne rate pas celle d\'aujourd\'hui!', 'Yesterday\'s quest failed: −10 XP. Don\'t miss today\'s!')}</div>` : ''}${dh}${bossRow()}`;
+      ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −' + qfXP(qFail()[dkey(new Date(Date.now() - 864e5))]) + ' XP.', 'Yesterday\'s quest failed: −' + qfXP(qFail()[dkey(new Date(Date.now() - 864e5))]) + ' XP.')}</div>` : ''}</div>`;
+  if (compact === 'inner') return `${qh}${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −' + qfXP(qFail()[dkey(new Date(Date.now() - 864e5))]) + ' XP. Ne rate pas celle d\'aujourd\'hui!', 'Yesterday\'s quest failed: −' + qfXP(qFail()[dkey(new Date(Date.now() - 864e5))]) + ' XP. Don\'t miss today\'s!')}</div>` : ''}${dh}${bossRow()}`;
   return `<div class="card sysw qcard">${head}<div style="height:10px"></div>${qh}
-    ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −10 XP. Ne rate pas celle d\'aujourd\'hui!', 'Yesterday\'s quest failed: −10 XP. Don\'t miss today\'s!')}</div>` : ''}
+    ${pen && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −' + qfXP(qFail()[dkey(new Date(Date.now() - 864e5))]) + ' XP. Ne rate pas celle d\'aujourd\'hui!', 'Yesterday\'s quest failed: −' + qfXP(qFail()[dkey(new Date(Date.now() - 864e5))]) + ' XP. Don\'t miss today\'s!')}</div>` : ''}
     ${dh}${bossRow()}</div>`;
 }
 /* ----- Armée des ombres ----- */
@@ -5397,8 +5399,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.39.1';
+const APP_VERSION = '9.40';
 const CHANGELOG = [
+  {v: '9.40', d: '2026-11-12', fr: ['⚠️ Mode jeu : rater la quête du jour coûte maintenant −100 XP (au lieu de −10). Ça compte à partir de maintenant : tes anciennes quêtes ratées restent à −10.'], en: ['⚠️ Game mode: failing the daily quest now costs −100 XP (instead of −10). Applies from now on: past failed quests stay at −10.']},
   {v: '9.39.1', d: '2026-11-12', fr: ['🎯 « Quoi battre? » respecte ta zone de reps : si 1 rep de plus te sort de ta zone, il te propose plutôt plus de volume ou une charge plus lourde.'], en: ['🎯 “What to beat?” respects your rep range: if one more rep takes you out of it, it suggests more volume or a heavier weight instead.']},
   {v: '9.39', d: '2026-11-12', fr: ['📦 Nouveau : record de volume! Si tu fais plus de reps au total qu\'avant avec le même nombre de séries (ex. 3×11 après 3×10), ça compte comme un record. Ajouter des séries ne suffit pas : on compare seulement aux séances avec au moins autant de séries (minimum 2), dans les 3 derniers mois.'], en: ['📦 New: volume record! More total reps than before with the same number of sets (e.g. 3×11 after 3×10) counts as a record. Adding sets isn\'t enough: only workouts with at least as many sets in the last 3 months are compared.']},
   {v: '9.38.2', d: '2026-11-12', fr: ['🎯 « Quoi battre? » plus simple : l\'objectif en vert d\'abord, le détail en dessous.'], en: ['🎯 Simpler “What to beat?”: the green goal first, details below.']},
@@ -6661,7 +6664,7 @@ function seasonXp(m) {
   try { xp += Object.values(medalsEarned().got).filter(inM).length * 250; } catch (e) {}
   xp += Object.keys(S.questLog || {}).filter(inM).length * 150 + Object.keys(S.dungeonLog || {}).filter(inM).length * 500;
   xp += Object.values(S.bossLog || {}).filter(v => inM(v && v.d || v)).length * 1000;
-  xp -= Object.keys(S.qFail || {}).filter(inM).length * QFAIL_XP;
+  xp -= qFailSum(S.qFail, inM);
   xp += xpBonus(m);
   xp = Math.max(0, Math.round(xp)); sxMemo.set(k, xp); return xp;
 }
@@ -6989,7 +6992,7 @@ function guildStrip() {
   const chip = (ic, label, pct, done) => `<span class="qchip ${done ? 'ok' : ''}"><span class="qci">${ic}</span><span>${label}</span><i><b style="width:${done ? 100 : pct}%"></b></i></span>`;
   return `<div class="card sysw qcard qmin gstrip" data-tab="guild" role="button"><div class="gshead"><span class="sysh" style="margin:0">[ ${T('GUILDE', 'GUILD')} ]</span><span class="small muted gslv">${T('Niv.', 'Lv.')} ${hu.lvl} ›</span></div>
     <div class="qchips">${q.rest ? chip('🌙', T('Repos', 'Rest'), 100, true) : chip(q.ic, T('Quête', 'Quest'), pc(q.cur, q.goal), q.done)}${chip(rkBadge(dg.rk, 'mrk lvrk'), T('Donjon', 'Dungeon'), pc(dg.cur, dg.goal), dg.done)}${bo ? chip('☠️', 'Boss', pc(bo.cur - bo.from * .85, bo.target - bo.from * .85), bo.done) : ''}</div>
-    ${ev ? `<div class="small" style="margin-top:8px;color:#f5c542">🎪 ${esc(T(ev.n[0], ev.n[1]))} ${T('en cours', 'live')}</div>` : questPenalty() && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −10 XP.', 'Yesterday\'s quest failed: −10 XP.')}</div>` : ''}</div>`;
+    ${ev ? `<div class="small" style="margin-top:8px;color:#f5c542">🎪 ${esc(T(ev.n[0], ev.n[1]))} ${T('en cours', 'live')}</div>` : questPenalty() && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −' + qfXP(qFail()[dkey(new Date(Date.now() - 864e5))]) + ' XP.', 'Yesterday\'s quest failed: −' + qfXP(qFail()[dkey(new Date(Date.now() - 864e5))]) + ' XP.')}</div>` : ''}</div>`;
 }
 function vFriends() {
   const fr = FRS(), feed = frFeed(), rec = frReceived();
@@ -7590,7 +7593,7 @@ document.addEventListener('click', e => {
     case 'title-how': toast(T(`🔒 « ${b.dataset.t} » : débloque la médaille « ${b.dataset.h} »`, `🔒 “${b.dataset.t}”: unlock the medal “${b.dataset.h}”`)); break;
     case 'g-fold': { S.settings.gOpen = S.settings.gOpen || {}; S.settings.gOpen[b.dataset.id] = !S.settings.gOpen[b.dataset.id]; save(); render(); break; }
     case 'arm-tab': { armTab = b.dataset.t; armRefresh(true); b.scrollIntoView({inline: 'nearest', block: 'nearest', behavior: 'smooth'}); break; }
-    case 'xp-info': modal(`<h2>${T('Comment gagner de l\'XP', 'How to earn XP')}</h2><div class="xpl">${[[T('Séance', 'Workout'), 100], [T('Série', 'Set'), 5], [T('Record', 'Record'), 40], [T('Médaille', 'Medal'), 250], [T('Quête du jour', 'Daily quest'), 150], [T('Donjon', 'Dungeon'), 500], ['Boss', 1000], [T('Raid réussi', 'Raid cleared'), 400], [T('Défi gagné', 'Challenge won'), 300], [T('Quête ratée', 'Missed quest'), -10]].map(([l, v]) => `<div class="row between"><span>${l}</span><b style="color:${v < 0 ? 'var(--warm)' : 'var(--ok)'}">${v > 0 ? '+' : '−'}${Math.abs(v).toLocaleString(LOC())} XP</b></div>`).join('')}</div><p class="small muted">${T('Les événements donnent aussi des bonus (double XP, quêtes spéciales).', 'Events also give bonuses (double XP, special quests).')}</p><button class="btn primary block" data-act="close">OK</button>`); break;
+    case 'xp-info': modal(`<h2>${T('Comment gagner de l\'XP', 'How to earn XP')}</h2><div class="xpl">${[[T('Séance', 'Workout'), 100], [T('Série', 'Set'), 5], [T('Record', 'Record'), 40], [T('Médaille', 'Medal'), 250], [T('Quête du jour', 'Daily quest'), 150], [T('Donjon', 'Dungeon'), 500], ['Boss', 1000], [T('Raid réussi', 'Raid cleared'), 400], [T('Défi gagné', 'Challenge won'), 300], [T('Quête ratée', 'Missed quest'), -QFAIL_XP]].map(([l, v]) => `<div class="row between"><span>${l}</span><b style="color:${v < 0 ? 'var(--warm)' : 'var(--ok)'}">${v > 0 ? '+' : '−'}${Math.abs(v).toLocaleString(LOC())} XP</b></div>`).join('')}</div><p class="small muted">${T('Les événements donnent aussi des bonus (double XP, quêtes spéciales).', 'Events also give bonuses (double XP, special quests).')}</p><button class="btn primary block" data-act="close">OK</button>`); break;
     case 'cos-set': S.settings.cos = S.settings.cos || {}; S.settings.cos[b.dataset.k] = b.dataset.id; save(); armRefresh(); if (frOn() && ['banner', 'emblem'].includes(b.dataset.k)) frQueue(false); if (b.dataset.k === 'fx') { const x = document.querySelector('.armit.on'); if (x) setFx(x, false, b.dataset.id); } if (b.dataset.k === 'cele') confetti(120); break;
     case 'cos-how': toast(T(`🔒 Se débloque avec : ${b.dataset.h}`, `🔒 Unlocks with: ${b.dataset.h}`)); break;
     case 'cos-try': if (b.dataset.k === 'fx') setFx(b, false); else confetti(120); break;
