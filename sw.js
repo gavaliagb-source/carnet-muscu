@@ -12,7 +12,20 @@ self.addEventListener('fetch', e => {
   if (/(^|\.)google(apis)?\.com$/.test(new URL(e.request.url).hostname)) return;
   // La page elle-même : toujours vérifier auprès du serveur (sinon le cache du navigateur peut garder l'ancienne version ~10 min)
   const u = new URL(e.request.url), page = e.request.mode === 'navigate' || (u.origin === location.origin && /\/(index\.html)?$/.test(u.pathname));
-  e.respondWith((page ? fetch(e.request.url, {cache: 'no-cache', credentials: 'same-origin'}) : fetch(e.request)).then(r => {
+  if (page) {
+    // La page : on demande la dernière version au serveur, mais si le réseau est lent (> 2,5 s), on ouvre tout de suite
+    // la version en cache — la nouvelle se télécharge quand même en arrière-plan et servira à la prochaine ouverture.
+    const net = fetch(e.request.url, {cache: 'no-cache', credentials: 'same-origin'}).then(r => { if (r.ok) { const copy = r.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy)); } return r; });
+    const cached = () => caches.match('./index.html').then(r => r || caches.match(e.request, {ignoreSearch: true}));
+    e.respondWith(new Promise(res => {
+      let done = false; const fin = r => { if (!done && r) { done = true; res(r); } };
+      const t = setTimeout(() => cached().then(fin), 2500);
+      net.then(r => { clearTimeout(t); fin(r); }).catch(() => { clearTimeout(t); cached().then(r => fin(r || Response.error())); });
+    }));
+    e.waitUntil(net.catch(() => {}));
+    return;
+  }
+  e.respondWith(fetch(e.request).then(r => {
     const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r;
   }).catch(() => caches.match(e.request).then(r => r || caches.match('./index.html'))));
 });
