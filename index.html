@@ -1690,14 +1690,17 @@ const notifOn = () => S.settings.notif === true && 'Notification' in window && N
 /* ---------- Coach vocal ---------- */
 const voiceOn = () => !!S.settings.voice && 'speechSynthesis' in window;
 let voiceLast = 0;
+try { if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); } } catch (e) {}
 function say(txt) {
   if (!voiceOn() || !txt) return;
   try {
     const sy = speechSynthesis; sy.cancel();
     const u = new SpeechSynthesisUtterance(txt), lang = T('fr-CA', 'en-US');
-    u.lang = lang; u.rate = 1.02;
-    const vs = sy.getVoices(), v = vs.find(x => x.lang === lang) || vs.find(x => x.lang && x.lang.slice(0, 2) === lang.slice(0, 2));
-    if (v) u.voice = v;
+    // meilleure voix disponible : d'abord les voix « améliorées / naturelles », dans la bonne langue (fr-CA, sinon fr-FR)
+    const vs = sy.getVoices().filter(x => x.lang && x.lang.replace('_', '-').slice(0, 2) === lang.slice(0, 2));
+    const sc = x => (x.lang.replace('_', '-') === lang ? 4 : 0) + (/premium|enhanced|améliorée|natural|neural|online/i.test(x.name) ? 3 : 0) + (/google/i.test(x.name) ? 2 : 0) + (x.localService === false ? 1 : 0);
+    const v = vs.sort((a, b) => sc(b) - sc(a))[0];
+    if (v) u.voice = v; u.lang = v ? v.lang : lang; u.rate = .95; u.pitch = 1;
     sy.speak(u);
   } catch (e) {}
 }
@@ -1707,7 +1710,7 @@ function voiceNext() { // court : « 8 à 10 reps, 185 livres » (poids réussi 
   const e = a.exercises[i], s = e.sets.find(x => !x.done), tm = isTimed(e);
   const isW = s.t === 'W', same = e.sets.filter(x => (x.t === 'W') === isW), k = same.indexOf(s);
   const rg = String(isW ? (s.r || s.ph || '') : (e.target && e.target.reps) || s.r || s.ph || '').trim().replace(/\s*[-–]\s*/, T(' à ', ' to '));
-  const reps = rg ? `${rg} ${tm ? T('secondes', 'seconds') : 'reps'}` : '';
+  const reps = rg ? `${rg} ${tm ? T('secondes', 'seconds') : T('répétitions', 'reps')}` : '';
   let w = '';
   try { const pv = (lastFull(e.name) || []).filter(x => (x.t === 'W') === isW && x.u !== 's'), p = pv[k] || pv[pv.length - 1]; if (p && +p.w > 0) w = `${dec1(+p.w)} ${U() === 'kg' ? T('kilos', 'kilos') : T('livres', 'pounds')}`; } catch (er) {}
   return [reps, w].filter(Boolean).join(', ') + '.';
@@ -5207,8 +5210,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.27';
+const APP_VERSION = '9.27.1';
 const CHANGELOG = [
+  {v: '9.27.1', d: '2026-11-12', fr: ['🗣️ Coach vocal : il dit « répétitions » en entier, parle un peu plus lentement et choisit la meilleure voix française de ton téléphone.'], en: ['🗣️ Voice coach: speaks a bit slower and picks the best voice on your phone.']},
   {v: '9.27', d: '2026-11-12', fr: ['⚡ Appli plus rapide : le Bilan de l\'année s\'ouvre ~60 fois plus vite, le Profil, les Médailles et l\'Historique 2 à 6 fois plus vite (l\'historique affiche 40 séances, puis « Voir plus »). Si ton réseau est lent, l\'appli s\'ouvre tout de suite avec la version déjà téléchargée.', '🧹 Finitions : chiffres du profil sur une ligne, boutons des séances qui ne débordent plus, pourcentages qui ne se coupent plus, records du mois sans doublon, prédiction adaptée à ton historique, textes anglais manquants.', '🎮 Mode classique : les médailles du mode jeu (quêtes, donjons, boss, arsenal) sont cachées.'], en: ['⚡ Faster app: Year in review opens ~60× faster, Profile, Medals and History 2 to 6× faster (history shows 40 workouts, then “Show more”). On a slow network, the app opens right away with the version already downloaded.', '🧹 Polish: profile numbers on one line, workout buttons no longer overflow, percentages no longer wrap, monthly records without duplicates, prediction fitted to your history, missing English text.', '🎮 Classic mode: game-mode medals (quests, dungeons, bosses, arsenal) are hidden.']},
   {v: '9.26.2', d: '2026-11-12', fr: ['🎪 Quand un événement commence, une fenêtre te l\'annonce à l\'ouverture de l\'appli (nom, objectif, récompense et date de fin).'], en: ['🎪 When an event starts, a popup announces it when you open the app (name, goal, reward and end date).']},
   {v: '9.26.1', d: '2026-11-12', fr: ['🎪 Correction : les événements passés (avant leur arrivée dans l\'appli) ne donnent plus d\'XP, et l\'XP donnée par erreur est retirée. Un événement réussi s\'affiche maintenant avec son nom en grand.'], en: ['🎪 Fix: past events (before they arrived in the app) no longer give XP, and XP given by mistake is removed. A completed event now shows its name in a popup.']},
@@ -7525,7 +7529,7 @@ document.addEventListener('click', e => {
     case 'timer-stop-big': closeModal(); stopTimer(); break;
     case 'timer-add': timerTot += 30; timerEnd += 30000; scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); restSW(timerEnd); tickTimer(); break;
     case 'timer-stop': stopTimer(); break;
-    case 'voice-test': say(S.active ? voiceNext() : T('8 à 10 reps, 185 livres.', '8 to 10 reps, 185 pounds.')); break;
+    case 'voice-test': say(S.active ? voiceNext() : T('8 à 10 répétitions, 185 livres.', '8 to 10 reps, 185 pounds.')); break;
     case 'timer-big': bigTimerOpen(); break;
     case 'timer-go': if (!S.active) break; if (cur().v === 'workout' && $('#timer').classList.contains('show') && !$('#timer').classList.contains('fin')) { bigTimerOpen(); break; } if ($('#timer').classList.contains('fin')) stopTimer(); if (cur().v !== 'workout') { closeAll(); openWorkout(); } else scrollCur(); break;
 
