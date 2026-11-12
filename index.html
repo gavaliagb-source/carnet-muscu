@@ -4806,7 +4806,7 @@ function questCard(compact) {
   const q = dailyQuest(), dg = weekDungeon(), pen = questPenalty();
   const qh = q.rest
     ? `<div class="qrow"><span class="qic">${'🌙'}</span><div style="flex:1"><b>${T('Jour de repos', 'Rest day')}</b><div class="small muted">${T('La Guilde te laisse récupérer aujourd\'hui. Pas de quête.', 'The Guild lets you rest today. No quest.')}</div></div></div>`
-    : `<div class="qrow"><span class="qic">${q.ic}</span><div style="flex:1;min-width:0"><b>${esc(q.text)}</b>${q.id === 'pr' && !q.done ? ` <button class="linkbtn small" data-act="pr-why">🔍 ${T('Quoi battre?', 'What to beat?')}</button>` : ''}${sysBar(q.cur, q.goal)}<div class="row between small muted"><span>${Math.min(q.cur, q.goal).toLocaleString(LOC())} / ${q.goal.toLocaleString(LOC())}</span><span>${q.done ? `<b style="color:var(--ok)">${T('ACCOMPLIE', 'COMPLETE')}</b>` : '+150 XP'}</span></div></div></div>`;
+    : `<div class="qrow"><span class="qic">${q.ic}</span><div style="flex:1;min-width:0"><b>${esc(q.text)}</b>${q.id === 'pr' ? ` <button class="linkbtn small" data-act="pr-why">🔍 ${T('Quoi battre?', 'What to beat?')}</button>` : ''}${sysBar(q.cur, q.goal)}<div class="row between small muted"><span>${Math.min(q.cur, q.goal).toLocaleString(LOC())} / ${q.goal.toLocaleString(LOC())}</span><span>${q.done ? `<b style="color:var(--ok)">${T('ACCOMPLIE', 'COMPLETE')}</b>` : '+150 XP'}</span></div></div></div>`;
   const dh = `<div class="qrow" style="margin-top:12px"><span class="qic">${rkBadge(dg.rk, 'mrk lvrk')}</span><div style="flex:1;min-width:0"><b>${T('Donjon de rang', 'Rank')} ${dg.rk}${T('', ' dungeon')} · ${esc(dg.text)}</b>${sysBar(dg.cur, dg.goal)}<div class="row between small muted"><span>${dg.fmt(Math.min(dg.cur, dg.goal))} / ${dg.fmt(dg.goal)}</span><span>${dg.done ? `<b style="color:var(--ok)">${T('DONJON NETTOYÉ', 'DUNGEON CLEARED')}</b>` : `${dg.left} ${T('j restants', 'days left')} · +500 XP`}</span></div></div></div>`;
   const open = compact === 'full' || compact === 'inner' || S.settings.qOpen === true, bo = monthBoss();
   const pc = (a, b) => Math.min(100, Math.round(a / Math.max(1, b) * 100));
@@ -5371,7 +5371,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.37.4';
+const APP_VERSION = '9.37.5';
 const CHANGELOG = [
   {v: '9.37.4', d: '2026-11-12', fr: ['🔍 Quête « Bats un record » : un bouton « Quoi battre? » montre, pour chaque exercice fait aujourd\'hui, ton résultat et le meilleur à dépasser.'], en: ['🔍 “Break a record” quest: a “What to beat?” button shows, for each exercise done today, your result and the best to beat.']},
   {v: '9.37.3', d: '2026-11-12', fr: ['🏆 Un record de reps à la même charge compte seulement si tu as fait cette charge dans les 3 derniers mois (pas de record « facile » en reprenant un vieux poids léger).'], en: ['🏆 A rep record at the same weight only counts if you did that weight in the last 3 months (no “easy” record by going back to an old light weight).']},
