@@ -3158,7 +3158,7 @@ function vTrain() {
   let h = '';
   if (a) h += `<div class="card" style="border-color:var(--accent)"><div class="row between"><div><h3>Séance en cours</h3><span class="muted small">${esc(a.routineName)} · ⏱ <span id="elapsed2">${fmtDur(Date.now() - new Date(a.start))}</span></span></div><button class="btn primary sm" data-act="go-workout">Reprendre</button></div></div>`;
   h += todayCard();
-  syncSystem(); if (GAME()) { evCheck(); h += eventCard(); h += questCard(true); }
+  syncSystem(); if (GAME()) { evCheck(); h += eventCard(); h += questCard(true); setTimeout(evAnnounce, 0); }
   h += weekRings();
   h += cloudNag();
   if (deloadOn()) h += `<div class="card" style="border-color:var(--warm)"><div class="row between"><div><b>🪶 Semaine de récupération</b><br><span class="muted small">Charges −${S.settings.deload.pct} % jusqu'au ${new Date(S.settings.deload.until + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'long'})}</span></div><button class="btn sm" data-act="deload-off">Arrêter</button></div></div>`;
@@ -3610,6 +3610,18 @@ function evCheck() {
   eventsAround().filter(e => e.q && e.a <= now && dkey(e.b) > EV_START && now < new Date(+e.b + 3 * 864e5)).forEach(e => {
     if (evProg(e) >= e.q.g && giveXp('ev', e.id, e.q.xp, '')) setTimeout(() => evWin(e), 400);
   });
+}
+/* Annonce d'un événement : une fenêtre la première fois que tu ouvres l'appli pendant l'événement */
+function evAnnounce() {
+  if (!GAME() || modals.length || S.active) return;
+  const e = evNow(); if (!e) return; S.evSeen = S.evSeen || {}; if (S.evSeen[e.id]) return;
+  const end = new Date(+e.b - 1).toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long'});
+  const fmt = v => e.q.k === 'vol' ? `${Math.round(U() === 'kg' ? v : v * 2.20462).toLocaleString(LOC())} ${U()}` : e.q.k === 'car' ? `${v} min` : v.toLocaleString(LOC());
+  setTimeout(() => { if (modals.length || S.active || S.evSeen[e.id]) return; S.evSeen[e.id] = 1; save(); modal(`<div style="text-align:center"><div class="sysh" style="color:#f5c542">[ ${T('NOUVEL ÉVÉNEMENT', 'NEW EVENT')} ]</div><div style="font-size:46px;margin:8px 0">🎪</div>
+    <h2 style="margin:0 0 6px">${esc(T(e.n[0], e.n[1]))}</h2><p style="margin:0 0 8px">${esc(T(e.d[0], e.d[1])).replace('{g}', e.q ? fmt(e.q.g) : '')}</p>
+    ${e.x2 ? `<div class="evx2">2× XP</div>` : `<b style="color:var(--ok)">${T('Récompense', 'Reward')} : +${e.q.xp} XP</b>`}
+    <p class="small muted" style="margin:10px 0 0">${T('Jusqu\'au', 'Until')} ${end}. ${T('Tu suis ta progression dans l\'onglet Entraînement.', 'Track your progress in the Workout tab.')}</p>
+    <button class="btn primary block" style="margin-top:14px" data-act="close">${T('C\'est parti!', 'Let\'s go!')}</button></div>`); }, 900);
 }
 function evWin(e) {
   confetti();
@@ -5173,8 +5185,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.26.1';
+const APP_VERSION = '9.26.2';
 const CHANGELOG = [
+  {v: '9.26.2', d: '2026-11-12', fr: ['🎪 Quand un événement commence, une fenêtre te l\'annonce à l\'ouverture de l\'appli (nom, objectif, récompense et date de fin).'], en: ['🎪 When an event starts, a popup announces it when you open the app (name, goal, reward and end date).']},
   {v: '9.26.1', d: '2026-11-12', fr: ['🎪 Correction : les événements passés (avant leur arrivée dans l\'appli) ne donnent plus d\'XP, et l\'XP donnée par erreur est retirée. Un événement réussi s\'affiche maintenant avec son nom en grand.'], en: ['🎪 Fix: past events (before they arrived in the app) no longer give XP, and XP given by mistake is removed. A completed event now shows its name in a popup.']},
   {v: '9.26', d: '2026-11-12', fr: ['📌 Les notes sont maintenant attachées à l\'exercice : la même note s\'affiche dans toutes tes routines et séances libres (tes anciennes notes ont été reprises).', '🏋️ Les poids suivent l\'exercice : peu importe la routine, tu repars du poids de ta dernière fois. La page de la routine et l\'éditeur montrent ces poids à jour. Si tu changes un poids dans la routine, c\'est lui qui compte à la prochaine séance.'], en: ['📌 Notes are now attached to the exercise: the same note shows in all your routines and free workouts (your old notes were kept).', '🏋️ Weights follow the exercise: whatever the routine, you start from your last weight. The routine page and editor show these up-to-date weights. If you change a weight in the routine, that one counts next workout.']},
   {v: '9.25', d: '2026-11-12', fr: ['⚡ Version express : sur la page d\'une routine, un bouton la fait tenir en moins de temps (2 séries par exercice, supersets, repos plus courts), avec la durée estimée.', '📈 Prédiction : sur la page d\'un exercice et dans tes mesures, l\'app prolonge ta courbe en pointillé et te dit où tu seras dans 8 semaines, plus la date de ton prochain cap (ex. 225 lb).', '🎪 Événements (mode jeu) : week-end double XP chaque fin de mois, et des événements spéciaux pendant l\'année (Nouvel An, Halloween, Noël…) avec leur propre quête.'], en: ['⚡ Express version: on a routine\'s page, a button makes it fit in less time (2 sets per exercise, supersets, shorter rest), with the estimated duration.', '📈 Prediction: on an exercise page and in your measurements, the app extends your curve with a dotted line and tells you where you\'ll be in 8 weeks, plus the date of your next milestone (e.g. 225 lb).', '🎪 Events (game mode): a double XP weekend at the end of every month, and special events through the year (New Year, Halloween, Christmas…) with their own quest.']},
