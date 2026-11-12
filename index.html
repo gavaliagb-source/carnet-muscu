@@ -5448,7 +5448,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.44.4';
+const APP_VERSION = '9.44.5';
 const CHANGELOG = [
   {v: '9.44.4', d: '2026-11-12', fr: ['👆 Armurerie : toucher une récompense débloquée l\'équipe direct. La fenêtre « Comment tu l\'as eu » s\'ouvre seulement si elle est déjà équipée.'], en: ['👆 Armory: tapping an unlocked reward equips it right away. The “How you got it” window only opens if it is already equipped.']},
   {v: '9.44.3', d: '2026-11-12', fr: ['✨ Armurerie : même vitesse de reflet partout, et la lueur autour des légendaires et mythiques est de retour (fluide).'], en: ['✨ Armory: same shine speed everywhere, and the glow around legendary and mythic items is back (smooth).']},
@@ -7044,9 +7044,9 @@ function cosPreview(kind, id) {
   modal(`<div class="pvwrap" style="--rr:${R[2]}"><div class="pvrar${x.rar === 4 ? ' myth' : ''}">${kn} · ${T(R[0], R[1])}</div>
     <div class="pvbig${x.rar >= 3 ? ' pvglow' : ''}">${hid ? '<span class="armmyst big">?</span>' : rwPrev(kind, x, true)}</div>
     <h2 style="text-align:center;margin:6px 0">${hid ? '???' : esc(T(x.n[0], x.n[1]))}</h2>
-    ${q.ok ? `<p class="small" style="text-align:center;color:var(--ok)">✅ ${T('Débloqué', 'Unlocked')}${when ? ' ' + T('le', 'on') + ' ' + when : ''}</p><p class="small" style="text-align:center">🏅 ${T('Comment tu l\'as eu', 'How you got it')} : <b>${esc(x.r.set ? T('Collection complète', 'Full collection') : q.why)}</b></p>`
+    ${q.ok ? `<p class="small" style="text-align:center;color:var(--ok)">✅ ${rwOn(kind, x) ? T('Équipé · débloqué', 'Equipped · unlocked') : T('Débloqué', 'Unlocked')}${when ? ' ' + T('le', 'on') + ' ' + when : ''}</p><p class="small" style="text-align:center">🏅 ${T('Comment tu l\'as eu', 'How you got it')} : <b>${esc(x.r.set ? T('Collection complète', 'Full collection') : q.why)}</b></p>`
       : `<p class="small" style="text-align:center">🔒 ${T('Pour le débloquer', 'To unlock it')} : <b>${esc(hid ? T('Complète toute la collection', 'Complete the whole collection') : q.why)}</b></p>${bars}`}
-    <div class="row" style="gap:8px;margin-top:12px">${['fx', 'cele'].includes(kind) && !hid ? `<button class="btn block" data-act="cos-try2" data-k="${kind}" data-id="${esc(id)}">▶ ${T('Essayer', 'Try it')}</button>` : ''}${q.ok ? (rwOn(kind, x) ? `<button class="btn block" data-act="close">✓ ${T('Équipé', 'Equipped')}</button>` : `<button class="btn primary block" data-act="cos-eq" data-kind="${kind}" data-id="${esc(id)}">${T('Équiper', 'Equip')}</button>`) : `<button class="btn primary block" data-act="close">OK</button>`}</div></div>`);
+    ${q.ok && rwOn(kind, x) ? '' : `<div class="row" style="gap:8px;margin-top:12px">${['fx', 'cele'].includes(kind) && !hid ? `<button class="btn block" data-act="cos-try2" data-k="${kind}" data-id="${esc(id)}">▶ ${T('Essayer', 'Try it')}</button>` : ''}${q.ok ? (rwOn(kind, x) ? `<button class="btn block" data-act="close">✓ ${T('Équipé', 'Equipped')}</button>` : `<button class="btn primary block" data-act="cos-eq" data-kind="${kind}" data-id="${esc(id)}">${T('Équiper', 'Equip')}</button>`) : `<button class="btn primary block" data-act="close">OK</button>`}</div>`}</div>`);
 }
 /* Rafraîchit seulement le contenu de l'Armurerie (sans recharger la page ni remettre les onglets au début) */
 function armRefresh(anim) {
