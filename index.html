@@ -43,6 +43,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);
 html.ios{height:100%}html.ios body{min-height:calc(100% + env(safe-area-inset-top));box-sizing:border-box}
 :root{--nb:max(4px, calc(env(safe-area-inset-bottom) - 18px))}
 body{padding-bottom:calc(76px + var(--nb))}
+html,body{overflow-x:hidden;overflow-x:clip;max-width:100vw}#app{overflow-x:clip}
 header{position:sticky;top:0;z-index:5;background:var(--bg);
   padding:calc(12px + env(safe-area-inset-top)) 16px 10px;border-bottom:1px solid var(--line);
   display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -555,7 +556,7 @@ body.selon main{padding-bottom:170px}
 .cvbig span,.cvsm span{display:block;color:var(--muted);font-size:12px}.cvbig b{display:block;font-size:40px;line-height:1.1;color:var(--accent)}.cvbig small,.cvsm small{color:var(--muted);font-size:11px}
 .cvsm{text-align:center;min-width:70px}.cvsm b{display:block;font-size:20px}
 .seg{display:flex;gap:6px}.seg .btn{flex:1}
-nav button{font-size:11px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+nav button{font-size:11px;min-width:0;white-space:nowrap;overflow:visible;text-overflow:clip}
 .cardiobtn{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:12px 14px;border-radius:16px;border:1px dashed color-mix(in srgb,var(--accent) 60%,transparent);background:color-mix(in srgb,var(--accent) 8%,var(--card));color:var(--text);font:inherit;text-align:left;cursor:pointer}
 .cardiobtn .ci{width:42px;height:42px;border-radius:12px;background:color-mix(in srgb,var(--accent) 22%,transparent);display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
 .cardiobtn b{display:block}.cardiobtn small{color:var(--muted)}.cardiobtn .ar{margin-left:auto;color:var(--muted);font-size:22px}
@@ -5324,8 +5325,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.36';
+const APP_VERSION = '9.36.1';
 const CHANGELOG = [
+  {v: '9.36.1', d: '2026-11-12', fr: ['🐛 En glissant d\'une page à l\'autre, l\'écran ne se décale plus : la barre du bas, le minuteur de repos et la séance en cours restent bien en place.'], en: ['🐛 Swiping between pages no longer shifts the screen: the bottom bar, rest timer and current workout bar stay in place.']},
   {v: '9.36', d: '2026-11-12', fr: ['🔥 Nouvelle rareté MYTHIQUE (bordure arc-en-ciel animée) : des récompenses très dures à avoir. Cadres Phénix, Éternel et Céleste, auras Supernova et Souffle du dragon, victoires Pluie de météores et Jugement divin, bannières Olympe et Abysses, emblèmes Diamant et Dragon, et 6 titres mythiques (Dieu du fer, Inarrêtable, Seigneur des donjons…).', '❄️ Les auras Givre et Éclair sont maintenant bien différentes : Givre fait tomber des cristaux de glace dans un halo bleu, Éclair fait claquer un éclair jaune.'], en: ['🔥 New MYTHIC rarity (animated rainbow border): very hard rewards. Phoenix, Eternal and Celestial frames, Supernova and Dragon breath auras, Meteor shower and Divine judgment victories, Olympus and Abyss banners, Diamond and Dragon emblems, and 6 mythic titles (God of iron, Unstoppable, Dungeon lord…).']},
   {v: '9.35', d: '2026-11-12', fr: ['✨ 7 nouvelles auras (Givre, Nature, Sang, Ombre, Prisme, Lumière sacrée, Néant) et 5 nouvelles victoires (Neige, Pétales, Arc-en-ciel, Orage, Galaxie).', '⚡ Armurerie fluide : changer d\'onglet ou équiper un objet ne recharge plus la page et la barre d\'onglets reste où elle est.'], en: ['✨ 7 new auras (Frost, Nature, Blood, Shadow, Prism, Holy light, Void) and 5 new victories (Snowfall, Petals, Rainbow, Thunderstorm, Galaxy).', '⚡ Smooth Armory: switching tabs or equipping no longer reloads the page and the tab bar stays where it is.']},
   {v: '9.34.1', d: '2026-11-12', fr: ['⏱️ Le grand minuteur de repos n\'affiche plus le message « Faites glisser l\'écran… pour quitter le mode Plein écran ».'], en: ['⏱️ The big rest timer no longer shows the “swipe to exit full screen” message.']},
