@@ -5448,8 +5448,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.44.3';
+const APP_VERSION = '9.44.4';
 const CHANGELOG = [
+  {v: '9.44.4', d: '2026-11-12', fr: ['👆 Armurerie : toucher une récompense débloquée l\'équipe direct. La fenêtre « Comment tu l\'as eu » s\'ouvre seulement si elle est déjà équipée.'], en: ['👆 Armory: tapping an unlocked reward equips it right away. The “How you got it” window only opens if it is already equipped.']},
   {v: '9.44.3', d: '2026-11-12', fr: ['✨ Armurerie : même vitesse de reflet partout, et la lueur autour des légendaires et mythiques est de retour (fluide).'], en: ['✨ Armory: same shine speed everywhere, and the glow around legendary and mythic items is back (smooth).']},
   {v: '9.44.2', d: '2026-11-12', fr: ['✨ Armurerie : le reflet brillant passe maintenant de façon fluide et régulière (plus de clignotement).'], en: ['✨ Armory: the shiny reflection is now smooth and steady (no more flicker).']},
   {v: '9.44.1', d: '2026-11-12', fr: ['❓ Les récompenses secrètes sont maintenant un vrai mystère (plus d\'aperçu flou).', '🏅 Touche une récompense débloquée pour la voir en grand, savoir comment tu l\'as eue (et quand), puis l\'équiper.'], en: ['❓ Secret rewards are now a true mystery.', '🏅 Tap an unlocked reward to see it big, how (and when) you got it, then equip it.']},
@@ -6987,7 +6988,7 @@ function rarOf(r) { // rareté selon la difficulté à débloquer
 let armTab = 'title';
 function armItem({on, ok, why, rar, prev, name, act, k, id, kind, prog, secret, isNew}) {
   const R = RAR[rar], hid = secret && !ok, pr = !ok && prog && prog.length ? prog.reduce((a, b) => (b.c / b.m < a.c / a.m ? b : a)) : null, fmt = v => Math.round(v).toLocaleString(LOC());
-  return `<button class="armit ${on ? 'on' : ''} ${ok ? '' : 'locked'} r${rar} ${rar === 4 ? 'myth' : ''}" style="--rr:${R[2]}" data-act="${ok && !id ? act : 'cos-prev'}" data-kind="${kind}" data-k="${k || ''}" data-id="${esc(id)}">
+  return `<button class="armit ${on ? 'on' : ''} ${ok ? '' : 'locked'} r${rar} ${rar === 4 ? 'myth' : ''}" style="--rr:${R[2]}" data-act="${ok && !(on && id) ? act : 'cos-prev'}" data-kind="${kind}" data-k="${k || ''}" data-id="${esc(id)}">
     <span class="armsh"></span><span class="armprev">${hid ? '<span class="armmyst">?</span>' : prev}</span><span class="armn">${hid ? '???' : esc(name)}</span><span class="armr">${ok ? T(R[0], R[1]) : '🔒 ' + esc(hid ? T('Récompense secrète', 'Secret reward') : why)}</span>
     ${pr ? `<span class="armpb"><i style="width:${Math.round(pr.c / pr.m * 100)}%"></i></span><span class="armpt">${fmt(pr.c)} / ${fmt(pr.m)}</span>` : ''}${on ? `<span class="armeq">${T('ÉQUIPÉ', 'EQUIPPED')}</span>` : isNew ? `<span class="armeq armnew">${T('NOUVEAU', 'NEW')}</span>` : ''}</button>`;
 }
