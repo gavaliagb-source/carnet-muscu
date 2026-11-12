@@ -5292,8 +5292,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.34';
+const APP_VERSION = '9.34.1';
 const CHANGELOG = [
+  {v: '9.34.1', d: '2026-11-12', fr: ['⏱️ Le grand minuteur de repos n\'affiche plus le message « Faites glisser l\'écran… pour quitter le mode Plein écran ».'], en: ['⏱️ The big rest timer no longer shows the “swipe to exit full screen” message.']},
   {v: '9.34', d: '2026-11-12', fr: ['🖼️ 9 nouveaux cadres à débloquer : Givre, Doré, Sakura, Ombre, Émeraude, Foudre, Sang de dragon, Champion et Néant.', '🐛 Glisser les onglets de l\'Armurerie ne change plus de page.'], en: ['🖼️ 9 new unlockable frames: Frost, Golden, Sakura, Shadow, Emerald, Thunder, Dragon blood, Champion and Void.', '🐛 Swiping the Armory tabs no longer changes the page.']},
   {v: '9.33.1', d: '2026-11-12', fr: ['⚔️ Guilde : retour au style fenêtres de jeu ([ STATUT ], [ QUÊTES ]…), mais chaque fenêtre se replie en douceur et elles sont bien espacées.'], en: ['⚔️ Guild: back to the game-window style ([ STATUS ], [ QUESTS ]…), but each window folds smoothly and they are nicely spaced.']},
   {v: '9.33', d: '2026-11-12', fr: ['✨ Nouvelle page Guilde, plus propre et fluide : ton statut en haut, puis une liste de sections (Quêtes, Raid, Saison, Armurerie, Arsenal, Rangs, Médailles, Amis) qui s\'ouvrent en douceur, sans recharger la page. Le détail de l\'XP s\'ouvre en touchant ta barre d\'XP.'], en: ['✨ New Guild page, cleaner and smoother: your status on top, then a list of sections (Quests, Raid, Season, Armory, Arsenal, Ranks, Medals, Friends) that open smoothly without reloading. XP details open when you tap your XP bar.']},
@@ -6981,7 +6982,7 @@ function bigTimerOpen() {
     <div class="bthint">${T('Touche l\'écran pour fermer', 'Tap the screen to close')}</div>`;
   o.addEventListener('click', ev => { if (ev.target.closest('button')) return; bigTimerClose(); });
   document.body.appendChild(o); bigTimerSync();
-  try { if (document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen({navigationUI: 'hide'}).catch(() => {}); } catch (e) {}
+  // pas de vrai « plein écran » du navigateur : il affiche un message par-dessus. Le minuteur couvre déjà tout l'écran.
   focusWakeSet(true);
 }
 function bigTimerClose() {
