@@ -4298,14 +4298,18 @@ function prScore(ws, t = Date.now()) {
   ws = ws.filter(s => s.u !== 's' && s.u !== 'c');
   const wt = ws.filter(s => +s.w > 0), bw = ws.filter(s => !(+s.w > 0));
   const wr = {}; wt.forEach(s => { const k = String(+s.w); wr[k] = {r: Math.max(wr[k] ? wr[k].r : 0, +s.r || 0), t}; }); // meilleur nombre de reps à chaque charge (+ date)
-  return {v: wt.length ? Math.max(...wt.map(s => e1rm(s.w, s.r))) : 0, b: bw.length ? Math.max(...bw.map(s => +s.r || 0)) : 0, wr};
+  const vol = {v: wt.reduce((a, s) => a + (+s.w) * (+s.r || 0), 0), b: bw.reduce((a, s) => a + (+s.r || 0), 0), n: ws.length, t}; // volume total de la séance
+  return {v: wt.length ? Math.max(...wt.map(s => e1rm(s.w, s.r))) : 0, b: bw.length ? Math.max(...bw.map(s => +s.r || 0)) : 0, wr, vol};
 }
+/* Record de volume : plus de poids × reps au total que ton meilleur des 3 derniers mois, en comparant seulement aux séances avec AU MOINS autant de séries (ajouter des séries ne suffit pas) */
+const volBest = (prev, c) => { const l = ((prev && prev.vh) || []).filter(e => e.t <= c.t && c.t - e.t <= REP_PR_DAYS * 864e5 && e.n >= c.n && (c.v > 0 ? e.v > 0 : e.b > 0)); return l.length ? Math.max(...l.map(e => c.v > 0 ? e.v : e.b)) : null; };
+const volPr = (cur, prev) => { const c = cur.vol; if (!c || c.n < 2 || !(c.v > 0 || c.b > 0)) return false; const m = volBest(prev, c); return m != null && (c.v > 0 ? c.v : c.b) > m + 1e-9; };
 /* Record si : meilleur 1RM estimé, OU plus de reps au poids du corps, OU plus de reps qu'avant à la même charge (ex. 30 lb × 11 après 30 lb × 10) */
 /* Meilleur nombre de reps à une charge, seulement parmi les séances des 3 derniers mois (null si pas fait à ce poids récemment) */
 const bestAtW = (prev, k, t) => { const l = ((prev && prev.wr && prev.wr[k]) || []).filter(e => e.t <= t && t - e.t <= REP_PR_DAYS * 864e5); return l.length ? Math.max(...l.map(e => e.r)) : null; };
 const repPrAt = (cur, prev) => Object.keys(cur.wr || {}).find(k => { const b = bestAtW(prev, k, cur.wr[k].t); return b != null && cur.wr[k].r > b; });
-const prBeat = (cur, prev) => (cur.v > 0 && prev.v > 0 && cur.v > prev.v + 1e-9) || (cur.b > 0 && prev.b > 0 && cur.b > prev.b) || repPrAt(cur, prev) != null;
-const prMerge = (o, c) => { o = o || {v: 0, b: 0, wr: {}}; const wr = {...o.wr}; Object.keys(c.wr || {}).forEach(k => { wr[k] = (wr[k] || []).concat([{r: c.wr[k].r, t: c.wr[k].t}]); }); return {v: Math.max(o.v, c.v), b: Math.max(o.b, c.b), wr}; };
+const prBeat = (cur, prev) => (cur.v > 0 && prev.v > 0 && cur.v > prev.v + 1e-9) || (cur.b > 0 && prev.b > 0 && cur.b > prev.b) || repPrAt(cur, prev) != null || volPr(cur, prev);
+const prMerge = (o, c) => { o = o || {v: 0, b: 0, wr: {}}; const wr = {...o.wr}; Object.keys(c.wr || {}).forEach(k => { wr[k] = (wr[k] || []).concat([{r: c.wr[k].r, t: c.wr[k].t}]); }); return {v: Math.max(o.v, c.v), b: Math.max(o.b, c.b), vh: (o.vh || []).concat(c.vol ? [c.vol] : []), wr}; };
 function sessPRs(h) {
   const prs = [];
   h.exercises.forEach(e => {
@@ -4315,6 +4319,8 @@ function sessPRs(h) {
     const cur = prScore(ws, +new Date(h.date)); let pv = null;
     S.history.filter(x => x.date < h.date).forEach(x => x.exercises.forEach(y => { if (norm(y.name) === norm(e.name)) { const w2 = work(y.sets).filter(s => s.u !== 's'); if (w2.length) pv = prMerge(pv, prScore(w2, +new Date(x.date))); } }));
     if (pv && prBeat(cur, pv)) { const rk = repPrAt(cur, pv);
+      const isBw = cur.b > 0 && pv.b > 0 && cur.b > pv.b;
+      if (!(cur.v > pv.v && cur.v > 0) && rk == null && !isBw) { prs.push({name: e.name, set: `${T('volume', 'volume')} ${Math.round(cur.vol.v > 0 ? cur.vol.v : cur.vol.b)}${cur.vol.v > 0 ? ' ' + U() : ' reps'} (${cur.vol.n} ${T('séries', 'sets')})`}); return; }
       const b = cur.v > pv.v && cur.v > 0 ? ws.reduce((m, s) => e1rm(s.w, s.r) > e1rm(m.w, m.r) ? s : m) : rk != null ? {w: rk, r: cur.wr[rk].r} : ws.reduce((m, s) => (+s.r || 0) > (+m.r || 0) && !(+s.w > 0) ? s : m);
       prs.push({name: e.name, set: +b.w > 0 ? `${b.w}×${b.r}` : `${b.r} reps`}); }
   });
@@ -4798,6 +4804,7 @@ function prExplain() {
       if (cur.v > 0) parts.push(T(`1RM estimé ${Math.round(cur.v)} (ton meilleur : ${Math.round(pv.v)})`, `Est. 1RM ${Math.round(cur.v)} (your best: ${Math.round(pv.v)})`));
       Object.keys(cur.wr).forEach(w => { const p = bestAtW(pv, w, cur.wr[w].t); if (p != null) parts.push(T(`${w} ${U()} : ${cur.wr[w].r} reps (ton meilleur à ce poids, 3 derniers mois : ${p})`, `${w} ${U()}: ${cur.wr[w].r} reps (your best at this weight, last 3 months: ${p})`)); else if (pv.wr[w]) parts.push(T(`${w} ${U()} : pas fait à ce poids dans les 3 derniers mois`, `${w} ${U()}: not done at this weight in the last 3 months`)); else parts.push(T(`${w} ${U()} : jamais fait avant à ce poids`, `${w} ${U()}: never done at this weight before`)); });
       if (cur.b > 0) parts.push(T(`poids du corps : ${cur.b} reps (ton meilleur : ${pv.b || '—'})`, `bodyweight: ${cur.b} reps (your best: ${pv.b || '—'})`));
+      if (cur.vol.n > 1) { const vb = volBest(pv, cur.vol), cv = cur.vol.v > 0 ? cur.vol.v : cur.vol.b, un = cur.vol.v > 0 ? U() : 'reps'; if (cv > 0) parts.push(vb != null ? T(`volume ${Math.round(cv)} ${un} en ${cur.vol.n} séries (ton meilleur, 3 derniers mois : ${Math.round(vb)})`, `volume ${Math.round(cv)} ${un} in ${cur.vol.n} sets (your best, last 3 months: ${Math.round(vb)})`) : T(`volume : pas de séance comparable (${cur.vol.n} séries ou plus) dans les 3 derniers mois`, `volume: no comparable workout (${cur.vol.n}+ sets) in the last 3 months`)); }
       why = parts.join(' · ');
     }
     /* Objectif concret pour la prochaine fois (en tenant compte d'aujourd'hui) */
@@ -4807,6 +4814,9 @@ function prExplain() {
       if (r > 0 && r <= 20 && (rr == null || r < rr + 1)) goals.push(`${W} ${U()} × ${r}`);
       const W2 = W + (U() === 'kg' ? 2.5 : 5), r2 = Math.floor(30 * (nx.v / W2 - 1) + 1e-9) + 1; if (r2 > 0 && r2 <= 15) goals.push(`${W2} ${U()} × ${r2}`); }
     if (cur.b > 0) goals.push(`${(nx.b || cur.b) + 1} reps`);
+    { const ks = Object.keys(cur.wr), c = cur.vol, vb = volBest(nx, {...c, t: now2});
+      if (vb != null && c.n > 1) { if (c.v > 0 && ks.length === 1 && c.b === 0) { const W = +ks[0], tot = Math.floor(vb / W + 1e-9) + 1; if (tot / c.n <= cur.wr[ks[0]].r + 1) goals.push(T(`${c.n} séries à ${W} ${U()} pour ${tot} reps au total`, `${c.n} sets at ${W} ${U()} for ${tot} total reps`)); }
+        else if (c.v === 0 && c.b > 0 && (vb + 1) / c.n <= cur.b + 1) goals.push(T(`${c.n} séries pour ${vb + 1} reps au total`, `${c.n} sets for ${vb + 1} total reps`)); } }
     const goal = goals.length ? `<div class="small prgoal">🎯 ${T('Prochaine fois, fais', 'Next time, do')} <b>${esc(goals[0])}</b>${goals.length > 1 ? ` <span class="muted">(${T('ou', 'or')} ${goals.slice(1).map(esc).join(` ${T('ou', 'or')} `)})</span>` : ''}</div>` : '';
     rows.push(`<div class="prx ${ok ? 'ok' : ''}"><b>${ok ? '🏆' : '·'} ${esc(e.name)}</b>${goal}<div class="small muted" style="margin-top:4px">${T('Détail', 'Details')} : ${esc(why)}</div></div>`);
   }));
@@ -5382,8 +5392,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.38.2';
+const APP_VERSION = '9.39';
 const CHANGELOG = [
+  {v: '9.39', d: '2026-11-12', fr: ['📦 Nouveau : record de volume! Si tu fais plus de reps au total qu\'avant avec le même nombre de séries (ex. 3×11 après 3×10), ça compte comme un record. Ajouter des séries ne suffit pas : on compare seulement aux séances avec au moins autant de séries (minimum 2), dans les 3 derniers mois.'], en: ['📦 New: volume record! More total reps than before with the same number of sets (e.g. 3×11 after 3×10) counts as a record. Adding sets isn\'t enough: only workouts with at least as many sets in the last 3 months are compared.']},
   {v: '9.38.2', d: '2026-11-12', fr: ['🎯 « Quoi battre? » plus simple : l\'objectif en vert d\'abord, le détail en dessous.'], en: ['🎯 Simpler “What to beat?”: the green goal first, details below.']},
   {v: '9.38.1', d: '2026-11-12', fr: ['🎯 « Quoi battre? » te dit maintenant exactement quoi faire la prochaine fois pour avoir un record (ex. 30 lb × 13).'], en: ['🎯 “What to beat?” now tells you exactly what to do next time to get a record (e.g. 30 lb × 13).']},
   {v: '9.38', d: '2026-11-12', fr: ['🏆 Record de reps à la même charge : on compare maintenant à ton meilleur à ce poids dans les 3 derniers mois seulement (un vieux record ne te bloque plus).', '✏️ Dans l\'historique d\'un exercice, un bouton ✏️ sur chaque séance pour corriger une erreur de saisie.'], en: ['🏆 Rep record at the same weight: now compared to your best at that weight in the last 3 months only (an old record no longer blocks you).', '✏️ In an exercise\'s history, a ✏️ button on each workout to fix a typo.']},
