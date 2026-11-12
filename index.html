@@ -4226,16 +4226,16 @@ const isOHP = n => /militaire|military press|overhead press|developpe debout|str
 const isPushUp = n => /pompe|push.?up/.test(n) && !/machine|bande|band/.test(n);
 const isPullUp = n => /traction|pull.?up|chin.?up/.test(n) && !/poulie|lat|assist|machine|band|bande|tirage/.test(n);
 const RKS = ['E', 'D', 'C', 'B', 'A', 'S'], RKC = {E: '#9aa3ad', D: '#4ade80', C: '#38bdf8', B: '#a78bfa', A: '#fb923c', S: '#f43f5e', 'S+': '#f5c542', M: '#8b5cf6'};
-const MCATS = [['n', ['Les débuts', 'The beginning']], ['cst', ['Constance', 'Consistency']], ['str', ['Force', 'Strength']], ['vol', ['Volume et endurance', 'Volume & endurance']], ['qst', ['Quêtes spéciales', 'Special quests']], ['sys', ['La Guilde', 'The Guild']]];
+const MCATS = [['n', ['Les débuts', 'The beginning']], ['cst', ['Constance', 'Consistency']], ['str', ['Force', 'Strength']], ['vol', ['Volume et endurance', 'Volume & endurance']], ['qst', ['Quêtes spéciales', 'Special quests']], ['car', ['Cardio', 'Cardio']], ['sys', ['La Guilde', 'The Guild']]];
 function medalDefs() {
   const kg = U() === 'kg', u = U();
-  const L = (key, cat, ic, fr, en, arr, kgArr, sub) => { const a = kg ? kgArr : arr; return a.map((v, i) => ({id: key + v, ic, g: key, v, cat, rk: RKS[Math.min(5, a.length === 1 ? 0 : Math.round(i / (a.length - 1) * 5))], t: T(fr.replace('#', v.toLocaleString(LOC())), en.replace('#', v.toLocaleString(LOC()))), s: sub ? T(sub[0], sub[1]) : ''})); };
+  const L = (key, cat, ic, fr, en, arr, kgArr, sub) => { const a = kg ? kgArr : arr; return a.map((v, i) => ({id: key + v, ic, g: key, v, cat, rk: RKS[Math.min(5, a.length === 1 ? 0 : Math.round(i / (a.length - 1) * 5))], t: (x => v === 1 && /^#/.test(fr) ? x.replace(/(\p{L}{3,})s\b/gu, '$1') : x)(T(fr.replace('#', v.toLocaleString(LOC())), en.replace('#', v.toLocaleString(LOC())))), s: sub ? T(sub[0], sub[1]) : ''})); };
   const one = (id, g, v, cat, ic, rk, fr, en, sub) => ({id, g, v, cat, ic, rk, t: T(fr, en), s: sub ? T(sub[0], sub[1]) : ''});
   return [
     one('n1', 'n', 1, 'n', '🏋️', 'E', 'Premier pas', 'First step', ['Ta toute première séance', 'Your very first workout']),
     ...L('n', 'n', '🏋️', '# séances', '# workouts', [10, 25, 50, 100, 250, 500, 1000], [10, 25, 50, 100, 250, 500, 1000]),
     ...L('wk', 'cst', '🔥', '# semaines de suite', '# weeks in a row', [4, 8, 12, 26, 52, 104], [4, 8, 12, 26, 52, 104]),
-    ...L('day', 'cst', '📅', 'Quête quotidienne : # jours de suite', 'Daily quest: # days in a row', [3, 5, 7, 14], [3, 5, 7, 14]),
+    ...L('day', 'cst', '📅', '# jours d\'entraînement de suite', '# training days in a row', [3, 5, 7, 14], [3, 5, 7, 14]),
     ...L('mon', 'cst', '🗓️', '# séances en un mois', '# workouts in one month', [12, 16, 20, 25], [12, 16, 20, 25]),
     ...L('yr', 'cst', '🏅', '# séances en une année', '# workouts in one year', [50, 100, 150, 200, 250], [50, 100, 150, 200, 250]),
     one('back1', 'back', 1, 'cst', '🔁', 'D', 'Le retour de l\'aventurier', 'The adventurer returns', ['Revenir après 2 semaines de pause', 'Come back after a 2-week break']),
@@ -4256,22 +4256,40 @@ function medalDefs() {
     ...L('early', 'qst', '✨', 'Lève-tôt × #', 'Early bird × #', [1, 25, 100], [1, 25, 100], ['Séances commencées avant 7 h', 'Workouts started before 7 AM']),
     ...L('wknd', 'qst', '🎯', 'Guerrier du week-end × #', 'Weekend warrior × #', [10, 50, 100], [10, 50, 100], ['Séances le samedi ou le dimanche', 'Workouts on Saturday or Sunday']),
     ...L('ex', 'qst', '📚', 'Arsenal de # exercices', 'Arsenal of # exercises', [10, 25, 50, 100], [10, 25, 50, 100], ['Exercices différents essayés', 'Different exercises tried']),
-    ...L('push', 'qst', '💪', '# pompes en une séance', '# push-ups in one workout', [50, 100, 200], [50, 100, 200], ['La quête quotidienne de Solo Leveling commence à 100', 'Solo Leveling\'s daily quest starts at 100']),
+    ...L('push', 'qst', '💪', '# pompes en une séance', '# push-ups in one workout', [50, 100, 200], [50, 100, 200], ['Dans une seule séance', 'In a single workout']),
     ...L('pull', 'qst', '🧗', '# tractions au total', '# total pull-ups', [100, 500, 1000, 5000], [100, 500, 1000, 5000]),
-    ...L('qd', 'sys', '✨', '# quêtes quotidiennes', '# daily quests', [1, 7, 30, 100, 365], [1, 7, 30, 100, 365]),
-    ...L('dg', 'sys', '⚔️', '# donjons nettoyés', '# dungeons cleared', [1, 4, 12, 26, 52], [1, 4, 12, 26, 52]),
-    ...L('sh', 'sys', '👥', 'Arsenal de # armes', 'Arsenal of # weapons', [5, 15, 30, 50], [5, 15, 30, 50]),
-    ...L('boss', 'sys', '☠️', 'Tueur de boss × #', 'Boss slayer × #', [1, 3, 6, 12], [1, 3, 6, 12])];
+    ...L('mpr', 'qst', '🏆', '# records en une séance', '# records in one workout', [3, 5, 8], [3, 5, 8], ['Une journée où tout passe', 'A day where everything goes up']),
+    ...L('ssets', 'vol', '✅', '# séries en une séance', '# sets in one workout', [25, 35, 50], [25, 35, 50]),
+    one('dbl1', 'dbl', 1, 'qst', '⚡', 'C', 'Double séance', 'Two-a-day', ['Deux séances le même jour', 'Two workouts on the same day']),
+    one('nyd1', 'nyd', 1, 'qst', '🎉', 'B', 'Pas de pause au Nouvel An', 'No break on New Year\'s', ['Une séance le 1er janvier', 'A workout on January 1st']),
+    ...L('cmin', 'car', '🏃', '# minutes de cardio', '# minutes of cardio', [60, 300, 1000, 3000, 10000], [60, 300, 1000, 3000, 10000]),
+    ...L('ckm', 'car', '🚴', `# ${kmU()} parcourus`, `# ${kmU()} covered`, [10, 50, 100, 500, 1000], [10, 50, 100, 500, 1000]),
+    ...L('csess', 'car', '❤️', '# séances avec du cardio', '# workouts with cardio', [10, 50, 100, 250], [10, 50, 100, 250]),
+    // ----- La Guilde (mode jeu) -----
+    ...L('lvl', 'sys', '⭐', 'Niveau #', 'Level #', [10, 20, 30, 40, 50, 60, 70, 80, 90, 100], [10, 20, 30, 40, 50, 60, 70, 80, 90, 100], ['Atteins ce niveau dans la Guilde', 'Reach this level in the Guild']),
+    ...L('qd', 'sys', '✨', '# quêtes quotidiennes', '# daily quests', [1, 7, 30, 100, 200, 365, 500], [1, 7, 30, 100, 200, 365, 500]),
+    ...L('qrow', 'sys', '🔥', 'Quêtes réussies # jours de suite', 'Quests completed # days in a row', [3, 7, 14, 30], [3, 7, 14, 30], ['Les jours de repos ne cassent pas la série', 'Rest days don\'t break the streak']),
+    one('redeem1', 'redeem', 1, 'sys', '🔁', 'D', 'Rédemption', 'Redemption', ['Réussir la quête le lendemain d\'une quête ratée', 'Complete the quest the day after missing one']),
+    ...L('dg', 'sys', '⚔️', '# donjons nettoyés', '# dungeons cleared', [1, 4, 12, 26, 52, 100], [1, 4, 12, 26, 52, 100]),
+    ...L('boss', 'sys', '☠️', 'Tueur de boss × #', 'Boss slayer × #', [1, 3, 6, 12, 24], [1, 3, 6, 12, 24]),
+    ...L('sh', 'sys', '⚔️', 'Arsenal de # armes', 'Arsenal of # weapons', [5, 15, 30, 50, 75], [5, 15, 30, 50, 75]),
+    ...L('shs', 'sys', '👑', '# armes de rang S', '# S-rank weapons', [1, 3, 5], [1, 3, 5], ['50 records sur un même exercice', '50 records on the same exercise']),
+    ...L('raid', 'sys', '🛡️', '# raids réussis', '# raids cleared', [1, 5, 10, 25], [1, 5, 10, 25], ['Avec tes amis', 'With your friends']),
+    ...L('chw', 'sys', '🏆', '# défis gagnés', '# challenges won', [1, 5, 10, 25], [1, 5, 10, 25], ['Contre tes amis', 'Against your friends']),
+    ...L('sea', 'sys', '👑', 'Champion de saison × #', 'Season champion × #', [1, 3, 6, 12], [1, 3, 6, 12]),
+    ...L('evt', 'sys', '🎪', '# événements réussis', '# events completed', [1, 3, 8], [1, 3, 8]),
+    ...L('x2', 'sys', '⚡', '# séances en double XP', '# double XP workouts', [1, 5, 15], [1, 5, 15])];
 }
 let medMemo = null;
 function medalsEarned(hist) {
-  if (!hist) { const h = S.history, k = [h.length, h.length && h[h.length - 1].id, h.length && h[h.length - 1].date, Object.keys(S.questLog || {}).length, Object.keys(S.dungeonLog || {}).length, Object.keys(S.bossLog || {}).length, GAME(), isEN(), S.settings.unit, (S.body || []).length].join('|');
+  if (!hist) { const h = S.history, k = [h.length, h.length && h[h.length - 1].id, h.length && h[h.length - 1].date, Object.keys(S.questLog || {}).length, Object.keys(S.dungeonLog || {}).length, Object.keys(S.bossLog || {}).length, (S.xpb || []).length, Object.keys(S.qFail || {}).length, Object.values(S.seasonWon || {}).filter(Boolean).length, GAME(), isEN(), S.settings.unit, (S.body || []).length].join('|');
     if (medMemo && medMemo.k === k) return medMemo.v; const v = medalsEarned0(); medMemo = {k, v}; return v; }
   return medalsEarned0(hist);
 }
 function medalsEarned0(hist) {
   const H = (hist || S.history).slice().sort((a, b) => a.date.localeCompare(b.date));
-  const st = {n: 0, wk: 0, hr: 0, vol: 0, pr: 0, bp: 0, sq: 0, dl: 0, ohp: 0, b3: 0, day: 0, mon: 0, yr: 0, back: 0, svol: 0, sets: 0, reps: 0, long: 0, night: 0, early: 0, wknd: 0, ex: 0, push: 0, pull: 0};
+  const st = {n: 0, wk: 0, hr: 0, vol: 0, pr: 0, bp: 0, sq: 0, dl: 0, ohp: 0, b3: 0, day: 0, mon: 0, yr: 0, back: 0, svol: 0, sets: 0, reps: 0, long: 0, night: 0, early: 0, wknd: 0, ex: 0, push: 0, pull: 0, mpr: 0, ssets: 0, dbl: 0, nyd: 0, cmin: 0, ckm: 0, csess: 0};
+  const dayN = {};
   const weeks = new Set(), days = new Set(), mons = {}, yrs = {}, exs = new Set(), best = {}, got = {}, defs = medalDefs();
   let prevT = null;
   H.forEach(h => {
@@ -4286,19 +4304,22 @@ function medalsEarned0(hist) {
     if (!days.has(dk)) { days.add(dk); const d2 = new Date(d); let c = 0; while (days.has(dkey(d2))) { c++; d2.setDate(d2.getDate() - 1); } st.day = Math.max(st.day, c); }
     const mk = d.getFullYear() + '-' + d.getMonth(); mons[mk] = (mons[mk] || 0) + 1; st.mon = Math.max(st.mon, mons[mk]);
     yrs[d.getFullYear()] = (yrs[d.getFullYear()] || 0) + 1; st.yr = Math.max(st.yr, yrs[d.getFullYear()]);
-    let push = 0;
+    dayN[dk] = (dayN[dk] || 0) + 1; if (dayN[dk] >= 2) st.dbl = 1; if (d.getMonth() === 0 && d.getDate() === 1) st.nyd = 1;
+    let push = 0, spr = 0, sset = 0, car = 0;
     h.exercises.forEach(e => {
+      e.sets.forEach(x => { if (x.u === 'c' && x.done !== false) { car += +x.r || 0; st.ckm += +x.km || 0; } });
       const nn = norm(e.name), ws0 = work(e.sets);
       if (ws0.length) exs.add(nn);
-      st.sets += ws0.length;
+      st.sets += ws0.length; sset += ws0.length;
       const rs = ws0.filter(s => s.u !== 's' && s.u !== 'c').reduce((a, s) => a + (+s.r || 0), 0); st.reps += rs;
       if (isPushUp(nn)) push += rs; if (isPullUp(nn)) st.pull += rs;
       const ws = ws0.filter(s => s.u !== 's'); if (!ws.length) return;
       const v = Math.max(...ws.map(s => e1rm(s.w, s.r))), mw = Math.max(...ws.map(s => +s.w || 0));
-      if (best[nn] != null && v > best[nn] && best[nn] > 0) st.pr++;
+      if (best[nn] != null && v > best[nn] && best[nn] > 0) { st.pr++; spr++; }
       best[nn] = Math.max(best[nn] || 0, v);
       if (isBench(nn)) st.bp = Math.max(st.bp, mw); if (isSquat(nn)) st.sq = Math.max(st.sq, mw); if (isDead(nn)) st.dl = Math.max(st.dl, mw); if (isOHP(nn)) st.ohp = Math.max(st.ohp, mw);
     });
+    st.mpr = Math.max(st.mpr, spr); st.ssets = Math.max(st.ssets, sset); st.cmin += car; if (car > 0) st.csess++; st.ckm = Math.round(st.ckm * 10) / 10;
     st.push = Math.max(st.push, push); st.ex = exs.size; st.b3 = st.bp + st.sq + st.dl;
     defs.forEach(x => { if (!got[x.id] && st[x.g] >= x.v) got[x.id] = h.date; });
   });
@@ -4307,6 +4328,21 @@ function medalsEarned0(hist) {
     add('qd', S.questLog || {}); add('dg', S.dungeonLog || {}); add('boss', Object.fromEntries(Object.entries(S.bossLog || {}).map(([k, v]) => [k, v.d || v])));
     const sh = S.history.length ? shadowArmy() : []; st.sh = sh.length; const shd = sh.map(x => x.last || x.first).sort();
     defs.filter(x => x.g === 'sh').forEach(x => { if (!got[x.id] && sh.length >= x.v) got[x.id] = shd[x.v - 1] || new Date().toISOString(); });
+    const now = new Date().toISOString(), addD = (g, ds) => { ds = ds.filter(Boolean).sort(); st[g] = ds.length; defs.filter(x => x.g === g).forEach(x => { if (!got[x.id] && ds.length >= x.v) got[x.id] = ds[x.v - 1] || now; }); };
+    const xb = k => (S.xpb || []).filter(x => x.k === k).map(x => x.d || now);
+    addD('raid', xb('raid')); addD('chw', xb('ch')); addD('evt', xb('ev')); addD('x2', xb('x2'));
+    addD('sea', Object.keys(S.seasonWon || {}).filter(k => S.seasonWon[k]).map(k => k + '-28'));
+    addD('shs', sh.filter(x => x.prs >= 50).map(x => x.last));
+    // quêtes réussies de suite (un jour de repos ou sans quête ne casse pas la série, une quête ratée oui)
+    const qk = Object.keys(S.questLog || {}).sort(), qf = S.qFail || {}; let run = 0, bestRun = 0, runD = {}, prev = null;
+    qk.forEach(k => { const failBetween = prev && Object.keys(qf).some(f => f > prev && f < k); run = prev && !failBetween ? run + 1 : 1; prev = k; bestRun = Math.max(bestRun, run); if (!runD[run]) runD[run] = k; });
+    st.qrow = bestRun; defs.filter(x => x.g === 'qrow').forEach(x => { if (!got[x.id] && bestRun >= x.v) got[x.id] = (runD[x.v] || now) + 'T12:00'; });
+    const red = Object.keys(qf).sort().map(f => { const n = new Date(f + 'T12:00'); n.setDate(n.getDate() + 1); return dkey(n); }).find(k => (S.questLog || {})[k]);
+    st.redeem = red ? 1 : 0; if (red && !got.redeem1) got.redeem1 = red + 'T12:00';
+    // niveau : calculé sans les médailles de niveau (sinon elles se donneraient de l'XP entre elles)
+    const nm0 = Object.keys(got).filter(k => !/^lvl/.test(k)).length;
+    const xp0 = st.n * 100 + st.sets * 5 + st.pr * 40 + nm0 * 250 + (st.qd || 0) * 150 + (st.dg || 0) * 500 + (st.boss || 0) * 1000 - Object.keys(qf).length * QFAIL_XP + (typeof xpBonus === 'function' ? xpBonus() : 0);
+    st.lvl = Math.floor(Math.sqrt(Math.max(0, xp0) / 60)) + 1; defs.filter(x => x.g === 'lvl').forEach(x => { if (!got[x.id] && st.lvl >= x.v) got[x.id] = now; });
   }
   return {got, st, defs};
 }
@@ -4406,7 +4442,7 @@ function bossRow() {
 
 function hunter(me) {
   me = me || medalsEarned();
-  const st = me.st, nm = Object.keys(me.got).length;
+  const st = me.st, nm = Object.keys(me.got).filter(k => !/^lvl/.test(k)).length;
   const xp = Math.round(st.n * 100 + st.sets * 5 + st.pr * 40 + nm * 250 + (st.qd || 0) * 150 + (st.dg || 0) * 500 + (st.boss || 0) * 1000 - Object.keys(S.qFail || {}).length * QFAIL_XP + (typeof xpBonus === 'function' ? xpBonus() : 0));
   const lvl = Math.floor(Math.sqrt(Math.max(0, xp) / 60)) + 1;
   const r = HRANKS.filter(x => lvl >= x[0]).pop(), nx = HRANKS.find(x => x[0] > lvl);
@@ -4487,7 +4523,7 @@ let medFilter = 'all';
 const GAME = () => S.settings.game !== false;
 function vMedals() {
   const me = medalsEarned(), {got: got0, st, defs: defs0} = me, hu = hunter(me);
-  const defs = GAME() ? defs0 : defs0.filter(d => d.cat !== 'sys' && !['qd', 'dg', 'boss', 'sh'].includes(d.g)), got = GAME() ? got0 : Object.fromEntries(Object.entries(got0).filter(([k]) => defs.some(d => d.id === k)));
+  const defs = GAME() ? defs0 : defs0.filter(d => d.cat !== 'sys'), got = GAME() ? got0 : Object.fromEntries(Object.entries(got0).filter(([k]) => defs.some(d => d.id === k)));
   const n = Object.keys(got).length;
   const fmtN = v => Math.round(v).toLocaleString(LOC());
   const card = d => { const ok = got[d.id], cur = Math.min(st[d.g] || 0, d.v);
@@ -5167,8 +5203,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.28.1';
+const APP_VERSION = '9.29';
 const CHANGELOG = [
+  {v: '9.29', d: '2026-11-12', fr: ['🏅 Beaucoup de nouvelles médailles. La Guilde : niveaux 10 à 100, quêtes de suite, Rédemption, plus de donjons et de boss, armes de rang S, raids, défis gagnés, champion de saison, événements et double XP. Ailleurs : une nouvelle catégorie Cardio, records en une séance, séries en une séance, double séance et séance du Nouvel An.', '✏️ La médaille « jours de suite » parle maintenant de jours d\'entraînement (ce n\'était pas des quêtes).'], en: ['🏅 Lots of new medals. The Guild: levels 10 to 100, quest streaks, Redemption, more dungeons and bosses, S-rank weapons, raids, challenges won, season champion, events and double XP. Elsewhere: a new Cardio category, records in one workout, sets in one workout, two-a-day and New Year\'s workout.', '✏️ The “days in a row” medal now refers to training days (they weren\'t quests).']},
   {v: '9.28.1', d: '2026-11-12', fr: ['🧹 La carte « Ma semaine » est retirée de l\'onglet Entraînement, la bande Guilde est centrée, et les derniers emojis des listes déroulantes sont enlevés.'], en: ['🧹 The “My week” card is removed from the Workout tab, the Guild strip is centered, and the last emojis in dropdowns are gone.']},
   {v: '9.28', d: '2026-11-12', fr: ['⚔️ Mode jeu : nouvel onglet Guilde en bas, avec tout le jeu au même endroit (niveau et rang, quêtes, donjon, boss, événements, raid, saison, arsenal, rangs par muscle). L\'onglet Entraînement garde juste une petite bande Guilde.', '🧹 Onglet Entraînement plus léger : « Planifier ma semaine » est dans la carte Ma semaine, et le rappel de sauvegarde est plus compact.', '📊 Profil : l\'activité et le graphique des semaines sont réunis dans une seule carte (Activité, Durée, Volume, Réps).', '🎨 Les dernières icônes en emoji sont remplacées par des icônes modernes, et les écrans vides ont une illustration et un bouton pour commencer.', '📈 Les graphiques s\'animent seulement quand tu ouvres l\'écran, plus à chaque toucher.'], en: ['⚔️ Game mode: new Guild tab at the bottom with the whole game in one place (level and rank, quests, dungeon, boss, events, raid, season, arsenal, muscle ranks). The Workout tab keeps just a small Guild strip.', '🧹 Lighter Workout tab: “Plan my week” lives in the My week card, and the backup reminder is more compact.', '📊 Profile: activity and the weekly chart are combined in one card (Activity, Time, Volume, Reps).', '🎨 The last emoji icons are replaced with modern icons, and empty screens have an illustration and a button to get started.', '📈 Charts animate only when you open the screen, not on every tap.']},
   {v: '9.27.2', d: '2026-11-12', fr: ['🗣️ Le coach vocal est retiré.'], en: ['🗣️ The voice coach has been removed.']},
@@ -6861,6 +6898,7 @@ setInterval(updElapsed, 1000);
 
 /* ===================== Icônes (style Lucide, dessinées en SVG) ===================== */
 const ICP = {
+  star: '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.12 2.12 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.12 2.12 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.12 2.12 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.12 2.12 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.12 2.12 0 0 0 1.597-1.16z"/>',
   chat: '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
   pin: '<path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>',
   tent: '<path d="M3.5 21 14 3"/><path d="M20.5 21 10 3"/><path d="M15.5 21 12 15l-3.5 6"/><path d="M2 21h20"/>',
@@ -6998,7 +7036,7 @@ const EMO_ALL = {'✅': ['ccheck', 'var(--ok)'], '☑': ['checksq'], '⚠': ['al
   '🏅': ['medal', '#f5c542'], '🥇': ['medal', '#f5c542'], '🏗': ['hammer'], '👋': ['hand'], '👆': ['hand'], '👏': ['thumb'], '👍': ['thumb'], '🔔': ['bell'], '🔕': ['belloff'],
   '🛠': ['wrench'], '🔧': ['wrench'], '🕓': ['clock'], '🕐': ['clock'], '🚀': ['rocket'], '📏': ['ruler'], '📐': ['ruler'], '📎': ['paperclip'], '🧭': ['compass'], '🔢': ['hash'],
   '🏁': ['flag'], '😄': ['smile'], '🎓': ['cap'], '🎯': ['target'], '🕸': ['radar'], '🛏': ['bed'], '📩': ['mail'], '⏸': ['pause'], '▶': ['play'], '🔎': ['search'], '🔍': ['search'],
-  '👁': ['eye'], '🧹': ['eraser'], '🛡': ['shield'], '👑': ['crown', '#f5c542'], '🧗': ['pullup'], '⚔': ['swords'], '☠': ['skull', '#fb7185'], '🤝': ['users'], '❤️‍🔥': ['flame', '#ff8a3d'], '💬': ['chat'], '📌': ['pin'], '🎪': ['tent', '#f5c542'], '🟢': ['dot', 'var(--ok)'], '⛶': ['focus'], '🗡': ['swords']};
+  '👁': ['eye'], '🧹': ['eraser'], '🛡': ['shield'], '👑': ['crown', '#f5c542'], '🧗': ['pullup'], '⚔': ['swords'], '☠': ['skull', '#fb7185'], '🤝': ['users'], '❤️‍🔥': ['flame', '#ff8a3d'], '💬': ['chat'], '⭐': ['star', '#f5c542'], '📌': ['pin'], '🎪': ['tent', '#f5c542'], '🟢': ['dot', 'var(--ok)'], '⛶': ['focus'], '🗡': ['swords']};
 const EMO_RE = new RegExp('(' + Object.keys(EMO_ALL).sort((a, b) => b.length - a.length).join('|') + ')[\\uFE0F\\u200D]*', 'gu');
 const EMO_SKIP = 'select,option,textarea,input,script,style,title,canvas,[data-noic]';
 function iconizeAll(root) {
