@@ -4285,19 +4285,26 @@ function prCounts() {
   const k = S.history.length + '|' + (S.history.length && S.history[S.history.length - 1].id); if (prcMemo && prcMemo.k === k) return prcMemo.v;
   const best = {}, out = new Map();
   S.history.slice().sort((a, b) => a.date.localeCompare(b.date)).forEach(h => { let n = 0; const upd = [];
-    h.exercises.forEach(e => { const ws = work(e.sets).filter(s => s.u !== 's'); if (!ws.length) return; const k2 = norm(e.name), v = Math.max(...ws.map(s => e1rm(s.w, s.r)));
-      if (k2 in best && v > 0 && best[k2] > 0 && v > best[k2]) n++; upd.push([k2, v]); });
-    upd.forEach(([k2, v]) => { best[k2] = Math.max(best[k2] ?? -Infinity, v); }); if (n) out.set(h.id, n); });
+    h.exercises.forEach(e => { const ws = work(e.sets).filter(s => s.u !== 's'); if (!ws.length) return; const k2 = norm(e.name), c = prScore(ws);
+      if (best[k2] && prBeat(c, best[k2])) n++; upd.push([k2, c]); });
+    upd.forEach(([k2, c]) => { const o = best[k2] || {v: 0, b: 0}; best[k2] = {v: Math.max(o.v, c.v), b: Math.max(o.b, c.b)}; }); if (n) out.set(h.id, n); });
   prcMemo = {k, v: out}; return out;
 }
+/* Score d'un exercice pour les records : 1RM estimé pour les séries avec charge, nombre de reps pour le poids du corps (tractions, dips…) */
+function prScore(ws) {
+  ws = ws.filter(s => s.u !== 's' && s.u !== 'c');
+  const wt = ws.filter(s => +s.w > 0), bw = ws.filter(s => !(+s.w > 0));
+  return {v: wt.length ? Math.max(...wt.map(s => e1rm(s.w, s.r))) : 0, b: bw.length ? Math.max(...bw.map(s => +s.r || 0)) : 0};
+}
+const prBeat = (cur, prev) => (cur.v > 0 && prev.v > 0 && cur.v > prev.v + 1e-9) || (cur.b > 0 && prev.b > 0 && cur.b > prev.b);
 function sessPRs(h) {
   const prs = [];
   h.exercises.forEach(e => {
     const ws = work(e.sets).filter(s => s.u !== 's'); if (!ws.length) return;
     const prev = S.history.filter(x => x.date < h.date).flatMap(x => x.exercises.filter(y => norm(y.name) === norm(e.name)).flatMap(y => work(y.sets))).filter(s => s.u !== 's');
     if (!prev.length) return;
-    const v = Math.max(...ws.map(s => e1rm(s.w, s.r))), pv = Math.max(...prev.map(s => e1rm(s.w, s.r)));
-    if (v > 0 && pv > 0 && v > pv) { const b = ws.reduce((m, s) => e1rm(s.w, s.r) > e1rm(m.w, m.r) ? s : m); prs.push({name: e.name, set: `${b.w}×${b.r}`}); }
+    const cur = prScore(ws), pv = prScore(prev);
+    if (prBeat(cur, pv)) { const b = cur.v > pv.v && cur.v > 0 ? ws.reduce((m, s) => e1rm(s.w, s.r) > e1rm(m.w, m.r) ? s : m) : ws.reduce((m, s) => (+s.r || 0) > (+m.r || 0) && !(+s.w > 0) ? s : m); prs.push({name: e.name, set: +b.w > 0 ? `${b.w}×${b.r}` : `${b.r} reps`}); }
   });
   return prs;
 }
@@ -4437,9 +4444,9 @@ function medalsEarned0(hist) {
       const rs = ws0.filter(s => s.u !== 's' && s.u !== 'c').reduce((a, s) => a + (+s.r || 0), 0); st.reps += rs;
       if (isPushUp(nn)) push += rs; if (isPullUp(nn)) st.pull += rs;
       const ws = ws0.filter(s => s.u !== 's'); if (!ws.length) return;
-      const v = Math.max(...ws.map(s => e1rm(s.w, s.r))), mw = Math.max(...ws.map(s => +s.w || 0));
-      if (best[nn] != null && v > best[nn] && best[nn] > 0) { st.pr++; spr++; }
-      best[nn] = Math.max(best[nn] || 0, v);
+      const v = Math.max(...ws.map(s => e1rm(s.w, s.r))), mw = Math.max(...ws.map(s => +s.w || 0)), c = prScore(ws);
+      if (best[nn] != null && prBeat(c, best[nn])) { st.pr++; spr++; }
+      best[nn] = {v: Math.max(best[nn] ? best[nn].v : 0, c.v), b: Math.max(best[nn] ? best[nn].b : 0, c.b)};
       if (isBench(nn)) st.bp = Math.max(st.bp, mw); if (isSquat(nn)) st.sq = Math.max(st.sq, mw); if (isDead(nn)) st.dl = Math.max(st.dl, mw); if (isOHP(nn)) st.ohp = Math.max(st.ohp, mw);
     });
     st.mpr = Math.max(st.mpr, spr); st.ssets = Math.max(st.ssets, sset); st.cmin += car; if (car > 0) st.csess++; st.ckm = Math.round(st.ckm * 10) / 10;
@@ -5333,8 +5340,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.37';
+const APP_VERSION = '9.37.1';
 const CHANGELOG = [
+  {v: '9.37.1', d: '2026-11-12', fr: ['🏆 Les records au poids du corps (tractions, dips, pompes…) comptent maintenant partout : faire 1 rep de plus que ton meilleur valide la quête « Bats un record », donne l\'XP et compte pour les médailles.'], en: ['🏆 Bodyweight records (pull-ups, dips, push-ups…) now count everywhere: 1 more rep than your best completes the “Break a record” quest, gives XP and counts toward medals.']},
   {v: '9.37', d: '2026-11-12', fr: ['⚡ La Guilde s\'ouvre 2 à 4 fois plus vite (les quêtes, le niveau et ton profil d\'ami ne sont plus recalculés plusieurs fois à chaque affichage), et la liste d\'amis aussi.'], en: ['⚡ The Guild opens 2 to 4× faster (quests, level and your friend profile are no longer recomputed several times per screen), and the friends list too.']},
   {v: '9.36.1', d: '2026-11-12', fr: ['🐛 En glissant d\'une page à l\'autre, l\'écran ne se décale plus : la barre du bas, le minuteur de repos et la séance en cours restent bien en place.'], en: ['🐛 Swiping between pages no longer shifts the screen: the bottom bar, rest timer and current workout bar stay in place.']},
   {v: '9.36', d: '2026-11-12', fr: ['🔥 Nouvelle rareté MYTHIQUE (bordure arc-en-ciel animée) : des récompenses très dures à avoir. Cadres Phénix, Éternel et Céleste, auras Supernova et Souffle du dragon, victoires Pluie de météores et Jugement divin, bannières Olympe et Abysses, emblèmes Diamant et Dragon, et 6 titres mythiques (Dieu du fer, Inarrêtable, Seigneur des donjons…).', '❄️ Les auras Givre et Éclair sont maintenant bien différentes : Givre fait tomber des cristaux de glace dans un halo bleu, Éclair fait claquer un éclair jaune.'], en: ['🔥 New MYTHIC rarity (animated rainbow border): very hard rewards. Phoenix, Eternal and Celestial frames, Supernova and Dragon breath auras, Meteor shower and Divine judgment victories, Olympus and Abyss banners, Diamond and Dragon emblems, and 6 mythic titles (God of iron, Unstoppable, Dungeon lord…).']},
