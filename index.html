@@ -378,6 +378,7 @@ button.chip{cursor:pointer}
 .embm{filter:drop-shadow(0 0 6px currentColor)}
 .fxbolt{position:fixed;z-index:9999;width:26px;height:44px;margin:-34px 0 0 -13px;pointer-events:none;background:#fde047;clip-path:polygon(58% 0,18% 56%,44% 56%,32% 100%,84% 38%,56% 38%,74% 0);animation:boltA .45s ease-out forwards}@keyframes boltA{0%{opacity:0;transform:scale(.6)}20%{opacity:1;transform:scale(1.15)}40%{opacity:.2}55%{opacity:1}100%{opacity:0;transform:scale(1)}}
 .fxfrost{position:fixed;z-index:9998;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,#e0f7ff66,#7dd3fc22 55%,transparent 70%);animation:frostA 1.1s ease-out forwards}@keyframes frostA{0%{opacity:0;transform:scale(.4)}25%{opacity:1}100%{opacity:0;transform:scale(1.8)}}
+.prx{padding:8px 0;border-top:1px solid var(--line)}.prx.ok b{color:var(--ok)}
 .bossline{background:color-mix(in srgb,#fb7185 12%,transparent);border:1px solid color-mix(in srgb,#fb7185 55%,transparent);border-radius:10px;padding:7px 10px;margin:8px 0 2px;font-size:13px}.bossline.dead{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .bosskill{text-align:center;padding:6px 0}.bkskull{font-size:64px;line-height:1;color:#fb7185;animation:bkhit .9s ease-out both}.bkskull .ico{width:72px;height:72px}
 @keyframes bkhit{0%{transform:scale(.3) rotate(-20deg);opacity:0}35%{transform:scale(1.35) rotate(8deg);opacity:1}55%{transform:scale(.9) rotate(-6deg)}70%{transform:scale(1.05) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:.85;filter:grayscale(.6)}}
@@ -4778,12 +4779,34 @@ function weekDungeon0() {
 }
 const hunterRankBase = () => { const r = hunter().rk; return RKS.includes(r) ? r : 'S'; };
 const sysBar = (cur, goal) => `<div class="goal sysbar" style="margin:8px 0 4px"><div style="width:${Math.min(100, Math.round(cur / Math.max(1, goal) * 100))}%"></div></div>`;
+/* « Quoi battre » : pour chaque exercice fait aujourd'hui, ce qu'il fallait dépasser pour que ce soit un record */
+function prExplain() {
+  const k = dkey(new Date()), today = S.history.filter(x => dkey(x.date) === k);
+  if (!today.length) return `<p class="muted">${T('Aucune séance enregistrée aujourd\'hui. Fais ta séance, et une série qui bat ton meilleur validera la quête.', 'No workout logged today. Do your workout, and a set that beats your best will complete the quest.')}</p>`;
+  const rows = [];
+  today.forEach(h => h.exercises.forEach(e => {
+    const ws = work(e.sets).filter(s => s.u !== 's' && s.u !== 'c'); if (!ws.length) return;
+    const t = +new Date(h.date), cur = prScore(ws, t); let pv = null, nPrev = 0;
+    S.history.filter(x => x.date < h.date).forEach(x => x.exercises.forEach(y => { if (norm(y.name) === norm(e.name)) { const w2 = work(y.sets).filter(s => s.u !== 's'); if (w2.length) { nPrev++; pv = prMerge(pv, prScore(w2, +new Date(x.date))); } } }));
+    const ok = pv && prBeat(cur, pv); let why;
+    if (!pv) why = T('Première fois : pas encore de record à battre.', 'First time: no record to beat yet.');
+    else {
+      const parts = [];
+      if (cur.v > 0) parts.push(T(`1RM estimé ${Math.round(cur.v)} (ton meilleur : ${Math.round(pv.v)})`, `Est. 1RM ${Math.round(cur.v)} (your best: ${Math.round(pv.v)})`));
+      Object.keys(cur.wr).forEach(w => { const p = pv.wr[w]; if (p) parts.push(T(`${w} ${U()} : ${cur.wr[w].r} reps (ton meilleur à ce poids : ${p.r}${cur.wr[w].t - p.t > REP_PR_DAYS * 864e5 ? ', mais pas fait depuis plus de 3 mois' : ''})`, `${w} ${U()}: ${cur.wr[w].r} reps (your best at this weight: ${p.r}${cur.wr[w].t - p.t > REP_PR_DAYS * 864e5 ? ', but not done in 3+ months' : ''})`)); else parts.push(T(`${w} ${U()} : jamais fait avant à ce poids`, `${w} ${U()}: never done at this weight before`)); });
+      if (cur.b > 0) parts.push(T(`poids du corps : ${cur.b} reps (ton meilleur : ${pv.b || '—'})`, `bodyweight: ${cur.b} reps (your best: ${pv.b || '—'})`));
+      why = parts.join(' · ');
+    }
+    rows.push(`<div class="prx ${ok ? 'ok' : ''}"><b>${ok ? '🏆' : '·'} ${esc(e.name)}</b><div class="small muted">${esc(why)}</div></div>`);
+  }));
+  return rows.join('');
+}
 function questCard(compact) {
   if (!S.history.length && compact) return '';
   const q = dailyQuest(), dg = weekDungeon(), pen = questPenalty();
   const qh = q.rest
     ? `<div class="qrow"><span class="qic">${'🌙'}</span><div style="flex:1"><b>${T('Jour de repos', 'Rest day')}</b><div class="small muted">${T('La Guilde te laisse récupérer aujourd\'hui. Pas de quête.', 'The Guild lets you rest today. No quest.')}</div></div></div>`
-    : `<div class="qrow"><span class="qic">${q.ic}</span><div style="flex:1;min-width:0"><b>${esc(q.text)}</b>${sysBar(q.cur, q.goal)}<div class="row between small muted"><span>${Math.min(q.cur, q.goal).toLocaleString(LOC())} / ${q.goal.toLocaleString(LOC())}</span><span>${q.done ? `<b style="color:var(--ok)">${T('ACCOMPLIE', 'COMPLETE')}</b>` : '+150 XP'}</span></div></div></div>`;
+    : `<div class="qrow"><span class="qic">${q.ic}</span><div style="flex:1;min-width:0"><b>${esc(q.text)}</b>${q.id === 'pr' && !q.done ? ` <button class="linkbtn small" data-act="pr-why">🔍 ${T('Quoi battre?', 'What to beat?')}</button>` : ''}${sysBar(q.cur, q.goal)}<div class="row between small muted"><span>${Math.min(q.cur, q.goal).toLocaleString(LOC())} / ${q.goal.toLocaleString(LOC())}</span><span>${q.done ? `<b style="color:var(--ok)">${T('ACCOMPLIE', 'COMPLETE')}</b>` : '+150 XP'}</span></div></div></div>`;
   const dh = `<div class="qrow" style="margin-top:12px"><span class="qic">${rkBadge(dg.rk, 'mrk lvrk')}</span><div style="flex:1;min-width:0"><b>${T('Donjon de rang', 'Rank')} ${dg.rk}${T('', ' dungeon')} · ${esc(dg.text)}</b>${sysBar(dg.cur, dg.goal)}<div class="row between small muted"><span>${dg.fmt(Math.min(dg.cur, dg.goal))} / ${dg.fmt(dg.goal)}</span><span>${dg.done ? `<b style="color:var(--ok)">${T('DONJON NETTOYÉ', 'DUNGEON CLEARED')}</b>` : `${dg.left} ${T('j restants', 'days left')} · +500 XP`}</span></div></div></div>`;
   const open = compact === 'full' || compact === 'inner' || S.settings.qOpen === true, bo = monthBoss();
   const pc = (a, b) => Math.min(100, Math.round(a / Math.max(1, b) * 100));
@@ -5348,8 +5371,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.37.3';
+const APP_VERSION = '9.37.4';
 const CHANGELOG = [
+  {v: '9.37.4', d: '2026-11-12', fr: ['🔍 Quête « Bats un record » : un bouton « Quoi battre? » montre, pour chaque exercice fait aujourd\'hui, ton résultat et le meilleur à dépasser.'], en: ['🔍 “Break a record” quest: a “What to beat?” button shows, for each exercise done today, your result and the best to beat.']},
   {v: '9.37.3', d: '2026-11-12', fr: ['🏆 Un record de reps à la même charge compte seulement si tu as fait cette charge dans les 3 derniers mois (pas de record « facile » en reprenant un vieux poids léger).'], en: ['🏆 A rep record at the same weight only counts if you did that weight in the last 3 months (no “easy” record by going back to an old light weight).']},
   {v: '9.37.2', d: '2026-11-12', fr: ['🏆 Nouveau type de record : plus de reps qu\'avant à la même charge (ex. 30 lb × 11 après 30 lb × 10). Il compte pour la quête « Bats un record », l\'XP et les médailles, comme les autres records.'], en: ['🏆 New record type: more reps than before at the same weight (e.g. 30 lb × 11 after 30 lb × 10). It counts for the “Break a record” quest, XP and medals like other records.']},
   {v: '9.37.1', d: '2026-11-12', fr: ['🏆 Les records au poids du corps (tractions, dips, pompes…) comptent maintenant partout : faire 1 rep de plus que ton meilleur valide la quête « Bats un record », donne l\'XP et compte pour les médailles.'], en: ['🏆 Bodyweight records (pull-ups, dips, push-ups…) now count everywhere: 1 more rep than your best completes the “Break a record” quest, gives XP and counts toward medals.']},
@@ -7542,6 +7566,8 @@ document.addEventListener('click', e => {
     case 'frame-set': S.settings.frame = b.dataset.id; save(); armRefresh(); if (frOn()) frQueue(false); break;
     case 'rtheme': { const t = REWARD_THEMES.find(x => x.id === b.dataset.id); if (!t) break; S.settings.theme = 'noir'; S.settings.accent = t.acc; S.settings.bg = t.bg; save(); applyTheme(); armRefresh(); toast(T(`🎨 Thème ${t.n[0]}`, `🎨 ${t.n[1]} theme`)); break; }
     case 'noop': toast(T('🔒 Monte de niveau pour le débloquer', '🔒 Level up to unlock it')); break;
+    case 'pr-why': modal(`<div class="row between"><h2 style="margin:0">🏆 ${T('Tes records d\'aujourd\'hui', 'Today\'s records')}</h2><button class="btn sm" data-act="close">✕</button></div>
+      <p class="small muted">${T('Un record = un meilleur 1RM estimé, OU plus de reps qu\'avant à la même charge (fait dans les 3 derniers mois), OU plus de reps au poids du corps.', 'A record = a better estimated 1RM, OR more reps than before at the same weight (done in the last 3 months), OR more bodyweight reps.')}</p>${prExplain()}`); break;
     case 'hist-more': { const y = scrollY; histLim += 60; render(); window.scrollTo(0, y); break; }
     case 'ch-new': closeAll(); chNew(b.dataset.c); break;
     case 'ch-f': chDraft.f = b.dataset.c; chPaint(); break;
