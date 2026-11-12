@@ -4064,7 +4064,7 @@ function livePR(ei, si) {
   if (!hs.length) return false;
   const others = e.sets.filter((x, j) => j !== si && x.done && !isW(x));
   const all = hs.concat(others);
-  if (w > 0) { const v = e1rm(w, r), b = Math.max(0, ...all.map(x => e1rm(x.w, x.r))); return b > 0 && v > b + 1e-9; }
+  if (w > 0) { const v = e1rm(w, r), b = Math.max(0, ...all.map(x => e1rm(x.w, x.r))); if (b > 0 && v > b + 1e-9) return true; const same = all.filter(x => +x.w === w); return same.length > 0 && r > Math.max(...same.map(x => +x.r || 0)); }
   const bw = all.filter(x => !(+x.w > 0)); return bw.length > 0 && r > Math.max(...bw.map(x => +x.r || 0));
 }
 
@@ -4287,16 +4287,19 @@ function prCounts() {
   S.history.slice().sort((a, b) => a.date.localeCompare(b.date)).forEach(h => { let n = 0; const upd = [];
     h.exercises.forEach(e => { const ws = work(e.sets).filter(s => s.u !== 's'); if (!ws.length) return; const k2 = norm(e.name), c = prScore(ws);
       if (best[k2] && prBeat(c, best[k2])) n++; upd.push([k2, c]); });
-    upd.forEach(([k2, c]) => { const o = best[k2] || {v: 0, b: 0}; best[k2] = {v: Math.max(o.v, c.v), b: Math.max(o.b, c.b)}; }); if (n) out.set(h.id, n); });
+    upd.forEach(([k2, c]) => { best[k2] = prMerge(best[k2], c); }); if (n) out.set(h.id, n); });
   prcMemo = {k, v: out}; return out;
 }
 /* Score d'un exercice pour les records : 1RM estimé pour les séries avec charge, nombre de reps pour le poids du corps (tractions, dips…) */
 function prScore(ws) {
   ws = ws.filter(s => s.u !== 's' && s.u !== 'c');
   const wt = ws.filter(s => +s.w > 0), bw = ws.filter(s => !(+s.w > 0));
-  return {v: wt.length ? Math.max(...wt.map(s => e1rm(s.w, s.r))) : 0, b: bw.length ? Math.max(...bw.map(s => +s.r || 0)) : 0};
+  const wr = {}; wt.forEach(s => { const k = String(+s.w); wr[k] = Math.max(wr[k] || 0, +s.r || 0); }); // meilleur nombre de reps à chaque charge
+  return {v: wt.length ? Math.max(...wt.map(s => e1rm(s.w, s.r))) : 0, b: bw.length ? Math.max(...bw.map(s => +s.r || 0)) : 0, wr};
 }
-const prBeat = (cur, prev) => (cur.v > 0 && prev.v > 0 && cur.v > prev.v + 1e-9) || (cur.b > 0 && prev.b > 0 && cur.b > prev.b);
+/* Record si : meilleur 1RM estimé, OU plus de reps au poids du corps, OU plus de reps qu'avant à la même charge (ex. 30 lb × 11 après 30 lb × 10) */
+const prBeat = (cur, prev) => (cur.v > 0 && prev.v > 0 && cur.v > prev.v + 1e-9) || (cur.b > 0 && prev.b > 0 && cur.b > prev.b) || Object.keys(cur.wr || {}).some(k => prev.wr && prev.wr[k] != null && cur.wr[k] > prev.wr[k]);
+const prMerge = (o, c) => { o = o || {v: 0, b: 0, wr: {}}; const wr = {...o.wr}; Object.keys(c.wr || {}).forEach(k => { wr[k] = Math.max(wr[k] || 0, c.wr[k]); }); return {v: Math.max(o.v, c.v), b: Math.max(o.b, c.b), wr}; };
 function sessPRs(h) {
   const prs = [];
   h.exercises.forEach(e => {
@@ -4304,7 +4307,9 @@ function sessPRs(h) {
     const prev = S.history.filter(x => x.date < h.date).flatMap(x => x.exercises.filter(y => norm(y.name) === norm(e.name)).flatMap(y => work(y.sets))).filter(s => s.u !== 's');
     if (!prev.length) return;
     const cur = prScore(ws), pv = prScore(prev);
-    if (prBeat(cur, pv)) { const b = cur.v > pv.v && cur.v > 0 ? ws.reduce((m, s) => e1rm(s.w, s.r) > e1rm(m.w, m.r) ? s : m) : ws.reduce((m, s) => (+s.r || 0) > (+m.r || 0) && !(+s.w > 0) ? s : m); prs.push({name: e.name, set: +b.w > 0 ? `${b.w}×${b.r}` : `${b.r} reps`}); }
+    if (prBeat(cur, pv)) { const rk = Object.keys(cur.wr).find(k => pv.wr[k] != null && cur.wr[k] > pv.wr[k]);
+      const b = cur.v > pv.v && cur.v > 0 ? ws.reduce((m, s) => e1rm(s.w, s.r) > e1rm(m.w, m.r) ? s : m) : rk != null ? {w: rk, r: cur.wr[rk]} : ws.reduce((m, s) => (+s.r || 0) > (+m.r || 0) && !(+s.w > 0) ? s : m);
+      prs.push({name: e.name, set: +b.w > 0 ? `${b.w}×${b.r}` : `${b.r} reps`}); }
   });
   return prs;
 }
@@ -4446,7 +4451,7 @@ function medalsEarned0(hist) {
       const ws = ws0.filter(s => s.u !== 's'); if (!ws.length) return;
       const v = Math.max(...ws.map(s => e1rm(s.w, s.r))), mw = Math.max(...ws.map(s => +s.w || 0)), c = prScore(ws);
       if (best[nn] != null && prBeat(c, best[nn])) { st.pr++; spr++; }
-      best[nn] = {v: Math.max(best[nn] ? best[nn].v : 0, c.v), b: Math.max(best[nn] ? best[nn].b : 0, c.b)};
+      best[nn] = prMerge(best[nn], c);
       if (isBench(nn)) st.bp = Math.max(st.bp, mw); if (isSquat(nn)) st.sq = Math.max(st.sq, mw); if (isDead(nn)) st.dl = Math.max(st.dl, mw); if (isOHP(nn)) st.ohp = Math.max(st.ohp, mw);
     });
     st.mpr = Math.max(st.mpr, spr); st.ssets = Math.max(st.ssets, sset); st.cmin += car; if (car > 0) st.csess++; st.ckm = Math.round(st.ckm * 10) / 10;
@@ -5340,8 +5345,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.37.1';
+const APP_VERSION = '9.37.2';
 const CHANGELOG = [
+  {v: '9.37.2', d: '2026-11-12', fr: ['🏆 Nouveau type de record : plus de reps qu\'avant à la même charge (ex. 30 lb × 11 après 30 lb × 10). Il compte pour la quête « Bats un record », l\'XP et les médailles, comme les autres records.'], en: ['🏆 New record type: more reps than before at the same weight (e.g. 30 lb × 11 after 30 lb × 10). It counts for the “Break a record” quest, XP and medals like other records.']},
   {v: '9.37.1', d: '2026-11-12', fr: ['🏆 Les records au poids du corps (tractions, dips, pompes…) comptent maintenant partout : faire 1 rep de plus que ton meilleur valide la quête « Bats un record », donne l\'XP et compte pour les médailles.'], en: ['🏆 Bodyweight records (pull-ups, dips, push-ups…) now count everywhere: 1 more rep than your best completes the “Break a record” quest, gives XP and counts toward medals.']},
   {v: '9.37', d: '2026-11-12', fr: ['⚡ La Guilde s\'ouvre 2 à 4 fois plus vite (les quêtes, le niveau et ton profil d\'ami ne sont plus recalculés plusieurs fois à chaque affichage), et la liste d\'amis aussi.'], en: ['⚡ The Guild opens 2 to 4× faster (quests, level and your friend profile are no longer recomputed several times per screen), and the friends list too.']},
   {v: '9.36.1', d: '2026-11-12', fr: ['🐛 En glissant d\'une page à l\'autre, l\'écran ne se décale plus : la barre du bas, le minuteur de repos et la séance en cours restent bien en place.'], en: ['🐛 Swiping between pages no longer shifts the screen: the bottom bar, rest timer and current workout bar stay in place.']},
