@@ -46,9 +46,9 @@
       ]
     },
     {
-      "name": "Statut d'aventurier",
-      "short_name": "Statut",
-      "url": "./?go=medals",
+      "name": "Guilde",
+      "short_name": "Guilde",
+      "url": "./?go=guild",
       "icons": [
         {
           "src": "icon-192.png",

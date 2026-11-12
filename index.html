@@ -291,6 +291,17 @@ button.chip{cursor:pointer}
 .evsoon{margin:-4px 0 12px;padding:8px 12px;border-radius:12px;border:1px dashed color-mix(in srgb,#f5c542 55%,transparent)}
 .pfstats{display:grid;grid-template-columns:repeat(3,auto);gap:4px 14px;justify-content:start}.pfstats>div{white-space:nowrap}
 .hacts{flex-wrap:wrap;gap:6px}.bar>b{white-space:nowrap}
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+.rkf.frm-aurora,.rkf.frm-flame,.rkf.frm-legend{box-shadow:none!important;border:3px solid transparent;background-clip:padding-box,border-box;background-origin:border-box;animation:frSpin 3s linear infinite}
+.rkf.frm-aurora{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#ff5a5f,#ffcc33,#3ee6b0,#4cc9f0,#b388ff,#ff5a5f)}
+.rkf.frm-flame{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#ff3d00,#ffb300,#ff6f00,#ffd54f,#ff3d00);filter:drop-shadow(0 0 6px #ff6f00)}
+.rkf.frm-legend{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#ffd54a,#b26bff,#fff3c4,#b26bff,#ffd54a);filter:drop-shadow(0 0 8px #b26bff)}
+.frm-glow{animation:rkGlow 2.2s ease-in-out infinite}.avatar.frm-glow{animation:rkGlowB 2.2s ease-in-out infinite}
+.avatar.frm-aurora,.avatar.frm-flame,.avatar.frm-legend{border-width:4px}
+@keyframes frSpin{to{--ang:360deg}}
+.frgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:6px}.frpick{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--text)}.frpick.on{border-color:var(--accent)}.frpick.locked{opacity:.55}
+.chip.locked{opacity:.5}.pftitle{color:var(--rc,var(--accent));font-weight:700;margin-top:4px}
+@media (prefers-reduced-motion: reduce){.frm-aurora,.frm-flame,.frm-legend,.frm-glow{animation:none}}
 .bossline{background:color-mix(in srgb,#fb7185 12%,transparent);border:1px solid color-mix(in srgb,#fb7185 55%,transparent);border-radius:10px;padding:7px 10px;margin:8px 0 2px;font-size:13px}.bossline.dead{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .bosskill{text-align:center;padding:6px 0}.bkskull{font-size:64px;line-height:1;color:#fb7185;animation:bkhit .9s ease-out both}.bkskull .ico{width:72px;height:72px}
 @keyframes bkhit{0%{transform:scale(.3) rotate(-20deg);opacity:0}35%{transform:scale(1.35) rotate(8deg);opacity:1}55%{transform:scale(.9) rotate(-6deg)}70%{transform:scale(1.05) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:.85;filter:grayscale(.6)}}
@@ -3657,8 +3668,8 @@ function vProfile() {
   const n0 = new Date();
   const month = S.history.filter(h => { const d = new Date(h.date); return d.getMonth() === n0.getMonth() && d.getFullYear() === n0.getFullYear(); }).length;
   const recent = S.history.slice().reverse().slice(0, 3);
-  return `<div class="row" style="gap:14px;margin-bottom:16px"><button class="avatar${S.history.length ? rkFrame(GAME() ? hunter().rk : '') : ''}" data-act="avatar" aria-label="${T('Photo de profil', 'Profile photo')}">${S.settings.avatar ? `<img src="${S.settings.avatar}" alt="">` : esc((nm.trim()[0] || '?').toUpperCase())}<span class="cam">📷</span></button>
-      <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0">${esc(nm)}</h2>${(() => { if (!S.history.length || !GAME()) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${hu.lvl >= 10 ? clsIc(hu.cls) + ' ' + esc(clsName(hu.cls)) : esc(hu.title)}</button>`; })()}
+  return `<div class="row" style="gap:14px;margin-bottom:16px"><button class="avatar${S.history.length ? rkFrame(GAME() ? hunter().rk : '', myFrame()) : ''}" data-act="avatar" aria-label="${T('Photo de profil', 'Profile photo')}">${S.settings.avatar ? `<img src="${S.settings.avatar}" alt="">` : esc((nm.trim()[0] || '?').toUpperCase())}<span class="cam">📷</span></button>
+      <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0">${esc(nm)}</h2>${(() => { if (!S.history.length || !GAME()) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${hu.lvl >= 10 ? clsIc(hu.cls) + ' ' + esc(clsName(hu.cls)) : esc(hu.title)}</button><div class="small pftitle" style="--rc:${hu.col}">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div>`; })()}
       <div class="pfstats"><div><span class="muted small">Entraînements</span><br><b>${S.history.length}</b></div><div><span class="muted small">${T('Série', 'Streak')}</span><br><b>🔥 ${streakWeeks()} sem.</b></div><div><span class="muted small">Ce mois</span><br><b>${month}</b></div></div></div></div>
     ${bodyCard()}${friendsCard()}${yearBanner()}${stagCard()}
     ${!S.history.length ? '' : `<div class="card pfchart"><div class="seg" style="margin:0 0 12px">${[['act', T('Activité', 'Activity')], ['dur', T('Durée', 'Time')], ['vol', 'Volume'], ['reps', T('Réps', 'Reps')]].map(([k, l]) => `<button class="${pfMetric === k ? 'on' : ''}" data-act="pf-metric" data-m="${k}">${l}</button>`).join('')}</div>
@@ -5203,8 +5214,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.29.1';
+const APP_VERSION = '9.30';
 const CHANGELOG = [
+  {v: '9.30', d: '2026-11-12', fr: ['🏷️ Titres : tes médailles débloquent des titres (Tueur de boss, Légende du squat, Lève-tôt…). Choisis-en un dans la Guilde : il s\'affiche après ton rang (ex. « Aventurier de rang B · Tueur de boss »), aussi chez tes amis.', '🖼️ Cadres de photo à débloquer : Lueur (niv. 25), Arc-en-ciel (50), Flammes (75), Légendaire (100).', '🎨 Thèmes de la Guilde à débloquer : Bronze (niv. 20), Argent (30), Or royal (45), Rubis (60), Aurore (80), Légende (100).', '📲 Raccourci de l\'icône : « Quête du jour » et « Statut » ouvrent maintenant la Guilde.'], en: ['🏷️ Titles: your medals unlock titles (Boss slayer, Squat legend, Early bird…). Pick one in the Guild: it shows after your rank, to your friends too.', '🖼️ Unlockable photo frames: Glow (lv. 25), Rainbow (50), Flames (75), Legendary (100).', '🎨 Unlockable Guild themes: Bronze (lv. 20), Silver (30), Royal gold (45), Ruby (60), Aurora (80), Legend (100).', '📲 Icon shortcuts: “Daily quest” and “Status” now open the Guild.']},
   {v: '9.29.1', d: '2026-11-12', fr: ['🎨 Le thème bleu s\'appelle maintenant « Bleu électrique » (mêmes couleurs).'], en: ['🎨 The blue theme is now called “Electric blue” (same colors).']},
   {v: '9.29', d: '2026-11-12', fr: ['🏅 Beaucoup de nouvelles médailles. La Guilde : niveaux 10 à 100, quêtes de suite, Rédemption, plus de donjons et de boss, armes de rang S, raids, défis gagnés, champion de saison, événements et double XP. Ailleurs : une nouvelle catégorie Cardio, records en une séance, séries en une séance, double séance et séance du Nouvel An.', '✏️ La médaille « jours de suite » parle maintenant de jours d\'entraînement (ce n\'était pas des quêtes).'], en: ['🏅 Lots of new medals. The Guild: levels 10 to 100, quest streaks, Redemption, more dungeons and bosses, S-rank weapons, raids, challenges won, season champion, events and double XP. Elsewhere: a new Cardio category, records in one workout, sets in one workout, two-a-day and New Year\'s workout.', '✏️ The “days in a row” medal now refers to training days (they weren\'t quests).']},
   {v: '9.28.1', d: '2026-11-12', fr: ['🧹 La carte « Ma semaine » est retirée de l\'onglet Entraînement, la bande Guilde est centrée, et les derniers emojis des listes déroulantes sont enlevés.'], en: ['🧹 The “My week” card is removed from the Workout tab, the Guild strip is centered, and the last emojis in dropdowns are gone.']},
@@ -6339,9 +6351,9 @@ function frMe() {
   return {f: {c: fr.file || 'me', me: true, n: T('Moi', 'Me')}, d: {name: (S.settings.name || '').trim() || T('Moi', 'Me'), av: S.settings.avatar || '', wk: streakWeeks(), hu: frHu(), s, p, up: fr.last, cw: Object.keys(S.seasonWon || {}).filter(k => S.seasonWon[k])}};
 }
 /* Niveau de chasseur partagé avec les amis */
-function frHu() { if (!S.history.length || !GAME()) return null; const x = hunter(); return {l: x.lvl, r: x.rk, xp: x.xp, c: x.cls}; }
+function frHu() { if (!S.history.length || !GAME()) return null; const x = hunter(); return {l: x.lvl, r: x.rk, xp: x.xp, c: x.cls, t: S.settings.title && myTitle() ? S.settings.title : '', f: myFrame()}; }
 const huTitle = r => { const x = HRANKS.find(y => y[1] === r); return x ? T(x[2][0], x[2][1]) : ''; };
-const frLv = (d, big) => GAME() && d && d.hu && d.hu.r ? (big ? `<span class="frlvb" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${rkBadge(d.hu.r, 'mrk lvrk')} ${T('Niveau', 'Level')} ${d.hu.l} · ${d.hu.c && d.hu.c !== 'none' ? clsIc(d.hu.c) + ' ' + esc(clsName(d.hu.c)) : esc(huTitle(d.hu.r))}</span>` : `<span class="frlv" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${d.hu.r} · ${T('Niv.', 'Lv.')} ${d.hu.l}</span>`) : '';
+const frLv = (d, big) => GAME() && d && d.hu && d.hu.r ? (big ? `<span class="frlvb" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${rkBadge(d.hu.r, 'mrk lvrk')} ${T('Niveau', 'Level')} ${d.hu.l} · ${d.hu.c && d.hu.c !== 'none' ? clsIc(d.hu.c) + ' ' + esc(clsName(d.hu.c)) : esc(huTitle(d.hu.r))}</span><div class="small pftitle" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${esc(huTitle(d.hu.r))}${d.hu.t && titleOf(d.hu.t) ? ` · « ${esc(titleOf(d.hu.t))} »` : ''}</div>` : `<span class="frlv" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${d.hu.r} · ${T('Niv.', 'Lv.')} ${d.hu.l}</span>`) : '';
 function frRanking() {
   if (!GAME()) return '';
   const fr = FRS(), rows = [];
@@ -6401,8 +6413,8 @@ function frReactRow(f, s) {
   return `<div class="row" style="gap:6px;margin-top:10px;flex-wrap:wrap">${FR_EMO.map(e => `<button class="frre ${mine && mine.e === e ? 'on' : ''}" data-act="fr-react" data-c="${f.c}" data-s="${esc(s.id)}" data-e="${e}">${e}${r[e] ? ` <span>${r[e].length}</span>` : ''}</button>`).join('')}
     ${Object.keys(r).length ? `<span class="muted small" style="align-self:center">${esc([...new Set(Object.values(r).flat())].join(', '))}</span>` : ''}</div>`;
 }
-const rkFrame = rk => GAME() && rk && RKC[rk] ? ` rkf rkf-${String(rk).replace('+', 'p')}" style="--rkc:${RKC[rk]}` : '';
-const frAv = (d, c, cls = '') => d.av ? `<img class="frav ${cls}${rkFrame(d.hu && d.hu.r)}" src="${d.av}" alt="" data-act="fr-who" data-c="${c}">` : `<span class="frav ${cls}${rkFrame(d.hu && d.hu.r)}" data-act="fr-who" data-c="${c}">${esc((d.name || '?')[0].toUpperCase())}</span>`;
+const rkFrame = (rk, f) => GAME() && rk && RKC[rk] ? ` rkf rkf-${String(rk).replace('+', 'p')}${f && FRAMES.some(x => x.id === f) ? ' frm-' + f : ''}" style="--rkc:${RKC[rk]}` : '';
+const frAv = (d, c, cls = '') => d.av ? `<img class="frav ${cls}${rkFrame(d.hu && d.hu.r, d.hu && d.hu.f)}" src="${d.av}" alt="" data-act="fr-who" data-c="${c}">` : `<span class="frav ${cls}${rkFrame(d.hu && d.hu.r, d.hu && d.hu.f)}" data-act="fr-who" data-c="${c}">${esc((d.name || '?')[0].toUpperCase())}</span>`;
 function frPhotoPost({f, d, s}) {
   return `<div class="card frpost"><div class="row" style="gap:10px;align-items:center">${frAv(d, f.c)}
       <div style="flex:1;min-width:0"><b>${esc(d.name)}</b> <span class="muted small">· ${dateFr(s.d)}</span><br><span class="small">📸 ${T('a partagé une photo de progrès', 'shared a progress photo')}</span></div></div>
@@ -6585,13 +6597,52 @@ function frSocial() {
   return o;
 }
 function socialCheck() { try { seasonCheck(); raidCheck(); chCheck(); } catch (e) {} }
+/* ===================== Récompenses de la Guilde : titres, thèmes et cadres à débloquer ===================== */
+const TITLES = [ // [groupe de médaille, palier (0 = premier), [fr, en]]
+  ['n1', 0, ['Nouvelle recrue', 'New recruit']], ['n', 3, ['Centurion', 'Centurion']], ['n', 5, ['Vétéran', 'Veteran']], ['n', 6, ['Immortel du gym', 'Gym immortal']],
+  ['wk', 4, ['Inébranlable', 'Unshakable']], ['early', 1, ['Lève-tôt', 'Early bird']], ['night', 1, ['Oiseau de nuit', 'Night owl']], ['wknd', 1, ['Guerrier du week-end', 'Weekend warrior']],
+  ['bp', 2, ['Roi du couché', 'Bench king']], ['sq', 2, ['Légende du squat', 'Squat legend']], ['dl', 2, ['Arracheur de terre', 'Earth lifter']], ['b3', 2, ['Titan', 'Titan']],
+  ['vol', 3, ['Déménageur de montagnes', 'Mountain mover']], ['pr', 2, ['Briseur de records', 'Record breaker']], ['mpr', 0, ['Journée parfaite', 'Perfect day']],
+  ['dbl', 0, ['Double lame', 'Double blade']], ['nyd', 0, ['Résolu', 'Resolute']], ['cmin', 2, ['Cœur d\'acier', 'Heart of steel']], ['ckm', 3, ['Grand voyageur', 'Great traveler']],
+  ['qd', 3, ['Assidu de la Guilde', 'Guild regular']], ['qrow', 3, ['Discipline de fer', 'Iron discipline']], ['redeem', 0, ['Revenant', 'Revenant']],
+  ['dg', 2, ['Nettoyeur de donjons', 'Dungeon cleaner']], ['boss', 0, ['Tueur de boss', 'Boss slayer']], ['boss', 3, ['Fléau des boss', 'Bane of bosses']],
+  ['shs', 0, ['Forgeron légendaire', 'Legendary smith']], ['raid', 0, ['Compagnon de raid', 'Raid companion']], ['chw', 1, ['Duelliste', 'Duelist']],
+  ['sea', 0, ['Champion de saison', 'Season champion']], ['evt', 1, ['Fêtard de la Guilde', 'Guild reveler']], ['lvl', 9, ['Légende vivante', 'Living legend']]];
+function titleList() { // titres débloqués selon tes médailles
+  const me = medalsEarned();
+  return TITLES.map(([g, i, t]) => { const d = g === 'n1' ? me.defs.find(x => x.id === 'n1') : me.defs.filter(x => x.g === g).sort((a, b) => a.v - b.v)[i]; return d ? {id: g + i, t: T(t[0], t[1]), ok: !!me.got[d.id], how: d.t} : null; }).filter(Boolean);
+}
+const myTitle = () => { const id = S.settings.title; if (!id || !GAME()) return ''; const x = titleList().find(t => t.id === id && t.ok); return x ? x.t : ''; };
+const titleOf = id => { const x = TITLES.find(([g, i]) => g + i === id); return x ? T(x[2][0], x[2][1]) : ''; };
+const REWARD_THEMES = [
+  {id: 'bronze', n: ['Bronze', 'Bronze'], l: 20, acc: '#d08a4a', bg: '#120d09'}, {id: 'argent', n: ['Argent', 'Silver'], l: 30, acc: '#cfd8e3', bg: '#0d1015'},
+  {id: 'orroyal', n: ['Or royal', 'Royal gold'], l: 45, acc: '#ffcc33', bg: '#110e05'}, {id: 'rubis', n: ['Rubis', 'Ruby'], l: 60, acc: '#ff2e63', bg: '#14070b'},
+  {id: 'aurore', n: ['Aurore', 'Aurora'], l: 80, acc: '#5ef2d6', bg: '#06121a'}, {id: 'legende', n: ['Légende', 'Legend'], l: 100, acc: '#b26bff', bg: '#0b0614'}];
+const FRAMES = [
+  {id: '', n: ['Couleur du rang', 'Rank color'], l: 1}, {id: 'glow', n: ['Lueur', 'Glow'], l: 25}, {id: 'aurora', n: ['Arc-en-ciel', 'Rainbow'], l: 50},
+  {id: 'flame', n: ['Flammes', 'Flames'], l: 75}, {id: 'legend', n: ['Légendaire', 'Legendary'], l: 100}];
+const myLvl = () => S.history.length ? hunter().lvl : 1;
+const myFrame = () => { const f = S.settings.frame || ''; const x = FRAMES.find(y => y.id === f); return GAME() && x && myLvl() >= x.l ? f : ''; };
+function rewardsCard() {
+  if (!GAME()) return '';
+  const lv = myLvl(), tl = titleList(), okT = tl.filter(t => t.ok), cur = S.settings.title || '';
+  const lock = l => `<span class="small muted">🔒 ${T('Niv.', 'Lv.')} ${l}</span>`;
+  return `<div class="card"><div class="sysh" style="margin:0 0 8px">[ ${T('RÉCOMPENSES', 'REWARDS')} ]</div>
+    <b>${T('Mon titre', 'My title')}</b> <span class="small muted">${okT.length} / ${tl.length}</span>
+    <p class="small muted" style="margin:2px 0 6px">${T('S\'affiche après ton rang, sur ton profil et chez tes amis.', 'Shown after your rank, on your profile and to your friends.')}</p>
+    <div class="chips">${`<button class="chip ${!cur ? 'on' : ''}" data-act="title-set" data-id="">${T('Aucun', 'None')}</button>`}${tl.map(t => t.ok ? `<button class="chip ${cur === t.id ? 'on' : ''}" data-act="title-set" data-id="${t.id}">${esc(t.t)}</button>` : `<button class="chip locked" data-act="title-how" data-h="${esc(t.how)}" data-t="${esc(t.t)}">🔒 ${esc(t.t)}</button>`).join('')}</div>
+    <b style="display:block;margin-top:14px">${T('Cadre de photo', 'Photo frame')}</b>
+    <div class="frgrid">${FRAMES.map(f => { const ok = lv >= f.l, on = (S.settings.frame || '') === f.id; return `<button class="frpick ${on ? 'on' : ''} ${ok ? '' : 'locked'}" data-act="${ok ? 'frame-set' : 'noop'}" data-id="${f.id}"><span class="frav sm rkf${f.id ? ' frm-' + f.id : ''}" style="--rkc:${hunter().col}">${esc(((S.settings.name || 'M').trim()[0] || 'M').toUpperCase())}</span><span class="small">${esc(T(f.n[0], f.n[1]))}</span>${ok ? '' : lock(f.l)}</button>`; }).join('')}</div>
+    <b style="display:block;margin-top:14px">${T('Thèmes de la Guilde', 'Guild themes')}</b>
+    <div class="grid2" style="margin-top:6px">${REWARD_THEMES.map(t => { const ok = lv >= t.l, on = (S.settings.accent || '').toLowerCase() === t.acc && (S.settings.bg || '').toLowerCase() === t.bg; return `<button class="btn sm ${on ? 'on' : ''}" style="text-align:left;${ok ? '' : 'opacity:.55'}" data-act="${ok ? 'rtheme' : 'noop'}" data-id="${t.id}"><span class="sw2" style="background:linear-gradient(135deg,${t.bg} 50%,${t.acc} 50%)"></span> ${esc(T(t.n[0], t.n[1]))} ${ok ? '' : lock(t.l)}</button>`; }).join('')}</div></div>`;
+}
 /* ===================== Onglet Guilde (mode jeu) : tout ce qui touche au jeu au même endroit ===================== */
 function statusCard() {
   const me = medalsEarned(), {st, defs} = me, n = Object.keys(me.got).length, hu = hunter(me), fmtN = v => Math.round(v).toLocaleString(LOC()), pct = Math.min(100, Math.round(hu.cur / hu.need * 100));
   return `<div class="card sysw" style="--rc:${hu.col}">
       <div class="sysh">[ ${T('STATUT', 'STATUS')} ]</div>
       <div class="row" style="gap:14px;align-items:center">${rkBadge(hu.rk, 'rkbig')}
-        <div style="flex:1;min-width:0"><div class="muted small">${T('Niveau', 'Level')}</div><div class="lvl">${hu.lvl}</div><div class="small" style="color:var(--rc);font-weight:700">${esc(hu.title)}</div></div></div>
+        <div style="flex:1;min-width:0"><div class="muted small">${T('Niveau', 'Level')}</div><div class="lvl">${hu.lvl}</div><div class="small" style="color:var(--rc);font-weight:700">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div></div></div>
       <button class="clsrow" data-act="cls-info">${clsIc(hu.cls)} <span><span class="muted small">${T('Classe', 'Class')}</span><br><b>${esc(clsName(hu.cls))}</b></span><span class="muted small" style="margin-left:auto">${hu.lvl < 10 ? T('Initié au niv. 10', 'Initiate at lv. 10') : hu.lvl < 40 ? T('Classe au niv. 40', 'Class at lv. 40') : 'ⓘ'}</span></button>
       <div class="goal sysbar"><div style="width:${pct}%"></div></div>
       <div class="row between small muted"><span>${fmtN(hu.cur)} / ${fmtN(hu.need)} XP</span><span>${hu.nextRank ? T(`Rang ${hu.nextRank.rk} au niveau ${hu.nextRank.lvl}`, `Rank ${hu.nextRank.rk} at level ${hu.nextRank.lvl}`) : T('Rang maximal atteint', 'Max rank reached')}</span></div>
@@ -6606,6 +6657,7 @@ function vGuild() {
   const fr = FRS().list.length;
   return `${statusCard()}${eventCard()}${questCard('full')}
     ${fr ? `${raidCard()}${seasonCard()}` : `<div class="card"><b>${IC('users', '👥')} ${T('Raids et saisons', 'Raids and seasons')}</b><p class="small muted" style="margin:4px 0 8px">${T('Ajoute des amis pour combattre des boss de raid ensemble et te mesurer à eux chaque mois.', 'Add friends to fight raid bosses together and compete every month.')}</p><button class="btn sm" data-act="go" data-v="friends">${T('Mes amis', 'My friends')}</button></div>`}
+    ${rewardsCard()}
     <div class="grid2" style="margin-top:4px"><button class="btn tile" data-act="go" data-v="shadows">${IC('swords', '⚔️')} ${T('Arsenal', 'Arsenal')}</button><button class="btn tile" data-act="go" data-v="murank">${IC('target', '🎯')} ${T('Rangs par muscle', 'Muscle ranks')}</button><button class="btn tile" data-act="go" data-v="medals">${IC('medal', '🏅')} ${T('Médailles', 'Medals')}</button><button class="btn tile" data-act="go" data-v="friends">${IC('users', '👥')} ${T('Amis et défis', 'Friends & challenges')}</button></div>`;
 }
 /* Bande compacte dans Entraînement : un coup d'œil, et on touche pour ouvrir la Guilde */
@@ -7209,6 +7261,11 @@ document.addEventListener('click', e => {
     case 'fr-add-ok': frAdd(($('#frin') || {}).value); break;
     case 'fr-refresh': toast('↻'); frLoad(true); break;
     case 'start-express': startExpress(b.dataset.rid); break;
+    case 'title-set': S.settings.title = b.dataset.id; save(); render(); if (frOn()) frQueue(false); toast(b.dataset.id ? T(`🏷️ Titre : ${titleOf(b.dataset.id)}`, `🏷️ Title: ${titleOf(b.dataset.id)}`) : T('Titre retiré', 'Title removed')); break;
+    case 'title-how': toast(T(`🔒 « ${b.dataset.t} » : débloque la médaille « ${b.dataset.h} »`, `🔒 “${b.dataset.t}”: unlock the medal “${b.dataset.h}”`)); break;
+    case 'frame-set': S.settings.frame = b.dataset.id; save(); render(); if (frOn()) frQueue(false); break;
+    case 'rtheme': { const t = REWARD_THEMES.find(x => x.id === b.dataset.id); if (!t) break; S.settings.theme = 'noir'; S.settings.accent = t.acc; S.settings.bg = t.bg; save(); applyTheme(); render(); toast(T(`🎨 Thème ${t.n[0]}`, `🎨 ${t.n[1]} theme`)); break; }
+    case 'noop': toast(T('🔒 Monte de niveau pour le débloquer', '🔒 Level up to unlock it')); break;
     case 'hist-more': { const y = scrollY; histLim += 60; render(); window.scrollTo(0, y); break; }
     case 'ch-new': closeAll(); chNew(b.dataset.c); break;
     case 'ch-f': chDraft.f = b.dataset.c; chPaint(); break;
@@ -7783,8 +7840,8 @@ setTimeout(() => frLoad(), 2500); document.addEventListener('visibilitychange', 
     if (q === 'today') { if (S.active) openWorkout(); else { const r = schedR(dayIdx(new Date())); if (r) startWorkout(r.id); else toast("Rien de prévu aujourd'hui dans ton horaire"); } }
     else if (q === 'empty') startEmpty();
     else if (q === 'profile') { setRoot('profile'); render(); }
-    else if (q === 'medals') { setRoot('medals'); render(); }
-    else if (q === 'quest') { setRoot('train'); render(); setTimeout(() => { const c = document.querySelector('.qcard'); if (c) c.scrollIntoView({block: 'center'}); }, 300); }
+    else if (q === 'medals' || q === 'guild') { setRoot(GAME() ? 'guild' : 'profile'); render(); if (!GAME()) go('medals'); }
+    else if (q === 'quest') { setRoot(GAME() ? 'guild' : 'train'); render(); }
   } }
 if (cloudOn()) setTimeout(() => cloudPush(), 4000);
 setTimeout(remindSync, 3000);
