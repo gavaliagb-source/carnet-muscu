@@ -324,6 +324,21 @@ button.chip{cursor:pointer}
 .armit.locked{filter:grayscale(.7);opacity:.55}.armprev{min-height:30px;display:flex;align-items:center;justify-content:center}.armn{font-size:13px;font-weight:700;line-height:1.2}.armr{font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--rr)}.armit.locked .armr{text-transform:none;letter-spacing:0;font-weight:600;color:var(--muted)}
 .armeq{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:900;letter-spacing:1px;padding:2px 6px;border-radius:6px;background:var(--rr);color:#111}
 .armtt{font-weight:900;color:var(--rr);font-size:18px}.sw2.big{width:30px;height:30px}.rardot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.ghero{background:linear-gradient(150deg,color-mix(in srgb,var(--rc) 16%,var(--card)),var(--card) 65%);border:1px solid color-mix(in srgb,var(--rc) 40%,var(--line));border-radius:18px;padding:16px;margin-bottom:12px}
+.glv{display:flex;align-items:baseline;gap:8px}.glv span{color:var(--muted);font-size:13px}.glv b{font-size:30px;line-height:1}.gtitle{color:var(--rc);font-weight:700;font-size:14px;margin-top:2px}
+.gcls{margin-top:6px;background:none;border:0;padding:0;color:var(--text);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px;text-align:left}
+.gxp{display:block;width:100%;background:none;border:0;padding:0;color:inherit;text-align:left;margin-top:12px}.gxp .sysbar{margin:0 0 6px}
+.ghero .sysstats{margin-top:12px}
+.glist{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.gsec{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;width:100%;color:inherit;text-align:left;padding:0;display:block}
+.gsec>summary,.glink{list-style:none;display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent}.gsec>summary::-webkit-details-marker{display:none}
+.gic{width:38px;height:38px;flex:none;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);font-size:18px}.gic .ico{width:20px;height:20px}
+.gtx{flex:1;min-width:0}.gtx b{display:block;font-size:15px}.gtx small{display:block;color:var(--muted);font-size:12.5px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gchev{color:var(--muted);font-size:22px;line-height:1;transition:transform .25s ease}details.gsec[open]>summary .gchev{transform:rotate(90deg)}details.gsec[open]{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.gfb{padding:2px 14px 14px;animation:gIn .28s cubic-bezier(.2,.8,.2,1)}@keyframes gIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.gfb>.card{margin:0;padding:0;border:0;background:none;box-shadow:none}.gfb>.card>.sysh,.gfb>.card>.row>.sysh{display:none}
+.xpl{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+@media (prefers-reduced-motion: reduce){.gfb{animation:none}.gchev{transition:none}}
 .bossline{background:color-mix(in srgb,#fb7185 12%,transparent);border:1px solid color-mix(in srgb,#fb7185 55%,transparent);border-radius:10px;padding:7px 10px;margin:8px 0 2px;font-size:13px}.bossline.dead{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .bosskill{text-align:center;padding:6px 0}.bkskull{font-size:64px;line-height:1;color:#fb7185;animation:bkhit .9s ease-out both}.bkskull .ico{width:72px;height:72px}
 @keyframes bkhit{0%{transform:scale(.3) rotate(-20deg);opacity:0}35%{transform:scale(1.35) rotate(8deg);opacity:1}55%{transform:scale(.9) rotate(-6deg)}70%{transform:scale(1.05) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:.85;filter:grayscale(.6)}}
@@ -5260,8 +5275,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.32';
+const APP_VERSION = '9.33';
 const CHANGELOG = [
+  {v: '9.33', d: '2026-11-12', fr: ['✨ Nouvelle page Guilde, plus propre et fluide : ton statut en haut, puis une liste de sections (Quêtes, Raid, Saison, Armurerie, Arsenal, Rangs, Médailles, Amis) qui s\'ouvrent en douceur, sans recharger la page. Le détail de l\'XP s\'ouvre en touchant ta barre d\'XP.'], en: ['✨ New Guild page, cleaner and smoother: your status on top, then a list of sections (Quests, Raid, Season, Armory, Arsenal, Ranks, Medals, Friends) that open smoothly without reloading. XP details open when you tap your XP bar.']},
   {v: '9.32', d: '2026-11-12', fr: ['⚔️ Guilde plus compacte : les Quêtes et l\'Armurerie (toutes les récompenses) se replient. Touche pour ouvrir, l\'appli se souvient de ton choix.', '🛡️ L\'Armurerie, façon jeu : onglets (Titres, Cadres, Auras, Victoires, Bannières, Emblèmes, Thèmes), objets avec une rareté (Commun, Rare, Épique, Légendaire) et l\'objet équipé marqué « ÉQUIPÉ ».'], en: ['⚔️ More compact Guild: Quests and the Armory (all rewards) fold up. Tap to open, the app remembers your choice.', '🛡️ The Armory, game style: tabs (Titles, Frames, Auras, Victories, Banners, Emblems, Themes), items with a rarity (Common, Rare, Epic, Legendary) and the equipped item marked “EQUIPPED”.']},
   {v: '9.31', d: '2026-11-12', fr: ['✨ Nouveaux cosmétiques à débloquer dans la Guilde : effets en cochant une série (Étincelles, Éclair, Flammes, Poussière d\'or, Cosmique), célébrations de fin de séance (Feux d\'artifice, Pluie d\'étoiles, Brasier, Pluie d\'or), bannières de profil (Aube, Nuit étoilée, Forge, Antre du dragon, Tempête, Trône, Légende) et emblèmes à côté de ton nom. Tes amis voient ta bannière et ton emblème.'], en: ['✨ New unlockable cosmetics in the Guild: set check effects (Sparks, Lightning, Flames, Gold dust, Cosmic), workout celebrations (Fireworks, Star shower, Blaze, Golden rain), profile banners (Dawn, Starry night, Forge, Dragon\'s lair, Storm, Throne, Legend) and emblems next to your name. Friends see your banner and emblem.']},
   {v: '9.30', d: '2026-11-12', fr: ['🏷️ Titres : tes médailles débloquent des titres (Tueur de boss, Légende du squat, Lève-tôt…). Choisis-en un dans la Guilde : il s\'affiche après ton rang (ex. « Aventurier de rang B · Tueur de boss »), aussi chez tes amis.', '🖼️ Cadres de photo à débloquer : Lueur (niv. 25), Arc-en-ciel (50), Flammes (75), Légendaire (100).', '🎨 Thèmes de la Guilde à débloquer : Bronze (niv. 20), Argent (30), Or royal (45), Rubis (60), Aurore (80), Légende (100).', '📲 Raccourci de l\'icône : « Quête du jour » et « Statut » ouvrent maintenant la Guilde.'], en: ['🏷️ Titles: your medals unlock titles (Boss slayer, Squat legend, Early bird…). Pick one in the Guild: it shows after your rank, to your friends too.', '🖼️ Unlockable photo frames: Glow (lv. 25), Rainbow (50), Flames (75), Legendary (100).', '🎨 Unlockable Guild themes: Bronze (lv. 20), Silver (30), Royal gold (45), Ruby (60), Aurora (80), Legend (100).', '📲 Icon shortcuts: “Daily quest” and “Status” now open the Guild.']},
@@ -6753,27 +6769,41 @@ function rewardsCard() {
 /* ===================== Onglet Guilde (mode jeu) : tout ce qui touche au jeu au même endroit ===================== */
 function statusCard() {
   const me = medalsEarned(), {st, defs} = me, n = Object.keys(me.got).length, hu = hunter(me), fmtN = v => Math.round(v).toLocaleString(LOC()), pct = Math.min(100, Math.round(hu.cur / hu.need * 100));
-  return `<div class="card sysw" style="--rc:${hu.col}">
-      <div class="sysh">[ ${T('STATUT', 'STATUS')} ]</div>
-      <div class="row" style="gap:14px;align-items:center">${rkBadge(hu.rk, 'rkbig')}
-        <div style="flex:1;min-width:0"><div class="muted small">${T('Niveau', 'Level')}</div><div class="lvl">${hu.lvl}</div><div class="small" style="color:var(--rc);font-weight:700">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div></div></div>
-      <button class="clsrow" data-act="cls-info">${clsIc(hu.cls)} <span><span class="muted small">${T('Classe', 'Class')}</span><br><b>${esc(clsName(hu.cls))}</b></span><span class="muted small" style="margin-left:auto">${hu.lvl < 10 ? T('Initié au niv. 10', 'Initiate at lv. 10') : hu.lvl < 40 ? T('Classe au niv. 40', 'Class at lv. 40') : 'ⓘ'}</span></button>
-      <div class="goal sysbar"><div style="width:${pct}%"></div></div>
-      <div class="row between small muted"><span>${fmtN(hu.cur)} / ${fmtN(hu.need)} XP</span><span>${hu.nextRank ? T(`Rang ${hu.nextRank.rk} au niveau ${hu.nextRank.lvl}`, `Rank ${hu.nextRank.rk} at level ${hu.nextRank.lvl}`) : T('Rang maximal atteint', 'Max rank reached')}</span></div>
-      <div class="sysstats"><div><span>${T('FOR', 'STR')}</span><b>${fmtN(st.b3)}</b><i>${U()}</i></div><div><span>${T('END', 'END')}</span><b>${fmtN(st.hr)}</b><i>h</i></div><div><span>${T('CON', 'CON')}</span><b>${st.wk}</b><i>${T('sem.', 'wk')}</i></div><div><span>${T('MÉD', 'MED')}</span><b>${n}</b><i>/ ${defs.length}</i></div></div>
-      <p class="small muted" style="margin:10px 0 0">${T('XP : séance 100 · série 5 · record 40 · médaille 250 · quête 150 · donjon 500 · boss 1 000 · quête ratée −10.', 'XP: workout 100 · set 5 · record 40 · medal 250 · quest 150 · dungeon 500 · boss 1,000 · missed quest −10.')}</p>
-    </div>`;
+  return `<div class="ghero" style="--rc:${hu.col}">
+    <div class="row" style="gap:14px;align-items:center">${rkBadge(hu.rk, 'rkbig')}
+      <div style="flex:1;min-width:0"><div class="glv"><span>${T('Niveau', 'Level')}</span><b>${hu.lvl}</b></div>
+        <div class="gtitle">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div>
+        <button class="gcls" data-act="cls-info">${clsIc(hu.cls)} ${esc(clsName(hu.cls))}<span class="muted"> · ${hu.lvl < 10 ? T('classe au niv. 10', 'class at lv. 10') : hu.lvl < 40 ? T('vraie classe au niv. 40', 'true class at lv. 40') : 'ⓘ'}</span></button></div></div>
+    <button class="gxp" data-act="xp-info"><div class="goal sysbar"><div style="width:${pct}%"></div></div>
+      <div class="row between small muted"><span>${fmtN(hu.cur)} / ${fmtN(hu.need)} XP ⓘ</span><span>${hu.nextRank ? T(`Rang ${hu.nextRank.rk} au niv. ${hu.nextRank.lvl}`, `Rank ${hu.nextRank.rk} at lv. ${hu.nextRank.lvl}`) : T('Rang maximal', 'Max rank')}</span></div></button>
+    <div class="sysstats"><div><span>${T('FOR', 'STR')}</span><b>${fmtN(st.b3)}</b><i>${U()}</i></div><div><span>${T('END', 'END')}</span><b>${fmtN(st.hr)}</b><i>h</i></div><div><span>${T('CON', 'CON')}</span><b>${st.wk}</b><i>${T('sem.', 'wk')}</i></div><div><span>${T('MÉD', 'MED')}</span><b>${n}</b><i>/ ${defs.length}</i></div></div>
+  </div>`;
 }
+/* Section de la Guilde : une ligne façon menu de jeu, qui s'ouvre en douceur (sans recharger la page) */
+function gSec(id, ic, title, sub, body) {
+  const open = (S.settings.gOpen || {})[id];
+  return `<details class="gsec" data-gid="${id}" ${open ? 'open' : ''}><summary><span class="gic">${ic}</span><span class="gtx"><b>${title}</b><small>${sub}</small></span><span class="gchev">›</span></summary><div class="gfb">${body()}</div></details>`;
+}
+const gLink = (v, ic, title, sub) => `<button class="gsec glink" data-act="go" data-v="${v}"><span class="gic">${ic}</span><span class="gtx"><b>${title}</b><small>${sub}</small></span><span class="gchev">›</span></button>`;
 function vGuild() {
   if (!GAME()) { setRoot('train'); return vTrain(); }
   if (!S.history.length) return `<div class="empty">${T('Ta première séance t\'inscrit à la Guilde : niveau, rang, quêtes et boss commencent ici.', 'Your first workout signs you up to the Guild: level, rank, quests and bosses start here.')}<br><button class="btn primary sm" data-tab="train" style="margin-top:12px">${T('Démarrer une séance', 'Start a workout')}</button></div>`;
   syncSystem(); evCheck(); setTimeout(evAnnounce, 0);
-  const fr = FRS().list.length;
-  const q = dailyQuest(), dg = weekDungeon(), bo = monthBoss(), nd = (q.rest || q.done ? 1 : 0) + (dg.done ? 1 : 0) + (bo && bo.done ? 1 : 0);
-  return `${statusCard()}${eventCard()}${gFold('quests', T('QUÊTES', 'QUESTS'), `${nd} / ${bo ? 3 : 2} ${T('accomplies', 'complete')}`, () => questCard('inner'))}
-    ${fr ? `${raidCard()}${seasonCard()}` : `<div class="card"><b>${IC('users', '👥')} ${T('Raids et saisons', 'Raids and seasons')}</b><p class="small muted" style="margin:4px 0 8px">${T('Ajoute des amis pour combattre des boss de raid ensemble et te mesurer à eux chaque mois.', 'Add friends to fight raid bosses together and compete every month.')}</p><button class="btn sm" data-act="go" data-v="friends">${T('Mes amis', 'My friends')}</button></div>`}
-    ${rewardsCard()}
-    <div class="grid2" style="margin-top:4px"><button class="btn tile" data-act="go" data-v="shadows">${IC('swords', '⚔️')} ${T('Arsenal', 'Arsenal')}</button><button class="btn tile" data-act="go" data-v="murank">${IC('target', '🎯')} ${T('Rangs par muscle', 'Muscle ranks')}</button><button class="btn tile" data-act="go" data-v="medals">${IC('medal', '🏅')} ${T('Médailles', 'Medals')}</button><button class="btn tile" data-act="go" data-v="friends">${IC('users', '👥')} ${T('Amis et défis', 'Friends & challenges')}</button></div>`;
+  const fr = FRS().list.length, q = dailyQuest(), dg = weekDungeon(), bo = monthBoss(), nd = (q.rest || q.done ? 1 : 0) + (dg.done ? 1 : 0) + (bo && bo.done ? 1 : 0);
+  const [aOk, aTot] = armoryCount(), sh = shadowArmy().length;
+  let raidSub = T('Avec tes amis', 'With your friends'), seaSub = T('Avec tes amis', 'With your friends');
+  if (fr) { try { const r = raidState(wkKey(new Date())); if (r.rows.length > 1) raidSub = `${r.tot.toLocaleString(LOC())} / ${r.goal.toLocaleString(LOC())} reps${r.done ? ' · ' + T('vaincu', 'cleared') : ''}`; const sr = seasonRows(monKey(new Date())), i = sr.findIndex(x => x.me); if (sr.length > 1) seaSub = `${i + 1}${i ? 'e' : 'er'} ${T('sur', 'of')} ${sr.length} · ${monName(monKey(new Date()))}`; } catch (e) {} }
+  const noFr = `<p class="small muted" style="margin:0 0 10px">${T('Ajoute des amis pour combattre des boss de raid ensemble et te mesurer à eux chaque mois.', 'Add friends to fight raid bosses together and compete every month.')}</p><button class="btn sm" data-act="go" data-v="friends">${T('Mes amis', 'My friends')}</button>`;
+  return `${statusCard()}${eventCard()}<div class="glist">
+    ${gSec('quests', '🏆', T('Quêtes', 'Quests'), `${nd} / ${bo ? 3 : 2} ${T('accomplies aujourd\'hui', 'complete today')}`, () => questCard('inner'))}
+    ${gSec('raid', '🛡️', T('Raid de guilde', 'Guild raid'), raidSub, () => fr ? raidCard() : noFr)}
+    ${gSec('season', '👑', T('Saison', 'Season'), seaSub, () => fr ? seasonCard() || `<p class="small muted" style="margin:0">${T('La saison commence dès qu\'un ami a l\'appli à jour.', 'The season starts as soon as a friend has the app up to date.')}</p>` : noFr)}
+    ${gSec('arm', '⚔️', T('Armurerie', 'Armory'), `${aOk} / ${aTot} ${T('récompenses débloquées', 'rewards unlocked')}`, () => `<div class="armbody">${armoryBody()}</div>`)}
+    ${gLink('shadows', '🗡', T('Arsenal', 'Arsenal'), `${sh} ${T(sh > 1 ? 'armes forgées' : 'arme forgée', sh > 1 ? 'weapons forged' : 'weapon forged')}`)}
+    ${gLink('murank', '🎯', T('Rangs par muscle', 'Muscle ranks'), T('Tes points forts et faibles', 'Your strong and weak points'))}
+    ${gLink('medals', '🏅', T('Médailles', 'Medals'), `${Object.keys(medalsEarned().got).length} / ${medalsEarned().defs.length}`)}
+    ${gLink('friends', '👥', T('Amis et défis', 'Friends & challenges'), fr ? `${fr} ${T(fr > 1 ? 'amis' : 'ami', fr > 1 ? 'friends' : 'friend')}` : T('Ajoute tes chums', 'Add your buddies'))}</div>`;
+
 }
 /* Bande compacte dans Entraînement : un coup d'œil, et on touche pour ouvrir la Guilde */
 function guildStrip() {
@@ -7002,6 +7032,7 @@ document.addEventListener('focusin', ev => {
 let foldWas = null;
 addEventListener('resize', () => { const w = foldActive(); if (w !== foldWas) { foldWas = w; if (cur().v === 'workout') render(); } });
 
+document.addEventListener('toggle', e => { const d = e.target; if (!d || !d.dataset || !d.dataset.gid) return; S.settings.gOpen = S.settings.gOpen || {}; S.settings.gOpen[d.dataset.gid] = d.open; save(); }, true);
 let animNext = true, ANIM = true; // les graphiques s'animent seulement à l'ouverture d'un écran (pas à chaque mise à jour)
 function render() {
   ANIM = !!navAnim || animNext; animNext = false;
@@ -7379,7 +7410,8 @@ document.addEventListener('click', e => {
     case 'title-set': S.settings.title = b.dataset.id; save(); render(); if (frOn()) frQueue(false); toast(b.dataset.id ? T(`🏷️ Titre : ${titleOf(b.dataset.id)}`, `🏷️ Title: ${titleOf(b.dataset.id)}`) : T('Titre retiré', 'Title removed')); break;
     case 'title-how': toast(T(`🔒 « ${b.dataset.t} » : débloque la médaille « ${b.dataset.h} »`, `🔒 “${b.dataset.t}”: unlock the medal “${b.dataset.h}”`)); break;
     case 'g-fold': { S.settings.gOpen = S.settings.gOpen || {}; S.settings.gOpen[b.dataset.id] = !S.settings.gOpen[b.dataset.id]; save(); render(); break; }
-    case 'arm-tab': armTab = b.dataset.t; render(); break;
+    case 'arm-tab': { armTab = b.dataset.t; const ab = document.querySelector('.armbody'); if (ab) ab.innerHTML = armoryBody(); else render(); break; }
+    case 'xp-info': modal(`<h2>${T('Comment gagner de l\'XP', 'How to earn XP')}</h2><div class="xpl">${[[T('Séance', 'Workout'), 100], [T('Série', 'Set'), 5], [T('Record', 'Record'), 40], [T('Médaille', 'Medal'), 250], [T('Quête du jour', 'Daily quest'), 150], [T('Donjon', 'Dungeon'), 500], ['Boss', 1000], [T('Raid réussi', 'Raid cleared'), 400], [T('Défi gagné', 'Challenge won'), 300], [T('Quête ratée', 'Missed quest'), -10]].map(([l, v]) => `<div class="row between"><span>${l}</span><b style="color:${v < 0 ? 'var(--warm)' : 'var(--ok)'}">${v > 0 ? '+' : '−'}${Math.abs(v).toLocaleString(LOC())} XP</b></div>`).join('')}</div><p class="small muted">${T('Les événements donnent aussi des bonus (double XP, quêtes spéciales).', 'Events also give bonuses (double XP, special quests).')}</p><button class="btn primary block" data-act="close">OK</button>`); break;
     case 'cos-set': S.settings.cos = S.settings.cos || {}; S.settings.cos[b.dataset.k] = b.dataset.id; save(); render(); if (frOn() && ['banner', 'emblem'].includes(b.dataset.k)) frQueue(false); if (b.dataset.k === 'fx') { const x = document.querySelector(`.cospick.on[data-k="fx"]`); if (x) setFx(x, false); } if (b.dataset.k === 'cele') confetti(120); break;
     case 'cos-how': toast(T(`🔒 Se débloque avec : ${b.dataset.h}`, `🔒 Unlocks with: ${b.dataset.h}`)); break;
     case 'cos-try': if (b.dataset.k === 'fx') setFx(b, false); else confetti(120); break;
