@@ -596,6 +596,7 @@ nav button{font-size:11px;min-width:0;white-space:nowrap;overflow:visible;text-o
 .armit.r3:not(.locked){animation:legPulse 2.6s ease-in-out infinite}@keyframes legPulse{50%{box-shadow:0 0 18px #f5c54288,inset 0 0 12px #f5c54233}}
 .armpb{display:block;width:80%;height:4px;border-radius:3px;background:#ffffff1a;overflow:hidden;margin-top:2px}.armpb i{display:block;height:100%;background:var(--rr);border-radius:3px}.armpt{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
 .armsec{filter:blur(5px) brightness(.35) saturate(.4);display:inline-flex}
+.armmyst{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;background:#0b0b10;border:1.5px dashed #ffffff40;color:#ffffff70;font-weight:900;font-size:22px}.armmyst.big{width:110px;height:110px;font-size:60px;border-radius:22px}
 .armnew{background:#f5c542!important;color:#1a1206!important;animation:newBlink 1.4s ease-in-out infinite}@keyframes newBlink{50%{transform:translateX(-50%) scale(1.08)}}
 .armdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#f5c542;margin-left:5px;vertical-align:2px;box-shadow:0 0 6px #f5c542}
 .armcoll{padding:10px 12px;border-radius:12px;border:1px solid color-mix(in srgb,#f5c542 35%,transparent);background:color-mix(in srgb,#f5c542 7%,var(--card2));margin-bottom:10px}
@@ -5443,8 +5444,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.44';
+const APP_VERSION = '9.44.1';
 const CHANGELOG = [
+  {v: '9.44.1', d: '2026-11-12', fr: ['❓ Les récompenses secrètes sont maintenant un vrai mystère (plus d\'aperçu flou).', '🏅 Touche une récompense débloquée pour la voir en grand, savoir comment tu l\'as eue (et quand), puis l\'équiper.'], en: ['❓ Secret rewards are now a true mystery.', '🏅 Tap an unlocked reward to see it big, how (and when) you got it, then equip it.']},
   {v: '9.44', d: '2026-11-12', fr: ['✨ Armurerie : plus c\'est rare, plus c\'est beau (reflets animés, lueur dorée pour les légendaires, ailes pour les blasons mythiques).', '🔍 Touche une récompense verrouillée pour la voir en grand, l\'essayer et voir ta progression (ex. 2 / 3 boss).', '📜 Collections : complète une catégorie pour débloquer une récompense secrète mythique du Grand Maître (titre, cadre, aura, victoire, bannière, blason et thème).', '🆕 Badge « NOUVEAU » sur les récompenses que tu viens de débloquer.'], en: ['✨ Armory: the rarer, the prettier.', '🔍 Tap a locked reward to preview it big, try it and see your progress.', '📜 Collections: complete a category to unlock a secret mythic Grandmaster reward.', '🆕 “NEW” badge on rewards you just unlocked.']},
   {v: '9.43', d: '2026-11-12', fr: ['🛡️ Emblèmes refaits en blasons de guilde (écus héraldiques : Coupe du Champion, Tour du Gardien, Arc du Rôdeur, Grimoire, Dragon, Ouroboros…).', '🏰 Bannières refaites en scènes de fantasy : village à l\'aube, hall de la guilde, château sous les étoiles, forge des nains, entrée du donjon, forêt enchantée, salle du trône, mer déchaînée, kraken…'], en: ['🛡️ Emblems redone as guild crests (heraldic shields).', '🏰 Banners redone as fantasy scenes: village at dawn, guild hall, starlit castle, dwarven forge, dungeon entrance, enchanted forest, throne room, raging sea, kraken…']},
   {v: '9.42', d: '2026-11-12', fr: ['🎨 Emblèmes refaits en sceaux lumineux style Système (Faucheur, Monarque, Œil du dragon…) + 3 nouveaux : Œil du Système, Portail, Soldat de l\'ombre.', '🖼️ Bannières refaites et animées (étoiles, braises, éclairs, portails qui tournent) + 4 nouvelles : Fenêtre du Système, Portail bleu, Armée des ombres, Portail rouge.'], en: ['🎨 Emblems redone as glowing System-style seals + 3 new ones: System eye, Gate, Shadow soldier.', '🖼️ Banners redone and animated + 4 new ones: System window, Blue gate, Shadow army, Red gate.']},
@@ -6979,8 +6981,8 @@ function rarOf(r) { // rareté selon la difficulté à débloquer
 let armTab = 'title';
 function armItem({on, ok, why, rar, prev, name, act, k, id, kind, prog, secret, isNew}) {
   const R = RAR[rar], hid = secret && !ok, pr = !ok && prog && prog.length ? prog.reduce((a, b) => (b.c / b.m < a.c / a.m ? b : a)) : null, fmt = v => Math.round(v).toLocaleString(LOC());
-  return `<button class="armit ${on ? 'on' : ''} ${ok ? '' : 'locked'} r${rar} ${rar === 4 ? 'myth' : ''}" style="--rr:${R[2]}" data-act="${ok ? act : 'cos-prev'}" data-kind="${kind}" data-k="${k || ''}" data-id="${esc(id)}">
-    <span class="armprev">${hid ? `<span class="armsec">${prev}</span>` : prev}</span><span class="armn">${hid ? '???' : esc(name)}</span><span class="armr">${ok ? T(R[0], R[1]) : '🔒 ' + esc(hid ? T('Récompense secrète', 'Secret reward') : why)}</span>
+  return `<button class="armit ${on ? 'on' : ''} ${ok ? '' : 'locked'} r${rar} ${rar === 4 ? 'myth' : ''}" style="--rr:${R[2]}" data-act="${ok && !id ? act : 'cos-prev'}" data-kind="${kind}" data-k="${k || ''}" data-id="${esc(id)}">
+    <span class="armprev">${hid ? '<span class="armmyst">?</span>' : prev}</span><span class="armn">${hid ? '???' : esc(name)}</span><span class="armr">${ok ? T(R[0], R[1]) : '🔒 ' + esc(hid ? T('Récompense secrète', 'Secret reward') : why)}</span>
     ${pr ? `<span class="armpb"><i style="width:${Math.round(pr.c / pr.m * 100)}%"></i></span><span class="armpt">${fmt(pr.c)} / ${fmt(pr.m)}</span>` : ''}${on ? `<span class="armeq">${T('ÉQUIPÉ', 'EQUIPPED')}</span>` : isNew ? `<span class="armeq armnew">${T('NOUVEAU', 'NEW')}</span>` : ''}</button>`;
 }
 const titleDef = (me, g, i) => g === 'n1' ? me.defs.find(x => x.id === 'n1') : me.defs.filter(x => x.g === g).sort((a, b) => a.v - b.v)[i];
@@ -7030,12 +7032,14 @@ function cosPreview(kind, id) {
   const x = rwList(kind).find(y => y.id === id); if (!x) return;
   const q = cosReq(x.r), R = RAR[x.rar], hid = x.secret && !q.ok, fmt = v => Math.round(v).toLocaleString(LOC());
   const bars = cosProg(x.r).map(p => `<div class="pvprog"><div class="row between small"><span>${T('Progression', 'Progress')}</span><b>${fmt(p.c)} / ${fmt(p.m)}</b></div><div class="goal sysbar"><div style="width:${Math.round(p.c / p.m * 100)}%"></div></div></div>`).join('');
+  const me = medalsEarned(), md = x.r.m ? me.defs.filter(y => y.g === x.r.m[0]).sort((a, b) => a.v - b.v)[x.r.m[1]] : x.r.id ? me.defs.find(y => y.id === x.r.id) : null, gt = md && me.got[md.id], when = gt && !isNaN(new Date(gt)) ? new Date(gt).toLocaleDateString(LOC(), {day: 'numeric', month: 'short', year: 'numeric'}) : '';
   const kn = {title: T('Titre', 'Title'), frame: T('Cadre', 'Frame'), fx: T('Aura', 'Aura'), cele: T('Victoire', 'Victory'), banner: T('Bannière', 'Banner'), emblem: T('Emblème', 'Emblem'), theme: T('Thème', 'Theme')}[kind];
   modal(`<div class="pvwrap" style="--rr:${R[2]}"><div class="pvrar${x.rar === 4 ? ' myth' : ''}">${kn} · ${T(R[0], R[1])}</div>
-    <div class="pvbig${x.rar >= 3 ? ' pvglow' : ''}">${hid ? `<span class="armsec">${rwPrev(kind, x, true)}</span>` : rwPrev(kind, x, true)}</div>
+    <div class="pvbig${x.rar >= 3 ? ' pvglow' : ''}">${hid ? '<span class="armmyst big">?</span>' : rwPrev(kind, x, true)}</div>
     <h2 style="text-align:center;margin:6px 0">${hid ? '???' : esc(T(x.n[0], x.n[1]))}</h2>
-    <p class="small" style="text-align:center">🔒 ${T('Pour le débloquer', 'To unlock it')} : <b>${esc(q.why)}</b></p>${bars}
-    <div class="row" style="gap:8px;margin-top:12px">${['fx', 'cele'].includes(kind) && !hid ? `<button class="btn block" data-act="cos-try2" data-k="${kind}" data-id="${esc(id)}">▶ ${T('Essayer', 'Try it')}</button>` : ''}<button class="btn primary block" data-act="close">OK</button></div></div>`);
+    ${q.ok ? `<p class="small" style="text-align:center;color:var(--ok)">✅ ${T('Débloqué', 'Unlocked')}${when ? ' ' + T('le', 'on') + ' ' + when : ''}</p><p class="small" style="text-align:center">🏅 ${T('Comment tu l\'as eu', 'How you got it')} : <b>${esc(x.r.set ? T('Collection complète', 'Full collection') : q.why)}</b></p>`
+      : `<p class="small" style="text-align:center">🔒 ${T('Pour le débloquer', 'To unlock it')} : <b>${esc(hid ? T('Complète toute la collection', 'Complete the whole collection') : q.why)}</b></p>${bars}`}
+    <div class="row" style="gap:8px;margin-top:12px">${['fx', 'cele'].includes(kind) && !hid ? `<button class="btn block" data-act="cos-try2" data-k="${kind}" data-id="${esc(id)}">▶ ${T('Essayer', 'Try it')}</button>` : ''}${q.ok ? (rwOn(kind, x) ? `<button class="btn block" data-act="close">✓ ${T('Équipé', 'Equipped')}</button>` : `<button class="btn primary block" data-act="cos-eq" data-kind="${kind}" data-id="${esc(id)}">${T('Équiper', 'Equip')}</button>`) : `<button class="btn primary block" data-act="close">OK</button>`}</div></div>`);
 }
 /* Rafraîchit seulement le contenu de l'Armurerie (sans recharger la page ni remettre les onglets au début) */
 function armRefresh(anim) {
@@ -7722,6 +7726,13 @@ document.addEventListener('click', e => {
     case 'xp-info': modal(`<h2>${T('Comment gagner de l\'XP', 'How to earn XP')}</h2><div class="xpl">${[[T('Séance', 'Workout'), 100], [T('Série', 'Set'), 5], [T('Record', 'Record'), 40], [T('Médaille', 'Medal'), 250], [T('Quête du jour', 'Daily quest'), 150], [T('Donjon', 'Dungeon'), 500], ['Boss', 1000], [T('Raid réussi', 'Raid cleared'), 400], [T('Défi gagné', 'Challenge won'), 300], [T('Quête ratée', 'Missed quest'), -QFAIL_XP]].map(([l, v]) => `<div class="row between"><span>${l}</span><b style="color:${v < 0 ? 'var(--warm)' : 'var(--ok)'}">${v > 0 ? '+' : '−'}${Math.abs(v).toLocaleString(LOC())} XP</b></div>`).join('')}</div><p class="small muted">${T('Les événements donnent aussi des bonus (double XP, quêtes spéciales).', 'Events also give bonuses (double XP, special quests).')}</p><p class="small muted">🌟 ${T('Au niveau 100, tu peux passer le <b>Prestige</b> : retour au niveau 1 avec une étoile et des récompenses exclusives. Tu gardes tes médailles, ta classe et tes cosmétiques.', 'At level 100 you can <b>Prestige</b>: back to level 1 with a star and exclusive rewards. You keep your medals, class and cosmetics.')}</p><button class="btn primary block" data-act="close">OK</button>`); break;
     case 'cos-set': S.settings.cos = S.settings.cos || {}; S.settings.cos[b.dataset.k] = b.dataset.id; save(); armRefresh(); if (frOn() && ['banner', 'emblem'].includes(b.dataset.k)) frQueue(false); if (b.dataset.k === 'fx') { const x = document.querySelector('.armit.on'); if (x) setFx(x, false, b.dataset.id); } if (b.dataset.k === 'cele') confetti(120); break;
     case 'cos-prev': cosPreview(b.dataset.kind, b.dataset.id); break;
+    case 'cos-eq': { const k = b.dataset.kind, id = b.dataset.id; closeModal();
+      if (k === 'title') { S.settings.title = id; toast(T(`🏷️ Titre : ${titleOf(id)}`, `🏷️ Title: ${titleOf(id)}`)); }
+      else if (k === 'frame') S.settings.frame = id;
+      else if (k === 'theme') { const t = REWARD_THEMES.find(x => x.id === id); if (t) { S.settings.theme = 'noir'; S.settings.accent = t.acc; S.settings.bg = t.bg; applyTheme(); } }
+      else { S.settings.cos = S.settings.cos || {}; S.settings.cos[k] = id; }
+      save(); armRefresh(); if (frOn() && ['title', 'frame', 'banner', 'emblem'].includes(k)) frQueue(false);
+      if (k === 'fx') setTimeout(() => { const x = document.querySelector('.armit.on'); if (x) setFx(x, false, id); }, 50); if (k === 'cele') confetti(120); break; }
     case 'cos-try2': if (b.dataset.k === 'fx') setFx(b, false, b.dataset.id); else { celeForce = b.dataset.id; confetti(140); celeForce = null; } break;
     case 'cos-how': toast(T(`🔒 Se débloque avec : ${b.dataset.h}`, `🔒 Unlocks with: ${b.dataset.h}`)); break;
     case 'cos-try': if (b.dataset.k === 'fx') setFx(b, false); else confetti(120); break;
