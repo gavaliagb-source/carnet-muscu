@@ -590,10 +590,12 @@ nav button{font-size:11px;min-width:0;white-space:nowrap;overflow:visible;text-o
 .frcode{font-family:ui-monospace,monospace;font-size:13px;word-break:break-all;padding:10px;border-radius:10px;background:var(--card2);text-align:center}
 .phth{position:relative}.phsh{position:absolute;top:6px;right:6px;font-style:normal;background:#000a;border-radius:99px;padding:2px 6px;font-size:12px}
 
-.armit.r2::after,.armit.r3::after,.armit.r4::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,transparent 38%,#ffffff26 50%,transparent 62%);background-size:260% 100%;animation:armShine 4s ease-in-out infinite}
-.armit.r4::after{animation-duration:2.6s}.armit.locked::after{opacity:.45}
-@keyframes armShine{0%{background-position:150% 0}55%,100%{background-position:-60% 0}}
-.armit.r3:not(.locked){animation:legPulse 2.6s ease-in-out infinite}@keyframes legPulse{50%{box-shadow:0 0 18px #f5c54288,inset 0 0 12px #f5c54233}}
+.armit.r2,.armit.r3,.armit.r4{overflow:hidden;isolation:isolate}
+.armit.r2::after,.armit.r3::after,.armit.r4::after{content:'';position:absolute;top:-10%;bottom:-10%;left:0;width:45%;pointer-events:none;background:linear-gradient(100deg,transparent 0%,#ffffff1f 45%,#ffffff33 50%,#ffffff1f 55%,transparent 100%);transform:translate3d(-130%,0,0);will-change:transform;animation:armShine 3.2s linear infinite}
+.armit.r3::after{animation-duration:2.8s}.armit.r4::after{animation-duration:2.4s}.armit.locked::after{opacity:.4}
+@keyframes armShine{from{transform:translate3d(-130%,0,0)}to{transform:translate3d(330%,0,0)}}
+.armit.r3:not(.locked){box-shadow:0 0 14px #f5c54255,inset 0 0 10px #f5c54222}
+.armit .armeq{top:6px}.armit:has(.armeq){padding-top:26px}
 .armpb{display:block;width:80%;height:4px;border-radius:3px;background:#ffffff1a;overflow:hidden;margin-top:2px}.armpb i{display:block;height:100%;background:var(--rr);border-radius:3px}.armpt{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
 .armsec{filter:blur(5px) brightness(.35) saturate(.4);display:inline-flex}
 .armmyst{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;background:#0b0b10;border:1.5px dashed #ffffff40;color:#ffffff70;font-weight:900;font-size:22px}.armmyst.big{width:110px;height:110px;font-size:60px;border-radius:22px}
@@ -5444,8 +5446,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.44.1';
+const APP_VERSION = '9.44.2';
 const CHANGELOG = [
+  {v: '9.44.2', d: '2026-11-12', fr: ['✨ Armurerie : le reflet brillant passe maintenant de façon fluide et régulière (plus de clignotement).'], en: ['✨ Armory: the shiny reflection is now smooth and steady (no more flicker).']},
   {v: '9.44.1', d: '2026-11-12', fr: ['❓ Les récompenses secrètes sont maintenant un vrai mystère (plus d\'aperçu flou).', '🏅 Touche une récompense débloquée pour la voir en grand, savoir comment tu l\'as eue (et quand), puis l\'équiper.'], en: ['❓ Secret rewards are now a true mystery.', '🏅 Tap an unlocked reward to see it big, how (and when) you got it, then equip it.']},
   {v: '9.44', d: '2026-11-12', fr: ['✨ Armurerie : plus c\'est rare, plus c\'est beau (reflets animés, lueur dorée pour les légendaires, ailes pour les blasons mythiques).', '🔍 Touche une récompense verrouillée pour la voir en grand, l\'essayer et voir ta progression (ex. 2 / 3 boss).', '📜 Collections : complète une catégorie pour débloquer une récompense secrète mythique du Grand Maître (titre, cadre, aura, victoire, bannière, blason et thème).', '🆕 Badge « NOUVEAU » sur les récompenses que tu viens de débloquer.'], en: ['✨ Armory: the rarer, the prettier.', '🔍 Tap a locked reward to preview it big, try it and see your progress.', '📜 Collections: complete a category to unlock a secret mythic Grandmaster reward.', '🆕 “NEW” badge on rewards you just unlocked.']},
   {v: '9.43', d: '2026-11-12', fr: ['🛡️ Emblèmes refaits en blasons de guilde (écus héraldiques : Coupe du Champion, Tour du Gardien, Arc du Rôdeur, Grimoire, Dragon, Ouroboros…).', '🏰 Bannières refaites en scènes de fantasy : village à l\'aube, hall de la guilde, château sous les étoiles, forge des nains, entrée du donjon, forêt enchantée, salle du trône, mer déchaînée, kraken…'], en: ['🛡️ Emblems redone as guild crests (heraldic shields).', '🏰 Banners redone as fantasy scenes: village at dawn, guild hall, starlit castle, dwarven forge, dungeon entrance, enchanted forest, throne room, raging sea, kraken…']},
