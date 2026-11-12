@@ -368,6 +368,15 @@ button.chip{cursor:pointer}
 .avatar.rkf.frm-phoenix,.avatar.rkf.frm-eternal,.avatar.rkf.frm-celestial{border-width:5px}
 .rkf.frm-phoenix{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#b91c1c,#ff3d00,#ffd54a,#ffffff,#ffd54a,#ff3d00,#b91c1c);filter:drop-shadow(0 0 10px #ff6f00) drop-shadow(0 0 4px #ffd54a)}
 .rkf.frm-eternal{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#ffffff,#a5f3fc,#e5e7eb,#67e8f9,#ffffff);filter:drop-shadow(0 0 12px #a5f3fc);animation-duration:5s!important}
+.rkf.frm-prestige,.rkf.frm-ascend{box-shadow:none!important;border:3px solid transparent;background-clip:padding-box,border-box;background-origin:border-box;animation:frSpin 2.4s linear infinite}
+.avatar.rkf.frm-prestige,.avatar.rkf.frm-ascend{border-width:5px}
+.rkf.frm-prestige{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#facc15,#ffffff,#fde68a,#f59e0b,#ffffff,#facc15);filter:drop-shadow(0 0 10px #facc15) drop-shadow(0 0 3px #fff)}
+.rkf.frm-ascend{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#ffffff,#facc15,#ff4d6d,#b388ff,#4cc9f0,#ffffff);filter:drop-shadow(0 0 14px #ffffff) drop-shadow(0 0 6px #facc15);animation-duration:1.2s!important}
+.fxring.fx-starfall{border-color:#fde68a;box-shadow:0 0 18px #facc15}.fxv-starfall{border-radius:50%;background:radial-gradient(circle at 30% 25%,#fff 0 2px,transparent 3px),radial-gradient(circle at 70% 45%,#fde68a 0 2px,transparent 3px),radial-gradient(circle at 45% 75%,#facc15 0 2px,transparent 3px),radial-gradient(circle,#3b2a05,#0b0700)}
+.bn-ascension{background:radial-gradient(circle at 15% 30%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 80% 20%,#fde68a 0 2px,transparent 3px),radial-gradient(circle at 60% 70%,#fff 0 1.5px,transparent 2.5px),radial-gradient(ellipse at 50% 130%,#facc15aa,transparent 60%),linear-gradient(180deg,#1a1033,#3b1d06);animation:bnMove 9s ease-in-out infinite;background-size:200% 200%}
+.pstars{display:inline-block;margin-left:6px;font-size:14px;letter-spacing:1px;vertical-align:middle;filter:drop-shadow(0 0 4px #facc15)}
+#prestigeo{position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#2a1c00ee,#000f);animation:flashA 0s}
+#prestigeo .pbig{font-size:84px;animation:pstPop 1s cubic-bezier(.2,1.6,.4,1)}@keyframes pstPop{from{transform:scale(0) rotate(-180deg);opacity:0}to{transform:none;opacity:1}}
 .rkf.frm-celestial{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#fde68a,#c4b5fd,#ffffff,#60a5fa,#f0abfc,#fde68a);filter:drop-shadow(0 0 12px #c4b5fd) drop-shadow(0 0 4px #fde68a)}
 .fxring.fx-supernova{border-color:#fff;box-shadow:0 0 20px #c4b5fd,0 0 40px #60a5fa;animation-duration:.75s}.fxring.fx-dragon{border-color:#ff9100;box-shadow:0 0 18px #ff3d00}
 .flash.divine{background:radial-gradient(circle at 50% 0,#fff3c4,#ffd54a88 40%,transparent 75%);animation:flashD 1.4s ease-out forwards}@keyframes flashD{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
@@ -1643,16 +1652,17 @@ function confetti(n = 90) {
 /* Effet visuel au moment de cocher une série (cosmétique à débloquer dans la Guilde) */
 function setFx(b, pr, force) {
   const fx = force !== undefined ? force : typeof myCos === 'function' ? myCos('fx') : ''; if (!fx && !pr) return;
-  const P = {spark: ['#ffffff', '#fff3c4', 'var(--accent)'], bolt: ['#fff176', '#ffffff', '#4fc3f7'], fire: ['#ff3d00', '#ff9100', '#ffd54f'], gold: ['#ffd54a', '#ffb300', '#fff3c4'], cosmic: ['#b388ff', '#4cc9f0', '#ff6fae', '#ffffff'],
+  const P = {starfall: ['#fde68a', '#ffffff', '#facc15', '#c4b5fd'], spark: ['#ffffff', '#fff3c4', 'var(--accent)'], bolt: ['#fff176', '#ffffff', '#4fc3f7'], fire: ['#ff3d00', '#ff9100', '#ffd54f'], gold: ['#ffd54a', '#ffb300', '#fff3c4'], cosmic: ['#b388ff', '#4cc9f0', '#ff6fae', '#ffffff'],
     frost: ['#e0f7ff', '#7dd3fc', '#ffffff'], leaf: ['#4ade80', '#a3e635', '#166534'], blood: ['#ef4444', '#7f1d1d', '#fca5a5'], shadow: ['#6d28d9', '#1a1030', '#a78bfa'], prism: ['#ff5a5f', '#ffcc33', '#3ee6b0', '#4cc9f0', '#b388ff'], holy: ['#ffffff', '#fff3c4', '#ffd54a'], void: ['#000000', '#7c3aed', '#22d3ee'], supernova: ['#ffffff', '#c4b5fd', '#60a5fa', '#f0abfc', '#fde68a'], dragon: ['#ff3d00', '#ff9100', '#ffd54f', '#b91c1c']}[fx] || ['#f5c542', '#ffffff'];
   const r = b.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, n = ['supernova', 'dragon'].includes(fx) ? 28 : ['cosmic', 'prism', 'void', 'holy'].includes(fx) ? 16 : 11;
   if (fx === 'supernova') [0, 120].forEach(dl => setTimeout(() => { const ring = document.createElement('div'); ring.className = 'fxring fx-supernova'; ring.style.left = cx + 'px'; ring.style.top = cy + 'px'; document.body.appendChild(ring); setTimeout(() => ring.remove(), 800); }, dl));
   if (fx === 'bolt') { const z = document.createElement('div'); z.className = 'fxbolt'; z.style.left = cx + 'px'; z.style.top = cy + 'px'; document.body.appendChild(z); setTimeout(() => z.remove(), 450); }
   if (fx === 'frost') { const z = document.createElement('div'); z.className = 'fxfrost'; z.style.left = cx + 'px'; z.style.top = cy + 'px'; document.body.appendChild(z); setTimeout(() => z.remove(), 1100); }
-  if (['bolt', 'cosmic', 'holy', 'void', 'dragon'].includes(fx)) { const ring = document.createElement('div'); ring.className = 'fxring fx-' + fx; ring.style.left = cx + 'px'; ring.style.top = cy + 'px'; document.body.appendChild(ring); setTimeout(() => ring.remove(), 600); }
+  if (fx === 'starfall') { for (let k = 0; k < 7; k++) { const z = document.createElement('i'); z.className = 'fxp star fxsf'; z.style.cssText = `left:${cx + (Math.random() - .5) * 90}px;top:${cy - 70 - Math.random() * 30}px;background:#fde68a;color:#fde68a;--dx:${(Math.random() - .5) * 20}px;--dy:${70 + Math.random() * 30}px;animation-duration:${.6 + Math.random() * .4}s;animation-delay:${k * 40}ms`; document.body.appendChild(z); setTimeout(() => z.remove(), 1300); } }
+  if (['bolt', 'cosmic', 'holy', 'void', 'dragon', 'starfall'].includes(fx)) { const ring = document.createElement('div'); ring.className = 'fxring fx-' + fx; ring.style.left = cx + 'px'; ring.style.top = cy + 'px'; document.body.appendChild(ring); setTimeout(() => ring.remove(), 600); }
   for (let i = 0; i < n; i++) {
     const d = document.createElement('i'), a = (i / n) * 6.28 + Math.random() * .4, dist = (fx === 'supernova' ? 40 : 22) + Math.random() * (fx === 'supernova' ? 50 : 26), fall = fx === 'frost', up = fx === 'fire' || fx === 'holy' || fx === 'shadow' || fx === 'dragon';
-    d.className = 'fxp' + (['gold', 'cosmic', 'frost', 'prism', 'holy', 'supernova'].includes(fx) ? ' star' : fx === 'leaf' ? ' leaf' : '');
+    d.className = 'fxp' + (['gold', 'cosmic', 'frost', 'prism', 'holy', 'supernova', 'starfall'].includes(fx) ? ' star' : fx === 'leaf' ? ' leaf' : '');
     d.style.cssText = `left:${cx}px;top:${cy}px;background:${P[i % P.length]};color:${P[i % P.length]};--dx:${(Math.cos(a) * dist * (up ? .5 : 1)).toFixed(1)}px;--dy:${(up ? -(20 + Math.random() * 40) : fall ? 18 + Math.random() * 40 : Math.sin(a) * dist).toFixed(1)}px;animation-duration:${(fall ? 1.1 : fx === 'bolt' ? .38 : fx === 'fire' ? .8 : .6) + Math.random() * .25}s`;
     document.body.appendChild(d); setTimeout(() => d.remove(), 1100);
   }
@@ -4415,6 +4425,7 @@ function medalDefs() {
     ...L('csess', 'car', '❤️', '# séances avec du cardio', '# workouts with cardio', [10, 50, 100, 250], [10, 50, 100, 250]),
     // ----- La Guilde (mode jeu) -----
     ...L('lvl', 'sys', '⭐', 'Niveau #', 'Level #', [10, 20, 30, 40, 50, 60, 70, 80, 90, 100], [10, 20, 30, 40, 50, 60, 70, 80, 90, 100], ['Atteins ce niveau dans la Guilde', 'Reach this level in the Guild']),
+    ...L('pst', 'sys', '🌟', 'Prestige #', 'Prestige #', [1, 2, 3, 5, 10], [1, 2, 3, 5, 10], ['Passe le Prestige au niveau 100', 'Prestige at level 100']),
     ...L('qd', 'sys', '✨', '# quêtes quotidiennes', '# daily quests', [1, 7, 30, 100, 200, 365, 500], [1, 7, 30, 100, 200, 365, 500]),
     ...L('qrow', 'sys', '🔥', 'Quêtes réussies # jours de suite', 'Quests completed # days in a row', [3, 7, 14, 30], [3, 7, 14, 30], ['Les jours de repos ne cassent pas la série', 'Rest days don\'t break the streak']),
     one('redeem1', 'redeem', 1, 'sys', '🔁', 'D', 'Rédemption', 'Redemption', ['Réussir la quête le lendemain d\'une quête ratée', 'Complete the quest the day after missing one']),
@@ -4430,7 +4441,7 @@ function medalDefs() {
 }
 let medMemo = null;
 function medalsEarned(hist) {
-  if (!hist) { const h = S.history, k = [h.length, h.length && h[h.length - 1].id, h.length && h[h.length - 1].date, Object.keys(S.questLog || {}).length, Object.keys(S.dungeonLog || {}).length, Object.keys(S.bossLog || {}).length, (S.xpb || []).length, Object.keys(S.qFail || {}).length, Object.values(S.seasonWon || {}).filter(Boolean).length, GAME(), isEN(), S.settings.unit, (S.body || []).length].join('|');
+  if (!hist) { const h = S.history, k = [h.length, h.length && h[h.length - 1].id, h.length && h[h.length - 1].date, Object.keys(S.questLog || {}).length, Object.keys(S.dungeonLog || {}).length, Object.keys(S.bossLog || {}).length, (S.xpb || []).length, Object.keys(S.qFail || {}).length, Object.values(S.seasonWon || {}).filter(Boolean).length, GAME(), isEN(), S.settings.unit, (S.body || []).length, (S.prestige || []).length].join('|');
     if (medMemo && medMemo.k === k) return medMemo.v; const v = medalsEarned0(); medMemo = {k, v}; return v; }
   return medalsEarned0(hist);
 }
@@ -4490,6 +4501,7 @@ function medalsEarned0(hist) {
     // niveau : calculé sans les médailles de niveau (sinon elles se donneraient de l'XP entre elles)
     const nm0 = Object.keys(got).filter(k => !/^lvl/.test(k)).length;
     const xp0 = st.n * 100 + st.sets * 5 + st.pr * 40 + nm0 * 250 + (st.qd || 0) * 150 + (st.dg || 0) * 500 + (st.boss || 0) * 1000 - qFailSum(qf) + (typeof xpBonus === 'function' ? xpBonus() : 0);
+    const PS = S.prestige || []; st.pst = PS.length; defs.filter(x => x.g === 'pst').forEach(x => { if (!got[x.id] && PS.length >= x.v) got[x.id] = new Date(PS[x.v - 1].t).toISOString(); });
     st.lvl = Math.floor(Math.sqrt(Math.max(0, xp0) / 60)) + 1; defs.filter(x => x.g === 'lvl').forEach(x => { if (!got[x.id] && st.lvl >= x.v) got[x.id] = now; });
   }
   return {got, st, defs};
@@ -4592,10 +4604,12 @@ function bossRow() {
 function hunter(me) {
   me = me || medalsEarned();
   const st = me.st, nm = Object.keys(me.got).filter(k => !/^lvl/.test(k)).length;
-  const xp = Math.round(st.n * 100 + st.sets * 5 + st.pr * 40 + nm * 250 + (st.qd || 0) * 150 + (st.dg || 0) * 500 + (st.boss || 0) * 1000 - qFailSum(S.qFail) + (typeof xpBonus === 'function' ? xpBonus() : 0));
-  const lvl = Math.floor(Math.sqrt(Math.max(0, xp) / 60)) + 1;
+  let xp = Math.round(st.n * 100 + st.sets * 5 + st.pr * 40 + nm * 250 + (st.qd || 0) * 150 + (st.dg || 0) * 500 + (st.boss || 0) * 1000 - qFailSum(S.qFail) + (typeof xpBonus === 'function' ? xpBonus() : 0));
+  const PR = S.prestige || [], pOff = PR.reduce((a, x) => a + (+x.xp || 0), 0), p = PR.length, raw = xp;
+  const peak = Math.floor(Math.sqrt(Math.max(0, raw) / 60)) + 1; // plus haut niveau jamais atteint (garde les cosmétiques après un Prestige)
+  xp = raw - pOff; const lvl = Math.floor(Math.sqrt(Math.max(0, xp) / 60)) + 1;
   const r = HRANKS.filter(x => lvl >= x[0]).pop(), nx = HRANKS.find(x => x[0] > lvl);
-  return {xp, lvl, rk: r[1], cls: hClass(lvl), title: T(r[2][0], r[2][1]), col: RKC[r[1]], cur: xp - xpAt(lvl), need: xpAt(lvl + 1) - xpAt(lvl), nextRank: nx ? {lvl: nx[0], rk: nx[1]} : null, st, nm};
+  return {xp, raw, peak, p, lvl, rk: r[1], cls: hClass(p > 0 && lvl < 100 ? Math.max(lvl, 40) : lvl), title: T(r[2][0], r[2][1]), col: RKC[r[1]], cur: xp - xpAt(lvl), need: xpAt(lvl + 1) - xpAt(lvl), nextRank: nx ? {lvl: nx[0], rk: nx[1]} : null, st, nm};
 }
 const rkBadge = (rk, cls = 'mrk') => `<span class="${cls}" style="--rc:${RKC[rk]}">${rk}</span>`;
 /* ---------- Rang par muscle : force (par rapport à ton poids) + volume des 8 dernières semaines ---------- */
@@ -5399,8 +5413,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.40';
+const APP_VERSION = '9.41';
 const CHANGELOG = [
+  {v: '9.41', d: '2026-11-12', fr: ['🌟 Nouveau : le Prestige! Au niveau 100, tu peux recommencer au niveau 1 avec une étoile 🌟. Tu gardes tes médailles, ta classe et tes cosmétiques.', '🎁 Récompenses exclusives du Prestige : cadres, aura, bannière, emblèmes, titres et médailles.'], en: ['🌟 New: Prestige! At level 100 you can restart at level 1 with a 🌟. You keep your medals, class and cosmetics.', '🎁 Exclusive Prestige rewards: frames, aura, banner, emblems, titles and medals.']},
   {v: '9.40', d: '2026-11-12', fr: ['⚠️ Mode jeu : rater la quête du jour coûte maintenant −100 XP (au lieu de −10). Ça compte à partir de maintenant : tes anciennes quêtes ratées restent à −10.'], en: ['⚠️ Game mode: failing the daily quest now costs −100 XP (instead of −10). Applies from now on: past failed quests stay at −10.']},
   {v: '9.39.1', d: '2026-11-12', fr: ['🎯 « Quoi battre? » respecte ta zone de reps : si 1 rep de plus te sort de ta zone, il te propose plutôt plus de volume ou une charge plus lourde.'], en: ['🎯 “What to beat?” respects your rep range: if one more rep takes you out of it, it suggests more volume or a heavier weight instead.']},
   {v: '9.39', d: '2026-11-12', fr: ['📦 Nouveau : record de volume! Si tu fais plus de reps au total qu\'avant avec le même nombre de séries (ex. 3×11 après 3×10), ça compte comme un record. Ajouter des séries ne suffit pas : on compare seulement aux séances avec au moins autant de séries (minimum 2), dans les 3 derniers mois.'], en: ['📦 New: volume record! More total reps than before with the same number of sets (e.g. 3×11 after 3×10) counts as a record. Adding sets isn\'t enough: only workouts with at least as many sets in the last 3 months are compared.']},
@@ -6569,9 +6584,9 @@ function frMe0() {
   return {f: {c: fr.file || 'me', me: true, n: T('Moi', 'Me')}, d: {name: (S.settings.name || '').trim() || T('Moi', 'Me'), av: S.settings.avatar || '', wk: streakWeeks(), hu: frHu(), s, p, up: fr.last, cw: Object.keys(S.seasonWon || {}).filter(k => S.seasonWon[k])}};
 }
 /* Niveau de chasseur partagé avec les amis */
-function frHu() { if (!S.history.length || !GAME()) return null; const x = hunter(); return {l: x.lvl, r: x.rk, xp: x.xp, c: x.cls, t: S.settings.title && myTitle() ? S.settings.title : '', f: myFrame(), b: myCos('banner'), e: myCos('emblem')}; }
+function frHu() { if (!S.history.length || !GAME()) return null; const x = hunter(); return {l: x.lvl, p: x.p || 0, r: x.rk, xp: x.xp, c: x.cls, t: S.settings.title && myTitle() ? S.settings.title : '', f: myFrame(), b: myCos('banner'), e: myCos('emblem')}; }
 const huTitle = r => { const x = HRANKS.find(y => y[1] === r); return x ? T(x[2][0], x[2][1]) : ''; };
-const frLv = (d, big) => GAME() && d && d.hu && d.hu.r ? (big ? `<span class="frlvb" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${rkBadge(d.hu.r, 'mrk lvrk')} ${T('Niveau', 'Level')} ${d.hu.l} · ${d.hu.c && d.hu.c !== 'none' ? clsIc(d.hu.c) + ' ' + esc(clsName(d.hu.c)) : esc(huTitle(d.hu.r))}</span><div class="small pftitle" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${esc(huTitle(d.hu.r))}${d.hu.t && titleOf(d.hu.t) ? ` · « ${esc(titleOf(d.hu.t))} »` : ''}</div>` : `<span class="frlv" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${d.hu.r} · ${T('Niv.', 'Lv.')} ${d.hu.l}</span>`) : '';
+const frLv = (d, big) => GAME() && d && d.hu && d.hu.r ? (big ? `<span class="frlvb" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${rkBadge(d.hu.r, 'mrk lvrk')} ${T('Niveau', 'Level')} ${d.hu.l}${d.hu.p ? ' 🌟' + d.hu.p : ''} · ${d.hu.c && d.hu.c !== 'none' ? clsIc(d.hu.c) + ' ' + esc(clsName(d.hu.c)) : esc(huTitle(d.hu.r))}</span><div class="small pftitle" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${esc(huTitle(d.hu.r))}${d.hu.t && titleOf(d.hu.t) ? ` · « ${esc(titleOf(d.hu.t))} »` : ''}</div>` : `<span class="frlv" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${d.hu.r} · ${T('Niv.', 'Lv.')} ${d.hu.l}</span>`) : '';
 function frRanking() {
   if (!GAME()) return '';
   const fr = FRS(), rows = [];
@@ -6817,6 +6832,7 @@ function frSocial() {
 function socialCheck() { try { seasonCheck(); raidCheck(); chCheck(); } catch (e) {} }
 /* ===================== Récompenses de la Guilde : titres, thèmes et cadres à débloquer ===================== */
 const TITLES = [ // [groupe de médaille, palier (0 = premier), [fr, en]]
+  ['pst', 0, ['Revenant', 'Revenant'], 4], ['pst', 2, ['Éternel retour', 'Eternal return'], 4],
   ['n1', 0, ['Nouvelle recrue', 'New recruit']], ['n', 3, ['Centurion', 'Centurion']], ['n', 5, ['Vétéran', 'Veteran']], ['n', 6, ['Immortel du gym', 'Gym immortal']],
   ['wk', 4, ['Inébranlable', 'Unshakable']], ['early', 1, ['Lève-tôt', 'Early bird']], ['night', 1, ['Oiseau de nuit', 'Night owl']], ['wknd', 1, ['Guerrier du week-end', 'Weekend warrior']],
   ['bp', 2, ['Roi du couché', 'Bench king']], ['sq', 2, ['Légende du squat', 'Squat legend']], ['dl', 2, ['Arracheur de terre', 'Earth lifter']], ['b3', 2, ['Titan', 'Titan']],
@@ -6843,8 +6859,10 @@ const FRAMES = [
   {id: 'emerald', n: ['Émeraude', 'Emerald'], r: {m: ['pr', 1]}}, {id: 'aurora', n: ['Arc-en-ciel', 'Rainbow'], r: {l: 50}}, {id: 'thunder', n: ['Foudre', 'Thunder'], r: {m: ['raid', 0]}, rar: 2},
   {id: 'blood', n: ['Sang de dragon', 'Dragon blood'], r: {m: ['boss', 1]}, rar: 2}, {id: 'champion', n: ['Champion', 'Champion'], r: {m: ['sea', 0]}, rar: 3}, {id: 'flame', n: ['Flammes', 'Flames'], r: {l: 75}},
   {id: 'void', n: ['Néant', 'Void'], r: {l: 90}}, {id: 'legend', n: ['Légendaire', 'Legendary'], r: {l: 100}},
-  {id: 'phoenix', n: ['Phénix', 'Phoenix'], r: {m: ['boss', 4]}, rar: 4}, {id: 'eternal', n: ['Éternel', 'Eternal'], r: {m: ['n', 6]}, rar: 4}, {id: 'celestial', n: ['Céleste', 'Celestial'], r: {all: [{l: 100}, {m: ['qrow', 3]}]}, rar: 4}];
-const myLvl = () => RC.lvl ?? (RC.lvl = S.history.length ? hunter().lvl : 1);
+  {id: 'phoenix', n: ['Phénix', 'Phoenix'], r: {m: ['boss', 4]}, rar: 4}, {id: 'eternal', n: ['Éternel', 'Eternal'], r: {m: ['n', 6]}, rar: 4}, {id: 'celestial', n: ['Céleste', 'Celestial'], r: {all: [{l: 100}, {m: ['qrow', 3]}]}, rar: 4},
+  {id: 'prestige', n: ['Étoile du Prestige', 'Prestige star'], r: {p: 1}, rar: 4}, {id: 'ascend', n: ['Ascension', 'Ascension'], r: {p: 3}, rar: 4}];
+const myLvl = () => RC.lvl ?? (RC.lvl = S.history.length ? hunter().peak : 1);
+const myPrestige = () => (S.prestige || []).length;
 const myFrame = () => { const f = S.settings.frame || ''; const x = FRAMES.find(y => y.id === f); return GAME() && x && x.id && cosReq(x.r).ok ? f : ''; };
 /* ----- Autres cosmétiques : effets de série, célébration, bannière de profil, emblème ----- */
 const COS = {
@@ -6852,7 +6870,8 @@ const COS = {
     {id: 'fire', n: ['Flammes', 'Flames'], r: {l: 55}}, {id: 'gold', n: ['Poussière d\'or', 'Gold dust'], r: {m: ['shs', 0]}}, {id: 'cosmic', n: ['Cosmique', 'Cosmic'], r: {l: 90}},
     {id: 'frost', n: ['Givre', 'Frost'], r: {l: 25}}, {id: 'leaf', n: ['Nature', 'Nature'], r: {m: ['csess', 0]}}, {id: 'blood', n: ['Sang', 'Blood'], r: {m: ['boss', 0]}, rar: 2},
     {id: 'shadow', n: ['Ombre', 'Shadow'], r: {m: ['night', 0]}}, {id: 'prism', n: ['Prisme', 'Prism'], r: {l: 65}}, {id: 'holy', n: ['Lumière sacrée', 'Holy light'], r: {m: ['sea', 0]}, rar: 3}, {id: 'void', n: ['Néant', 'Void'], r: {l: 100}},
-    {id: 'supernova', n: ['Supernova', 'Supernova'], r: {m: ['qd', 6]}, rar: 4}, {id: 'dragon', n: ['Souffle du dragon', 'Dragon breath'], r: {m: ['dg', 5]}, rar: 4}],
+    {id: 'supernova', n: ['Supernova', 'Supernova'], r: {m: ['qd', 6]}, rar: 4}, {id: 'dragon', n: ['Souffle du dragon', 'Dragon breath'], r: {m: ['dg', 5]}, rar: 4},
+    {id: 'starfall', n: ['Chute d\'étoiles', 'Starfall'], r: {p: 1}, rar: 4}],
   cele: [{id: '', n: ['Confettis', 'Confetti'], r: {l: 1}}, {id: 'fireworks', n: ['Feux d\'artifice', 'Fireworks'], r: {m: ['boss', 0]}}, {id: 'stars', n: ['Pluie d\'étoiles', 'Star shower'], r: {m: ['n', 3]}},
     {id: 'fire', n: ['Brasier', 'Blaze'], r: {m: ['wk', 3]}}, {id: 'gold', n: ['Pluie d\'or', 'Golden rain'], r: {l: 45}},
     {id: 'snow', n: ['Neige', 'Snowfall'], r: {l: 20}}, {id: 'sakura', n: ['Pétales', 'Petals'], r: {m: ['wknd', 1]}}, {id: 'rainbow', n: ['Arc-en-ciel', 'Rainbow'], r: {m: ['pr', 2]}},
@@ -6861,26 +6880,31 @@ const COS = {
   banner: [{id: '', n: ['Aucune', 'None'], r: {l: 1}}, {id: 'dawn', n: ['Aube', 'Dawn'], r: {l: 10}}, {id: 'night', n: ['Nuit étoilée', 'Starry night'], r: {l: 30}},
     {id: 'forge', n: ['Forge', 'Forge'], r: {m: ['pr', 2]}}, {id: 'dragon', n: ['Antre du dragon', 'Dragon\'s lair'], r: {m: ['boss', 2]}}, {id: 'storm', n: ['Tempête', 'Storm'], r: {m: ['raid', 0]}},
     {id: 'royal', n: ['Trône', 'Throne'], r: {m: ['sea', 0]}}, {id: 'legend', n: ['Légende', 'Legend'], r: {l: 100}},
-    {id: 'olympus', n: ['Olympe', 'Olympus'], r: {m: ['b3', 4]}, rar: 4}, {id: 'abyss', n: ['Abysses', 'Abyss'], r: {m: ['raid', 3]}, rar: 4}],
+    {id: 'olympus', n: ['Olympe', 'Olympus'], r: {m: ['b3', 4]}, rar: 4}, {id: 'abyss', n: ['Abysses', 'Abyss'], r: {m: ['raid', 3]}, rar: 4},
+    {id: 'ascension', n: ['Ascension', 'Ascension'], r: {p: 2}, rar: 4}],
   emblem: [{id: '', n: ['Aucun', 'None'], r: {l: 1}}, {id: '⭐', n: ['Étoile', 'Star'], r: {l: 20}}, {id: '🔥', n: ['Flamme', 'Flame'], r: {m: ['wk', 2]}}, {id: '⚡', n: ['Éclair', 'Bolt'], r: {m: ['dbl', 0]}},
     {id: '☠️', n: ['Crâne', 'Skull'], r: {m: ['boss', 1]}}, {id: '⚔️', n: ['Épées', 'Swords'], r: {m: ['chw', 1]}}, {id: '🛡️', n: ['Bouclier', 'Shield'], r: {m: ['raid', 1]}},
     {id: '🏆', n: ['Trophée', 'Trophy'], r: {m: ['pr', 3]}}, {id: '👑', n: ['Couronne', 'Crown'], r: {m: ['sea', 0]}},
-    {id: '💎', n: ['Diamant', 'Diamond'], r: {m: ['vol', 4]}, rar: 4}, {id: '🐉', n: ['Dragon', 'Dragon'], r: {all: [{m: ['boss', 4]}, {m: ['dg', 5]}]}, rar: 4}]};
+    {id: '💎', n: ['Diamant', 'Diamond'], r: {m: ['vol', 4]}, rar: 4}, {id: '🐉', n: ['Dragon', 'Dragon'], r: {all: [{m: ['boss', 4]}, {m: ['dg', 5]}]}, rar: 4},
+    {id: '🌟', n: ['Étoile du Prestige', 'Prestige star'], r: {p: 1}, rar: 4}, {id: '♾️', n: ['Infini', 'Infinity'], r: {p: 5}, rar: 4}]};
 function cosReq(r) { // {ok, why}
   if (r.all) { const q = r.all.map(cosReq); return {ok: q.every(x => x.ok), why: q.map(x => x.why).join(' + ')}; }
   if (r.l) return {ok: myLvl() >= r.l, why: `${T('Niv.', 'Lv.')} ${r.l}`};
+  if (r.p) return {ok: myPrestige() >= r.p, why: `🌟 Prestige ${r.p}`};
   const me = medalsEarned(), d = me.defs.filter(x => x.g === r.m[0]).sort((a, b) => a.v - b.v)[r.m[1]];
   return d ? {ok: !!me.got[d.id], why: d.t} : {ok: false, why: '?'};
 }
 function myCos(kind) { if (!GAME()) return ''; const v = (S.settings.cos || {})[kind] || '', x = (COS[kind] || []).find(y => y.id === v); return x && cosReq(x.r).ok ? v : ''; }
-const BANNERS = ['dawn', 'night', 'forge', 'dragon', 'storm', 'royal', 'legend', 'olympus', 'abyss'];
+const BANNERS = ['dawn', 'night', 'forge', 'dragon', 'storm', 'royal', 'legend', 'olympus', 'abyss', 'ascension'];
 const bannerCls = b => b && BANNERS.includes(b) ? ' bn bn-' + b : '';
-const emblemOf = e => e && COS.emblem.some(x => x.id === e && x.id) ? `<span class="emb${['💎', '🐉'].includes(e) ? ' embm' : ''}">${e}</span>` : '';
+const emblemOf = e => e && COS.emblem.some(x => x.id === e && x.id) ? `<span class="emb${['💎', '🐉', '🌟', '♾️'].includes(e) ? ' embm' : ''}">${e}</span>` : '';
 /* ----- L'Armurerie : toutes les récompenses, rangées par onglets, avec une rareté façon jeu ----- */
 const RAR = [['Commun', 'Common', '#9aa3ad'], ['Rare', 'Rare', '#38bdf8'], ['Épique', 'Epic', '#a78bfa'], ['Légendaire', 'Legendary', '#f5c542'], ['Mythique', 'Mythic', '#ff4d6d']];
 const RKR = {E: 0, D: 0, C: 1, B: 2, A: 3, S: 3};
 function rarOf(r) { // rareté selon la difficulté à débloquer
   if (r.l) return r.l <= 20 ? 0 : r.l <= 45 ? 1 : r.l <= 75 ? 2 : 3;
+  if (r.p) return 4;
+  if (r.all) return Math.max(...r.all.map(rarOf));
   const me = medalsEarned(), d = me.defs.filter(x => x.g === r.m[0]).sort((a, b) => a.v - b.v)[r.m[1]];
   return d ? Math.max(1, RKR[d.rk] ?? 1) : 1; // une récompense de médaille est au moins Rare
 }
@@ -6951,10 +6975,11 @@ function statusCard() {
   return `<div class="card sysw gwin" id="gstatus" style="--rc:${hu.col}">
       <div class="sysh">[ ${T('STATUT', 'STATUS')} ]</div>
       <div class="row" style="gap:14px;align-items:center">${rkBadge(hu.rk, 'rkbig')}
-        <div style="flex:1;min-width:0"><div class="muted small">${T('Niveau', 'Level')}</div><div class="lvl">${hu.lvl}</div><div class="small" style="color:var(--rc);font-weight:700">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div></div></div>
-      <button class="clsrow" data-act="cls-info">${clsIc(hu.cls)} <span><span class="muted small">${T('Classe', 'Class')}</span><br><b>${esc(clsName(hu.cls))}</b></span><span class="muted small" style="margin-left:auto">${hu.lvl < 10 ? T('Initié au niv. 10', 'Initiate at lv. 10') : hu.lvl < 40 ? T('Classe au niv. 40', 'Class at lv. 40') : 'ⓘ'}</span></button>
+        <div style="flex:1;min-width:0"><div class="muted small">${T('Niveau', 'Level')}</div><div class="lvl">${hu.lvl}${hu.p ? `<span class="pstars">${hu.p > 5 ? '🌟×' + hu.p : '🌟'.repeat(hu.p)}</span>` : ''}</div><div class="small" style="color:var(--rc);font-weight:700">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div></div></div>
+      <button class="clsrow" data-act="cls-info">${clsIc(hu.cls)} <span><span class="muted small">${T('Classe', 'Class')}</span><br><b>${esc(clsName(hu.cls))}</b></span><span class="muted small" style="margin-left:auto">${hu.p ? 'ⓘ' : hu.lvl < 10 ? T('Initié au niv. 10', 'Initiate at lv. 10') : hu.lvl < 40 ? T('Classe au niv. 40', 'Class at lv. 40') : 'ⓘ'}</span></button>
       <button class="gxp" data-act="xp-info"><div class="goal sysbar"><div style="width:${pct}%"></div></div>
       <div class="row between small muted"><span>${fmtN(hu.cur)} / ${fmtN(hu.need)} XP ⓘ</span><span>${hu.nextRank ? T(`Rang ${hu.nextRank.rk} au niveau ${hu.nextRank.lvl}`, `Rank ${hu.nextRank.rk} at level ${hu.nextRank.lvl}`) : T('Rang maximal atteint', 'Max rank reached')}</span></div></button>
+      ${hu.lvl >= 100 ? `<button class="btn primary block" data-act="prestige" style="margin-top:10px">🌟 ${T('Passer le Prestige', 'Go Prestige')} ${hu.p + 1}</button>` : ''}
       <div class="sysstats"><div><span>${T('FOR', 'STR')}</span><b>${fmtN(st.b3)}</b><i>${U()}</i></div><div><span>${T('END', 'END')}</span><b>${fmtN(st.hr)}</b><i>h</i></div><div><span>${T('CON', 'CON')}</span><b>${st.wk}</b><i>${T('sem.', 'wk')}</i></div><div><span>${T('MÉD', 'MED')}</span><b>${n}</b><i>/ ${defs.length}</i></div></div>
     </div>`;
 }
@@ -7593,7 +7618,16 @@ document.addEventListener('click', e => {
     case 'title-how': toast(T(`🔒 « ${b.dataset.t} » : débloque la médaille « ${b.dataset.h} »`, `🔒 “${b.dataset.t}”: unlock the medal “${b.dataset.h}”`)); break;
     case 'g-fold': { S.settings.gOpen = S.settings.gOpen || {}; S.settings.gOpen[b.dataset.id] = !S.settings.gOpen[b.dataset.id]; save(); render(); break; }
     case 'arm-tab': { armTab = b.dataset.t; armRefresh(true); b.scrollIntoView({inline: 'nearest', block: 'nearest', behavior: 'smooth'}); break; }
-    case 'xp-info': modal(`<h2>${T('Comment gagner de l\'XP', 'How to earn XP')}</h2><div class="xpl">${[[T('Séance', 'Workout'), 100], [T('Série', 'Set'), 5], [T('Record', 'Record'), 40], [T('Médaille', 'Medal'), 250], [T('Quête du jour', 'Daily quest'), 150], [T('Donjon', 'Dungeon'), 500], ['Boss', 1000], [T('Raid réussi', 'Raid cleared'), 400], [T('Défi gagné', 'Challenge won'), 300], [T('Quête ratée', 'Missed quest'), -QFAIL_XP]].map(([l, v]) => `<div class="row between"><span>${l}</span><b style="color:${v < 0 ? 'var(--warm)' : 'var(--ok)'}">${v > 0 ? '+' : '−'}${Math.abs(v).toLocaleString(LOC())} XP</b></div>`).join('')}</div><p class="small muted">${T('Les événements donnent aussi des bonus (double XP, quêtes spéciales).', 'Events also give bonuses (double XP, special quests).')}</p><button class="btn primary block" data-act="close">OK</button>`); break;
+    case 'prestige': { const hu = hunter(); if (hu.lvl < 100) break; modal(`<h2>🌟 Prestige ${hu.p + 1}</h2>
+      <p>${T('Tu retournes au <b>niveau 1, rang E</b>, et tu recommences l\'ascension avec une étoile 🌟 à côté de ton niveau.', 'You go back to <b>level 1, rank E</b>, and start the climb again with a 🌟 next to your level.')}</p>
+      <p class="small">✅ ${T('Tu gardes : médailles, classe, cosmétiques débloqués, titres, historique.', 'You keep: medals, class, unlocked cosmetics, titles, history.')}</p>
+      <p class="small">🎁 ${T('Prestige 1 : cadre et emblème « Étoile du Prestige », aura « Chute d\'étoiles », titre « Revenant ». Prestige 2, 3 et 5 : encore plus.', 'Prestige 1: “Prestige star” frame and emblem, “Starfall” aura, “Revenant” title. Prestige 2, 3 and 5: even more.')}</p>
+      <div class="row" style="gap:8px;margin-top:12px"><button class="btn block" data-act="close">${T('Pas maintenant', 'Not now')}</button><button class="btn primary block" data-act="prestige-go">🌟 ${T('Confirmer', 'Confirm')}</button></div>`); break; }
+    case 'prestige-go': { const hu = hunter(); if (hu.lvl < 100) break; S.prestige = (S.prestige || []).concat([{t: Date.now(), xp: hu.raw - (S.prestige || []).reduce((a, x) => a + (+x.xp || 0), 0)}]); RC = {}; save(); closeModal();
+      const n = S.prestige.length, o = document.createElement('div'); o.id = 'prestigeo';
+      o.innerHTML = `<div class="awk"><div class="sysh">[ ${T('GUILDE', 'GUILD')} ]</div><div class="pbig">🌟</div><div class="awt" style="font-size:26px;letter-spacing:5px">PRESTIGE ${n}</div><div class="awn">${T('L\'ascension recommence.', 'The climb begins again.')}</div><div class="muted small awtap">${T('Touche pour continuer', 'Tap to continue')}</div></div>`;
+      o.addEventListener('click', () => { o.remove(); render(); }); document.body.appendChild(o); confetti(200); if (S.settings.haptic !== false) haptic([80, 60, 80, 60, 400]); break; }
+    case 'xp-info': modal(`<h2>${T('Comment gagner de l\'XP', 'How to earn XP')}</h2><div class="xpl">${[[T('Séance', 'Workout'), 100], [T('Série', 'Set'), 5], [T('Record', 'Record'), 40], [T('Médaille', 'Medal'), 250], [T('Quête du jour', 'Daily quest'), 150], [T('Donjon', 'Dungeon'), 500], ['Boss', 1000], [T('Raid réussi', 'Raid cleared'), 400], [T('Défi gagné', 'Challenge won'), 300], [T('Quête ratée', 'Missed quest'), -QFAIL_XP]].map(([l, v]) => `<div class="row between"><span>${l}</span><b style="color:${v < 0 ? 'var(--warm)' : 'var(--ok)'}">${v > 0 ? '+' : '−'}${Math.abs(v).toLocaleString(LOC())} XP</b></div>`).join('')}</div><p class="small muted">${T('Les événements donnent aussi des bonus (double XP, quêtes spéciales).', 'Events also give bonuses (double XP, special quests).')}</p><p class="small muted">🌟 ${T('Au niveau 100, tu peux passer le <b>Prestige</b> : retour au niveau 1 avec une étoile et des récompenses exclusives. Tu gardes tes médailles, ta classe et tes cosmétiques.', 'At level 100 you can <b>Prestige</b>: back to level 1 with a star and exclusive rewards. You keep your medals, class and cosmetics.')}</p><button class="btn primary block" data-act="close">OK</button>`); break;
     case 'cos-set': S.settings.cos = S.settings.cos || {}; S.settings.cos[b.dataset.k] = b.dataset.id; save(); armRefresh(); if (frOn() && ['banner', 'emblem'].includes(b.dataset.k)) frQueue(false); if (b.dataset.k === 'fx') { const x = document.querySelector('.armit.on'); if (x) setFx(x, false, b.dataset.id); } if (b.dataset.k === 'cele') confetti(120); break;
     case 'cos-how': toast(T(`🔒 Se débloque avec : ${b.dataset.h}`, `🔒 Unlocks with: ${b.dataset.h}`)); break;
     case 'cos-try': if (b.dataset.k === 'fx') setFx(b, false); else confetti(120); break;
