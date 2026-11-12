@@ -4807,16 +4807,21 @@ function prExplain() {
       if (cur.vol.n > 1) { const vb = volBest(pv, cur.vol), cv = cur.vol.v > 0 ? cur.vol.v : cur.vol.b, un = cur.vol.v > 0 ? U() : 'reps'; if (cv > 0) parts.push(vb != null ? T(`volume ${Math.round(cv)} ${un} en ${cur.vol.n} séries (ton meilleur, 3 derniers mois : ${Math.round(vb)})`, `volume ${Math.round(cv)} ${un} in ${cur.vol.n} sets (your best, last 3 months: ${Math.round(vb)})`) : T(`volume : pas de séance comparable (${cur.vol.n} séries ou plus) dans les 3 derniers mois`, `volume: no comparable workout (${cur.vol.n}+ sets) in the last 3 months`)); }
       why = parts.join(' · ');
     }
-    /* Objectif concret pour la prochaine fois (en tenant compte d'aujourd'hui) */
-    const nx = prMerge(pv, cur), now2 = Date.now(), goals = [];
-    Object.keys(cur.wr).sort((x, y) => +y - +x).slice(0, 2).forEach(w => { const bb = bestAtW(nx, w, now2); if (bb != null) goals.push(`${w} ${U()} × ${bb + 1}`); });
-    if (cur.v > 0) { const W = Math.max(...Object.keys(cur.wr).map(Number)), r = Math.floor(30 * (nx.v / W - 1) + 1e-9) + 1, rr = bestAtW(nx, String(W), now2);
-      if (r > 0 && r <= 20 && (rr == null || r < rr + 1)) goals.push(`${W} ${U()} × ${r}`);
-      const W2 = W + (U() === 'kg' ? 2.5 : 5), r2 = Math.floor(30 * (nx.v / W2 - 1) + 1e-9) + 1; if (r2 > 0 && r2 <= 15) goals.push(`${W2} ${U()} × ${r2}`); }
-    if (cur.b > 0) goals.push(`${(nx.b || cur.b) + 1} reps`);
-    { const ks = Object.keys(cur.wr), c = cur.vol, vb = volBest(nx, {...c, t: now2});
-      if (vb != null && c.n > 1) { if (c.v > 0 && ks.length === 1 && c.b === 0) { const W = +ks[0], tot = Math.floor(vb / W + 1e-9) + 1; if (tot / c.n <= cur.wr[ks[0]].r + 1) goals.push(T(`${c.n} séries à ${W} ${U()} pour ${tot} reps au total`, `${c.n} sets at ${W} ${U()} for ${tot} total reps`)); }
-        else if (c.v === 0 && c.b > 0 && (vb + 1) / c.n <= cur.b + 1) goals.push(T(`${c.n} séries pour ${vb + 1} reps au total`, `${c.n} sets for ${vb + 1} total reps`)); } }
+    /* Objectif concret pour la prochaine fois (en tenant compte d'aujourd'hui), dans ta zone de reps */
+    const nx = prMerge(pv, cur), now2 = Date.now(), cand = [];
+    const tr = (e.target && e.target.reps) || ((S.routines.flatMap(r => r.exercises || []).find(x => norm(x.name) === norm(e.name)) || {}).reps), rg = repRange(tr || ''), hi = rg ? rg[1] : 15;
+    const add = (txt, r, pri) => { if (r > 0 && !cand.some(c => c.txt === txt)) cand.push({txt, r, pri}); };
+    const ks = Object.keys(cur.wr).sort((x, y) => +y - +x);
+    ks.slice(0, 2).forEach(w => { const bb = bestAtW(nx, w, now2); if (bb != null) add(`${w} ${U()} × ${bb + 1}`, bb + 1, 1); });
+    { const c = cur.vol, vb = volBest(nx, {...c, t: now2});
+      if (vb != null && c.n > 1) { if (c.v > 0 && ks.length === 1 && c.b === 0) { const W = +ks[0], tot = Math.floor(vb / W + 1e-9) + 1; add(T(`${c.n} séries à ${W} ${U()} pour ${tot} reps au total`, `${c.n} sets at ${W} ${U()} for ${tot} total reps`), Math.ceil(tot / c.n), 2); }
+        else if (c.v === 0 && c.b > 0) add(T(`${c.n} séries pour ${vb + 1} reps au total`, `${c.n} sets for ${vb + 1} total reps`), Math.ceil((vb + 1) / c.n), 2); } }
+    if (cur.v > 0) { const W = +ks[0], st = isDB(e.name) && +S.settings.dbStep > 0 ? +S.settings.dbStep : Math.max(incFor(e.name) || 0, U() === 'kg' ? 2 : 5);
+      for (let k = 1; k <= 3; k++) { const Wn = Math.round((W + st * k) * 100) / 100, bb = bestAtW(nx, String(Wn), now2), rE = Math.max(1, Math.floor(30 * (nx.v / Wn - 1) + 1e-9) + 1), r = bb != null ? Math.min(bb + 1, rE) : rE;
+        if (r <= hi) { add(`${Wn} ${U()} × ${r}`, r, 3); break; } } }
+    if (cur.b > 0) add(`${(nx.b || cur.b) + 1} reps`, (nx.b || cur.b) + 1, 1);
+    const inR = cand.filter(c => c.r <= hi).sort((a, b) => a.pri - b.pri), outR = cand.filter(c => c.r > hi).sort((a, b) => a.r - b.r);
+    const goals = (inR.length ? inR : outR).slice(0, 3).map(c => c.txt);
     const goal = goals.length ? `<div class="small prgoal">🎯 ${T('Prochaine fois, fais', 'Next time, do')} <b>${esc(goals[0])}</b>${goals.length > 1 ? ` <span class="muted">(${T('ou', 'or')} ${goals.slice(1).map(esc).join(` ${T('ou', 'or')} `)})</span>` : ''}</div>` : '';
     rows.push(`<div class="prx ${ok ? 'ok' : ''}"><b>${ok ? '🏆' : '·'} ${esc(e.name)}</b>${goal}<div class="small muted" style="margin-top:4px">${T('Détail', 'Details')} : ${esc(why)}</div></div>`);
   }));
@@ -5392,8 +5397,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.39';
+const APP_VERSION = '9.39.1';
 const CHANGELOG = [
+  {v: '9.39.1', d: '2026-11-12', fr: ['🎯 « Quoi battre? » respecte ta zone de reps : si 1 rep de plus te sort de ta zone, il te propose plutôt plus de volume ou une charge plus lourde.'], en: ['🎯 “What to beat?” respects your rep range: if one more rep takes you out of it, it suggests more volume or a heavier weight instead.']},
   {v: '9.39', d: '2026-11-12', fr: ['📦 Nouveau : record de volume! Si tu fais plus de reps au total qu\'avant avec le même nombre de séries (ex. 3×11 après 3×10), ça compte comme un record. Ajouter des séries ne suffit pas : on compare seulement aux séances avec au moins autant de séries (minimum 2), dans les 3 derniers mois.'], en: ['📦 New: volume record! More total reps than before with the same number of sets (e.g. 3×11 after 3×10) counts as a record. Adding sets isn\'t enough: only workouts with at least as many sets in the last 3 months are compared.']},
   {v: '9.38.2', d: '2026-11-12', fr: ['🎯 « Quoi battre? » plus simple : l\'objectif en vert d\'abord, le détail en dessous.'], en: ['🎯 Simpler “What to beat?”: the green goal first, details below.']},
   {v: '9.38.1', d: '2026-11-12', fr: ['🎯 « Quoi battre? » te dit maintenant exactement quoi faire la prochaine fois pour avoir un record (ex. 30 lb × 13).'], en: ['🎯 “What to beat?” now tells you exactly what to do next time to get a record (e.g. 30 lb × 13).']},
