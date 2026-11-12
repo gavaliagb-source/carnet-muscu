@@ -1071,6 +1071,24 @@ function fmtSet(s, short) {
   if (s.n) x += short ? ' 📝' : ` [${s.n}]`;
   return x;
 }
+/* Notes attachées à l'exercice (pas à la routine) : les mêmes dans toutes les séances */
+function exNotes() {
+  if (!S.exNotes || S.exNotesV !== 1) { // reprise des anciennes notes : routines, puis dernière note de séance
+    const N = S.exNotes = S.exNotes || {};
+    S.routines.forEach(r => r.exercises.forEach(e => { const k = norm(e.name); if (e.note && !N[k]) N[k] = e.note; }));
+    S.history.forEach(h => h.exercises.forEach(e => { const k = norm(e.name); if (e.note && !N[k]) N[k] = e.note; }));
+    S.exNotesV = 1; try { save(); } catch (e) {}
+  }
+  return S.exNotes;
+}
+const exNote = name => exNotes()[norm(name)] || '';
+function setExNote(name, t) { const N = exNotes(), k = norm(name); t = String(t || '').trim(); if (t) N[k] = t; else delete N[k]; S.routines.forEach(r => r.exercises.forEach(e => { if (norm(e.name) === k) { if (t) e.note = t; else delete e.note; } })); }
+/* Poids attachés à l'exercice : ceux de ta dernière séance (peu importe la routine), sauf si tu les as changés dans la routine depuis */
+function liveWeights(e) {
+  const last = lastFor(e.name); let wi = 0;
+  return setsOf(e).map(ts => { const warm = ts.t === 'W'; let ls = null; if (!warm && last) { ls = last.sets[wi] || last.sets[last.sets.length - 1]; wi++; if (e.wAt && e.wAt > last.date && ts.w !== '' && ts.w != null) ls = {...ls, w: ts.w}; }
+    return (ls && ls.w !== '' && ls.w != null) ? ls.w : (ts.w !== '' && ts.w != null ? ts.w : (warm ? '' : (e.weight ?? ''))); });
+}
 function lastFor(name, beforeId) {
   for (let i = S.history.length - 1; i >= 0; i--) {
     const h = S.history[i]; if (h.id === beforeId) continue;
@@ -1427,8 +1445,8 @@ function openExMenu(ei) {
     <div class="chips">${INC_OPTS().map(v => `<button class="chip ${incFor(e.name) === v ? 'on' : ''}" data-act="inc-set" data-n="${esc(e.name)}" data-v="${v}">+${dec1(v)} ${U()}</button>`).join('')}</div>
     <label>Repos après chaque série de cet exercice</label>
     <select data-exrest="${ei}">${RS.map(([v, l]) => `<option value="${v}" ${String(e.rest || '') === String(v) ? 'selected' : ''}>${l}</option>`).join('')}</select>
-    <label>Note sur l'exercice (cette séance)</label>
-    <textarea class="short" data-exnote="${ei}" placeholder="Ex. : réglage banc cran 3, prise large…">${esc(e.note || '')}</textarea>
+    <label>${T('Note sur l\'exercice (gardée pour toutes tes séances, peu importe la routine)', 'Exercise note (kept for all your workouts, whatever the routine)')}</label>
+    <textarea class="short" data-exnote="${ei}" placeholder="Ex. : réglage banc cran 3, prise large…">${esc(exNote(e.name))}</textarea>
     <div class="row" style="margin-top:14px"><button class="btn danger" data-act="ex-del" data-e="${ei}">Supprimer l'exercice</button>
     <button class="btn primary" style="flex:1" data-act="close">OK</button></div>`, {onclose: () => { save(); render(); }});
 }
@@ -1851,9 +1869,8 @@ function vWorkout() {
     return `<div class="card ${e.ss ? 'ss' : ''}" id="wex${ei}" ${ssSty(e)}>
       ${mates.length ? `<div class="sshead"><span class="sspill">Superset</span><span class="muted small">${T('avec', 'with')} ${mates.map(x => esc(x.name)).join(', ')}</span></div>` : ''}
       <div class="row between"><div class="row" style="gap:10px;min-width:0">${thumb(e.name, 40)}<h3>${exl(e.name)}</h3></div><span class="row"><span class="tag">${e.target.sets}×${esc(e.target.reps)}${tm ? ' s' : ''}${e.rest ? ' · ⏱' + esc(fmtRest(e.rest)) : ''}</span><button class="btn sm" data-act="ex-menu" data-e="${ei}" aria-label="Options">⋯</button></span></div>
-      ${e.target.note ? `<div class="last">📋 ${esc(e.target.note)}</div>` : ''}
-      ${e.note ? `<div class="last">📝 ${esc(e.note)}</div>` : ''}
-      ${!last ? '<div class="last">Première fois</div>' : last.note ? `<div class="last">Dernière note : ${esc(last.note)}</div>` : ''}
+      ${exNote(e.name) ? `<div class="last exnote" data-act="ex-menu" data-e="${ei}">📌 ${esc(exNote(e.name))}</div>` : ''}
+      ${!last ? '<div class="last">Première fois</div>' : ''}
       ${stagBtn(e.name, ei)}
       ${bossLine(e.name)}
       ${e.mach ? `<div class="last">⚖️ ${T('Machine', 'Machine')} : ${dec1(e.mach.v)} ${e.mach.u} = ${dec1(e.mach.u === 'kg' ? e.mach.v * KG : e.mach.v / KG)} ${U()}</div>` : ''}
@@ -1894,7 +1911,7 @@ function cardioCard(e, ei, last, mates) {
   return `<div class="card ${e.ss ? 'ss' : ''}" id="wex${ei}" ${ssSty(e)}>
     ${mates.length ? `<div class="sshead"><span class="sspill">Superset</span><span class="muted small">${T('avec', 'with')} ${mates.map(x => esc(x.name)).join(', ')}</span></div>` : ''}
     <div class="row between"><div class="row" style="gap:10px;min-width:0">${thumb(e.name, 40)}<div style="min-width:0"><h3>${exl(e.name)}</h3><span class="tag">🏃 Cardio</span></div></div><button class="btn sm" data-act="ex-menu" data-e="${ei}" aria-label="Options">⋯</button></div>
-    ${e.note ? `<div class="last">📝 ${esc(e.note)}</div>` : ''}
+    ${exNote(e.name) ? `<div class="last">📌 ${esc(exNote(e.name))}</div>` : ''}
     ${last ? `<div class="last">${T('Dernière fois', 'Last time')} : ${last.sets.map(s => fmtSet(s)).join(' · ')}</div>` : ''}
     <div class="colhead w5"><span>#</span><span>Min</span><span>${kmU()}</span><span>${incL}</span><span></span></div>
     ${e.sets.map((s, si) => { const ls = last && last.sets[si]; return `<div class="setrow w5 ${s.done ? 'done' : ''}">
@@ -2608,7 +2625,7 @@ function mkSetsFromRoutine(e, last) {
   const nWork = setsOf(e).filter(s => s.t !== 'W').length; let wk = 0;
   return setsOf(e).map(ts => {
     const warm = ts.t === 'W'; let ls = null;
-    if (!warm && last) { ls = last.sets[wi] || last.sets[last.sets.length - 1]; wi++; }
+    if (!warm && last) { ls = last.sets[wi] || last.sets[last.sets.length - 1]; wi++; if (e.wAt && e.wAt > last.date && ts.w !== '' && ts.w != null) ls = {...ls, w: ts.w}; }
     const rg = String(ts.r || e.reps || '10');
     const o = {w: (ls && ls.w !== '' && ls.w != null) ? ls.w : (ts.w !== '' && ts.w != null ? ts.w : (warm ? '' : (e.weight ?? ''))), r: '', done: false, ph: ls ? ls.r : rg.split('-').pop()};
     if (warm) o.t = 'W'; else if (ts.t) o.t = ts.t; else if (autoF && wk >= nWork - autoF) o.t = 'F';
@@ -3289,9 +3306,9 @@ function routinePoints(r) {
   return routineSessions(r).map(h => ({d: h.date, v: rtMetric === 'vol' ? sessVol(h) : rtMetric === 'reps' ? sessReps(h) : (+h.duration || 0)}));
 }
 function setTable(e) {
-  let n = 0;
-  return `<table class="stbl"><thead><tr><th>SÉRIE</th><th>${U().toUpperCase()}</th><th>${isTimed(e) ? 'DURÉE (SEC)' : 'PLAGE DE RÉPS'}</th></tr></thead><tbody>${setsOf(e).map(s =>
-    `<tr><td>${s.t === 'W' ? '<b style="color:var(--warm)">É</b>' : s.t === 'D' ? '<b style="color:var(--drop)">D</b>' : ++n}</td><td>${s.w === '' || s.w == null ? '—' : esc(s.w)}</td><td>${esc(s.r || '—')}</td></tr>`).join('')}</tbody></table>`;
+  let n = 0; const lw = liveWeights(e);
+  return `<table class="stbl"><thead><tr><th>SÉRIE</th><th>${U().toUpperCase()}</th><th>${isTimed(e) ? 'DURÉE (SEC)' : 'PLAGE DE RÉPS'}</th></tr></thead><tbody>${setsOf(e).map((s, i) =>
+    `<tr><td>${s.t === 'W' ? '<b style="color:var(--warm)">É</b>' : s.t === 'D' ? '<b style="color:var(--drop)">D</b>' : ++n}</td><td>${(lw[i] ?? s.w) === '' || (lw[i] ?? s.w) == null ? '—' : esc(lw[i] ?? s.w)}</td><td>${esc(s.r || '—')}</td></tr>`).join('')}</tbody></table>`;
 }
 function vRoutineDetail() {
   const r = S.routines.find(x => x.id === cur().rid);
@@ -3306,7 +3323,7 @@ function vRoutineDetail() {
     <div class="row between" style="margin:16px 0 0"><span class="muted">Exercices</span><button class="linkbtn" data-act="edit-routine" data-rid="${r.id}">Modifier la routine</button></div>
     ${r.exercises.map(e => `<div class="rex ${e.ss ? 'ssl' : ''}" ${ssSty(e)}>
       <div class="row" style="gap:12px">${thumb(e.name, 48)}<span class="exlink acc" data-act="go" data-v="exdetail" data-n="${esc(e.name)}">${esc(e.name)}</span>${e.ss ? ` <span class="sspill sm" ${ssSty(e)}>Superset</span>` : ''}</div>
-      ${e.note ? `<div class="last">📋 ${esc(e.note)}</div>` : ''}
+      ${exNote(e.name) ? `<div class="last">📌 ${esc(exNote(e.name))}</div>` : ''}
       ${stagBtn(e.name)}
       <div class="last" style="margin:8px 0">⏱ Minuteur de repos : ${e.rest ? fmtRest(e.rest) : 'par défaut (' + fmtRest(+S.settings.rest || 150) + ')'}</div>
       ${setTable(e)}</div>`).join('')}
@@ -3317,7 +3334,7 @@ function vRoutineDetail() {
 let rdraft = null, rdirty = false;
 function editRoutine(rid, folder) {
   const r = S.routines.find(x => x.id === rid);
-  rdraft = r ? {id: r.id, name: r.name, folder: r.folder || DEF_FOLDER, exercises: r.exercises.map(e => ({...clone(e), sl: clone(setsOf(e))}))}
+  rdraft = r ? {id: r.id, name: r.name, folder: r.folder || DEF_FOLDER, exercises: r.exercises.map(e => { const lw = liveWeights(e), sl = clone(setsOf(e)).map((x, i) => ({...x, w: lw[i] ?? x.w})); return {...clone(e), note: exNote(e.name), sl, _w0: JSON.stringify(sl.map(x => String(x.w ?? '')))}; })}
              : {id: null, name: '', folder: folder || DEF_FOLDER, exercises: []};
   rdirty = false; go('redit');
 }
@@ -3336,7 +3353,7 @@ function vRoutineEditor() {
       return `<div class="card ${e.ss ? 'ss' : ''}" ${ssSty(e)}>
       <div class="row between"><div class="row" style="gap:10px;min-width:0">${thumb(e.name, 44)}<span class="exlink acc" data-act="exo" data-n="${esc(e.name)}">${esc(e.name)}</span></div><button class="btn sm ghost" data-act="rd-ex-menu" data-e="${ei}" aria-label="Options de l'exercice">⋯</button></div>
       ${e.ss ? `<span class="sspill" style="margin-top:8px">Superset</span>` : ''}
-      <input class="ninput" data-rdnote="${ei}" placeholder="Ajouter une note pour cet exercice…" value="${esc(e.note || '')}">
+      <input class="ninput" data-rdnote="${ei}" placeholder="${T('Note sur l\'exercice (gardée dans toutes tes routines)…', 'Exercise note (kept in all your routines)…')}" value="${esc(e.note || '')}">
       <div class="row between" style="margin-top:10px"><span class="small muted">⏱ Minuteur de repos</span><select style="width:170px" data-rdrest="${ei}">${RS.map(([v, l]) => `<option value="${v}" ${rv === String(v) ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
       <div class="colhead c3"><span>SÉRIE</span><span>${U().toUpperCase()}</span><span>${isTimed(e) ? 'DURÉE (SEC)' : 'PLAGE DE RÉPS'}</span><span></span></div>
       ${e.sl.map((s, si) => `<div class="setrow c3">
@@ -3391,7 +3408,9 @@ function applyDraftText() {
 }
 function saveRoutineDraft() {
   const d = rdraft; if (!d) return;
-  const exs = d.exercises.map(e => { const o = clone(e); o.sl = (o.sl || []).filter(s => s); if (o.rest == null) delete o.rest; return syncSummary(o); });
+  const now = new Date().toISOString();
+  d.exercises.forEach(e => setExNote(e.name, e.note || ''));
+  const exs = d.exercises.map(e => { const o = clone(e); o.sl = (o.sl || []).filter(s => s); if (o.rest == null) delete o.rest; if (o._w0 === undefined || o._w0 !== JSON.stringify(o.sl.map(x => String(x.w ?? '')))) o.wAt = now; delete o._w0; if (!o.note) delete o.note; return syncSummary(o); });
   const name = d.name.trim() || 'Nouvelle routine';
   if (!S.folders.includes(d.folder)) S.folders.push(d.folder);
   let id = d.id;
@@ -5140,8 +5159,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.25';
+const APP_VERSION = '9.26';
 const CHANGELOG = [
+  {v: '9.26', d: '2026-11-12', fr: ['📌 Les notes sont maintenant attachées à l\'exercice : la même note s\'affiche dans toutes tes routines et séances libres (tes anciennes notes ont été reprises).', '🏋️ Les poids suivent l\'exercice : peu importe la routine, tu repars du poids de ta dernière fois. La page de la routine et l\'éditeur montrent ces poids à jour. Si tu changes un poids dans la routine, c\'est lui qui compte à la prochaine séance.'], en: ['📌 Notes are now attached to the exercise: the same note shows in all your routines and free workouts (your old notes were kept).', '🏋️ Weights follow the exercise: whatever the routine, you start from your last weight. The routine page and editor show these up-to-date weights. If you change a weight in the routine, that one counts next workout.']},
   {v: '9.25', d: '2026-11-12', fr: ['⚡ Version express : sur la page d\'une routine, un bouton la fait tenir en moins de temps (2 séries par exercice, supersets, repos plus courts), avec la durée estimée.', '📈 Prédiction : sur la page d\'un exercice et dans tes mesures, l\'app prolonge ta courbe en pointillé et te dit où tu seras dans 8 semaines, plus la date de ton prochain cap (ex. 225 lb).', '🎪 Événements (mode jeu) : week-end double XP chaque fin de mois, et des événements spéciaux pendant l\'année (Nouvel An, Halloween, Noël…) avec leur propre quête.'], en: ['⚡ Express version: on a routine\'s page, a button makes it fit in less time (2 sets per exercise, supersets, shorter rest), with the estimated duration.', '📈 Prediction: on an exercise page and in your measurements, the app extends your curve with a dotted line and tells you where you\'ll be in 8 weeks, plus the date of your next milestone (e.g. 225 lb).', '🎪 Events (game mode): a double XP weekend at the end of every month, and special events through the year (New Year, Halloween, Christmas…) with their own quest.']},
   {v: '9.24', d: '2026-11-12', fr: ['✨ Quand tu coches une série, un petit « +5 XP » s\'envole (en mode Classique : le volume de la série, ou « Record! » en or).', '🎬 Écran de fin de séance animé : les blocs apparaissent un à un, les chiffres comptent, et en mode jeu la barre d\'XP se remplit jusqu\'au niveau suivant.', '🛡️ Mode jeu : un cadre aux couleurs de ton rang autour de ta photo et de celle de tes amis (il brille dès le rang S).', '⭕ Anneaux de la semaine dans Entraînement : séances, volume et cardio, comparés à ta moyenne.', '🟩 Grille d\'activité des 6 derniers mois dans le Profil.', '📈 Graphiques plus beaux : courbes lissées avec dégradé, records en points dorés, barres qui montent.', '↔️ Les écrans glissent quand tu avances, reviens ou changes d\'onglet.'], en: ['✨ When you check a set, a little “+5 XP” floats up (in Classic mode: the set\'s volume, or a gold “Record!”).', '🎬 Animated workout summary: blocks appear one by one, numbers count up, and in game mode the XP bar fills toward the next level.', '🛡️ Game mode: a frame in your rank\'s color around your photo and your friends\' (it glows from rank S).', '⭕ Weekly rings in Workout: workouts, volume and cardio, compared to your average.', '🟩 6-month activity grid in Profile.', '📈 Nicer charts: smooth curves with a gradient, records as gold dots, bars that grow.', '↔️ Screens slide when you go forward, back or switch tabs.']},
   {v: '9.23.1', d: '2026-11-11', fr: ['🗣️ Coach vocal plus court : il dit juste tes reps à faire et le poids réussi à ta dernière séance (ex. « 8 à 10 reps, 185 livres »).'], en: ['🗣️ Shorter voice coach: it just says your target reps and the weight you hit last time (e.g. “8 to 10 reps, 185 pounds”).']},
@@ -7542,7 +7562,7 @@ document.addEventListener('input', e => {
     if (k === 'date') { const d = new Date(t.value); if (!isNaN(d)) draft.date = d.toISOString(); } else draft[k] = t.value;
   }
   if (t.dataset.stnote !== undefined && setCtx) { const s = setCtx.sets[setCtx.si]; if (t.value.trim()) s.n = t.value; else delete s.n; }
-  if (t.dataset.exnote !== undefined && S.active) { S.active.exercises[+t.dataset.exnote].note = t.value; }
+  if (t.dataset.exnote !== undefined && S.active) { const x = S.active.exercises[+t.dataset.exnote]; setExNote(x.name, t.value); x.note = t.value.trim(); }
   if (t.dataset.set) {
     if (t.dataset.set === 'effort') { S.settings.effort = t.value; S.settings.failDefault = t.value === 'fail'; save(); return; }
     if (t.dataset.set === 'gameMode') { S.settings.game = t.value === '1'; save(); render(); try { if (frOn()) frQueue(false); } catch (e) {} toast(GAME() ? T('⚔️ Mode jeu activé', '⚔️ Game mode on') : T('📒 Mode classique', '📒 Classic mode')); return; }
