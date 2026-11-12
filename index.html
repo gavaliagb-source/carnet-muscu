@@ -358,7 +358,7 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 #fdv,#ftv{cursor:zoom-in}
 .heatleg{display:flex;justify-content:center;align-items:center;gap:4px;margin-top:8px}.heatleg i{width:24px;height:10px;border-radius:3px}.heatleg span{margin:0 4px}
 .qhead{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:none;border:0;padding:0;cursor:pointer;color:inherit;font:inherit}.qchev{color:var(--accent);font-size:14px}
-.qmin{padding:12px 14px}.qchips{display:flex;gap:8px;margin-top:10px}
+.qmin{padding:12px 14px}.gshead{position:relative;text-align:center}.gslv{position:absolute;right:0;top:50%;transform:translateY(-50%)}.qci{height:24px;display:flex;align-items:center;justify-content:center}.gstrip{display:block;width:100%;cursor:pointer;padding-top:10px}.gstrip .qchips{margin-top:8px}.qchips{display:flex;gap:8px;margin-top:10px}
 .qchip{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;border-radius:10px;border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);font-size:12px;color:var(--text)}
 .qchip>span{white-space:nowrap}.qchip .mrk{border-width:1.5px}.qchip i{display:block;width:80%;height:4px;border-radius:2px;background:var(--line);overflow:hidden}.qchip i b{display:block;height:100%;background:var(--accent)}
 .qchip.ok{border-color:color-mix(in srgb,var(--ok) 60%,transparent)}.qchip.ok i b{background:var(--ok)}
@@ -2129,7 +2129,7 @@ function vSettings() {
   if (!cloudOn() && !vSettings.done) { vSettings.done = 1; secOpen.add('cloud'); }
   return setSec('gen', 'user', '👤', T('Général', 'General'), T('Nom, langue, objectif, navigation', 'Name, language, goal, navigation'), `
       <label>${T('Style de l\'appli', 'App style')}</label>
-      <select data-set="gameMode"><option value="1" ${GAME() ? 'selected' : ''}>⚔️ ${T('Mode jeu : XP, niveaux, rangs, quêtes', 'Game mode: XP, levels, ranks, quests')}</option><option value="0" ${GAME() ? '' : 'selected'}>📒 ${T('Classique : carnet simple, sans jeu', 'Classic: simple log, no game')}</option></select>
+      <select data-set="gameMode"><option value="1" ${GAME() ? 'selected' : ''}>${T('Mode jeu : XP, niveaux, rangs, quêtes', 'Game mode: XP, levels, ranks, quests')}</option><option value="0" ${GAME() ? '' : 'selected'}>${T('Classique : carnet simple, sans jeu', 'Classic: simple log, no game')}</option></select>
       <p class="muted small" style="margin:4px 0 0">${T('En Classique, l\'XP et ton niveau continuent de se calculer en arrière-plan : si tu actives le mode jeu plus tard, tu retrouves ton vrai niveau.', 'In Classic, XP and your level keep being calculated in the background: if you turn game mode on later, you get your real level back.')}</p>
       <label>${T('Taille du texte', 'Text size')}</label>
       <select data-set="fontScale">${[['sm', T('Petit', 'Small')], ['', T('Normal', 'Normal')], ['lg', T('Grand', 'Large')], ['xl', T('Très grand', 'Extra large')]].map(([v, l]) => `<option value="${v}" ${(S.settings.fontScale || '') === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
@@ -2914,7 +2914,7 @@ const schedR = i => { const p = weekPlan()[i]; return p && p.r && p.r.id ? p.r :
 function todayCard() {
   const sc = S.schedule || [];
   if (!cycleOn() && !sc.some(x => x === 'rest' || S.routines.some(r => r.id === x)))
-    return S.history.length ? '' : `<button class="btn block" data-act="sched-edit" style="margin-bottom:10px;text-align:left">📅 ${T('Planifier ma semaine', 'Plan my week')} <span class="muted small">${T('(lundi : Upper, mardi : repos…)', '(Monday: Upper, Tuesday: rest…)')}</span></button>`;
+    return `<button class="btn block" data-act="sched-edit" style="margin-bottom:10px;text-align:left">📅 ${T('Planifier ma semaine', 'Plan my week')} <span class="muted small">${T('(lundi : Upper, mardi : repos…)', '(Monday: Upper, Tuesday: rest…)')}</span></button>`;
   const di = dayIdx(new Date()), wp = weekPlan(), r = wp[di].r && wp[di].r.id ? wp[di].r : null;
   const doneToday = S.history.some(x => dkey(x.date) === dkey(new Date()));
   let nxt = '';
@@ -2939,7 +2939,7 @@ function renderSched() {
   let h = `<div class="seg"><button class="${on ? '' : 'on'}" data-act="sched-mode" data-m="0">📅 ${T('Semaine fixe', 'Fixed week')}</button><button class="${on ? 'on' : ''}" data-act="sched-mode" data-m="1">🔁 ${T('Cycle en rotation', 'Rotating cycle')}</button></div>`;
   if (!on) {
     h += `<p class="muted small">Choisis la routine de chaque jour. L'onglet Entraînement te proposera la séance du jour.</p>
-    ${days().map((d, i) => `<label>${d}</label><select data-sched="${i}"><option value="">— Rien</option><option value="rest" ${S.schedule[i] === 'rest' ? 'selected' : ''}>😴 Repos</option>${S.routines.map(r => `<option value="${r.id}" ${S.schedule[i] === r.id ? 'selected' : ''}>${esc(r.name)}</option>`).join('')}</select>`).join('')}`;
+    ${days().map((d, i) => `<label>${d}</label><select data-sched="${i}"><option value="">— Rien</option><option value="rest" ${S.schedule[i] === 'rest' ? 'selected' : ''}>Repos</option>${S.routines.map(r => `<option value="${r.id}" ${S.schedule[i] === r.id ? 'selected' : ''}>${esc(r.name)}</option>`).join('')}</select>`).join('')}`;
   } else {
     const rs = cycRs(), seq = rs.length ? cycSeq(14) : [];
     h += `<p class="muted small">${T('Tes routines tournent dans l\'ordre sur tes jours d\'entraînement (ex. Push → Pull → Legs → Push…). Le cycle suit ta dernière séance : si tu sautes un jour, il reprend où tu étais.', 'Your routines rotate in order on your training days (e.g. Push → Pull → Legs → Push…). The cycle follows your last workout: if you skip a day, it picks up where you left off.')}</p>
@@ -2948,7 +2948,7 @@ function renderSched() {
       <label>${T('Ordre du cycle', 'Cycle order')}</label>
       ${rs.length ? `<div id="cycbox">${rs.map((r, i) => `<div class="reo" data-i="${i}"><span class="handle" aria-label="${T('Glisser', 'Drag')}">≡</span><b class="muted" style="width:20px">${i + 1}.</b><span class="reon">${esc(r.name)}</span><button class="reodel" data-act="cyc-rm" data-i="${i}" aria-label="${T('Retirer', 'Remove')}">−</button></div>`).join('')}</div><p class="muted small" style="margin:4px 0 0">${T('Glisse ≡ pour changer l\'ordre. Touche − pour retirer.', 'Drag ≡ to change the order. Tap − to remove.')}</p>` : `<p class="muted small">${T('Aucune routine. Ajoute un dossier ou des routines ci-dessous.', 'No routines yet. Add a folder or routines below.')}</p>`}
       <div class="grid2" style="margin-top:8px">
-        <select data-cycfold><option value="">📁 ${T('Ajouter un dossier…', 'Add a folder…')}</option>${folders().map(f => `<option value="${esc(f)}">${esc(f)}</option>`).join('')}</select>
+        <select data-cycfold><option value="">＋ ${T('Ajouter un dossier…', 'Add a folder…')}</option>${folders().map(f => `<option value="${esc(f)}">${esc(f)}</option>`).join('')}</select>
         <select data-cycadd><option value="">＋ ${T('Ajouter une routine…', 'Add a routine…')}</option>${S.routines.map(r => `<option value="${r.id}">${esc(r.name)}</option>`).join('')}</select>
       </div>
       ${rs.length ? `<label>${T('Prochaine séance du cycle', 'Next workout in the cycle')}</label>
@@ -3134,7 +3134,6 @@ function vTrain() {
   if (a) h += `<div class="card" style="border-color:var(--accent)"><div class="row between"><div><h3>Séance en cours</h3><span class="muted small">${esc(a.routineName)} · ⏱ <span id="elapsed2">${fmtDur(Date.now() - new Date(a.start))}</span></span></div><button class="btn primary sm" data-act="go-workout">Reprendre</button></div></div>`;
   h += todayCard();
   syncSystem(); if (GAME()) { evCheck(); h += guildStrip(); setTimeout(evAnnounce, 0); }
-  h += weekRings();
   h += cloudNag();
   if (deloadOn()) h += `<div class="card" style="border-color:var(--warm)"><div class="row between"><div><b>🪶 Semaine de récupération</b><br><span class="muted small">Charges −${S.settings.deload.pct} % jusqu'au ${new Date(S.settings.deload.until + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'long'})}</span></div><button class="btn sm" data-act="deload-off">Arrêter</button></div></div>`;
   if (!S.history.length && !S.settings.xferHide) h += `<div class="card" style="border-color:var(--accent)"><div class="row between" style="align-items:flex-start"><div><b>📲 ${T('Tu viens d\'une autre appli?', 'Coming from another app?')}</b><br><span class="muted small">${T('Transfère tes routines en 2 minutes avec l\'IA : prends des captures d\'écran, l\'IA les recopie ici.', 'Move your routines in 2 minutes with AI: take screenshots, the AI copies them here.')}</span></div><button class="btn sm ghost" data-act="xfer-hide" aria-label="${T('Masquer', 'Hide')}">✕</button></div><button class="btn primary block" data-act="ai-guide" data-k="transfer" style="margin-top:10px">${T('Transférer mes routines', 'Move my routines')}</button></div>`;
@@ -4608,7 +4607,7 @@ function questCard(compact) {
   const dh = `<div class="qrow" style="margin-top:12px"><span class="qic">${rkBadge(dg.rk, 'mrk lvrk')}</span><div style="flex:1;min-width:0"><b>${T('Donjon de rang', 'Rank')} ${dg.rk}${T('', ' dungeon')} · ${esc(dg.text)}</b>${sysBar(dg.cur, dg.goal)}<div class="row between small muted"><span>${dg.fmt(Math.min(dg.cur, dg.goal))} / ${dg.fmt(dg.goal)}</span><span>${dg.done ? `<b style="color:var(--ok)">${T('DONJON NETTOYÉ', 'DUNGEON CLEARED')}</b>` : `${dg.left} ${T('j restants', 'days left')} · +500 XP`}</span></div></div></div>`;
   const open = compact === 'full' || S.settings.qOpen === true, bo = monthBoss();
   const pc = (a, b) => Math.min(100, Math.round(a / Math.max(1, b) * 100));
-  const chip = (ic, label, pct, done) => `<span class="qchip ${done ? 'ok' : ''}">${ic}<span>${label}</span><i><b style="width:${done ? 100 : pct}%"></b></i></span>`;
+  const chip = (ic, label, pct, done) => `<span class="qchip ${done ? 'ok' : ''}"><span class="qci">${ic}</span><span>${label}</span><i><b style="width:${done ? 100 : pct}%"></b></i></span>`;
   const head = compact === 'full' ? `<div class="sysh" style="margin:0">[ ${T('QUÊTES', 'QUESTS')} ]</div>` : `<button class="qhead" data-act="q-tog" aria-expanded="${open}"><span class="sysh" style="margin:0">[ ${T('QUÊTES', 'QUESTS')} ]</span><span class="qchev">${open ? '▴' : '▾'}</span></button>`;
   if (!open) return `<div class="card sysw qcard qmin">${head}<div class="qchips">
       ${q.rest ? chip('🌙', T('Repos', 'Rest'), 100, true) : chip(q.ic, T('Quête', 'Quest'), pc(q.cur, q.goal), q.done)}
@@ -5168,8 +5167,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.28';
+const APP_VERSION = '9.28.1';
 const CHANGELOG = [
+  {v: '9.28.1', d: '2026-11-12', fr: ['🧹 La carte « Ma semaine » est retirée de l\'onglet Entraînement, la bande Guilde est centrée, et les derniers emojis des listes déroulantes sont enlevés.'], en: ['🧹 The “My week” card is removed from the Workout tab, the Guild strip is centered, and the last emojis in dropdowns are gone.']},
   {v: '9.28', d: '2026-11-12', fr: ['⚔️ Mode jeu : nouvel onglet Guilde en bas, avec tout le jeu au même endroit (niveau et rang, quêtes, donjon, boss, événements, raid, saison, arsenal, rangs par muscle). L\'onglet Entraînement garde juste une petite bande Guilde.', '🧹 Onglet Entraînement plus léger : « Planifier ma semaine » est dans la carte Ma semaine, et le rappel de sauvegarde est plus compact.', '📊 Profil : l\'activité et le graphique des semaines sont réunis dans une seule carte (Activité, Durée, Volume, Réps).', '🎨 Les dernières icônes en emoji sont remplacées par des icônes modernes, et les écrans vides ont une illustration et un bouton pour commencer.', '📈 Les graphiques s\'animent seulement quand tu ouvres l\'écran, plus à chaque toucher.'], en: ['⚔️ Game mode: new Guild tab at the bottom with the whole game in one place (level and rank, quests, dungeon, boss, events, raid, season, arsenal, muscle ranks). The Workout tab keeps just a small Guild strip.', '🧹 Lighter Workout tab: “Plan my week” lives in the My week card, and the backup reminder is more compact.', '📊 Profile: activity and the weekly chart are combined in one card (Activity, Time, Volume, Reps).', '🎨 The last emoji icons are replaced with modern icons, and empty screens have an illustration and a button to get started.', '📈 Charts animate only when you open the screen, not on every tap.']},
   {v: '9.27.2', d: '2026-11-12', fr: ['🗣️ Le coach vocal est retiré.'], en: ['🗣️ The voice coach has been removed.']},
   {v: '9.27.1', d: '2026-11-12', fr: ['🗣️ Coach vocal : il dit « répétitions » en entier, parle un peu plus lentement et choisit la meilleure voix française de ton téléphone.'], en: ['🗣️ Voice coach: speaks a bit slower and picks the best voice on your phone.']},
@@ -6575,8 +6575,8 @@ function guildStrip() {
   if (!GAME() || !S.history.length) return '';
   const q = dailyQuest(), dg = weekDungeon(), bo = monthBoss(), ev = evNow(), hu = hunter();
   const pc = (a, b) => Math.min(100, Math.round(a / Math.max(1, b) * 100));
-  const chip = (ic, label, pct, done) => `<span class="qchip ${done ? 'ok' : ''}">${ic}<span>${label}</span><i><b style="width:${done ? 100 : pct}%"></b></i></span>`;
-  return `<div class="card sysw qcard qmin gstrip" data-tab="guild" role="button"><div class="row between"><span class="sysh" style="margin:0">[ ${T('GUILDE', 'GUILD')} ]</span><span class="small muted">${T('Niv.', 'Lv.')} ${hu.lvl} ›</span></div>
+  const chip = (ic, label, pct, done) => `<span class="qchip ${done ? 'ok' : ''}"><span class="qci">${ic}</span><span>${label}</span><i><b style="width:${done ? 100 : pct}%"></b></i></span>`;
+  return `<div class="card sysw qcard qmin gstrip" data-tab="guild" role="button"><div class="gshead"><span class="sysh" style="margin:0">[ ${T('GUILDE', 'GUILD')} ]</span><span class="small muted gslv">${T('Niv.', 'Lv.')} ${hu.lvl} ›</span></div>
     <div class="qchips">${q.rest ? chip('🌙', T('Repos', 'Rest'), 100, true) : chip(q.ic, T('Quête', 'Quest'), pc(q.cur, q.goal), q.done)}${chip(rkBadge(dg.rk, 'mrk lvrk'), T('Donjon', 'Dungeon'), pc(dg.cur, dg.goal), dg.done)}${bo ? chip('☠️', 'Boss', pc(bo.cur - bo.from * .85, bo.target - bo.from * .85), bo.done) : ''}</div>
     ${ev ? `<div class="small" style="margin-top:8px;color:#f5c542">🎪 ${esc(T(ev.n[0], ev.n[1]))} ${T('en cours', 'live')}</div>` : questPenalty() && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −10 XP.', 'Yesterday\'s quest failed: −10 XP.')}</div>` : ''}</div>`;
 }
