@@ -292,7 +292,7 @@ button.chip{cursor:pointer}
 .pfstats{display:grid;grid-template-columns:repeat(3,auto);gap:4px 14px;justify-content:start}.pfstats>div{white-space:nowrap}
 .hacts{flex-wrap:wrap;gap:6px}.bar>b{white-space:nowrap}
 @property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
-.rkf.frm-aurora,.rkf.frm-flame,.rkf.frm-legend{box-shadow:none!important;border:3px solid transparent;background-clip:padding-box,border-box;background-origin:border-box;animation:frSpin 3s linear infinite}
+.rkf.frm-ice,.rkf.frm-gold,.rkf.frm-sakura,.rkf.frm-shadow,.rkf.frm-emerald,.rkf.frm-thunder,.rkf.frm-blood,.rkf.frm-champion,.rkf.frm-void,.rkf.frm-aurora,.rkf.frm-flame,.rkf.frm-legend{box-shadow:none!important;border:3px solid transparent;background-clip:padding-box,border-box;background-origin:border-box;animation:frSpin 3s linear infinite}
 .rkf.frm-aurora{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#ff5a5f,#ffcc33,#3ee6b0,#4cc9f0,#b388ff,#ff5a5f)}
 .rkf.frm-flame{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#ff3d00,#ffb300,#ff6f00,#ffd54f,#ff3d00);filter:drop-shadow(0 0 6px #ff6f00)}
 .rkf.frm-legend{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#ffd54a,#b26bff,#fff3c4,#b26bff,#ffd54a);filter:drop-shadow(0 0 8px #b26bff)}
@@ -345,6 +345,17 @@ button.chip{cursor:pointer}
 .gsw .gchev{width:22px;font-size:14px;text-align:center}.gsw[open]>summary .gchev{transform:rotate(180deg)}.gsw[open]>summary{margin-bottom:12px}
 .gsw .gfb{padding:0}
 .gtiles{gap:10px}.gtile{display:flex;align-items:center;gap:10px;text-align:left;padding:12px}.gtile b{display:block;font-size:14px}.gtile small{display:block;color:var(--muted);font-size:11.5px;font-weight:500}
+.rkf.frm-ice{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#e0f7ff,#7dd3fc,#ffffff,#38bdf8,#e0f7ff);filter:drop-shadow(0 0 5px #7dd3fc)}
+.rkf.frm-gold{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#c99400,#ffd54a,#fff3c4,#ffd54a,#c99400);filter:drop-shadow(0 0 5px #ffcc33)}
+.rkf.frm-sakura{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#ffb3d1,#ff6fae,#fff0f6,#ff8fc0,#ffb3d1);filter:drop-shadow(0 0 5px #ff6fae)}
+.rkf.frm-shadow{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#0b0614,#6d28d9,#1a1030,#a78bfa,#0b0614);filter:drop-shadow(0 0 7px #6d28d9)}
+.rkf.frm-emerald{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#065f46,#34d399,#a7f3d0,#10b981,#065f46);filter:drop-shadow(0 0 5px #34d399)}
+.rkf.frm-thunder{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#fde047,#ffffff 10%,#38bdf8 25%,#0b1220 40%,#fde047 55%,#38bdf8 75%,#fde047);filter:drop-shadow(0 0 6px #38bdf8);animation-duration:1.2s!important}
+.rkf.frm-blood{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#1c0505,#7f1d1d,#ef4444,#7f1d1d,#1c0505);filter:drop-shadow(0 0 7px #ef4444)}
+.rkf.frm-champion{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#ff9f1c,#ffd54a,#ffffff,#ffd54a,#ff9f1c);filter:drop-shadow(0 0 9px #ffd54a)}
+.rkf.frm-void{background-image:linear-gradient(var(--card2),var(--card2)),conic-gradient(from var(--ang),#000,#7c3aed,#000,#22d3ee,#000);filter:drop-shadow(0 0 9px #7c3aed)}
+.rkf.frm-ice,.rkf.frm-gold,.rkf.frm-sakura,.rkf.frm-shadow,.rkf.frm-emerald,.rkf.frm-thunder,.rkf.frm-blood,.rkf.frm-champion,.rkf.frm-void{border:3px solid transparent;background-clip:padding-box,border-box;background-origin:border-box;animation:frSpin 4s linear infinite}
+.avatar.rkf.frm-ice,.avatar.rkf.frm-gold,.avatar.rkf.frm-sakura,.avatar.rkf.frm-shadow,.avatar.rkf.frm-emerald,.avatar.rkf.frm-thunder,.avatar.rkf.frm-blood,.avatar.rkf.frm-champion,.avatar.rkf.frm-void{border-width:4px}
 .bossline{background:color-mix(in srgb,#fb7185 12%,transparent);border:1px solid color-mix(in srgb,#fb7185 55%,transparent);border-radius:10px;padding:7px 10px;margin:8px 0 2px;font-size:13px}.bossline.dead{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .bosskill{text-align:center;padding:6px 0}.bkskull{font-size:64px;line-height:1;color:#fb7185;animation:bkhit .9s ease-out both}.bkskull .ico{width:72px;height:72px}
 @keyframes bkhit{0%{transform:scale(.3) rotate(-20deg);opacity:0}35%{transform:scale(1.35) rotate(8deg);opacity:1}55%{transform:scale(.9) rotate(-6deg)}70%{transform:scale(1.05) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:.85;filter:grayscale(.6)}}
@@ -5281,8 +5292,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.33.1';
+const APP_VERSION = '9.34';
 const CHANGELOG = [
+  {v: '9.34', d: '2026-11-12', fr: ['🖼️ 9 nouveaux cadres à débloquer : Givre, Doré, Sakura, Ombre, Émeraude, Foudre, Sang de dragon, Champion et Néant.', '🐛 Glisser les onglets de l\'Armurerie ne change plus de page.'], en: ['🖼️ 9 new unlockable frames: Frost, Golden, Sakura, Shadow, Emerald, Thunder, Dragon blood, Champion and Void.', '🐛 Swiping the Armory tabs no longer changes the page.']},
   {v: '9.33.1', d: '2026-11-12', fr: ['⚔️ Guilde : retour au style fenêtres de jeu ([ STATUT ], [ QUÊTES ]…), mais chaque fenêtre se replie en douceur et elles sont bien espacées.'], en: ['⚔️ Guild: back to the game-window style ([ STATUS ], [ QUESTS ]…), but each window folds smoothly and they are nicely spaced.']},
   {v: '9.33', d: '2026-11-12', fr: ['✨ Nouvelle page Guilde, plus propre et fluide : ton statut en haut, puis une liste de sections (Quêtes, Raid, Saison, Armurerie, Arsenal, Rangs, Médailles, Amis) qui s\'ouvrent en douceur, sans recharger la page. Le détail de l\'XP s\'ouvre en touchant ta barre d\'XP.'], en: ['✨ New Guild page, cleaner and smoother: your status on top, then a list of sections (Quests, Raid, Season, Armory, Arsenal, Ranks, Medals, Friends) that open smoothly without reloading. XP details open when you tap your XP bar.']},
   {v: '9.32', d: '2026-11-12', fr: ['⚔️ Guilde plus compacte : les Quêtes et l\'Armurerie (toutes les récompenses) se replient. Touche pour ouvrir, l\'appli se souvient de ton choix.', '🛡️ L\'Armurerie, façon jeu : onglets (Titres, Cadres, Auras, Victoires, Bannières, Emblèmes, Thèmes), objets avec une rareté (Commun, Rare, Épique, Légendaire) et l\'objet équipé marqué « ÉQUIPÉ ».'], en: ['⚔️ More compact Guild: Quests and the Armory (all rewards) fold up. Tap to open, the app remembers your choice.', '🛡️ The Armory, game style: tabs (Titles, Frames, Auras, Victories, Banners, Emblems, Themes), items with a rarity (Common, Rare, Epic, Legendary) and the equipped item marked “EQUIPPED”.']},
@@ -6690,10 +6702,13 @@ const REWARD_THEMES = [
   {id: 'orroyal', n: ['Or royal', 'Royal gold'], l: 45, acc: '#ffcc33', bg: '#110e05'}, {id: 'rubis', n: ['Rubis', 'Ruby'], l: 60, acc: '#ff2e63', bg: '#14070b'},
   {id: 'aurore', n: ['Aurore', 'Aurora'], l: 80, acc: '#5ef2d6', bg: '#06121a'}, {id: 'legende', n: ['Légende', 'Legend'], l: 100, acc: '#b26bff', bg: '#0b0614'}];
 const FRAMES = [
-  {id: '', n: ['Couleur du rang', 'Rank color'], l: 1}, {id: 'glow', n: ['Lueur', 'Glow'], l: 25}, {id: 'aurora', n: ['Arc-en-ciel', 'Rainbow'], l: 50},
-  {id: 'flame', n: ['Flammes', 'Flames'], l: 75}, {id: 'legend', n: ['Légendaire', 'Legendary'], l: 100}];
+  {id: '', n: ['Couleur du rang', 'Rank color'], r: {l: 1}}, {id: 'ice', n: ['Givre', 'Frost'], r: {l: 15}}, {id: 'glow', n: ['Lueur', 'Glow'], r: {l: 25}},
+  {id: 'gold', n: ['Doré', 'Golden'], r: {l: 35}}, {id: 'sakura', n: ['Sakura', 'Sakura'], r: {m: ['wknd', 1]}}, {id: 'shadow', n: ['Ombre', 'Shadow'], r: {m: ['night', 1]}},
+  {id: 'emerald', n: ['Émeraude', 'Emerald'], r: {m: ['pr', 1]}}, {id: 'aurora', n: ['Arc-en-ciel', 'Rainbow'], r: {l: 50}}, {id: 'thunder', n: ['Foudre', 'Thunder'], r: {m: ['raid', 0]}, rar: 2},
+  {id: 'blood', n: ['Sang de dragon', 'Dragon blood'], r: {m: ['boss', 1]}, rar: 2}, {id: 'champion', n: ['Champion', 'Champion'], r: {m: ['sea', 0]}, rar: 3}, {id: 'flame', n: ['Flammes', 'Flames'], r: {l: 75}},
+  {id: 'void', n: ['Néant', 'Void'], r: {l: 90}}, {id: 'legend', n: ['Légendaire', 'Legendary'], r: {l: 100}}];
 const myLvl = () => S.history.length ? hunter().lvl : 1;
-const myFrame = () => { const f = S.settings.frame || ''; const x = FRAMES.find(y => y.id === f); return GAME() && x && myLvl() >= x.l ? f : ''; };
+const myFrame = () => { const f = S.settings.frame || ''; const x = FRAMES.find(y => y.id === f); return GAME() && x && x.id && cosReq(x.r).ok ? f : ''; };
 /* ----- Autres cosmétiques : effets de série, célébration, bannière de profil, emblème ----- */
 const COS = {
   fx: [{id: '', n: ['Classique', 'Classic'], r: {l: 1}}, {id: 'spark', n: ['Étincelles', 'Sparks'], r: {l: 15}}, {id: 'bolt', n: ['Éclair', 'Lightning'], r: {l: 35}},
@@ -6721,7 +6736,7 @@ const RKR = {E: 0, D: 0, C: 1, B: 2, A: 3, S: 3};
 function rarOf(r) { // rareté selon la difficulté à débloquer
   if (r.l) return r.l <= 20 ? 0 : r.l <= 45 ? 1 : r.l <= 75 ? 2 : 3;
   const me = medalsEarned(), d = me.defs.filter(x => x.g === r.m[0]).sort((a, b) => a.v - b.v)[r.m[1]];
-  return d ? RKR[d.rk] ?? 1 : 1;
+  return d ? Math.max(1, RKR[d.rk] ?? 1) : 1; // une récompense de médaille est au moins Rare
 }
 let armTab = 'title';
 function armItem({on, ok, why, rar, prev, name, act, k, id}) {
@@ -6742,7 +6757,7 @@ function armoryBody() {
       return {ok: !!me.got[d.id], rar: RKR[d.rk] ?? 1, h: armItem({on: cur === g + i, ok: !!me.got[d.id], why: d.t, rar: RKR[d.rk] ?? 1, prev: `<span class="armtt">« »</span>`, name: T(t[0], t[1]), act: 'title-set', id: g + i})}; }).filter(Boolean).sort((a, b) => b.ok - a.ok || a.rar - b.rar).map(x => x.h));
   } else if (armTab === 'frame') {
     hint = T('Le cadre autour de ta photo. Tes amis le voient.', 'The frame around your photo. Your friends see it.');
-    items = FRAMES.map(f => armItem({on: (S.settings.frame || '') === f.id, ok: lv >= f.l, why: `${T('Niv.', 'Lv.')} ${f.l}`, rar: rarOf({l: f.l}), prev: `<span class="frav sm rkf${f.id ? ' frm-' + f.id : ''}" style="--rkc:${hunter().col}">${esc(((S.settings.name || 'M').trim()[0] || 'M').toUpperCase())}</span>`, name: T(f.n[0], f.n[1]), act: 'frame-set', id: f.id}));
+    items = FRAMES.map(f => { const q = cosReq(f.r); return {ok: q.ok, h: armItem({on: (S.settings.frame || '') === f.id, ok: q.ok, why: q.why, rar: f.id ? f.rar ?? rarOf(f.r) : 0, prev: `<span class="frav sm rkf${f.id ? ' frm-' + f.id : ''}" style="--rkc:${hunter().col}">${esc(((S.settings.name || 'M').trim()[0] || 'M').toUpperCase())}</span>`, name: T(f.n[0], f.n[1]), act: 'frame-set', id: f.id})}; }).sort((a, b) => b.ok - a.ok).map(x => x.h);
   } else if (armTab === 'theme') {
     hint = T('Les couleurs de toute l\'appli.', 'The colors of the whole app.');
     items = REWARD_THEMES.map(t => armItem({on: (S.settings.accent || '').toLowerCase() === t.acc && (S.settings.bg || '').toLowerCase() === t.bg, ok: lv >= t.l, why: `${T('Niv.', 'Lv.')} ${t.l}`, rar: rarOf({l: t.l}), prev: `<span class="sw2 big" style="background:linear-gradient(135deg,${t.bg} 50%,${t.acc} 50%)"></span>`, name: T(t.n[0], t.n[1]), act: 'rtheme', id: t.id}));
@@ -6759,7 +6774,7 @@ function armoryBody() {
 function armoryCount() {
   const lv = myLvl(), me = medalsEarned(); let ok = 0, tot = 0;
   TITLES.forEach(([g, i]) => { const d = titleDef(me, g, i); if (d) { tot++; if (me.got[d.id]) ok++; } });
-  FRAMES.concat(REWARD_THEMES).forEach(f => { if (!f.id) return; tot++; if (lv >= f.l) ok++; });
+  REWARD_THEMES.forEach(f => { tot++; if (lv >= f.l) ok++; }); FRAMES.forEach(f => { if (!f.id) return; tot++; if (cosReq(f.r).ok) ok++; });
   Object.values(COS).forEach(L => L.forEach(x => { if (!x.id) return; tot++; if (cosReq(x.r).ok) ok++; }));
   return [ok, tot];
 }
@@ -7295,7 +7310,7 @@ document.addEventListener('touchstart', e => {
   swp = null;
   if (modals.length || e.touches.length > 1 || S.settings.swipe === false) return;
   const t = e.target;
-  if (!t.closest('#app') || t.closest('input,textarea,select,button.check,.chs,.chips,.wstrip,.cycprev,.seg,.cvkinds,.frlist,.stbl,canvas,[data-noswipe]')) return;
+  if (!t.closest('#app') || t.closest('input,textarea,select,button.check,.chs,.chips,.wstrip,.cycprev,.seg,.cvkinds,.frlist,.stbl,.armtabs,.armgrid,.agw,canvas,[data-noswipe]')) return;
   const p = e.touches[0]; if (isIOS && (p.clientX < 24 || p.clientX > innerWidth - 24)) return;
   swp = {x: p.clientX, y: p.clientY, t: Date.now(), lock: null, dx: 0};
 }, {passive: true});
