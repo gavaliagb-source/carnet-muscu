@@ -1687,34 +1687,6 @@ function addExercise(pick) {
 let timerEnd = 0, timerInt = null;
 /* ===================== Notifications (cell + Galaxy Watch) ===================== */
 const notifOn = () => S.settings.notif === true && 'Notification' in window && Notification.permission === 'granted';
-/* ---------- Coach vocal ---------- */
-const voiceOn = () => !!S.settings.voice && 'speechSynthesis' in window;
-let voiceLast = 0;
-try { if ('speechSynthesis' in window) { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices(); } } catch (e) {}
-function say(txt) {
-  if (!voiceOn() || !txt) return;
-  try {
-    const sy = speechSynthesis; sy.cancel();
-    const u = new SpeechSynthesisUtterance(txt), lang = T('fr-CA', 'en-US');
-    // meilleure voix disponible : d'abord les voix « améliorées / naturelles », dans la bonne langue (fr-CA, sinon fr-FR)
-    const vs = sy.getVoices().filter(x => x.lang && x.lang.replace('_', '-').slice(0, 2) === lang.slice(0, 2));
-    const sc = x => (x.lang.replace('_', '-') === lang ? 4 : 0) + (/premium|enhanced|améliorée|natural|neural|online/i.test(x.name) ? 3 : 0) + (/google/i.test(x.name) ? 2 : 0) + (x.localService === false ? 1 : 0);
-    const v = vs.sort((a, b) => sc(b) - sc(a))[0];
-    if (v) u.voice = v; u.lang = v ? v.lang : lang; u.rate = .95; u.pitch = 1;
-    sy.speak(u);
-  } catch (e) {}
-}
-function voiceNext() { // court : « 8 à 10 reps, 185 livres » (poids réussi à la séance d'avant)
-  const a = S.active; if (!a) return '';
-  const i = curEx(); if (i < 0) return T('Séance terminée.', 'Workout done.');
-  const e = a.exercises[i], s = e.sets.find(x => !x.done), tm = isTimed(e);
-  const isW = s.t === 'W', same = e.sets.filter(x => (x.t === 'W') === isW), k = same.indexOf(s);
-  const rg = String(isW ? (s.r || s.ph || '') : (e.target && e.target.reps) || s.r || s.ph || '').trim().replace(/\s*[-–]\s*/, T(' à ', ' to '));
-  const reps = rg ? `${rg} ${tm ? T('secondes', 'seconds') : T('répétitions', 'reps')}` : '';
-  let w = '';
-  try { const pv = (lastFull(e.name) || []).filter(x => (x.t === 'W') === isW && x.u !== 's'), p = pv[k] || pv[pv.length - 1]; if (p && +p.w > 0) w = `${dec1(+p.w)} ${U() === 'kg' ? T('kilos', 'kilos') : T('livres', 'pounds')}`; } catch (er) {}
-  return [reps, w].filter(Boolean).join(', ') + '.';
-}
 function nextSetInfo() {
   const a = S.active; if (!a) return '';
   const i = curEx(); if (i < 0) return T('✅ Toutes les séries sont faites', '✅ All sets done');
@@ -1774,7 +1746,6 @@ function timerDone() {
   const swc = navigator.serviceWorker && navigator.serviceWorker.controller;
   if (swc && notifOn()) swc.postMessage({type: 'rest-fire', at: timerEnd, title: T('✅ Repos terminé', '✅ Rest over'), body: T('À toi : ', 'Your turn: ') + nextSetInfo()});
   else notify(T('✅ Repos terminé', '✅ Rest over'), T('À toi : ', 'Your turn: ') + nextSetInfo());
-  if (voiceOn()) setTimeout(() => say(voiceNext()), S.settings.sound === false ? 0 : 700);
   const el = $('#timer'); el.classList.add('show', 'fin'); setTimeout(bigTimerSync, 0);
   $('#tlab').textContent = T('✅ Repos terminé', '✅ Rest over'); $('#tval').textContent = '';
   const onWo = cur().v === 'workout';
@@ -2209,8 +2180,6 @@ function vSettings() {
       <button class="btn sm" data-act="plates-free" style="margin-top:10px">🧮 Calculateur de disques</button>`) +
   setSec('snd', 'timer', '⏱', T('Minuteur et son', 'Timer and sound'), T('Bip, volume, vibration', 'Beep, volume, vibration'), `
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="sound" ${S.settings.sound !== false ? 'checked' : ''}> 🔔 Bip à la fin du repos (3-2-1 puis bip final)</label>
-      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="voice" ${S.settings.voice ? 'checked' : ''}> 🗣️ ${T('Coach vocal : te dit tes reps et ton poids de la dernière fois à la fin du repos (idéal avec des écouteurs)', 'Voice coach: tells you your reps and last time’s weight when rest ends (great with earbuds)')}</label>
-      ${S.settings.voice ? `<button class="btn sm" data-act="voice-test" style="margin-top:6px">▶ ${T('Tester la voix', 'Test the voice')}</button>` : ''}
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="notif" ${S.settings.notif === true ? 'checked' : ''}> <span>⌚ ${T('Notifications pour ma montre', 'Notifications for my watch')}<br><span class="muted small">${T('Fin du repos + prochaine série. Ta Galaxy Watch vibre et affiche la notification.', 'End of rest + next set. Your Galaxy Watch vibrates and shows the notification.')}</span></span></label>
       ${S.settings.notif === true ? `<label class="row" style="margin-top:6px;color:var(--text);font-size:14px;padding-left:32px"><input type="checkbox" style="width:20px;height:20px" data-set="notifStart" ${S.settings.notifStart !== false ? 'checked' : ''}> ${T('Aussi au début du repos (silencieuse, avec l\'heure de fin)', 'Also at the start of rest (silent, with end time)')}</label>
       <button class="btn sm" data-act="test-notif" style="margin-top:8px">⌚ ${T('Tester la notification (8 s, écran éteint)', 'Test the notification (8 s, screen off)')}</button>
@@ -4420,7 +4389,6 @@ function bossKill(b) {
   confetti();
   if (S.settings.sound !== false) { ensureAudio(); setTimeout(() => beep(true), 30); }
   haptic([120, 80, 120, 80, 400]);
-  say(T(`${b.name} est vaincu! Mille points d'expérience.`, `${b.name} is defeated! One thousand experience points.`));
   modal(`<div class="bosskill"><div class="bkskull">☠</div><div class="sysh">[ ${T('BOSS VAINCU', 'BOSS DEFEATED')} ]</div><h2 style="margin:6px 0">${esc(b.name)}</h2>
     <p class="small muted" style="margin:0 0 14px">${T('Tu l\'as abattu au', 'You took it down on')} <b>${esc(b.ex)}</b>. <b style="color:var(--ok)">+1 000 XP</b> ${T('à la fin de ta séance.', 'when you finish your workout.')}</p>
     <button class="btn primary block" data-act="close">${T('Continuer', 'Continue')}</button></div>`);
@@ -5210,8 +5178,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.27.1';
+const APP_VERSION = '9.27.2';
 const CHANGELOG = [
+  {v: '9.27.2', d: '2026-11-12', fr: ['🗣️ Le coach vocal est retiré.'], en: ['🗣️ The voice coach has been removed.']},
   {v: '9.27.1', d: '2026-11-12', fr: ['🗣️ Coach vocal : il dit « répétitions » en entier, parle un peu plus lentement et choisit la meilleure voix française de ton téléphone.'], en: ['🗣️ Voice coach: speaks a bit slower and picks the best voice on your phone.']},
   {v: '9.27', d: '2026-11-12', fr: ['⚡ Appli plus rapide : le Bilan de l\'année s\'ouvre ~60 fois plus vite, le Profil, les Médailles et l\'Historique 2 à 6 fois plus vite (l\'historique affiche 40 séances, puis « Voir plus »). Si ton réseau est lent, l\'appli s\'ouvre tout de suite avec la version déjà téléchargée.', '🧹 Finitions : chiffres du profil sur une ligne, boutons des séances qui ne débordent plus, pourcentages qui ne se coupent plus, records du mois sans doublon, prédiction adaptée à ton historique, textes anglais manquants.', '🎮 Mode classique : les médailles du mode jeu (quêtes, donjons, boss, arsenal) sont cachées.'], en: ['⚡ Faster app: Year in review opens ~60× faster, Profile, Medals and History 2 to 6× faster (history shows 40 workouts, then “Show more”). On a slow network, the app opens right away with the version already downloaded.', '🧹 Polish: profile numbers on one line, workout buttons no longer overflow, percentages no longer wrap, monthly records without duplicates, prediction fitted to your history, missing English text.', '🎮 Classic mode: game-mode medals (quests, dungeons, bosses, arsenal) are hidden.']},
   {v: '9.26.2', d: '2026-11-12', fr: ['🎪 Quand un événement commence, une fenêtre te l\'annonce à l\'ouverture de l\'appli (nom, objectif, récompense et date de fin).'], en: ['🎪 When an event starts, a popup announces it when you open the app (name, goal, reward and end date).']},
@@ -7529,7 +7498,6 @@ document.addEventListener('click', e => {
     case 'timer-stop-big': closeModal(); stopTimer(); break;
     case 'timer-add': timerTot += 30; timerEnd += 30000; scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); restSW(timerEnd); tickTimer(); break;
     case 'timer-stop': stopTimer(); break;
-    case 'voice-test': say(S.active ? voiceNext() : T('8 à 10 répétitions, 185 livres.', '8 to 10 reps, 185 pounds.')); break;
     case 'timer-big': bigTimerOpen(); break;
     case 'timer-go': if (!S.active) break; if (cur().v === 'workout' && $('#timer').classList.contains('show') && !$('#timer').classList.contains('fin')) { bigTimerOpen(); break; } if ($('#timer').classList.contains('fin')) stopTimer(); if (cur().v !== 'workout') { closeAll(); openWorkout(); } else scrollCur(); break;
 
@@ -7624,7 +7592,7 @@ document.addEventListener('input', e => {
     if (t.dataset.set === 'gameMode') { S.settings.game = t.value === '1'; save(); render(); try { if (frOn()) frQueue(false); } catch (e) {} toast(GAME() ? T('⚔️ Mode jeu activé', '⚔️ Game mode on') : T('📒 Mode classique', '📒 Classic mode')); return; }
     if (t.dataset.set === 'stagOn') S.settings.stagOff = !t.checked;
     else if (t.dataset.set === 'notif') { if (t.checked) { askNotif().then(ok => { S.settings.notif = ok; save(); render(); if (ok) toast(T('⌚ Notifications activées', '⌚ Notifications on')); }); return; } S.settings.notif = false; save(); render(); return; }
-    else if (t.type === 'checkbox') { S.settings[t.dataset.set] = t.checked; if (t.dataset.set === 'wake') syncWake(); if (t.dataset.set === 'voice') { if (t.checked) say(T('Coach vocal activé.', 'Voice coach on.')); setTimeout(render, 0); } }
+    else if (t.type === 'checkbox') { S.settings[t.dataset.set] = t.checked; if (t.dataset.set === 'wake') syncWake(); }
     else if (t.dataset.set === 'inc') { const v = parseFloat(t.value.replace(',', '.')); if (v > 0) S.settings.inc = v; else delete S.settings.inc; }
     else S.settings[t.dataset.set] = t.dataset.set === 'rest' ? (parseInt(t.value, 10) || 150) : ['goal', 'bar', 'restWarm'].includes(t.dataset.set) ? +t.value : t.dataset.set === 'weekSun' ? !!t.value : t.value;
     if (t.dataset.set === 'fontScale') applyTheme();
