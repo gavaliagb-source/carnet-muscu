@@ -286,6 +286,9 @@ button.chip{cursor:pointer}
 .ag{display:block;aspect-ratio:1;border-radius:3px;background:var(--card2)}.agc .ag{width:100%}.row>.ag{width:11px;height:11px;display:inline-block}.ag.fut{background:transparent}.ag.l1{background:color-mix(in srgb,var(--accent) 30%,var(--card2))}.ag.l2{background:color-mix(in srgb,var(--accent) 55%,var(--card2))}.ag.l3{background:color-mix(in srgb,var(--accent) 80%,var(--card2))}.ag.l4{background:var(--accent);box-shadow:0 0 6px color-mix(in srgb,var(--accent) 60%,transparent)}
 .bars .bar{transform-box:fill-box;transform-origin:bottom;animation:barUp .55s cubic-bezier(.2,.8,.2,1) both}@keyframes barUp{from{transform:scaleY(0)}}
 @media (prefers-reduced-motion: reduce){.ringp,.bars .bar,.finin,.rkf{animation:none!important}}
+.evcard{border-color:color-mix(in srgb,#f5c542 60%,transparent);background:linear-gradient(135deg,color-mix(in srgb,#f5c542 10%,var(--card)),var(--card))}.evcard .sysh{color:#f5c542}.evcard .goal>div{background:#f5c542}
+.evx2{display:inline-block;font-weight:900;font-size:20px;letter-spacing:1px;color:#f5c542;text-shadow:0 0 12px color-mix(in srgb,#f5c542 60%,transparent);animation:evP 1.8s ease-in-out infinite}@keyframes evP{50%{transform:scale(1.08)}}
+.evsoon{margin:-4px 0 12px;padding:8px 12px;border-radius:12px;border:1px dashed color-mix(in srgb,#f5c542 55%,transparent)}
 .bossline{background:color-mix(in srgb,#fb7185 12%,transparent);border:1px solid color-mix(in srgb,#fb7185 55%,transparent);border-radius:10px;padding:7px 10px;margin:8px 0 2px;font-size:13px}.bossline.dead{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .bosskill{text-align:center;padding:6px 0}.bkskull{font-size:64px;line-height:1;color:#fb7185;animation:bkhit .9s ease-out both}.bkskull .ico{width:72px;height:72px}
 @keyframes bkhit{0%{transform:scale(.3) rotate(-20deg);opacity:0}35%{transform:scale(1.35) rotate(8deg);opacity:1}55%{transform:scale(.9) rotate(-6deg)}70%{transform:scale(1.05) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:.85;filter:grayscale(.6)}}
@@ -1583,7 +1586,7 @@ function finishWorkout() {
   const wasFree = !a.routineId;
   const rtR = S.routines.find(x => x.id === a.routineId), rtCh = routineChanges(a, rtR);
   window._rtUpd = rtCh.length ? {rid: a.routineId, ex: JSON.parse(JSON.stringify(a.exercises))} : null;
-  const sysNew = syncSystem();
+  const sysNew = syncSystem(); const evX2 = GAME() ? evDoubleXp(S.history[S.history.length - 1]) : 0; if (GAME()) evCheck();
   const meAfter = medalsEarned(), huAfter = hunter(meAfter), medDefs = meAfter.defs, medNew = Object.keys(meAfter.got).filter(k => !medBefore[k]).map(k => medDefs.find(d => d.id === k)).filter(Boolean);
   setTimeout(() => queueCloud(1500), 0); setTimeout(remindSync, 500);
   if (!GAME()) {}
@@ -1600,6 +1603,7 @@ function finishWorkout() {
     ${GAME() ? `<div class="card lvup" style="--rc:${huAfter.col}"><div class="sysh">[ ${T('GUILDE', 'GUILD')} ]</div>
       ${huAfter.lvl > huBefore.lvl ? `<b style="font-size:18px;letter-spacing:1px">${T('NIVEAU SUPÉRIEUR!', 'LEVEL UP!')}</b><div style="margin:4px 0">${T('Niveau', 'Level')} ${huBefore.lvl} → <b style="color:var(--rc);font-size:20px">${huAfter.lvl}</b></div>` : `<div>${T('Niveau', 'Level')} <b>${huAfter.lvl}</b></div>`}
       ${huAfter.rk !== huBefore.rk ? `<div style="margin:6px 0">${T('Nouveau rang', 'New rank')} : ${rkBadge(huAfter.rk, 'mrk lvrk')} <b style="color:var(--rc)">${esc(huAfter.title)}</b></div>` : ''}
+      ${evX2 ? `<div style="margin:6px 0">🎪 ${T('Bonus d\'événement (double XP)', 'Event bonus (double XP)')} <b>+${evX2} XP</b></div>` : ''}
       ${sysNew.quest ? `<div style="margin:6px 0">✨ ${T('Quête quotidienne accomplie', 'Daily quest complete')} <b>+150 XP</b></div>` : ''}
       ${sysNew.dungeon ? `<div style="margin:6px 0">⚔️ ${T('Donjon nettoyé', 'Dungeon cleared')} <b>+500 XP</b></div>` : ''}
       ${sysNew.boss ? `<div style="margin:8px 0;font-size:17px">☠️ <b>${T('BOSS VAINCU!', 'BOSS DEFEATED!')}</b> ${esc(sysNew.boss.name)} <b>+1 000 XP</b></div>` : ''}
@@ -2098,7 +2102,7 @@ function vBody() {
   const nut = NUTRI.map(([k, l, u]) => { const pts = bodySeries(k).filter(x => Date.now() - new Date(x.d + 'T12:00') <= 7 * 864e5); return pts.length ? `<div class="stat"><span class="muted small">${l} · 7 j</span><b>${Math.round(pts.reduce((a, x) => a + +x.v, 0) / pts.length).toLocaleString(LOC())}</b><span class="muted small">${u}/jour</span></div>` : ''; }).join('');
   return photosCard() + stats + (nut ? `<div class="row" style="margin-bottom:12px;align-items:stretch">${nut}</div>` : '') + `
     <select id="bodySel">${opts.map(([k, l]) => `<option value="${k}" ${k === bodyMetric ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
-    <div class="card" style="margin-top:12px">${pts.length ? `<canvas id="chart"></canvas>` : '<div class="empty">Aucune donnée pour cette mesure.</div>'}</div>
+    <div class="card" style="margin-top:12px">${pts.length ? `<canvas id="chart"></canvas>${NUTRI.some(x => x[0] === bodyMetric) ? '' : predictHtml(pts.map(p => ({d: p.d + 'T12:00', v: +p.v})), bodyMetric === 'w' ? 'body' : 'cm')}` : '<div class="empty">Aucune donnée pour cette mesure.</div>'}</div>
     <div class="card"><h3>Nouvelle mesure</h3>
       <label>Date</label><input type="date" id="bd" value="${today}">
       <label>Poids (${U()})</label><input id="bw" inputmode="decimal" placeholder="${lastEntry && lastEntry.w != null ? esc(lastEntry.w) : ''}">
@@ -2499,8 +2503,9 @@ function historyPrompt() {
 }
 
 /* ===================== Graphique ===================== */
-function drawChart(pts) {
+function drawChart(pts, proj = []) {
   const c = $('#chart'); if (!c || !pts.length) return;
+  const n0 = pts.length; if (proj.length) pts = pts.concat(proj);
   const dpr = window.devicePixelRatio || 1, W = c.clientWidth, H = c.clientHeight;
   c.width = W * dpr; c.height = H * dpr;
   const g = c.getContext('2d'); g.scale(dpr, dpr);
@@ -2511,7 +2516,8 @@ function drawChart(pts) {
   let mn = Math.min(...vals), mx = Math.max(...vals);
   if (mn === mx) { mn -= 5; mx += 5; }
   const span = mx - mn; mn -= span * .1; mx += span * .1;
-  const x = i => pad.l + (pts.length === 1 ? (W - pad.l - pad.r) / 2 : i * (W - pad.l - pad.r) / (pts.length - 1));
+  const ts = pts.map(p => +new Date(p.d)), t0 = ts[0], t1 = ts[ts.length - 1], timeX = proj.length && t1 > t0;
+  const x = i => pad.l + (pts.length === 1 ? (W - pad.l - pad.r) / 2 : timeX ? (ts[i] - t0) / (t1 - t0) * (W - pad.l - pad.r) : i * (W - pad.l - pad.r) / (pts.length - 1));
   const y = v => pad.t + (1 - (v - mn) / (mx - mn)) * (H - pad.t - pad.b);
   g.strokeStyle = line; g.fillStyle = muted; g.font = '11px sans-serif'; g.lineWidth = 1;
   for (let i = 0; i <= 3; i++) {
@@ -2522,9 +2528,9 @@ function drawChart(pts) {
   g.textAlign = 'left'; g.fillText(dateFr(pts[0].d), pad.l, H - 6);
   if (pts.length > 1) { g.textAlign = 'right'; g.fillText(dateFr(pts[pts.length - 1].d), W - pad.r, H - 6); }
   // courbe lissée + dégradé dessous + records en or, dessinée de gauche à droite
-  const P = pts.map((p, i) => [x(i), y(p.v)]);
+  const PP = pts.map((p, i) => [x(i), y(p.v)]), P = PP.slice(0, n0);
   const path = () => { g.beginPath(); g.moveTo(P[0][0], P[0][1]); for (let i = 1; i < P.length; i++) { const [x0, y0] = P[i - 1], [x1, y1] = P[i], mx2 = (x0 + x1) / 2; g.bezierCurveTo(mx2, y0, mx2, y1, x1, y1); } };
-  let best = -Infinity; const pr = pts.map(p => { const b = p.v > best; if (b) best = p.v; return b; });
+  let best = -Infinity; const pr = pts.slice(0, n0).map(p => { const b = p.v > best; if (b) best = p.v; return b; });
   const snap = g.getImageData(0, 0, c.width, c.height);
   const paint = k => {
     g.putImageData(snap, 0, 0); g.save(); g.beginPath(); g.rect(0, 0, pad.l + (W - pad.l) * k + 2, H); g.clip();
@@ -2534,10 +2540,12 @@ function drawChart(pts) {
       g.strokeStyle = accent; g.lineWidth = 2.5; g.lineJoin = 'round'; g.lineCap = 'round'; path(); g.stroke();
     }
     P.forEach(([px, py], i) => { if (pr[i] && i > 0) { g.beginPath(); g.arc(px, py, 6, 0, 7); g.fillStyle = 'rgba(245,197,66,.25)'; g.fill(); g.beginPath(); g.arc(px, py, 4, 0, 7); g.fillStyle = '#f5c542'; g.fill(); } else { g.beginPath(); g.arc(px, py, 3, 0, 7); g.fillStyle = accent; g.fill(); } });
+    if (PP.length > n0) { const [ax, ay] = PP[n0 - 1], [bx, by] = PP[n0]; g.setLineDash([5, 5]); g.strokeStyle = accent; g.globalAlpha = .7; g.lineWidth = 2; g.beginPath(); g.moveTo(ax, ay); g.lineTo(bx, by); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
+      g.beginPath(); g.arc(bx, by, 4, 0, 7); g.strokeStyle = accent; g.lineWidth = 2; g.stroke(); g.fillStyle = accent; g.font = 'bold 11px sans-serif'; g.textAlign = 'right'; g.fillText(Math.round(pts[n0].v).toLocaleString(LOC()), bx - 6, by - 8); }
     g.restore();
   };
   if (matchMedia('(prefers-reduced-motion: reduce)').matches || P.length < 2) { paint(1); return; }
-  const t0 = performance.now(); (function f(t) { const k = Math.min(1, (t - t0) / 650); paint(1 - Math.pow(1 - k, 3)); if (k < 1) requestAnimationFrame(f); })(t0);
+  const a0 = performance.now(); (function f(t) { const k = Math.min(1, (t - a0) / 650); paint(1 - Math.pow(1 - k, 3)); if (k < 1) requestAnimationFrame(f); })(a0);
 }
 function chartPoints() {
   if (progTab === 'body') return bodySeries(bodyMetric).map(p => ({d: p.d + 'T12:00', v: +p.v}));
@@ -3133,7 +3141,7 @@ function vTrain() {
   let h = '';
   if (a) h += `<div class="card" style="border-color:var(--accent)"><div class="row between"><div><h3>Séance en cours</h3><span class="muted small">${esc(a.routineName)} · ⏱ <span id="elapsed2">${fmtDur(Date.now() - new Date(a.start))}</span></span></div><button class="btn primary sm" data-act="go-workout">Reprendre</button></div></div>`;
   h += todayCard();
-  syncSystem(); if (GAME()) h += questCard(true);
+  syncSystem(); if (GAME()) { evCheck(); h += eventCard(); h += questCard(true); }
   h += weekRings();
   h += cloudNag();
   if (deloadOn()) h += `<div class="card" style="border-color:var(--warm)"><div class="row between"><div><b>🪶 Semaine de récupération</b><br><span class="muted small">Charges −${S.settings.deload.pct} % jusqu'au ${new Date(S.settings.deload.until + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'long'})}</span></div><button class="btn sm" data-act="deload-off">Arrêter</button></div></div>`;
@@ -3292,7 +3300,7 @@ function vRoutineDetail() {
   const chips = [['vol', 'Volume'], ['reps', 'Réps'], ['dur', 'Durée']].map(([k, l]) => `<button class="chip ${rtMetric === k ? 'on' : ''}" data-act="rt-metric" data-m="${k}">${l}</button>`).join('');
   return `<h2 style="font-size:22px">${esc(r.name)}</h2>
     <p class="muted small" style="margin:0 0 12px">📁 ${esc(r.folder || DEF_FOLDER)} · ${r.exercises.length} exercice${r.exercises.length > 1 ? 's' : ''}${lastH ? ' · dernière fois le ' + dateFr(lastH.date) : ''}</p>
-    <button class="btn primary block" data-act="start" data-rid="${r.id}">▶ Démarrer la routine</button>
+    <button class="btn primary block" data-act="start" data-rid="${r.id}">▶ Démarrer la routine</button>${expressBtn(r)}
     <div class="card" style="margin-top:12px">${ss.length ? '<canvas id="chart"></canvas>' : '<div class="empty" style="padding:16px">Le graphique apparaîtra après ta première séance de cette routine.</div>'}
       <div class="chips" style="margin-bottom:0">${chips}</div></div>
     <div class="row between" style="margin:16px 0 0"><span class="muted">Exercices</span><button class="linkbtn" data-act="edit-routine" data-rid="${r.id}">Modifier la routine</button></div>
@@ -3475,6 +3483,122 @@ function actGrid() {
   return `<div class="card"><div class="row between"><b>${T('Mon activité', 'My activity')}</b><span class="muted small">${act} ${T('jours actifs', 'active days')} · 6 ${T('mois', 'months')}</span></div>
     <div class="agw"><div class="agm" style="grid-template-columns:repeat(${ci},1fr)">${mLab}</div><div class="agg">${cols}</div></div>
     <div class="row small muted" style="justify-content:flex-end;gap:4px;margin-top:6px">${T('Léger', 'Light')} <i class="ag l1"></i><i class="ag l2"></i><i class="ag l3"></i><i class="ag l4"></i> ${T('Intense', 'Hard')}</div></div>`;
+}
+/* ===================== Séance express ===================== */
+function estMin(exs) { // durée estimée d'une séance (minutes)
+  const defR = +S.settings.rest || 150, ssR = +S.settings.restSS || 15; let sec = 0; const seen = new Set();
+  exs.forEach((e, i) => {
+    if (e.ss && seen.has(e.ss)) return;
+    const grp = e.ss ? exs.filter(x => x.ss === e.ss) : [e]; if (e.ss) seen.add(e.ss);
+    const n = Math.max(...grp.map(x => (x.sets || []).length || +x.n || 3)), rest = +e.rest > 0 ? +e.rest : +e.rest === -1 ? 0 : defR;
+    if (grp.some(isCardio)) { sec += grp.reduce((a, x) => a + (x.sets || []).reduce((b, s) => b + (s.u === 'c' ? (+s.r || 10) * 60 : 60), 0), 0); return; }
+    sec += 60 * grp.length + n * (grp.length * 40 + (grp.length - 1) * ssR) + Math.max(0, n - 1) * rest + (i < exs.length - 1 ? 30 : 0);
+  });
+  return Math.max(5, Math.round(sec / 60 / 5) * 5);
+}
+function expressify(A) {
+  let ex = A.exercises.filter(e => !isCardio(e));
+  if (ex.length > 5) ex = ex.slice(0, 5);
+  ex.forEach((e, i) => {
+    const w = e.sets.filter(s => s.t === 'W'), wk = e.sets.filter(s => s.t !== 'W');
+    e.sets = [...(i === 0 ? w.slice(-1) : []), ...wk.slice(0, 2)];
+    if (+e.rest !== -1) e.rest = Math.min(+e.rest > 0 ? +e.rest : (+S.settings.rest || 150), 75);
+  });
+  // jumelle 2 exercices de suite qui ne travaillent pas les mêmes muscles (supersets)
+  for (let i = 0; i + 1 < ex.length; i++) {
+    const a = ex[i], b = ex[i + 1]; if (a.ss || b.ss) continue;
+    const La = libEntry(a.name), Lb = libEntry(b.name);
+    if (La && Lb && La.p && Lb.p && La.p.some(m => Lb.p.includes(m))) continue;
+    if (i === 0 && ex.length > 3) continue; // le premier gros exercice reste seul
+    a.ss = b.ss = 'x' + i; i++;
+  }
+  A.exercises = ex; A.express = 1;
+}
+function startExpress(rid) {
+  startWorkout(rid); if (!S.active || S.active.routineId !== rid) return;
+  expressify(S.active); S.active.routineName += ' ⚡'; save(); render();
+  toast(T(`⚡ Version express : environ ${estMin(S.active.exercises)} min`, `⚡ Express version: about ${estMin(S.active.exercises)} min`));
+}
+function expressBtn(r) {
+  if (!r.exercises.length) return '';
+  const full = r.exercises.map(e => ({...e, sets: mkSetsFromRoutine(e, null)}));
+  const A = {exercises: JSON.parse(JSON.stringify(full.map(e => ({name: e.name, ss: e.ss, rest: e.rest, sets: e.sets, cardio: e.cardio}))))};
+  const before = estMin(full), after = (expressify(A), estMin(A.exercises));
+  if (after >= before - 5) return '';
+  return `<button class="btn block" data-act="start-express" data-rid="${r.id}" style="margin-top:8px">⚡ ${T('Version express', 'Express version')} <span class="muted small">≈ ${after} min ${T('au lieu de', 'instead of')} ${before}</span></button>`;
+}
+/* ===================== Prédiction ===================== */
+function predict(pts) { // régression linéaire sur les 90 derniers jours
+  const now = Date.now(), P = pts.map(p => ({t: (+new Date(p.d) - now) / 864e5, v: +p.v})).filter(p => p.t > -90 && p.v > 0);
+  if (P.length < 4 || P[P.length - 1].t - P[0].t < 14) return null;
+  const n = P.length, mt = P.reduce((a, p) => a + p.t, 0) / n, mv = P.reduce((a, p) => a + p.v, 0) / n;
+  const sxx = P.reduce((a, p) => a + (p.t - mt) ** 2, 0); if (!sxx) return null;
+  const slope = P.reduce((a, p) => a + (p.t - mt) * (p.v - mv), 0) / sxx, v0 = mv - slope * mt;
+  return {slope, v0, at: d => v0 + slope * d};
+}
+const fmtDay = d => new Date(Date.now() + d * 864e5).toLocaleDateString(LOC(), {day: 'numeric', month: 'short'});
+function predictHtml(pts, kind) {
+  const p = predict(pts); if (!p) return pts.length ? `<p class="muted small" style="margin:8px 0 0">📈 ${T('La prédiction apparaîtra après 4 séances sur au moins 2 semaines.', 'The prediction will appear after 4 sessions over at least 2 weeks.')}</p>` : '';
+  const u = kind === 'reps' ? ' reps' : kind === 'pct' ? ' %' : kind === 'cm' ? ' ' + MU() : ' ' + U();
+  const r = v => (kind === 'pct' || kind === 'cm' ? dec1(v) : Math.round(v)) + u, wk = p.slope * 7;
+  if (kind === 'body' || kind === 'pct' || kind === 'cm') {
+    if (Math.abs(wk) < (kind === 'body' ? .1 : .05)) return `<p class="small" style="margin:8px 0 0">📈 ${T('Tendance : stable ces 3 derniers mois.', 'Trend: steady over the last 3 months.')}</p>`;
+    return `<p class="small" style="margin:8px 0 0">📈 ${T('Tendance', 'Trend')} : <b>${wk > 0 ? '+' : '−'}${r(Math.abs(wk))}</b> / ${T('sem.', 'wk')} → ${T('environ', 'about')} <b>${r(p.at(56))}</b> ${T('dans 8 semaines', 'in 8 weeks')} (${fmtDay(56)}).</p>`;
+  }
+  if (p.slope <= 0) return `<p class="small" style="margin:8px 0 0">📈 ${T('Pas de hausse ces 3 derniers mois. Essaie d\'ajouter une rep ou un peu de poids à la prochaine séance.', 'No increase over the last 3 months. Try adding a rep or a bit of weight next session.')}</p>`;
+  const best = Math.max(...pts.map(x => +x.v)), stp = kind === 'reps' ? 5 : U() === 'kg' ? 10 : 25, goal = Math.floor(Math.max(best, p.at(0)) / stp + 1) * stp, dG = (goal - p.v0) / p.slope;
+  return `<p class="small" style="margin:8px 0 0">📈 ${T('À ce rythme', 'At this pace')} : <b>${r(p.at(56))}</b> ${T('dans 8 semaines', 'in 8 weeks')} (${fmtDay(56)})${dG > 0 && dG < 365 ? `. ${T('Prochain cap', 'Next milestone')} : <b>${r(goal)}</b> ${T('vers le', 'around')} <b>${fmtDay(dG)}</b>` : ''}</p>`;
+}
+function projPts(pts) { const p = predict(pts); return p && pts.length ? [{d: new Date(Date.now() + 56 * 864e5).toISOString(), v: p.at(56)}] : []; }
+/* ===================== Événements (mode jeu) ===================== */
+const EVENTS = [
+  {id: 'ny', f: '01-01', t: '01-14', n: ['Résolution de fer', 'Iron Resolution'], d: ['Commence l\'année fort : 6 séances en 2 semaines.', 'Start the year strong: 6 workouts in 2 weeks.'], q: {k: 'sess', g: 6, xp: 600}},
+  {id: 'val', f: '02-10', t: '02-16', n: ['Cœur d\'acier', 'Heart of Steel'], d: ['La semaine du cardio : 60 minutes de cardio.', 'Cardio week: 60 minutes of cardio.'], q: {k: 'car', g: 60, xp: 300}},
+  {id: 'spr', f: '03-20', t: '03-26', n: ['Festival du printemps', 'Spring Festival'], d: ['Double XP sur toutes tes séances.', 'Double XP on all your workouts.'], x2: 1},
+  {id: 'may', f: '05-05', t: '05-11', n: ['L\'épreuve des mille', 'Trial of a Thousand'], d: ['1 000 répétitions en une semaine.', '1,000 reps in one week.'], q: {k: 'reps', g: 1000, xp: 400}},
+  {id: 'sum', f: '07-01', t: '07-07', n: ['Canicule', 'Heatwave'], d: ['Double XP sur toutes tes séances.', 'Double XP on all your workouts.'], x2: 1},
+  {id: 'sep', f: '09-01', t: '09-07', n: ['Retour au donjon', 'Back to the Dungeon'], d: ['4 séances dans la semaine de la rentrée.', '4 workouts during back-to-school week.'], q: {k: 'sess', g: 4, xp: 400}},
+  {id: 'hal', f: '10-25', t: '11-01', n: ['La nuit des revenants', 'Night of the Revenants'], d: ['Soulève {g} de volume au total pendant l\'événement.', 'Lift {g} of total volume during the event.'], q: {k: 'vol', g: 6666, xp: 666}},
+  {id: 'xm', f: '12-20', t: '12-31', n: ['Le festin du géant', 'The Giant\'s Feast'], d: ['Brûle le festin : 5 séances avant le Nouvel An.', 'Burn off the feast: 5 workouts before New Year.'], q: {k: 'sess', g: 5, xp: 500}}];
+function evWindow(e, y) { const a = new Date(`${y}-${e.f}T00:00:00`), b = new Date(`${y}-${e.t}T00:00:00`); b.setDate(b.getDate() + 1); return [a, b]; }
+function wkndEvent(y, m) { // le dernier week-end complet du mois = week-end double XP
+  const d = new Date(y, m + 1, 0); while (d.getDay() !== 0) d.setDate(d.getDate() - 1); const sat = new Date(d); sat.setDate(d.getDate() - 1); sat.setHours(0, 0, 0, 0);
+  const end = new Date(d); end.setDate(d.getDate() + 1); end.setHours(0, 0, 0, 0);
+  return {id: `wk${y}${m}`, n: ['Week-end double XP', 'Double XP Weekend'], d: ['Toutes tes séances du week-end valent le double d\'XP.', 'All your weekend workouts are worth double XP.'], x2: 1, a: sat, b: end};
+}
+function eventsAround(now = new Date()) {
+  const y = now.getFullYear(), L = [];
+  [y - 1, y, y + 1].forEach(yy => EVENTS.forEach(e => { const [a, b] = evWindow(e, yy); L.push({...e, id: e.id + yy, a, b}); }));
+  for (let k = -1; k <= 2; k++) { const d = new Date(y, now.getMonth() + k, 1); const w = wkndEvent(d.getFullYear(), d.getMonth()); if (!L.some(x => x.a < w.b && x.b > w.a)) L.push(w); }
+  return L.sort((p, q) => p.a - q.a);
+}
+const evNow = (t = new Date()) => GAME() ? eventsAround(t).find(e => t >= e.a && t < e.b) || null : null;
+function evProg(e) {
+  const hs = S.history.filter(h => { const t = new Date(h.date); return t >= e.a && t < e.b; }), q = e.q; if (!q) return 0;
+  if (q.k === 'sess') return hs.length;
+  if (q.k === 'reps') return hs.reduce((t, h) => t + h.exercises.reduce((u, x) => isCardio(x) ? u : u + work(x.sets).reduce((v, s) => v + (s.u === 's' || s.u === 'c' ? 0 : (+s.r || 0)), 0), 0), 0);
+  if (q.k === 'car') return Math.round(hs.reduce((t, h) => t + h.exercises.reduce((u, x) => u + x.sets.reduce((v, s) => v + (s.u === 'c' ? (+s.r || 0) : 0), 0), 0), 0));
+  return Math.round(hs.reduce((t, h) => t + sessVol(h), 0) * (U() === 'kg' ? 1 : 1 / 2.20462));
+}
+function evCheck() {
+  if (!GAME()) return;
+  eventsAround().filter(e => e.q && e.a <= new Date()).forEach(e => { if (evProg(e) >= e.q.g) giveXp('ev', e.id, e.q.xp, T(`🎉 Événement réussi : ${e.n[0]}! +${e.q.xp} XP`, `🎉 Event complete: ${e.n[1]}! +${e.q.xp} XP`)); });
+}
+function evDoubleXp(h) { // appelée à la fin d'une séance
+  const e = evNow(new Date(h.date)); if (!e || !e.x2) return 0;
+  const xp = 100 + work(h.exercises.flatMap(x => x.sets)).length * 5;
+  return giveXp('x2', h.id, xp, '') ? xp : 0;
+}
+function eventCard() {
+  if (!GAME()) return '';
+  const now = new Date(), e = evNow(now);
+  if (!e) { const nx = eventsAround(now).find(x => x.a > now); if (!nx) return ''; const dd = Math.ceil((nx.a - now) / 864e5); return dd <= 7 ? `<div class="evsoon small">🎪 ${T('Prochain événement', 'Next event')} : <b>${esc(T(nx.n[0], nx.n[1]))}</b> ${T(`dans ${dd} j`, `in ${dd} d`)}</div>` : ''; }
+  const left = Math.ceil((e.b - now) / 864e5), pr = e.q ? evProg(e) : 0, done = e.q && pr >= e.q.g;
+  const fmt = v => e.q.k === 'vol' ? `${Math.round(U() === 'kg' ? v : v * 2.20462).toLocaleString(LOC())} ${U()}` : e.q.k === 'car' ? `${v} min` : v.toLocaleString(LOC());
+  return `<div class="card evcard"><div class="row between"><div class="sysh">[ ${T('ÉVÉNEMENT', 'EVENT')} ]</div><span class="small muted">${left} ${T(left > 1 ? 'jours restants' : 'jour restant', left > 1 ? 'days left' : 'day left')}</span></div>
+    <b class="bossn">🎪 ${esc(T(e.n[0], e.n[1]))}</b><p class="small" style="margin:2px 0 6px">${esc(T(e.d[0], e.d[1])).replace('{g}', e.q ? fmt(e.q.g) : '')}</p>
+    ${e.x2 ? `<div class="evx2">2× XP</div>` : `<div class="goal"><div style="width:${Math.min(100, Math.round(pr / e.q.g * 100))}%"></div></div>
+    <div class="row between small muted"><span>${done ? `<b style="color:var(--ok)">${T('Réussi!', 'Complete!')}</b>` : `+${e.q.xp} XP`}</span><span>${fmt(Math.min(pr, e.q.g))} / ${fmt(e.q.g)}</span></div>`}</div>`;
 }
 function goalStreak() {
   const g = +S.settings.goal || 0; if (!g) return 0;
@@ -3703,7 +3827,7 @@ function vExDetail() {
       <button class="btn sm" data-act="exo" data-n="${esc(name)}">📖 Instructions et lien</button></div>
     ${rec ? `<div class="row" style="align-items:stretch;margin-bottom:12px">${rec.best ? `<div class="stat"><span class="muted small">Top série</span><b class="pr">${rec.best.w}×${rec.best.r}</b></div><div class="stat"><span class="muted small">1RM estimé</span><b>${Math.round(rec.best.v)}</b></div><div class="stat"><span class="muted small">Charge max</span><b>${rec.heavy ? rec.heavy.w : '—'}</b></div>` : `<div class="stat"><span class="muted small">Réps max</span><b class="pr">${rec.reps.r}</b></div><div class="stat"><span class="muted small">Séances</span><b>${rec.count}</b></div>`}</div>` : ''}
     ${stagBtn(name)}
-    <div class="card">${pts.length ? '<canvas id="chart"></canvas>' : '<div class="empty" style="padding:16px">Pas encore de données pour ce graphique.</div>'}<div class="chips" style="margin-bottom:0">${chips}</div></div>
+    <div class="card">${pts.length ? '<canvas id="chart"></canvas>' : '<div class="empty" style="padding:16px">Pas encore de données pour ce graphique.</div>'}${exMetric === 'vol' ? '' : predictHtml(pts, exMetric === 'reps' ? 'reps' : 'w')}<div class="chips" style="margin-bottom:0">${chips}</div></div>
     ${maxTable(rec)}
     <p class="muted" style="margin:16px 0 8px">Historique</p>
     ${ss.length ? ss.slice().reverse().slice(0, 30).map(({h, e}) => `<div class="card"><div class="row between"><b>${esc(h.routineName)}</b><span class="tag">${new Date(h.date).toLocaleDateString(LOC(), {day: 'numeric', month: 'short', year: 'numeric'})}</span></div>
@@ -5016,8 +5140,9 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.24';
+const APP_VERSION = '9.25';
 const CHANGELOG = [
+  {v: '9.25', d: '2026-11-12', fr: ['⚡ Version express : sur la page d\'une routine, un bouton la fait tenir en moins de temps (2 séries par exercice, supersets, repos plus courts), avec la durée estimée.', '📈 Prédiction : sur la page d\'un exercice et dans tes mesures, l\'app prolonge ta courbe en pointillé et te dit où tu seras dans 8 semaines, plus la date de ton prochain cap (ex. 225 lb).', '🎪 Événements (mode jeu) : week-end double XP chaque fin de mois, et des événements spéciaux pendant l\'année (Nouvel An, Halloween, Noël…) avec leur propre quête.'], en: ['⚡ Express version: on a routine\'s page, a button makes it fit in less time (2 sets per exercise, supersets, shorter rest), with the estimated duration.', '📈 Prediction: on an exercise page and in your measurements, the app extends your curve with a dotted line and tells you where you\'ll be in 8 weeks, plus the date of your next milestone (e.g. 225 lb).', '🎪 Events (game mode): a double XP weekend at the end of every month, and special events through the year (New Year, Halloween, Christmas…) with their own quest.']},
   {v: '9.24', d: '2026-11-12', fr: ['✨ Quand tu coches une série, un petit « +5 XP » s\'envole (en mode Classique : le volume de la série, ou « Record! » en or).', '🎬 Écran de fin de séance animé : les blocs apparaissent un à un, les chiffres comptent, et en mode jeu la barre d\'XP se remplit jusqu\'au niveau suivant.', '🛡️ Mode jeu : un cadre aux couleurs de ton rang autour de ta photo et de celle de tes amis (il brille dès le rang S).', '⭕ Anneaux de la semaine dans Entraînement : séances, volume et cardio, comparés à ta moyenne.', '🟩 Grille d\'activité des 6 derniers mois dans le Profil.', '📈 Graphiques plus beaux : courbes lissées avec dégradé, records en points dorés, barres qui montent.', '↔️ Les écrans glissent quand tu avances, reviens ou changes d\'onglet.'], en: ['✨ When you check a set, a little “+5 XP” floats up (in Classic mode: the set\'s volume, or a gold “Record!”).', '🎬 Animated workout summary: blocks appear one by one, numbers count up, and in game mode the XP bar fills toward the next level.', '🛡️ Game mode: a frame in your rank\'s color around your photo and your friends\' (it glows from rank S).', '⭕ Weekly rings in Workout: workouts, volume and cardio, compared to your average.', '🟩 6-month activity grid in Profile.', '📈 Nicer charts: smooth curves with a gradient, records as gold dots, bars that grow.', '↔️ Screens slide when you go forward, back or switch tabs.']},
   {v: '9.23.1', d: '2026-11-11', fr: ['🗣️ Coach vocal plus court : il dit juste tes reps à faire et le poids réussi à ta dernière séance (ex. « 8 à 10 reps, 185 livres »).'], en: ['🗣️ Shorter voice coach: it just says your target reps and the weight you hit last time (e.g. “8 to 10 reps, 185 pounds”).']},
   {v: '9.23', d: '2026-11-11', fr: ['🗣️ Coach vocal (Réglages → Minuteur et son) : avec tes écouteurs, une voix t\'annonce la fin du repos et ta prochaine série (exercice, poids, reps), plus « Plus que 10 secondes ».', '☠️ Le boss dans ta séance : l\'exercice du boss affiche les séries à viser, et quand ta série le bat, le boss tombe à l\'écran.', '🔄 Remplacer un exercice propose maintenant 3 exercices qui travaillent les mêmes muscles (pratique quand la machine est prise).', '⚔️ Défis entre amis : le plus de volume, de séances ou de reps en 7 jours. Le gagnant prend +300 XP.', '🛡️ Raid de guilde : toi et tes amis additionnez vos reps de la semaine pour abattre un boss commun (1 500 reps par aventurier). Réussi = +400 XP pour tout le monde.', '💬 Commentaires : écris un petit message sous les séances et les photos de tes amis.', '🏆 Saisons de la Guilde : chaque mois, un classement de l\'XP gagnée ce mois-ci. Le 1er remporte un trophée visible sur son profil.'], en: ['🗣️ Voice coach (Settings → Timer & sound): with earbuds, a voice announces the end of rest and your next set (exercise, weight, reps), plus “10 seconds left”.', '☠️ The boss in your workout: the boss exercise shows the sets to aim for, and when your set beats it, the boss falls on screen.', '🔄 Swapping an exercise now suggests 3 exercises that work the same muscles (handy when the machine is taken).', '⚔️ Friend challenges: most volume, workouts or reps in 7 days. The winner gets +300 XP.', '🛡️ Guild raid: you and your friends add up your weekly reps to take down a shared boss (1,500 reps per adventurer). Cleared = +400 XP for everyone.', '💬 Comments: write a short message under your friends\' workouts and photos.', '🏆 Guild seasons: each month, a ranking of the XP earned that month. 1st place wins a trophy shown on their profile.']},
@@ -6638,8 +6763,8 @@ function render() {
 }
 function afterRender(c) {
   if (c.v === 'routine') { const r = S.routines.find(x => x.id === c.rid); if (r) drawChart(routinePoints(r)); }
-  if (c.v === 'exdetail') drawChart(exPoints(c.n));
-  if (c.v === 'measures') drawChart(bodySeries(bodyMetric).map(p => ({d: p.d + 'T12:00', v: +p.v})));
+  if (c.v === 'exdetail') { const P = exPoints(c.n); drawChart(P, exMetric === 'vol' ? [] : projPts(P)); }
+  if (c.v === 'measures') { const P = bodySeries(bodyMetric).map(p => ({d: p.d + 'T12:00', v: +p.v})); drawChart(P, NUTRI.some(x => x[0] === bodyMetric) ? [] : projPts(P)); }
   if (c.v === 'calendar' && !c.scrolled) { c.scrolled = true; setTimeout(() => window.scrollTo(0, calMode === 'year' ? 0 : document.body.scrollHeight), 0); }
   if (c.v === 'calendar') calWatch(); else if (calObs) { calObs.disconnect(); calObs = null; }
 }
@@ -6969,6 +7094,7 @@ document.addEventListener('click', e => {
     case 'fr-phbig': modal(`<div class="row between"><b>${esc((frData[b.dataset.c] || {d: {}}).d.name || '')}</b><button class="btn sm" data-act="close">✕</button></div><img src="${b.src}" alt="" style="width:100%;border-radius:14px;margin-top:10px;display:block">`); break;
     case 'fr-add-ok': frAdd(($('#frin') || {}).value); break;
     case 'fr-refresh': toast('↻'); frLoad(true); break;
+    case 'start-express': startExpress(b.dataset.rid); break;
     case 'ch-new': closeAll(); chNew(b.dataset.c); break;
     case 'ch-f': chDraft.f = b.dataset.c; chPaint(); break;
     case 'ch-k': chDraft.k = b.dataset.k; chPaint(); break;
