@@ -647,6 +647,31 @@ nav button{font-size:11px;min-width:0;white-space:nowrap;overflow:visible;text-o
 .livec{border-color:#22c55e!important;box-shadow:0 0 14px #22c55e33}.frchip.live .frav{box-shadow:0 0 0 2px var(--card),0 0 0 4px #22c55e}
 .cheero{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:9999;background:var(--card);border:2px solid #f97316;border-radius:18px;padding:14px 20px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 40px #0008,0 0 24px #f9731666;animation:cheerIn .5s cubic-bezier(.2,1.5,.4,1)}.cheero span{font-size:34px}@keyframes cheerIn{from{transform:translateX(-50%) scale(.3);opacity:0}}
 .lbrow{gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.lbrow:first-child{border-top:0}.lbrow.me{background:color-mix(in srgb,var(--accent) 12%,transparent);margin:0 -12px;padding:10px 12px}.lbn{width:34px;text-align:center}
+.ob{position:fixed;inset:0;z-index:14;background:var(--bg);overflow-y:auto;animation:obIn .25s ease}.ob.out{opacity:0;transition:opacity .25s}
+@keyframes obIn{from{opacity:0}to{opacity:1}}
+.ob-in{max-width:460px;margin:0 auto;min-height:100%;box-sizing:border-box;padding:calc(env(safe-area-inset-top) + 22px) 22px calc(env(safe-area-inset-bottom) + 22px);display:flex;flex-direction:column;position:relative}
+.ob-in label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.06em}
+.ob-h1{font-size:26px;margin:0;line-height:1.15}.ob-h2{font-size:22px;margin:0 0 4px}.ob-in>p.muted{margin:0;font-size:14px}
+.ob .center{text-align:center}.ob-bot{margin-top:auto;padding-top:22px;display:flex;flex-direction:column;gap:10px}.ob-big{padding:15px!important;font-size:16px!important;border-radius:14px!important}
+.ob-gbtn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1px solid #dadce0;border-radius:14px;padding:15px;font-weight:800;font-size:16px;font-family:inherit;cursor:pointer}
+.ob-ghost{background:none;border:0;color:var(--muted);font-weight:600;font-size:14px;padding:8px;font-family:inherit;cursor:pointer}
+.ob-back{position:absolute;left:10px;top:calc(env(safe-area-inset-top) + 12px);background:none;border:0;color:var(--muted);font-size:32px;line-height:1;padding:4px 10px;cursor:pointer}
+.ob-dots{display:flex;gap:6px;justify-content:center;margin:4px 0 22px}.ob-dots i{width:24px;height:4px;border-radius:9px;background:var(--line)}.ob-dots i.on{background:var(--accent)}
+.ob-lang{display:flex;justify-content:flex-end;gap:4px}.ob-lang button{background:var(--card);border:1px solid var(--line);color:var(--muted);border-radius:9px;padding:5px 10px;font-weight:700;font-size:12px;font-family:inherit}.ob-lang button.on{color:var(--text);border-color:var(--accent)}
+.ob-logo{width:100px;height:100px;border-radius:28px;margin:7vh auto 22px;overflow:hidden;box-shadow:0 0 60px color-mix(in srgb,var(--accent) 35%,transparent)}.ob-logo img{width:100%;height:100%;display:block}
+.ob-feats{margin:26px 4px 0;display:flex;flex-direction:column;gap:12px;font-size:14px}.ob-feats>div{display:flex;gap:12px;align-items:center}.ob-feats span{width:30px;height:30px;flex:none;border-radius:9px;background:var(--card);display:flex;align-items:center;justify-content:center}
+.ob-feats.card{padding:14px}
+.ob-seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px}.ob-seg button{flex:1;background:none;border:0;color:var(--muted);padding:10px 4px;border-radius:9px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}.ob-seg button.on{background:var(--card2);color:var(--text);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.ob-av{display:flex;width:84px;height:84px;border-radius:50%;margin:18px auto 0;background:linear-gradient(135deg,var(--accent),var(--ok));align-items:center;justify-content:center;font-size:32px;font-weight:900;color:var(--accent-ink);position:relative;border:0;font-family:inherit;cursor:pointer;padding:0}
+.ob-av img{width:100%;height:100%;border-radius:50%;object-fit:cover}.ob-av em{position:absolute;right:-2px;bottom:-2px;width:28px;height:28px;border-radius:50%;background:var(--card2);border:2px solid var(--bg);font-style:normal;font-size:13px;display:flex;align-items:center;justify-content:center}
+.ob-av.big{width:104px;height:104px;font-size:42px}
+.ob-note{display:flex;gap:8px;margin-top:16px;background:var(--card);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--muted)}
+.ob-opt{display:flex;width:100%;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:8px;text-align:left;color:var(--text);font-family:inherit;cursor:pointer}.ob-opt.on{border-color:var(--accent);background:var(--has-bg)}
+.ob-opt .ob-ic{width:38px;height:38px;flex:none;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:19px}.ob-opt b{display:block;font-size:15px}.ob-opt small{color:var(--muted);font-size:12px}
+.ob-chips{display:flex;gap:6px}.ob-chips button{flex:1;padding:11px 0;border-radius:11px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:800;font-size:15px;font-family:inherit;cursor:pointer}.ob-chips button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.ob-mode{display:block;width:100%;text-align:left;border-radius:16px;padding:14px;margin-bottom:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-family:inherit;cursor:pointer}.ob-mode.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.ob-mode b{display:flex;gap:8px;align-items:center;font-size:15px}.ob-mode b i{margin-left:auto;flex:none}.ob-mode>span{display:block;color:var(--muted);font-size:13px;margin-top:6px;line-height:1.4}.ob-mode i{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);box-sizing:border-box}.ob-mode.on i{border:5px solid var(--accent)}
+.sl-row{margin:8px 0}.sl-bar{position:relative;height:8px;border-radius:9px;margin-top:5px;background:linear-gradient(90deg,#64748b,#38bdf8 25%,#4ade80 50%,#facc15 75%,#f97316)}.sl-bar i{position:absolute;top:-3px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--text);border:2px solid var(--card);box-shadow:0 0 0 1px #0006}.sl-lv{color:var(--accent)}
 </style>
 </head>
 <body>
@@ -1876,7 +1901,7 @@ function replaceExercise(ei, pick) {
 function addExercise(pick) {
   const a = S.active;
   if (pick.lib) S.links[norm(pick.name)] = pick.lib;
-  a.exercises.push({name: pick.name, note: '', target: {name: pick.name, sets: 2, reps: '8-12', weight: '', note: ''}, sets: mkSets(2, lastFor(pick.name), '', '8-12')});
+  a.exercises.push({name: pick.name, note: '', target: {name: pick.name, sets: 2, reps: defReps(), weight: '', note: ''}, sets: mkSets(2, lastFor(pick.name), '', defReps())});
   save(); render(); toast('＋ Exercice ajouté');
   setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50);
 }
@@ -2291,7 +2316,7 @@ function vBody() {
   const today = dkey(new Date());
   const lastEntry = S.body.slice().sort((a, b) => a.d.localeCompare(b.d)).pop();
   const nut = NUTRI.map(([k, l, u]) => { const pts = bodySeries(k).filter(x => Date.now() - new Date(x.d + 'T12:00') <= 7 * 864e5); return pts.length ? `<div class="stat"><span class="muted small">${l} · 7 j</span><b>${Math.round(pts.reduce((a, x) => a + +x.v, 0) / pts.length).toLocaleString(LOC())}</b><span class="muted small">${u}/jour</span></div>` : ''; }).join('');
-  return photosCard() + stats + (nut ? `<div class="row" style="margin-bottom:12px;align-items:stretch">${nut}</div>` : '') + `
+  return meCard() + photosCard() + stats + (nut ? `<div class="row" style="margin-bottom:12px;align-items:stretch">${nut}</div>` : '') + `
     <select id="bodySel">${opts.map(([k, l]) => `<option value="${k}" ${k === bodyMetric ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
     <div class="card" style="margin-top:12px">${pts.length ? `<canvas id="chart"></canvas>${NUTRI.some(x => x[0] === bodyMetric) ? '' : predictHtml(pts.map(p => ({d: p.d + 'T12:00', v: +p.v})), bodyMetric === 'w' ? 'body' : 'cm')}` : '<div class="empty">Aucune donnée pour cette mesure.</div>'}</div>
     <div class="card"><h3>Nouvelle mesure</h3>
@@ -2339,6 +2364,7 @@ function vSettings() {
       <button class="btn block" data-act="news" style="margin:8px 0 4px">🆕 ${T('Nouveautés', 'What\'s new')} <span class="muted small">· v${APP_VERSION}</span>${newsPending() ? '<i class="armdot"></i>' : ''}</button>
       <label>Nom affiché sur le profil</label>
       <input data-set="name" value="${esc(S.settings.name || '')}" placeholder="Ton nom">
+      <button class="btn block" data-act="ob-edit" style="margin-top:8px;text-align:left">🧍 ${T('Mes infos : sexe, âge, taille, objectif', 'My info: sex, age, height, goal')}</button>
       <label>Langue / Language</label>
       <select data-set="lang" data-notr="1"><option value="fr" ${isEN() ? '' : 'selected'}>Français</option><option value="en" ${isEN() ? 'selected' : ''}>English</option></select>
       <label>Objectif de séances par semaine</label>
@@ -5495,10 +5521,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.48.6'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.49.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
-  {v: '9.48.6', d: '2026-11-13', fr: ['⬆️ L\'appli se met à jour toute seule dès qu\'une nouvelle version est en ligne (jamais pendant une séance).', '☁️ Sauvegarde automatique sans fenêtre Google (Réglages) : tout se sauvegarde tout seul, et sur un nouveau téléphone tout revient en te connectant.', '🟢 En direct : vois quand un ami s\'entraîne et envoie-lui un 🔥 pendant sa séance. Le raid et la saison bougent en direct.', '🌍 Classement mondial (optionnel) dans la Guilde.', '👥 Nouveau système d\'amis : plus de fenêtre Google après tes séances, tes séances apparaissent chez tes amis en quelques secondes, un code court qui ne change jamais (ex. GAB-4821) et tu n\'as besoin d\'entrer le code d\'un ami qu\'une seule fois. Dans Amis : « Passer au nouveau système ».', '👥 Amis : on voit quand la carte de chaque ami a été mise à jour, un bouton « Mettre à jour maintenant » si ta carte attend, et ta carte se republie toute seule à l\'ouverture quand c\'est possible.', '👥 Quand tu changes ton nom, tes amis voient le nouveau nom tout de suite.'], en: ['👥 Friends: see when each friend\'s card was last updated, an “Update now” button if your card is waiting, and your card republishes itself on open when possible.', '👥 When you change your name, your friends see the new name right away.']},
+  {v: '9.49.0', d: '2026-11-13', fr: ['⬆️ L\'appli se met à jour toute seule dès qu\'une nouvelle version est en ligne (jamais pendant une séance).', '☁️ Sauvegarde automatique sans fenêtre Google (Réglages) : tout se sauvegarde tout seul, et sur un nouveau téléphone tout revient en te connectant.', '🟢 En direct : vois quand un ami s\'entraîne et envoie-lui un 🔥 pendant sa séance. Le raid et la saison bougent en direct.', '🌍 Classement mondial (optionnel) dans la Guilde.', '👥 Nouveau système d\'amis : plus de fenêtre Google après tes séances, tes séances apparaissent chez tes amis en quelques secondes, un code court qui ne change jamais (ex. GAB-4821) et tu n\'as besoin d\'entrer le code d\'un ami qu\'une seule fois. Dans Amis : « Passer au nouveau système ».', '👥 Amis : on voit quand la carte de chaque ami a été mise à jour, un bouton « Mettre à jour maintenant » si ta carte attend, et ta carte se republie toute seule à l\'ouverture quand c\'est possible.', '👥 Quand tu changes ton nom, tes amis voient le nouveau nom tout de suite.', '🚪 Nouvel accueil : connecte-toi avec Google, crée ton profil en 4 étapes, et sur un nouveau téléphone tout revient tout seul (« Bon retour! »).', '🧍 Ton profil (Profil → Mesures et photos) : âge, taille, IMC, besoins en calories et protéines selon ton objectif, et ton niveau de force au développé couché, squat, soulevé de terre et développé militaire.', '🎯 Ton objectif ajuste les reps proposées quand tu ajoutes un exercice (force 4-6, muscle 8-12, perte de gras 10-15).'], en: ['👥 Friends: see when each friend\'s card was last updated, an “Update now” button if your card is waiting, and your card republishes itself on open when possible.', '👥 When you change your name, your friends see the new name right away.', '🚪 New welcome: sign in with Google, set up your profile in 4 steps, and on a new phone everything comes back on its own.', '🧍 Your profile (Profile → Measures & photos): age, height, BMI, calorie and protein needs for your goal, and your strength level on bench, squat, deadlift and overhead press.', '🎯 Your goal sets the suggested reps when you add an exercise.']},
   {v: '9.46.6', d: '2026-11-12', fr: ['⚔️ Mode jeu : nouvel onglet Guilde avec tout le jeu au même endroit (statut, quêtes, raid, saison, armurerie), en fenêtres qui se replient.', '🛡️ Armurerie : titres, cadres, auras, victoires, bannières, blasons et thèmes à débloquer, avec raretés (jusqu\'à Mythique), reflets et lueurs. Touche une récompense verrouillée pour la voir en grand et voir ta progression.', '📜 Collections : complète une catégorie pour débloquer une récompense secrète du Grand Maître. Badge « NOUVEAU » sur ce que tu viens de débloquer.', '🏰 Blasons de guilde et bannières fantasy animées (village, donjon, forêt enchantée, salle du trône, kraken…).', '🌟 Prestige : au niveau 100, recommence au niveau 1 avec une étoile et des récompenses exclusives.', '🏅 Plein de nouvelles médailles et de titres (« Aventurier de rang B · Ton titre »).', '🏆 Records plus justes : reps au poids du corps, plus de reps à la même charge (3 derniers mois) et record de volume (ex. 3×11 après 3×10, même nombre de séries).', '🎯 Quête « Bats un record » : bouton « Quoi battre? » qui te dit exactement quoi faire la prochaine fois, dans ta zone de reps.', '⚠️ Quête ratée : −100 XP (avant −10), à partir de maintenant seulement.', '📌 Notes et poids attachés à l\'exercice, peu importe la routine.', '⚡ Version express d\'une routine, prédiction de progression, et animations (+XP, écran de fin).', '🎪 Événements annoncés à l\'ouverture (pas d\'XP pour les anciens).', '🚀 Appli plus rapide et plus fluide (Guilde, Profil, historique, glissement entre les pages).', '🗒️ Nouveautés : un seul résumé par jour, affiché au plus une fois par jour.', '🗑️ Supprimer une séance enlève maintenant tout ce qu\'elle t\'avait donné (XP, records, médailles, quête, donjon, boss, coffre), comme si elle n\'avait jamais existé. « Annuler » remet tout.', '🎯 Guilde : « Prochaines récompenses » montre les 3 récompenses que tu es le plus près d\'avoir.', '🎁 Coffres de fin de séance (commun, rare, épique, légendaire) avec bonus d\'XP et fragments qui débloquent des récompenses exclusives.', '📖 Chaque récompense verrouillée explique clairement quoi faire pour l\'avoir.'], en: ['⚔️ Game mode: new Guild tab with the whole game in one place, in collapsible windows.', '🛡️ Armory: titles, frames, auras, victories, banners, crests and themes to unlock, with rarities up to Mythic. Tap a locked reward to preview it and see your progress.', '📜 Collections: complete a category to unlock a secret Grandmaster reward. “NEW” badge on fresh unlocks.', '🏰 Guild crests and animated fantasy banners.', '🌟 Prestige: at level 100, restart at level 1 with a star and exclusive rewards.', '🏅 Lots of new medals and titles.', '🏆 Fairer records: bodyweight reps, more reps at the same weight (last 3 months) and volume records.', '🎯 “Break a record” quest: a “What to beat?” button tells you exactly what to do next time, within your rep range.', '⚠️ Failed quest: −100 XP (was −10), from now on only.', '📌 Notes and weights follow the exercise, whatever the routine.', '⚡ Express routine version, progress prediction and animations.', '🎪 Events announced on open (no XP for old ones).', '🚀 Faster, smoother app.', '🗒️ What\'s new: one summary per day, shown at most once a day.']},
   {v: '9.23.1', d: '2026-11-11', fr: ['🗣️ Coach vocal plus court : il dit juste tes reps à faire et le poids réussi à ta dernière séance (ex. « 8 à 10 reps, 185 livres »).'], en: ['🗣️ Shorter voice coach: it just says your target reps and the weight you hit last time (e.g. “8 to 10 reps, 185 pounds”).']},
   {v: '9.23', d: '2026-11-11', fr: ['🗣️ Coach vocal (Réglages → Minuteur et son) : avec tes écouteurs, une voix t\'annonce la fin du repos et ta prochaine série (exercice, poids, reps), plus « Plus que 10 secondes ».', '☠️ Le boss dans ta séance : l\'exercice du boss affiche les séries à viser, et quand ta série le bat, le boss tombe à l\'écran.', '🔄 Remplacer un exercice propose maintenant 3 exercices qui travaillent les mêmes muscles (pratique quand la machine est prise).', '⚔️ Défis entre amis : le plus de volume, de séances ou de reps en 7 jours. Le gagnant prend +300 XP.', '🛡️ Raid de guilde : toi et tes amis additionnez vos reps de la semaine pour abattre un boss commun (1 500 reps par aventurier). Réussi = +400 XP pour tout le monde.', '💬 Commentaires : écris un petit message sous les séances et les photos de tes amis.', '🏆 Saisons de la Guilde : chaque mois, un classement de l\'XP gagnée ce mois-ci. Le 1er remporte un trophée visible sur son profil.'], en: ['🗣️ Voice coach (Settings → Timer & sound): with earbuds, a voice announces the end of rest and your next set (exercise, weight, reps), plus “10 seconds left”.', '☠️ The boss in your workout: the boss exercise shows the sets to aim for, and when your set beats it, the boss falls on screen.', '🔄 Swapping an exercise now suggests 3 exercises that work the same muscles (handy when the machine is taken).', '⚔️ Friend challenges: most volume, workouts or reps in 7 days. The winner gets +300 XP.', '🛡️ Guild raid: you and your friends add up your weekly reps to take down a shared boss (1,500 reps per adventurer). Cleared = +400 XP for everyone.', '💬 Comments: write a short message under your friends\' workouts and photos.', '🏆 Guild seasons: each month, a ranking of the XP earned that month. 1st place wins a trophy shown on their profile.']},
@@ -8317,6 +8343,17 @@ document.addEventListener('click', e => {
     case 'tm-pause': if (tmp) { if (tmp.paused != null) { tmp.end = Date.now() + tmp.paused; tmp.paused = null; } else tmp.paused = Math.max(0, tmp.end - Date.now()); tmDraw(true); } break;
     case 'tm-next': if (tmp) { if (tmp.i + 1 >= tmp.seq.length) tmFinish(); else tmGoto(tmp.i + 1); } break;
     case 'tm-prev': if (tmp) tmGoto(Math.max(0, (tmp.end - Date.now()) / 1000 < tmp.seq[tmp.i].sec - 2 ? tmp.i : tmp.i - 1)); break;
+    case 'ob-google': obGoogle(); break;
+    case 'ob-noacc': obSt.i = 1; obRender(); break;
+    case 'ob-back': obCollect(); obSt.i = Math.max(0, obSt.i - 1); if (obSt.steps[obSt.i] === 'home' && obSt.steps.includes('back')) obSt.steps = ['home', 'prof', 'toi', 'obj', 'style']; obRender(); break;
+    case 'ob-later': obClose(); break;
+    case 'ob-skip': obSt.i++; obRender(); break;
+    case 'ob-next': obCollect(); if (obSt.steps[obSt.i] === 'prof' && !obSt.d.name.trim()) { toast(T('Écris ton nom', 'Enter your name')); break; } if (obSt.i >= obSt.steps.length - 1) obFinish(); else { obSt.i++; obRender(); window.scrollTo && document.getElementById('ob').scrollTo(0, 0); } break;
+    case 'ob-seg': { obCollect(); const k = b.dataset.k, v = b.dataset.v; obSt.d[k] = k === 'game' ? v === '1' : k === 'days' ? +v : v; obRender(); break; }
+    case 'ob-avatar': obCollect(); pickImage(async f => { try { obSt.d.avatar = await shrinkImg(f, 240, .82); obRender(); } catch (e) { toast('⚠️ ' + e.message); } }, true); break;
+    case 'ob-restore': { const done = () => { obClose(); try { frLoad(); } catch (e) {} }; cbRestore(false).then(done, done); break; }
+    case 'ob-fresh': if (!confirm(T('Repartir à zéro? Ta sauvegarde en ligne sera remplacée par ce nouveau carnet vide à la fin.', 'Start fresh? Your online backup will be replaced by this new empty log at the end.'))) break; obSt.steps = ['home', 'prof', 'toi', 'obj', 'style']; obSt.i = 1; obRender(); break;
+    case 'ob-edit': closeAll(); openOnboard('edit'); break;
     case 'wl-lang': if (b.dataset.v !== (isEN() ? 'en' : 'fr')) { S.settings.lang = b.dataset.v; save(); location.reload(); } break;
     case 'wl-game': S.settings.game = b.dataset.v === '1'; save(); b.parentElement.querySelectorAll('.btn').forEach(x => x.classList.toggle('on', x === b)); break;
     case 'wl-unit': S.settings.unit = b.dataset.v; save(); b.parentElement.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); break;
@@ -8379,7 +8416,7 @@ document.addEventListener('click', e => {
     case 'rd-smart': { smartPlan(rdraft.exercises); rdraft.exercises.forEach(e => { e.sl = setsOf(e).map(s => ({...s})); }); rdirty = true; render(); toast(T('⚡ Échauffements et séries à l\'échec ajoutés : modifie-les si tu veux', '⚡ Warm-ups and failure sets added: edit them if you want')); break; }
     case 'rd-set-del': { const sl = rdraft.exercises[ei].sl; if (sl.length > 1) { sl.splice(si, 1); rdirty = true; render(); } else toast('Il faut au moins une série'); break; }
     case 'rd-add-set': { const sl = rdraft.exercises[ei].sl; const l = sl.filter(s => s.t !== 'W').pop() || sl[sl.length - 1] || {w: '', r: '8-12'}; sl.push({w: l.w ?? '', r: l.r || '8-12'}); rdirty = true; render(); break; }
-    case 'rd-add-ex': openPicker({title: 'Ajouter un exercice', cb: p => { if (p.lib) S.links[norm(p.name)] = p.lib; rdraft.exercises.push({name: p.name, sets: 2, reps: '8-12', weight: '', note: '', sl: [{w: '', r: '8-12'}, {w: '', r: '8-12'}]}); rdirty = true; render(); setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50); }}); break;
+    case 'rd-add-ex': openPicker({title: 'Ajouter un exercice', cb: p => { if (p.lib) S.links[norm(p.name)] = p.lib; rdraft.exercises.push({name: p.name, sets: 2, reps: defReps(), weight: '', note: '', sl: [{w: '', r: defReps()}, {w: '', r: defReps()}]}); rdirty = true; render(); setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50); }}); break;
     case 'rd-ex-menu': openRdExMenu(ei); break;
     case 'rd-ex-replace': closeModal(); openPicker({title: `Remplacer « ${rdraft.exercises[ei].name} »`, alt: rdraft.exercises[ei].name, cb: p => { if (p.lib) S.links[norm(p.name)] = p.lib; rdraft.exercises[ei].name = p.name; rdirty = true; render(); }}); break;
     case 'rd-ex-up': case 'rd-ex-down': { const L2 = rdraft.exercises, j = act === 'rd-ex-up' ? ei - 1 : ei + 1; if (j >= 0 && j < L2.length) { [L2[ei], L2[j]] = [L2[j], L2[ei]]; fixSS(L2); rdirty = true; } closeModal(); render(); break; }
@@ -8687,6 +8724,144 @@ window.addEventListener('resize', () => afterRender(cur()));
 
 render();
 try { const sc = sessionStorage.getItem('cm-scroll'); sessionStorage.removeItem('cm-scroll'); if (sc && stack.length === 1) { const [t, y] = sc.split(':'); if (t === stack[0].v && +y > 0) requestAnimationFrame(() => window.scrollTo(0, +y)); } } catch (e) {}
+/* ===================== Accueil : connexion Google + création du profil ===================== */
+const OB_GOALS = () => [['muscle', '💪', T('Prendre du muscle', 'Build muscle'), T('8 à 12 reps', '8 to 12 reps')], ['force', '⚡', T('Gagner en force', 'Get stronger'), T('4 à 6 reps, charges lourdes', '4 to 6 reps, heavy weights')], ['fat', '🔥', T('Perdre du gras', 'Lose fat'), T('10 à 15 reps et cardio', '10 to 15 reps and cardio')], ['fit', '❤️', T('Rester en forme', 'Stay fit'), T('Équilibré', 'Balanced')]];
+const defReps = () => ({force: '4-6', fat: '10-15'})[S.settings.obj] || '8-12';
+const ageOf = () => S.settings.by ? new Date().getFullYear() - S.settings.by : null;
+let obSt = null;
+function obEl() { let o = document.getElementById('ob'); if (!o) { o = document.createElement('div'); o.id = 'ob'; o.className = 'ob'; document.body.appendChild(o); } return o; }
+function openOnboard(mode = 'new') {
+  const st = S.settings, lastW = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)).pop();
+  obSt = {mode, i: 0, steps: mode === 'edit' ? ['toi', 'obj'] : ['home', 'prof', 'toi', 'obj', 'style'], u: null,
+    d: {name: st.name || '', avatar: st.avatar || '', unit: U(), sex: st.sex || '', age: ageOf() || '', ht: st.ht || '', w: lastW ? lastW.w : '', obj: st.obj || 'muscle', days: +st.goal || 4, game: st.game !== false, exp: st.exp || 'int'}};
+  if (mode === 'new') fbLoad().catch(() => {}); // prêt pour que la fenêtre Google s'ouvre tout de suite au toucher
+  obRender();
+}
+function obClose() { const o = document.getElementById('ob'); if (o) { o.classList.add('out'); setTimeout(() => o.remove(), 250); } obSt = null; }
+const obSeg = (k, opts) => `<div class="ob-seg">${opts.map(([v, l]) => `<button class="${String(obSt.d[k]) === String(v) ? 'on' : ''}" data-act="ob-seg" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
+const obDots = () => { const n = obSt.steps.filter(s => s !== 'home').length, i = obSt.steps.slice(0, obSt.i + 1).filter(s => s !== 'home').length; return n > 1 ? `<div class="ob-dots">${Array.from({length: n}, (_, k) => `<i class="${k < i ? 'on' : ''}"></i>`).join('')}</div>` : ''; };
+function obHtCm() { const d = obSt.d; if (d.unit === 'kg') return d.htcm != null ? d.htcm : d.ht; return d.ht; }
+function obRender() {
+  if (!obSt) return; const o = obEl(), d = obSt.d, step = obSt.steps[obSt.i], edit = obSt.mode === 'edit';
+  const back = obSt.i > 0 || edit ? `<button class="ob-back" data-act="${obSt.i > 0 ? 'ob-back' : 'ob-later'}" aria-label="${T('Retour', 'Back')}">‹</button>` : '';
+  const nextBtn = (lbl, extra = '') => `<div class="ob-bot">${extra}<button class="btn primary block ob-big" data-act="ob-next">${lbl}</button></div>`;
+  let h = '';
+  if (step === 'home') h = `<div class="ob-lang">${['fr', 'en'].map(l => `<button class="${(isEN() ? 'en' : 'fr') === l ? 'on' : ''}" data-act="wl-lang" data-v="${l}">${l.toUpperCase()}</button>`).join('')}</div>
+    <div class="ob-logo"><img src="icon-192.png" alt=""></div><h1 class="ob-h1 center">Carnet Muscu</h1>
+    <p class="muted center" style="margin:6px 0 0">${T('Ton carnet d\'entraînement. Simple, rapide, et tes amis s\'entraînent avec toi.', 'Your training log. Simple, fast, and your friends train with you.')}</p>
+    <div class="ob-feats"><div><span>📈</span>${T('Suis tes records et ta progression', 'Track your records and progress')}</div><div><span>👥</span>${T('Vois les séances de tes amis en direct', 'See your friends\' workouts live')}</div><div><span>☁️</span>${T('Tout est sauvegardé automatiquement', 'Everything is backed up automatically')}</div></div>
+    <div class="ob-bot"><button class="ob-gbtn" data-act="ob-google"><svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.2C12.5 13.6 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.3 6.9-17.7z"/><path fill="#FBBC05" d="M10.5 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.2C1 16.5 0 20.1 0 24s1 7.5 2.7 10.7l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.7-6c-2.2 1.5-5 2.3-8.2 2.3-6.2 0-11.5-4.1-13.4-9.8l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>${T('Continuer avec Google', 'Continue with Google')}</button>
+    <button class="ob-ghost" data-act="ob-noacc">${T('Continuer sans compte', 'Continue without an account')}</button>
+    <p class="muted small center" style="margin:2px 0 0">${T('Sans compte : pas d\'amis ni de sauvegarde automatique.', 'Without an account: no friends or automatic backup.')}</p></div>`;
+  else if (step === 'back') h = `<div class="ob-av big" style="margin-top:12vh">${d.avatar ? `<img src="${d.avatar}" alt="">` : esc((obSt.bk.name || d.name || '?')[0].toUpperCase())}</div>
+    <h1 class="ob-h1 center" style="margin-top:14px">${T('Bon retour', 'Welcome back')}${obSt.bk.name ? ' ' + esc(obSt.bk.name) : ''}!</h1><p class="muted center">${T('Ton compte a été retrouvé.', 'Your account was found.')}</p>
+    <div class="ob-feats card"><div><span>✅</span>${obSt.bk.sess} ${obSt.bk.sess > 1 ? T('séances', 'workouts') : T('séance', 'workout')}</div><div><span>✅</span>${obSt.bk.rout} routines</div><div><span>✅</span>${T('Records, amis et Guilde', 'Records, friends and Guild')}</div></div>
+    <div class="ob-bot"><button class="btn primary block ob-big" data-act="ob-restore">${T('Ouvrir mon carnet', 'Open my log')}</button><button class="ob-ghost" data-act="ob-fresh">${T('Repartir à zéro sur ce téléphone', 'Start fresh on this phone')}</button></div>`;
+  else if (step === 'prof') h = `${obDots()}<h2 class="ob-h2">${T('Bienvenue!', 'Welcome!')}</h2><p class="muted">${obSt.u ? T('Connecté avec Google ✓ · ', 'Signed in with Google ✓ · ') : ''}${T('Dis-nous qui tu es.', 'Tell us who you are.')}</p>
+    <button class="ob-av" data-act="ob-avatar">${d.avatar ? `<img src="${d.avatar}" alt="">` : esc((d.name.trim()[0] || '?').toUpperCase())}<em>📷</em></button><p class="muted small center" style="margin:4px 0 0">${T('Photo de profil (optionnel)', 'Profile photo (optional)')}</p>
+    <label>${T('Ton nom', 'Your name')}</label><input id="ob_name" value="${esc(d.name)}" placeholder="${T('Ex. : Alex', 'E.g. Alex')}" autocomplete="given-name">
+    <p class="muted small" style="margin:5px 0 0">${T('C\'est le nom que tes amis vont voir.', 'This is the name your friends will see.')}</p>
+    <label>${T('Unités', 'Units')}</label>${obSeg('unit', [['lb', 'lb · pi'], ['kg', 'kg · cm']])}
+    ${nextBtn(T('Continuer', 'Continue'))}`;
+  else if (step === 'toi') { const ftIn = d.ht ? [Math.floor(d.ht / 30.48), Math.round((d.ht / 2.54) % 12)] : ['', ''];
+    if (ftIn[1] === 12) { ftIn[0]++; ftIn[1] = 0; }
+    h = `${obDots()}<h2 class="ob-h2">${T('Parle-nous de toi', 'Tell us about you')}</h2><p class="muted">${T('Pour tes calories, ton niveau de force et tes besoins. Reste privé.', 'For your calories, strength level and needs. Stays private.')}</p>
+    <label>${T('Sexe', 'Sex')}</label>${obSeg('sex', [['m', T('Homme', 'Male')], ['f', T('Femme', 'Female')], ['x', T('Autre', 'Other')]])}
+    <div class="grid2"><div><label>${T('Âge', 'Age')}</label><input id="ob_age" inputmode="numeric" value="${esc(d.age)}" placeholder="${T('ans', 'years')}"></div>
+    <div><label>${T('Taille', 'Height')} (${d.unit === 'kg' ? 'cm' : T('pi / po', 'ft / in')})</label>${d.unit === 'kg' ? `<input id="ob_cm" inputmode="numeric" value="${d.ht ? Math.round(d.ht) : ''}" placeholder="cm">` : `<div class="row" style="gap:6px"><input id="ob_ft" inputmode="numeric" value="${ftIn[0]}" placeholder="pi"><input id="ob_in" inputmode="numeric" value="${ftIn[1]}" placeholder="po"></div>`}</div></div>
+    <label>${T('Poids', 'Weight')} (${d.unit})</label><input id="ob_w" inputmode="decimal" value="${esc(d.w)}" placeholder="${d.unit}">
+    <div class="ob-note">🔒 ${T('Tes amis ne voient jamais ton âge, ta taille ni ton poids.', 'Your friends never see your age, height or weight.')}</div>
+    ${nextBtn(T('Continuer', 'Continue'), edit ? '' : `<button class="ob-ghost" data-act="ob-skip" style="order:2">${T('Passer', 'Skip')}</button>`)}`; }
+  else if (step === 'obj') h = `${obDots()}<h2 class="ob-h2">${T('Ton objectif', 'Your goal')}</h2><p class="muted">${T('On adapte les zones de reps et tes besoins.', 'We adapt rep ranges and your needs.')}</p>
+    <div style="margin-top:12px">${OB_GOALS().map(([k, ic, l, s]) => `<button class="ob-opt ${d.obj === k ? 'on' : ''}" data-act="ob-seg" data-k="obj" data-v="${k}"><span class="ob-ic">${ic}</span><span><b>${l}</b><small>${s}</small></span></button>`).join('')}</div>
+    <label>${T('Séances par semaine', 'Workouts per week')}</label><div class="ob-chips">${[2, 3, 4, 5, 6].map(n => `<button class="${+d.days === n ? 'on' : ''}" data-act="ob-seg" data-k="days" data-v="${n}">${n}</button>`).join('')}</div>
+    ${nextBtn(edit ? T('Enregistrer', 'Save') : T('Continuer', 'Continue'))}`;
+  else if (step === 'style') h = `${obDots()}<h2 class="ob-h2">${T('Ton style', 'Your style')}</h2><p class="muted">${T('Tu peux changer quand tu veux dans Réglages.', 'You can change it anytime in Settings.')}</p>
+    <div style="margin-top:12px"><button class="ob-mode ${d.game ? 'on' : ''}" data-act="ob-seg" data-k="game" data-v="1"><b>⚔️ ${T('Mode Aventurier', 'Adventurer mode')}<i></i></b><span>${T('Gagne de l\'XP, monte de rang dans la Guilde, accomplis des quêtes, ouvre des coffres et débloque des récompenses.', 'Earn XP, rank up in the Guild, complete quests, open chests and unlock rewards.')}</span></button>
+    <button class="ob-mode ${d.game ? '' : 'on'}" data-act="ob-seg" data-k="game" data-v=""><b>📒 ${T('Mode Classique', 'Classic mode')}<i></i></b><span>${T('Juste ton carnet : séances, records et statistiques. Sans jeu.', 'Just your log: workouts, records and stats. No game.')}</span></button></div>
+    <label>${T('Niveau d\'expérience', 'Experience level')}</label>${obSeg('exp', [['beg', T('Débutant', 'Beginner')], ['int', T('Interm.', 'Interm.')], ['adv', T('Avancé', 'Advanced')]])}
+    ${nextBtn(T('C\'est parti!', 'Let\'s go!') + ' 🚀')}`;
+  o.innerHTML = `<div class="ob-in obs-${step}">${back}${h}</div>`;
+  try { iconize(o); } catch (e) {}
+}
+function obCollect() {
+  const d = obSt.d, v = id => { const e = document.getElementById(id); return e ? e.value.replace(',', '.').trim() : null; };
+  const n = v('ob_name'); if (n != null) d.name = n;
+  const a = v('ob_age'); if (a != null) d.age = a && +a > 0 && +a < 110 ? Math.round(+a) : '';
+  const cm = v('ob_cm'); if (cm != null) d.ht = +cm > 50 && +cm < 260 ? +cm : '';
+  const ft = v('ob_ft'), inch = v('ob_in'); if (ft != null) { const t = (+ft || 0) * 30.48 + (+inch || 0) * 2.54; d.ht = t > 50 && t < 260 ? Math.round(t * 10) / 10 : ''; }
+  const w = v('ob_w'); if (w != null) d.w = +w > 0 ? +w : '';
+}
+function obApply() {
+  const d = obSt.d, st = S.settings;
+  if (obSt.mode === 'new') { if (d.name.trim()) st.name = d.name.trim(); if (d.avatar) st.avatar = d.avatar; st.unit = d.unit; st.game = !!d.game; st.exp = d.exp; }
+  if (d.sex) st.sex = d.sex; if (d.age) st.by = new Date().getFullYear() - d.age; if (d.ht) st.ht = d.ht;
+  st.obj = d.obj; st.goal = +d.days;
+  if (d.w) { const k = dkey(new Date()), lastW = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)).pop(); if (!lastW || +lastW.w !== +d.w) { let e = S.body.find(x => x.d === k); if (!e) { e = {id: uid(), d: k, w: null, m: {}}; S.body.push(e); } e.w = +d.w; } }
+}
+async function obGoogle() {
+  let u; try { u = await fbSignIn(true, true); } catch (e) { if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') toast('⚠️ ' + (e.message || e)); return; }
+  if (!u || !obSt) return; obSt.u = u;
+  if (!obSt.d.name && u.displayName) obSt.d.name = u.displayName.trim().split(/\s+/)[0];
+  try { const m = await cbMeta(u.uid); if (m && (m.sess || m.rout)) { let name = ''; try { const ud = await fbDb().collection('users').doc(u.uid).get(); name = ud.exists ? ud.data().name || '' : ''; } catch (e) {} obSt.bk = {sess: m.sess || 0, rout: m.rout || 0, name}; obSt.steps = ['home', 'back']; obSt.i = 1; obRender(); return; } } catch (e) {}
+  obSt.i = 1; obRender();
+}
+/* Compte Google : amis + sauvegarde activés tout seuls, sans fenêtre de code */
+async function obCloudOn(u) {
+  try {
+    const fr = FRS(); fr.list = fr.list || []; fr.hide = fr.hide || [];
+    fr.code = await fbEnsureCode(u.uid); const fbc = 'fb:' + u.uid;
+    fr.file = fbc; fr.fbPtr = fbc; fr.on = true; fr.fb = true; CB().on = true; save();
+    await fbPublish(true); cbPush(true); fbWatch(); if (cur().v === 'friends' || cur().v === 'profile') render();
+  } catch (e) { console.warn('obCloud', e); }
+}
+function obFinish() {
+  const u = obSt && obSt.u, mode = obSt && obSt.mode; obApply(); S.settings.onboarded = true;
+  if (mode === 'new') S.settings.tourPending = true;
+  save(); obClose(); applyTheme(); render();
+  if (mode === 'edit') { toast(T('✅ Profil mis à jour', '✅ Profile updated')); if (frOn()) frQueue(false); return; }
+  toast(T(`👋 Bienvenue ${S.settings.name || ''}!`, `👋 Welcome ${S.settings.name || ''}!`).replace(' !', '!'));
+  if (u) obCloudOn(u);
+  setTimeout(checkImport, 250); setTimeout(maybeTourMain, 700);
+}
+/* Strength level : 1RM estimé / poids du corps (repères généraux) */
+const SL_LIFTS = [['bench', T('Développé couché', 'Bench press'), n => /bench press/.test(n) && !/incline|decline|close|wide|dumbbell|smith|machine|floor/.test(n), {m: [.5, .75, 1, 1.5, 2], f: [.25, .5, .75, 1, 1.5]}],
+  ['squat', 'Squat', n => /squat/.test(n) && /barbell/.test(n) && !/front|split|box|smith|hack|zercher|overhead|jump/.test(n), {m: [.75, 1.25, 1.5, 2.25, 2.75], f: [.5, .75, 1.25, 1.5, 2]}],
+  ['dead', T('Soulevé de terre', 'Deadlift'), n => /deadlift/.test(n) && /barbell/.test(n) && !/romanian|stiff|sumo|deficit|rack|single|straight/.test(n), {m: [1, 1.5, 2, 2.5, 3], f: [.5, 1, 1.25, 1.75, 2.5]}],
+  ['ohp', T('Développé militaire', 'Overhead press'), n => /(military|overhead|shoulder) press/.test(n) && /barbell/.test(n) && !/seated|behind|smith|push/.test(n), {m: [.35, .55, .75, 1, 1.35], f: [.2, .35, .5, .75, 1]}]];
+const SL_NAMES = () => [T('Débutant', 'Beginner'), T('Novice', 'Novice'), T('Intermédiaire', 'Intermediate'), T('Avancé', 'Advanced'), T('Élite', 'Elite')];
+function strengthLevels() {
+  const sx = S.settings.sex === 'f' ? 'f' : S.settings.sex === 'm' ? 'm' : null; if (!sx || !S.body.some(b => b.w != null)) return [];
+  const bw = bodyKg(), since = Date.now() - 365 * 864e5, best = {};
+  S.history.forEach(h => { if (new Date(h.date) < since) return; h.exercises.forEach(e => { const L = libEntry(e.name), n = L ? String(L.name).toLowerCase() : ''; if (!n) return;
+    const lf = SL_LIFTS.find(x => x[2](n)); if (!lf) return;
+    work(e.sets).forEach(s => { const r = +s.r; if (!(r > 0 && r <= 12)) return; const v = e1rm(s.w, r); if (v > (best[lf[0]] || 0)) best[lf[0]] = v; }); }); });
+  return SL_LIFTS.filter(l => best[l[0]]).map(l => { const kg = U() === 'kg' ? best[l[0]] : best[l[0]] / 2.20462, ratio = kg / bw, st = l[3][sx];
+    let lv = 0; st.forEach((x, i) => { if (ratio >= x - .01) lv = i; }); const lo = st[lv], hi = st[lv + 1];
+    const pos = ratio < st[0] ? 0 : hi ? (lv + (ratio - lo) / (hi - lo)) / 4 : 1;
+    return {k: l[0], name: l[1], orm: Math.round(best[l[0]]), ratio, lv: ratio < st[0] - .01 ? -1 : lv, pos: Math.min(1, pos)}; });
+}
+function needsKcal() {
+  const st = S.settings, age = ageOf(), lastW = S.body.some(b => b.w != null); if (!st.ht || !age || !lastW || !['m', 'f'].includes(st.sex)) return null;
+  const kg = bodyKg(), bmr = 10 * kg + 6.25 * st.ht - 5 * age + (st.sex === 'm' ? 5 : -161);
+  const days = +st.goal || 3, tdee = bmr * (days <= 2 ? 1.375 : days <= 4 ? 1.55 : 1.725);
+  const adj = ({muscle: 250, force: 150, fat: -400})[st.obj] || 0;
+  return {tdee: Math.round(tdee / 10) * 10, target: Math.round((tdee + adj) / 10) * 10, prot: Math.round(kg * (st.obj === 'fat' ? 2 : 1.8))};
+}
+function meCard() {
+  const st = S.settings, age = ageOf(), lw = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)).pop();
+  if (!st.sex && !age && !st.ht) return `<div class="card"><h3>🧍 ${T('Toi', 'You')}</h3><p class="muted small" style="margin:6px 0">${T('Ajoute ton sexe, ton âge et ta taille pour voir ton niveau de force, ton IMC et tes besoins en calories.', 'Add your sex, age and height to see your strength level, BMI and calorie needs.')}</p><button class="btn primary sm" data-act="ob-edit">${T('Compléter', 'Complete')}</button></div>`;
+  const kg = bodyKg(), bmi = st.ht && lw ? kg / Math.pow(st.ht / 100, 2) : null, nk = needsKcal(), sl = strengthLevels(), g = OB_GOALS().find(x => x[0] === st.obj);
+  const htTxt = st.ht ? (U() === 'kg' ? Math.round(st.ht) + ' cm' : (() => { let f = Math.floor(st.ht / 30.48), i = Math.round((st.ht / 2.54) % 12); if (i === 12) { f++; i = 0; } return `${f}'${i}"`; })()) : '—';
+  return `<div class="card"><div class="row between"><h3 style="margin:0">🧍 ${T('Toi', 'You')}</h3><button class="btn sm" data-act="ob-edit">${T('Modifier', 'Edit')}</button></div>
+    <div class="row" style="margin:10px 0 4px;align-items:stretch">
+      <div class="stat"><span class="muted small">${T('Âge', 'Age')}</span><b>${age || '—'}</b></div><div class="stat"><span class="muted small">${T('Taille', 'Height')}</span><b>${htTxt}</b></div>
+      <div class="stat"><span class="muted small">${T('IMC', 'BMI')}</span><b>${bmi ? dec1(bmi) : '—'}</b></div></div>
+    ${g ? `<p class="small" style="margin:8px 0 0">${g[1]} ${T('Objectif', 'Goal')} : <b>${g[2]}</b> · ${+st.goal || '—'} ${T('séances/sem.', 'workouts/wk')}</p>` : ''}
+    ${nk ? `<p class="small" style="margin:6px 0 0">🍽️ ${T('Besoins estimés', 'Estimated needs')} : <b>≈ ${nk.target.toLocaleString(LOC())} kcal</b>/${T('jour', 'day')}${nk.target !== nk.tdee ? ` <span class="muted">(${T('maintien', 'maintenance')} ${nk.tdee.toLocaleString(LOC())})</span>` : ''} · ${T('protéines', 'protein')} <b>≈ ${nk.prot} g</b></p>` : ''}
+    ${sl.length ? `<h4 style="margin:14px 0 6px">💪 ${T('Niveau de force', 'Strength level')}</h4>${sl.map(x => `<div class="sl-row"><div class="row between small"><span><b>${esc(x.name)}</b> <span class="muted">· 1RM ≈ ${x.orm} ${U()} (${dec1(x.ratio)}× ${T('ton poids', 'bodyweight')})</span></span><b class="sl-lv">${x.lv < 0 ? T('Débutant', 'Beginner') : SL_NAMES()[x.lv]}</b></div><div class="sl-bar"><i style="left:${Math.round(x.pos * 100)}%"></i></div></div>`).join('')}<div class="row between muted" style="font-size:10px;margin-top:2px">${SL_NAMES().map(n => `<span>${n}</span>`).join('')}</div><p class="muted small" style="margin:6px 0 0">${T('Repères généraux selon ton sexe et ton poids (12 derniers mois, 1RM estimé).', 'General standards by sex and bodyweight (last 12 months, estimated 1RM).')}</p>` : (st.sex === 'm' || st.sex === 'f') && lw ? `<p class="muted small" style="margin:10px 0 0">💪 ${T('Fais du développé couché, squat, soulevé de terre ou développé militaire à la barre pour voir ton niveau de force.', 'Do barbell bench, squat, deadlift or overhead press to see your strength level.')}</p>` : ''}
+  </div>`;
+}
 function openWelcome() {
   modal(`<div style="text-align:center"><div style="font-size:46px">💪</div><h2 style="margin:4px 0">${T('Bienvenue dans Carnet Muscu!', 'Welcome to Carnet Muscu!')}</h2><p class="muted small">${T('4 questions et c\'est parti. Tu pourras tout changer dans les Réglages.', '4 quick questions and you\'re set. You can change everything later in Settings.')}</p></div>
     <label>Langue / Language</label><div class="seg"><button class="${isEN() ? '' : 'on'}" data-act="wl-lang" data-v="fr">Français</button><button class="${isEN() ? 'on' : ''}" data-act="wl-lang" data-v="en">English</button></div>
@@ -8714,8 +8889,9 @@ function maybeTourMain() {
   if (!S.settings.tourPending || t.main || tourSt || modals.length || cur().v !== 'train' || Date.now() - (window._wlGd || 0) < 15000) return;
   S.settings.tourPending = false; saveLocal(); tourStart('main');
 }
-if (!S.settings.onboarded) setTimeout(openWelcome, 300);
+if (!S.settings.onboarded) openOnboard('new');
 else if (isIOS && !isStandalone() && !S.settings.iosHintOff) setTimeout(() => { if (!modals.length) iosHint(); }, 1200);
+if (S.settings.onboarded) setTimeout(() => { if (!S.settings.sex && !S.settings.obAsk && !S.active && !modals.length && S.history.length) { S.settings.obAsk = true; saveLocal(); modal(`<div style="text-align:center"><div style="font-size:46px">🧍</div><h2 style="margin:4px 0">${T('Nouveau : ton profil', 'New: your profile')}</h2></div><p class="small">${T('Ajoute ton sexe, ton âge, ta taille et ton objectif pour voir ton <b>niveau de force</b>, ton IMC et tes <b>besoins en calories</b>. Ça reste privé : tes amis ne le voient pas.', 'Add your sex, age, height and goal to see your <b>strength level</b>, BMI and <b>calorie needs</b>. It stays private.')}</p><button class="btn primary block" data-act="ob-edit">${T('Compléter (30 secondes)', 'Complete (30 seconds)')}</button><button class="btn block" data-act="close" style="margin-top:8px">${T('Plus tard', 'Later')}</button>`); } }, 3500);
 checkNews();
 if (S.settings.onboarded) setTimeout(checkImport, 450);
 window.addEventListener('hashchange', checkImport);
