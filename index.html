@@ -672,6 +672,13 @@ nav button{font-size:11px;min-width:0;white-space:nowrap;overflow:visible;text-o
 .ob-mode{display:block;width:100%;text-align:left;border-radius:16px;padding:14px;margin-bottom:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-family:inherit;cursor:pointer}.ob-mode.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .ob-mode b{display:flex;gap:8px;align-items:center;font-size:15px}.ob-mode b i{margin-left:auto;flex:none}.ob-mode>span{display:block;color:var(--muted);font-size:13px;margin-top:6px;line-height:1.4}.ob-mode i{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);box-sizing:border-box}.ob-mode.on i{border:5px solid var(--accent)}
 .sl-row{margin:8px 0}.sl-bar{position:relative;height:8px;border-radius:9px;margin-top:5px;background:linear-gradient(90deg,#64748b,#38bdf8 25%,#4ade80 50%,#facc15 75%,#f97316)}.sl-bar i{position:absolute;top:-3px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--text);border:2px solid var(--card);box-shadow:0 0 0 1px #0006}.sl-lv{color:var(--accent)}
+.bellb{position:relative}.bellb b{position:absolute;top:-3px;right:-5px;background:#ff5a5f;color:#fff;font-size:10px;font-weight:800;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);padding:0 3px;box-sizing:border-box;font-family:inherit}
+.hin-wrap{display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:0 12px;margin-top:8px}.hin-wrap span{color:var(--muted);font-weight:700}.hin-wrap input{flex:1;border:0!important;background:none!important;padding:12px 0!important;margin:0!important;box-shadow:none!important;min-width:0;font-size:16px}
+.hin-wrap input:focus{outline:none!important;border:0!important;box-shadow:none!important}.hin-wrap:focus-within{border-color:var(--accent)}.hline{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:-4px 0 12px;color:var(--text);font:inherit;font-size:14px;cursor:pointer}.hin-wrap em{font-style:normal;font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}.hin-wrap em.ok{color:var(--ok)}.hin-wrap em.bad{color:var(--danger)}
+.hchip{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:99px;padding:6px 11px;margin:4px 4px 0 0;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+.ntf{display:flex;align-items:center;gap:10px;padding:10px;background:var(--card);border-radius:14px;margin-bottom:8px}.ntf.unread{box-shadow:inset 3px 0 0 var(--accent)}.ndot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+.sec-t{font-size:11px;color:var(--muted);font-weight:800;letter-spacing:.08em;margin:12px 0 6px}.pill2{font-size:12px;font-weight:800;color:var(--muted);background:var(--card2);border-radius:10px;padding:6px 10px;white-space:nowrap}
+.reqpop{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 12px);max-width:440px;margin:0 auto;z-index:9998;background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:12px;box-shadow:0 10px 30px #000a;animation:cheerIn .4s ease}
 </style>
 </head>
 <body>
@@ -5521,10 +5528,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.49.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.50.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
-  {v: '9.49.1', d: '2026-11-13', fr: ['⬆️ L\'appli se met à jour toute seule dès qu\'une nouvelle version est en ligne (jamais pendant une séance).', '☁️ Sauvegarde automatique sans fenêtre Google (Réglages) : tout se sauvegarde tout seul, et sur un nouveau téléphone tout revient en te connectant.', '🟢 En direct : vois quand un ami s\'entraîne et envoie-lui un 🔥 pendant sa séance. Le raid et la saison bougent en direct.', '🌍 Classement mondial (optionnel) dans la Guilde.', '👥 Nouveau système d\'amis : plus de fenêtre Google après tes séances, tes séances apparaissent chez tes amis en quelques secondes, un code court qui ne change jamais (ex. GAB-4821) et tu n\'as besoin d\'entrer le code d\'un ami qu\'une seule fois. Dans Amis : « Passer au nouveau système ».', '👥 Amis : on voit quand la carte de chaque ami a été mise à jour, un bouton « Mettre à jour maintenant » si ta carte attend, et ta carte se republie toute seule à l\'ouverture quand c\'est possible.', '👥 Quand tu changes ton nom, tes amis voient le nouveau nom tout de suite.', '🚪 Nouvel accueil : connecte-toi avec Google, crée ton profil en 4 étapes, et sur un nouveau téléphone tout revient tout seul (« Bon retour! »).', '🧍 Ton profil (Profil → Mesures et photos) : âge, taille, IMC, besoins en calories et protéines selon ton objectif, et ton niveau de force au développé couché, squat, soulevé de terre et développé militaire.', '🎯 Ton objectif ajuste les reps proposées quand tu ajoutes un exercice (force 4-6, muscle 8-12, perte de gras 10-15).'], en: ['👥 Friends: see when each friend\'s card was last updated, an “Update now” button if your card is waiting, and your card republishes itself on open when possible.', '👥 When you change your name, your friends see the new name right away.', '🚪 New welcome: sign in with Google, set up your profile in 4 steps, and on a new phone everything comes back on its own.', '🧍 Your profile (Profile → Measures & photos): age, height, BMI, calorie and protein needs for your goal, and your strength level on bench, squat, deadlift and overhead press.', '🎯 Your goal sets the suggested reps when you add an exercise.']},
+  {v: '9.50.0', d: '2026-11-13', fr: ['⬆️ L\'appli se met à jour toute seule dès qu\'une nouvelle version est en ligne (jamais pendant une séance).', '☁️ Sauvegarde automatique sans fenêtre Google (Réglages) : tout se sauvegarde tout seul, et sur un nouveau téléphone tout revient en te connectant.', '🟢 En direct : vois quand un ami s\'entraîne et envoie-lui un 🔥 pendant sa séance. Le raid et la saison bougent en direct.', '🌍 Classement mondial (optionnel) dans la Guilde.', '👥 Nouveau système d\'amis : plus de fenêtre Google après tes séances, tes séances apparaissent chez tes amis en quelques secondes, un code court qui ne change jamais (ex. GAB-4821) et tu n\'as besoin d\'entrer le code d\'un ami qu\'une seule fois. Dans Amis : « Passer au nouveau système ».', '👥 Amis : on voit quand la carte de chaque ami a été mise à jour, un bouton « Mettre à jour maintenant » si ta carte attend, et ta carte se republie toute seule à l\'ouverture quand c\'est possible.', '👥 Quand tu changes ton nom, tes amis voient le nouveau nom tout de suite.', '🚪 Nouvel accueil : connecte-toi avec Google, crée ton profil en 4 étapes, et sur un nouveau téléphone tout revient tout seul (« Bon retour! »).', '🧍 Ton profil (Profil → Mesures et photos) : âge, taille, IMC, besoins en calories et protéines selon ton objectif, et ton niveau de force au développé couché, squat, soulevé de terre et développé militaire.', '🎯 Ton objectif ajuste les reps proposées quand tu ajoutes un exercice (force 4-6, muscle 8-12, perte de gras 10-15).', '@ Pseudo unique : choisis ton @pseudo, et tes amis te trouvent en le cherchant (plus besoin de code).', '📨 Demandes d\'ami : il faut accepter avant que quelqu\'un voie tes séances. Seuls tes amis peuvent lire ta carte.', '🔔 Boîte de notifications : demandes d\'ami, encouragements 🔥, réactions et commentaires, avec une pastille pour ce qui est nouveau.'], en: ['👥 Friends: see when each friend\'s card was last updated, an “Update now” button if your card is waiting, and your card republishes itself on open when possible.', '👥 When you change your name, your friends see the new name right away.', '🚪 New welcome: sign in with Google, set up your profile in 4 steps, and on a new phone everything comes back on its own.', '🧍 Your profile (Profile → Measures & photos): age, height, BMI, calorie and protein needs for your goal, and your strength level on bench, squat, deadlift and overhead press.', '🎯 Your goal sets the suggested reps when you add an exercise.', '@ Unique username: friends find you by searching it (no more codes).', '📨 Friend requests: you must accept before someone sees your workouts. Only friends can read your card.', '🔔 Notifications: friend requests, cheers, reactions and comments.']},
   {v: '9.46.6', d: '2026-11-12', fr: ['⚔️ Mode jeu : nouvel onglet Guilde avec tout le jeu au même endroit (statut, quêtes, raid, saison, armurerie), en fenêtres qui se replient.', '🛡️ Armurerie : titres, cadres, auras, victoires, bannières, blasons et thèmes à débloquer, avec raretés (jusqu\'à Mythique), reflets et lueurs. Touche une récompense verrouillée pour la voir en grand et voir ta progression.', '📜 Collections : complète une catégorie pour débloquer une récompense secrète du Grand Maître. Badge « NOUVEAU » sur ce que tu viens de débloquer.', '🏰 Blasons de guilde et bannières fantasy animées (village, donjon, forêt enchantée, salle du trône, kraken…).', '🌟 Prestige : au niveau 100, recommence au niveau 1 avec une étoile et des récompenses exclusives.', '🏅 Plein de nouvelles médailles et de titres (« Aventurier de rang B · Ton titre »).', '🏆 Records plus justes : reps au poids du corps, plus de reps à la même charge (3 derniers mois) et record de volume (ex. 3×11 après 3×10, même nombre de séries).', '🎯 Quête « Bats un record » : bouton « Quoi battre? » qui te dit exactement quoi faire la prochaine fois, dans ta zone de reps.', '⚠️ Quête ratée : −100 XP (avant −10), à partir de maintenant seulement.', '📌 Notes et poids attachés à l\'exercice, peu importe la routine.', '⚡ Version express d\'une routine, prédiction de progression, et animations (+XP, écran de fin).', '🎪 Événements annoncés à l\'ouverture (pas d\'XP pour les anciens).', '🚀 Appli plus rapide et plus fluide (Guilde, Profil, historique, glissement entre les pages).', '🗒️ Nouveautés : un seul résumé par jour, affiché au plus une fois par jour.', '🗑️ Supprimer une séance enlève maintenant tout ce qu\'elle t\'avait donné (XP, records, médailles, quête, donjon, boss, coffre), comme si elle n\'avait jamais existé. « Annuler » remet tout.', '🎯 Guilde : « Prochaines récompenses » montre les 3 récompenses que tu es le plus près d\'avoir.', '🎁 Coffres de fin de séance (commun, rare, épique, légendaire) avec bonus d\'XP et fragments qui débloquent des récompenses exclusives.', '📖 Chaque récompense verrouillée explique clairement quoi faire pour l\'avoir.'], en: ['⚔️ Game mode: new Guild tab with the whole game in one place, in collapsible windows.', '🛡️ Armory: titles, frames, auras, victories, banners, crests and themes to unlock, with rarities up to Mythic. Tap a locked reward to preview it and see your progress.', '📜 Collections: complete a category to unlock a secret Grandmaster reward. “NEW” badge on fresh unlocks.', '🏰 Guild crests and animated fantasy banners.', '🌟 Prestige: at level 100, restart at level 1 with a star and exclusive rewards.', '🏅 Lots of new medals and titles.', '🏆 Fairer records: bodyweight reps, more reps at the same weight (last 3 months) and volume records.', '🎯 “Break a record” quest: a “What to beat?” button tells you exactly what to do next time, within your rep range.', '⚠️ Failed quest: −100 XP (was −10), from now on only.', '📌 Notes and weights follow the exercise, whatever the routine.', '⚡ Express routine version, progress prediction and animations.', '🎪 Events announced on open (no XP for old ones).', '🚀 Faster, smoother app.', '🗒️ What\'s new: one summary per day, shown at most once a day.']},
   {v: '9.23.1', d: '2026-11-11', fr: ['🗣️ Coach vocal plus court : il dit juste tes reps à faire et le poids réussi à ta dernière séance (ex. « 8 à 10 reps, 185 livres »).'], en: ['🗣️ Shorter voice coach: it just says your target reps and the weight you hit last time (e.g. “8 to 10 reps, 185 pounds”).']},
   {v: '9.23', d: '2026-11-11', fr: ['🗣️ Coach vocal (Réglages → Minuteur et son) : avec tes écouteurs, une voix t\'annonce la fin du repos et ta prochaine série (exercice, poids, reps), plus « Plus que 10 secondes ».', '☠️ Le boss dans ta séance : l\'exercice du boss affiche les séries à viser, et quand ta série le bat, le boss tombe à l\'écran.', '🔄 Remplacer un exercice propose maintenant 3 exercices qui travaillent les mêmes muscles (pratique quand la machine est prise).', '⚔️ Défis entre amis : le plus de volume, de séances ou de reps en 7 jours. Le gagnant prend +300 XP.', '🛡️ Raid de guilde : toi et tes amis additionnez vos reps de la semaine pour abattre un boss commun (1 500 reps par aventurier). Réussi = +400 XP pour tout le monde.', '💬 Commentaires : écris un petit message sous les séances et les photos de tes amis.', '🏆 Saisons de la Guilde : chaque mois, un classement de l\'XP gagnée ce mois-ci. Le 1er remporte un trophée visible sur son profil.'], en: ['🗣️ Voice coach (Settings → Timer & sound): with earbuds, a voice announces the end of rest and your next set (exercise, weight, reps), plus “10 seconds left”.', '☠️ The boss in your workout: the boss exercise shows the sets to aim for, and when your set beats it, the boss falls on screen.', '🔄 Swapping an exercise now suggests 3 exercises that work the same muscles (handy when the machine is taken).', '⚔️ Friend challenges: most volume, workouts or reps in 7 days. The winner gets +300 XP.', '🛡️ Guild raid: you and your friends add up your weekly reps to take down a shared boss (1,500 reps per adventurer). Cleared = +400 XP for everyone.', '💬 Comments: write a short message under your friends\' workouts and photos.', '🏆 Guild seasons: each month, a ranking of the XP earned that month. 1st place wins a trophy shown on their profile.']},
@@ -6510,7 +6517,7 @@ const frOn = () => !!(S.settings.fr && S.settings.fr.on && S.settings.fr.file);
 const frTokOk = () => { try { const t = JSON.parse(localStorage.getItem(GDKEY) || 'null'); return !!(t && t.exp > Date.now() + 60000 && (t.sc || '').includes(FRSCOPE)); } catch (e) { return false; } };
 let frData = (() => { try { return JSON.parse(localStorage.getItem(FRCACHE) || '{}'); } catch (e) { return {}; } })(), frBusy = false, frPubT = null, frLastLoad = 0;
 const frMyCode = () => { const fr = FRS(); return fr.fb && fr.code ? fr.code : fr.file; };
-const frMsg = () => T(`Ajoute-moi en ami dans Carnet Muscu 💪\nDans l'appli Carnet Muscu : Profil → Amis → Ajouter → Coller.\nCode ami : ${frMyCode()}`, `Add me as a friend on Carnet Muscu 💪\nIn the Carnet Muscu app: Profile → Friends → Add → Paste.\nFriend code: ${frMyCode()}`);
+const frMsg = () => myH() ? T(`Ajoute-moi en ami dans Carnet Muscu 💪\nCherche @${myH()} dans Amis → Ajouter.\nCode ami : ${frMyCode()}`, `Add me as a friend on Carnet Muscu 💪\nSearch @${myH()} in Friends → Add.\nFriend code: ${frMyCode()}`) : T(`Ajoute-moi en ami dans Carnet Muscu 💪\nDans l'appli Carnet Muscu : Profil → Amis → Ajouter → Coller.\nCode ami : ${frMyCode()}`, `Add me as a friend on Carnet Muscu 💪\nIn the Carnet Muscu app: Profile → Friends → Add → Paste.\nFriend code: ${frMyCode()}`);
 const frLink = () => location.origin + location.pathname + '#ami=' + frMyCode();
 function frAgo(iso) {
   const m = Math.round((Date.now() - new Date(iso)) / 60000);
@@ -6663,7 +6670,7 @@ async function fbPublish(touch) {
     await fbDb().collection('users').doc(u.uid).set({card: body, name: (S.settings.name || '').trim(), code: fr.code || '', up: new Date().toISOString()}, {merge: true});
     fr.pending = false; fr.err = ''; fr.last = new Date().toISOString(); fr.pubName = (S.settings.name || '').trim();
   } catch (e) { fr.pending = true; fr.err = e.message || String(e); }
-  frBusy = false; saveLocal(); lbPush();
+  frBusy = false; saveLocal(); lbPush(); hPub();
   if (cur().v === 'friends') render();
 }
 async function fbFetch(c) {
@@ -6701,12 +6708,7 @@ function fbWatch() {
   });
   if (!fbInbox) fbInbox = fbDb().collection('inbox').doc(u.uid).collection('m').onSnapshot(qs => {
     qs.docChanges().forEach(ch => {
-      if (ch.type !== 'added') return; const m = ch.doc.data(), fr2 = FRS();
-      if (m.type === 'cheer') cheerShow(m);
-      if (m.type === 'add' && m.from && m.from !== u.uid) {
-        const c = 'fb:' + m.from;
-        if (!fr2.list.some(f => f.c === c)) { fr2.list.push({c, n: m.name || '…', add: new Date().toISOString()}); save(); toast(T(`👥 ${m.name} t'a ajouté en ami : tu vois maintenant ses séances`, `👥 ${m.name} added you: you can now see their workouts`)); setTimeout(fbWatch, 0); }
-      }
+      if (ch.type !== 'added') return; try { fbInboxMsg(ch.doc.data(), u.uid); } catch (e) { console.warn('msg', e); }
       ch.doc.ref.delete().catch(() => {});
     });
   }, e => console.warn('inbox', e));
@@ -6729,8 +6731,8 @@ async function fbStart() {
   fr.fbPtr = fbc; fr.file = fbc; fr.on = true; fr.fb = true; if (fr.drv) fr.drvT = new Date().toISOString(); if (!S.cb || S.cb.on === undefined) CB().on = true; save();
   if (cbOn()) setTimeout(() => cbPush(true), 1500);
   await fbPublish(true);
-  fbWatch(); fr.list.filter(f => fbIs(f.c)).forEach(f => fbNotifyAdd(f.c));
-  render(); frShowCode();
+  fbWatch(); fbAllowSync(); fr.list.filter(f => fbIs(f.c)).forEach(f => fbNotifyAdd(f.c));
+  render(); if (!myH()) openHandlePick(true); else frShowCode();
 }
 
 /* ===================== Sauvegarde automatique Firebase (sans fenêtre Google) ===================== */
@@ -6876,7 +6878,7 @@ async function fbForceMigrate() {
 }
 setTimeout(fbForceMigrate, 3500);
 /* Au démarrage : on se reconnecte en silence et on écoute les amis */
-setTimeout(async () => { try { const fr = S.settings.fr || {}; if (!(fr.fb || cbOn() || S.settings.lbOn || (fr.list || []).some(f => fbIs(f.c)))) return; const u = await fbSignIn(false); if (!u) return; fbWatch(); if (cbOn()) cbPush(false); lbPush(); liveSync(true); fbCleanDrive(); if (fr.fb && fr.on && (fr.pending || (S.history.length && fr.last && S.history[S.history.length - 1].date > fr.last))) fbPublish(false); } catch (e) { console.warn('fb init', e); } }, 1800);
+setTimeout(async () => { try { const fr = S.settings.fr || {}; if (!(fr.fb || cbOn() || S.settings.lbOn || (fr.list || []).some(f => fbIs(f.c)))) return; const u = await fbSignIn(false); if (!u) return; fbWatch(); if (fr.fb && !fr.allowV) fbAllowSync(); if (fr.fb && !myH() && !S.settings.hAsk) setTimeout(() => { if (S.active || modals.length || !S.settings.onboarded || document.getElementById('ob')) return; S.settings.hAsk = true; saveLocal(); openHandlePick(true); }, 3000); if (cbOn()) cbPush(false); lbPush(); liveSync(true); fbCleanDrive(); if (fr.fb && fr.on && (fr.pending || (S.history.length && fr.last && S.history[S.history.length - 1].date > fr.last))) fbPublish(false); } catch (e) { console.warn('fb init', e); } }, 1800);
 async function frStart() {
   return fbStart();
 }
@@ -6915,7 +6917,9 @@ async function frFetch(code) {
   const d = await r.json(); if (!d || d.app !== 'carnet-muscu') throw new Error('gone'); return d;
 }
 async function frAdd(code) {
-  const fr = FRS(); code = frCodeOf(code);
+  const fr = FRS(), raw = String(code || ''), hm = raw.match(/@([A-Za-z0-9._]{3,20})/);
+  if (fr.fb && (hm || (FBCODE.test(raw) && frCodeOf(raw) && frCodeOf(raw).length <= 9))) return frAddReq(raw, hm && hNorm(hm[1]));
+  code = frCodeOf(code);
   if (!code) { toast(T('⚠️ Code ami invalide', '⚠️ Invalid friend code')); return; }
   if (FBCODE.test(code) && code.length <= 9) { // nouveau code court (ex. GAB-4821)
     try { toast(T('⏳ Recherche de ton ami…', '⏳ Looking for your friend…')); const u = await fbSignIn(true, frAdd.popup); if (!u) return; code = await fbResolve(code); }
@@ -6934,6 +6938,13 @@ async function frAdd(code) {
   } catch (e) { toast(e.message === 'gone' ? T('⚠️ Carte introuvable : vérifie le code (ou ton ami a arrêté le partage)', '⚠️ Card not found: check the code (or your friend stopped sharing)') : '⚠️ ' + e.message); }
 }
 function frSaveCache() { try { localStorage.setItem(FRCACHE, JSON.stringify(frData)); } catch (e) {} }
+async function frAddReq(raw, h) {
+  try { const u = await fbSignIn(true, frAdd.popup); if (!u) return; let id, nm = '', hh = h || '';
+    if (h) { const d = await fbDb().collection('handles').doc(h).get(); if (!d.exists) { toast(T(`⚠️ @${h} introuvable`, `⚠️ @${h} not found`)); return; } id = d.data().uid; nm = d.data().n || ''; }
+    else { id = (await fbResolve(frCodeOf(raw))).slice(3); const x = await hByUid(id); if (x) { nm = x.n || ''; hh = x.h; } }
+    closeAll(); await frReqSend(id, nm, hh); if (S.settings.onboarded) { setRoot('friends'); render(); }
+  } catch (e) { if (e.message === 'needpopup') { closeAll(); modal(`<h2>👥 ${T('Connexion', 'Sign in')}</h2><p>${T('Connecte-toi avec Google une seule fois pour voir tes amis.', 'Sign in with Google once to see your friends.')}</p><button class="btn primary block" data-act="fb-popup-add" data-c="${esc(raw)}">${T('Se connecter avec Google', 'Sign in with Google')}</button>`); return; } toast(e.message === 'gone' ? T('⚠️ Code introuvable : vérifie-le', '⚠️ Code not found: check it') : '⚠️ ' + e.message); }
+}
 async function frLoad(force) {
   const fr = S.settings.fr; if (!fr || !fr.list || !fr.list.length || !GKEY || !navigator.onLine) return;
   if (!force && Date.now() - frLastLoad < 5 * 60000) return;
@@ -7247,7 +7258,7 @@ function frSocial() {
   if (GAME()) { o.sx = {m, xp: seasonXp(m)}; o.sxp = {m: prevMon(m), xp: seasonXp(prevMon(m))}; o.cw = Object.keys(S.seasonWon || {}).filter(k => S.seasonWon[k]); }
   return o;
 }
-function socialCheck() { try { seasonCheck(); raidCheck(); chCheck(); } catch (e) {} }
+function socialCheck() { try { seasonCheck(); raidCheck(); chCheck(); } catch (e) {} try { notifScan(); } catch (e) {} }
 /* ===================== Récompenses de la Guilde : titres, thèmes et cadres à débloquer ===================== */
 const TITLES = [ // [groupe de médaille, palier (0 = premier), [fr, en]]
   ['gm', 0, ['Grand Maître de la Guilde', 'Guild Grandmaster'], 4],
@@ -7545,10 +7556,12 @@ function vFriends() {
     : `<button class="btn block" data-act="fr-add" style="margin-bottom:12px">＋ ${T('Ajouter un ami', 'Add a friend')}</button>`;
   const recHtml = rec.length ? `<div class="card"><span class="muted small">❤️ ${T('Réactions à tes séances', 'Reactions to your workouts')}</span>${rec.map(x => `<div class="small" style="margin-top:6px">${x.e} <b>${esc(x.n)}</b> · ${esc(x.h.routineName || '')} <span class="muted">(${dateFr(x.h.date)})</span></div>`).join('')}</div>` : '';
   const feedHtml = feed.length ? feed.map(frPost).join('') : fr.list.length ? `<p class="muted center" style="margin:30px 0">${T('Tes amis n\'ont pas encore de séance partagée.', 'Your friends have no shared workouts yet.')}</p>`
-    : `<p class="muted center" style="margin:30px 16px">${T('Ajoute un ami avec son code pour voir ses séances ici.', 'Add a friend with their code to see their workouts here.')}</p>`;
+    : `<p class="muted center" style="margin:30px 16px">${T('Ajoute un ami avec son @pseudo pour voir ses séances ici.', 'Add a friend with their @username to see their workouts here.')}</p>`;
   setTimeout(socialCheck, 0);
   const cmRec = frCmReceived(), cmHtml = cmRec.length ? `<div class="card"><span class="muted small">💬 ${T('Commentaires reçus', 'Comments received')}</span>${cmRec.map(x => `<div class="small" style="margin-top:6px"><b>${esc(x.n)}</b> : ${esc(x.t)} <span class="muted">· ${x.d ? frAgo(x.d) : ''}</span></div>`).join('')}</div>` : '';
-  return `${meCard}${friends}${liveCard()}${chCard()}${frRanking()}${recHtml}${cmHtml}
+  const reqIn = (fr.reqIn || []).length ? `<div class="card"><b>📨 ${T('Demandes d\'ami', 'Friend requests')}</b>${fr.reqIn.map(reqRow).join('')}</div>` : '';
+  const hLine = fr.fb ? `<button class="hline" data-act="h-edit"><span>${myH() ? T('Mon pseudo', 'My username') + ' : <b>@' + esc(myH()) + '</b>' : '@ ' + T('Choisis ton pseudo', 'Pick your username')}</span><span class="muted">${myH() ? T('Changer', 'Change') : '›'}</span></button>` : '';
+  return `${meCard}${hLine}${reqIn}${friends}${liveCard()}${chCard()}${frRanking()}${recHtml}${cmHtml}
     <div class="row between" style="margin:14px 0 8px"><b>${T('Fil des amis', 'Friends feed')}</b>${fr.list.length ? `<button class="btn sm ghost" data-act="fr-refresh">↻ ${T('Actualiser', 'Refresh')}</button>` : ''}</div>
     ${feedHtml}
     ${frOn() ? `<details class="card"><summary><b>🔒 ${T('Ce que tes amis voient', 'What friends see')}</b></summary>
@@ -7563,7 +7576,7 @@ function friendsCard() {
   return `<button class="card frcard" data-act="go" data-v="friends"><span class="frav">👥</span><span style="flex:1;text-align:left"><b>${T('Amis', 'Friends')}</b><br><span class="muted small">${n ? (feed[0] ? `${esc(feed[0].d.name)} : ${esc(feed[0].s.n)} · ${frAgo(feed[0].s.d)}` : T(`${n} ami${n > 1 ? 's' : ''}`, `${n} friend${n > 1 ? 's' : ''}`)) : T('Suis les entraînements de tes amis', 'Follow your friends\' workouts')}</span></span>${nNew ? `<span class="frbadge">${nNew}</span>` : ''}<span class="muted" style="font-size:22px">›</span></button>`;
 }
 async function checkFriendLink() {
-  const m = location.hash.match(/#ami=([A-Za-z0-9_-]{20,}|[A-Za-z]{2,4}-\d{4})/); if (!m) return;
+  const m = location.hash.match(/#ami=([A-Za-z0-9_-]{20,}|[A-Za-z]{2,4}-\d{4}|@[A-Za-z0-9._]{3,20})/); if (!m) return;
   try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
   // Lien ouvert dans le navigateur (Messenger, Safari…) au lieu de l'appli installée : c'est une copie vide de l'appli.
   if (!isStandalone() && !S.history.length) return frLanding(m[1]);
@@ -7656,11 +7669,12 @@ const VIEWS = {
   stats: ['Statistiques', () => vStats()], 'st-vol': ['Séries par muscle', () => vVolume()], 'st-radar': ['Répartition musculaire', () => vRadar()],
   'st-body': ['Carte des muscles', () => vBodyMap()], 'st-top': ['Principaux exercices', () => vTopEx()], 'st-rec': ['Records personnels', () => vRecords()],
   'st-month': ['Rapport mensuel', () => vMonth()], exercises: ['Exercices', () => vExList()], exdetail: ['Exercice', () => vExDetail()],
-  measures: ['Corps et progrès', () => vBody()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], friends: ['Amis', () => vFriends()], world: ['Classement mondial', () => vWorld()], cardio: ['Cardio', () => vCardio()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], murank: ['Rangs par muscle', () => vMuscleRanks()], shadows: ['Arsenal', () => vShadows()], compare: ['Comparer deux périodes', () => vCompare()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()], guild: ['Guilde', () => vGuild()]
+  measures: ['Corps et progrès', () => vBody()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], friends: ['Amis', () => vFriends()], notifs: ['Notifications', () => vNotifs()], world: ['Classement mondial', () => vWorld()], cardio: ['Cardio', () => vCardio()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], murank: ['Rangs par muscle', () => vMuscleRanks()], shadows: ['Arsenal', () => vShadows()], compare: ['Comparer deux périodes', () => vCompare()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()], guild: ['Guilde', () => vGuild()]
 };
 function headerRight(v) {
+  if (['train', 'friends', 'guild'].includes(v)) return bellBtn();
   if (v === 'calendar') return `<button class="hbtn calmode" data-act="cal-mode">${calMode === 'year' ? T('Année', 'Year') : T('Mois', 'Month')} ▾</button>`;
-  if (v === 'profile') return `<button class="hbtn" data-act="go" data-v="settings" aria-label="Réglages">${IC('gear', '⚙️', 24)}</button>`;
+  if (v === 'profile') return `${bellBtn()}<button class="hbtn" data-act="go" data-v="settings" aria-label="Réglages">${IC('gear', '⚙️', 24)}</button>`;
   if (v === 'workout' && S.active) return '<span class="chrono" id="elapsed"></span><button class="btn primary sm" data-act="finish">Terminer</button>';
   if (v === 'redit') return '<button class="btn primary sm" data-act="rd-save">Enregistrer</button>';
   if (v === 'routine') return `<button class="hbtn" data-act="routine-menu" data-rid="${cur().rid}" aria-label="Options">⋯</button>`;
@@ -7815,6 +7829,7 @@ setInterval(updElapsed, 1000);
 
 /* ===================== Icônes (style Lucide, dessinées en SVG) ===================== */
 const ICP = {
+  bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   globe: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
   gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
   unlock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>',
@@ -7873,7 +7888,7 @@ Object.assign(ICP, {
 const EMO = [['🌍', 'globe'], ['🌎', 'globe'], ['🌏', 'globe'], ['🎁', 'gift'], ['🔓', 'unlock'], ['🌟', 'star'], ['↻', 'refresh'], ['🤖', 'bot'], ['✨', 'spark'], ['📥', 'down'], ['📤', 'share'], ['✏', 'pencil'], ['📁＋', 'folderp'], ['📁', 'folder'], ['📋', 'clip'], ['📚', 'book'], ['🪶', 'feather'],
   ['📅', 'calendar'], ['🗓', 'calendar'], ['🔄', 'refresh'], ['↕', 'move'], ['🧮', 'calc'], ['⚖', 'scale'], ['⛓', 'link'], ['🔗', 'link'], ['🎞', 'eye'], ['📝', 'file'], ['⧉', 'copy'],
   ['🗑', 'trash'], ['▶', 'play'], ['🔊', 'vol'], ['🔒', 'lock'], ['⬇', 'down'], ['⬆', 'up'], ['☁', 'cloud'], ['📊', 'chart'], ['📈', 'chart'], ['🖼', 'image'], ['💾', 'save'],
-  ['🔥', 'flame'], ['📖', 'bookopen'], ['＋', 'plus'], ['🏅', 'medal'], ['⚙', 'gear'], ['🏋', 'dumbbell'], ['🧍', 'ruler'], ['💪', 'pulse'], ['🧘', 'yoga']];
+  ['🔥', 'flame'], ['📖', 'bookopen'], ['＋', 'plus'], ['🏅', 'medal'], ['⚙', 'gear'], ['🏋', 'dumbbell'], ['🧍', 'ruler'], ['💪', 'pulse'], ['🧘', 'yoga'], ['🔔', 'bell']];
 function iconize(root) {
   if (!root || !iconsOn()) return;
   root.querySelectorAll('.btn, .linkbtn, .sheet h2, .mrow .mic').forEach(el => {
@@ -8116,7 +8131,7 @@ document.addEventListener('click', e => {
     case 'fr-code-old': closeAll(); frShowCode(true); break;
     case 'fr-copy': try { navigator.clipboard.writeText(frMsg()); toast(T('📋 Code copié : colle-le à ton ami', '📋 Code copied: paste it to your friend')); } catch (e) { toast(FRS().file); } break;
     case 'fr-share': shareText(frMsg()); break;
-    case 'fr-add': modal(`<div class="row between"><h2 style="margin:0">＋ ${T('Ajouter un ami', 'Add a friend')}</h2><button class="btn sm" data-act="close">✕</button></div><p class="small">${T('Colle le message ou le code que ton ami t\'a envoyé (dans l\'appli : Profil → Amis → Mon code).', 'Paste the message or code your friend sent you (in the app: Profile → Friends → My code).')}</p><div class="row" style="gap:8px"><input id="frin" style="flex:1" placeholder="${T('Code ami', 'Friend code')}"><button class="btn" data-act="fr-paste" style="flex:none">📋 ${T('Coller', 'Paste')}</button></div><button class="btn primary block" data-act="fr-add-ok" style="margin-top:12px">${T('Ajouter', 'Add')}</button>`); setTimeout(() => { const i = $('#frin'); if (i) i.focus(); }, 80); break;
+    case 'fr-add': openFrAdd(); break;
     case 'fr-paste': (async () => { try { const t = await navigator.clipboard.readText(); const i = $('#frin'); if (i) i.value = t.trim(); if (frCodeOf(t)) frAdd(t); else toast(T('⚠️ Aucun code ami dans le presse-papiers', '⚠️ No friend code in clipboard')); } catch (e) { toast(T('Garde le doigt dans la case, puis « Coller »', 'Long-press the box, then “Paste”')); const i = $('#frin'); if (i) i.focus(); } })(); break;
     case 'frl-copy': try { navigator.clipboard.writeText(window._frPend); toast(T('📋 Code copié! Ouvre ton appli Carnet Muscu', '📋 Code copied! Open your Carnet Muscu app')); } catch (e) { toast(window._frPend); } break;
     case 'frl-here': closeModal(); frAdd(window._frPend); break;
@@ -8128,7 +8143,14 @@ document.addEventListener('click', e => {
       else modal(`<h2>👥 ${T('Active le partage', 'Turn on sharing')}</h2><p>${T('Ta photo sera visible par tes amis dès que tu actives le partage avec Google.', 'Your photo will be visible to your friends as soon as you turn on sharing with Google.')}</p><button class="btn primary block" data-act="fr-start">${T('Activer le partage', 'Turn on sharing')}</button><button class="btn block" data-act="close" style="margin-top:8px">${T('Plus tard', 'Later')}</button>`);
       break; }
     case 'fr-phbig': modal(`<div class="row between"><b>${esc((frData[b.dataset.c] || {d: {}}).d.name || '')}</b><button class="btn sm" data-act="close">✕</button></div><img src="${b.src}" alt="" style="width:100%;border-radius:14px;margin-top:10px;display:block">`); break;
-    case 'fr-add-ok': frAdd(($('#frin') || {}).value); break;
+    case 'fr-add-ok': frAdd(($('#frin') || {}).value || ($('#frsq') || {}).value); break;
+    case 'h-edit': openHandlePick(!myH()); break;
+    case 'req-send': frReqSend(b.dataset.u, b.dataset.n, b.dataset.h); break;
+    case 'req-ok': frReqAccept(b.dataset.u); break;
+    case 'req-no': frReqDecline(b.dataset.u); break;
+    case 'req-later': { const p = document.getElementById('reqpop'); if (p) p.remove(); break; }
+    case 'h-pick': { const i = $('#hin'); if (i) { i.value = b.dataset.h; hCheck(); } break; }
+    case 'h-save': { const h = hNorm(($('#hin') || {}).value); if (!H_RE.test(h)) { toast(T('Pseudo invalide', 'Invalid username')); break; } b.disabled = true; hClaim(h).then(() => { closeAll(); render(); toast(T(`✅ Ton pseudo : @${h}`, `✅ Your username: @${h}`)); }, e => { b.disabled = false; S.settings.hAsk = false; saveLocal(); toast(e.message === 'taken' ? T('Ce pseudo est déjà pris', 'Username taken') : '⚠️ ' + e.message); hCheck(); }); break; }
     case 'fb-popup': closeAll(); fbStart.popup = true; fbStart().finally(() => { fbStart.popup = false; }); break;
     case 'fb-popup-add': { const cc = b.dataset.c; closeAll(); frAdd.popup = true; frAdd(cc).finally(() => { frAdd.popup = false; }); break; }
     case 'cb-on': cbEnable(); break;
@@ -8211,7 +8233,7 @@ document.addEventListener('click', e => {
         <div style="margin-top:12px">${items.length ? items.map(frPost).join('') : `<p class="muted center">${T('Rien de partagé pour l\'instant.', 'Nothing shared yet.')}</p>`}</div>
         ${me ? `<button class="btn block" data-act="fr-code" style="margin-top:8px">${T('Mon code ami', 'My friend code')}</button>` : `<button class="btn primary block" data-act="ch-new" data-c="${f.c}" style="margin-top:8px">⚔️ ${T('Défier', 'Challenge')} ${esc((d && d.name) || f.n || '')}</button><button class="btn block" data-act="fr-del" data-c="${f.c}" style="color:var(--bad);margin-top:8px">${T('Retirer de mes amis', 'Remove friend')}</button>`}`);
       setTimeout(phFill, 0); break; }
-    case 'fr-del': { const fr = FRS(); fr.list = fr.list.filter(x => x.c !== b.dataset.c); fr.re = (fr.re || []).filter(x => x.to !== b.dataset.c); delete frData[b.dataset.c]; frSaveCache(); save(); closeAll(); render(); if (frOn()) frQueue(false); break; }
+    case 'fr-del': { const fr = FRS(); fr.list = fr.list.filter(x => x.c !== b.dataset.c); fr.re = (fr.re || []).filter(x => x.to !== b.dataset.c); delete frData[b.dataset.c]; frSaveCache(); save(); closeAll(); render(); if (frOn()) frQueue(false); fbAllowSync(); break; }
     case 'cv-kind': cv.k = b.dataset.k; render(); break;
     case 'cv-mode': cv.mode = b.dataset.m; render(); break;
     case 'cv-save': cvSave(); break;
@@ -8348,7 +8370,8 @@ document.addEventListener('click', e => {
     case 'ob-back': obCollect(); obSt.i = Math.max(0, obSt.i - 1); if (obSt.steps[obSt.i] === 'home' && obSt.steps.includes('back')) obSt.steps = ['home', 'prof', 'toi', 'obj', 'style']; obRender(); break;
     case 'ob-later': obClose(); break;
     case 'ob-skip': obSt.i++; obRender(); break;
-    case 'ob-next': obCollect(); if (obSt.steps[obSt.i] === 'prof' && !obSt.d.name.trim()) { toast(T('Écris ton nom', 'Enter your name')); break; } if (obSt.i >= obSt.steps.length - 1) obFinish(); else { obSt.i++; obRender(); window.scrollTo && document.getElementById('ob').scrollTo(0, 0); } break;
+    case 'ob-next': obCollect(); if (obSt.steps[obSt.i] === 'prof' && !obSt.d.name.trim()) { toast(T('Écris ton nom', 'Enter your name')); break; }
+      if (obSt.steps[obSt.i] === 'pseudo' && hOk !== obSt.d.h) { toast(H_RE.test(obSt.d.h || '') ? T('Choisis un pseudo disponible', 'Pick an available username') : T('3 caractères min.', '3 characters min.')); break; } if (obSt.i >= obSt.steps.length - 1) obFinish(); else { obSt.i++; obRender(); window.scrollTo && document.getElementById('ob').scrollTo(0, 0); } break;
     case 'ob-seg': { obCollect(); const k = b.dataset.k, v = b.dataset.v; obSt.d[k] = k === 'game' ? v === '1' : k === 'days' ? +v : v; obRender(); break; }
     case 'ob-avatar': obCollect(); pickImage(async f => { try { obSt.d.avatar = await shrinkImg(f, 240, .82); obRender(); } catch (e) { toast('⚠️ ' + e.message); } }, true); break;
     case 'ob-restore': { const done = () => { obClose(); try { frLoad(); } catch (e) {} }; cbRestore(false).then(done, done); break; }
@@ -8628,6 +8651,8 @@ document.addEventListener('click', e => {
   }
 });
 document.addEventListener('input', e => {
+  if (e.target.id === 'hin') { hCheck(); return; }
+  if (e.target.id === 'frsq') { frSearch(); return; }
   const t = e.target;
   if (t.dataset.cv) { cv[t.dataset.cv] = t.value; const r = $('#cvres'); if (r) r.innerHTML = cvResult(); }
   if (t.dataset.phd) { const p = (S.photos || []).find(x => x.id === t.dataset.phd); if (p && t.value) { p.d = t.value; save(); } }
@@ -8728,7 +8753,162 @@ try { const sc = sessionStorage.getItem('cm-scroll'); sessionStorage.removeItem(
 const OB_GOALS = () => [['muscle', '💪', T('Prendre du muscle', 'Build muscle'), T('8 à 12 reps', '8 to 12 reps')], ['force', '⚡', T('Gagner en force', 'Get stronger'), T('4 à 6 reps, charges lourdes', '4 to 6 reps, heavy weights')], ['fat', '🔥', T('Perdre du gras', 'Lose fat'), T('10 à 15 reps et cardio', '10 to 15 reps and cardio')], ['fit', '❤️', T('Rester en forme', 'Stay fit'), T('Équilibré', 'Balanced')]];
 const defReps = () => ({force: '4-6', fat: '10-15'})[S.settings.obj] || '8-12';
 const ageOf = () => S.settings.by ? new Date().getFullYear() - S.settings.by : null;
-let obSt = null;
+/* ===================== @pseudo, demandes d'ami et notifications ===================== */
+var H_RE = /^[a-z0-9._]{3,20}$/;
+function hNorm(s) { return norm(String(s || '')).trim().replace(/^@+/, '').replace(/\s+/g, '.').replace(/[^a-z0-9._]/g, '').slice(0, 20); }
+function myH() { return S.settings.handle || ''; }
+function NOTIFS() { return (S.notifs = S.notifs || []); }
+function notifUnread() { return NOTIFS().filter(n => !n.read).length; }
+function notifAdd(n, read) {
+  const a = NOTIFS(); if (n.key && a.some(x => x.key === n.key)) return false;
+  a.unshift(Object.assign({id: uid(), t: new Date().toISOString(), read: !!read}, n)); if (a.length > 60) a.length = 60;
+  saveLocal(); bellUpd(); return true;
+}
+function bellUpd() { try { if (BELL_VIEWS.includes(cur().v)) { $('#hdr').innerHTML = headerRight(cur().v); iconize($('#hdr')); } if (cur().v === 'notifs' && !modals.length) render(); } catch (e) {} }
+var BELL_VIEWS = ['train', 'friends', 'profile', 'guild'];
+function bellBtn() { if (!FRS().fb) return ''; const k = notifUnread() + (FRS().reqIn || []).filter(r => !NOTIFS().some(n => n.key === 'req:' + r.uid && !n.read)).length; return `<button class="hbtn bellb" data-act="go" data-v="notifs" aria-label="Notifications">${IC('bell', '🔔', 24)}${k ? `<b>${k > 9 ? '9+' : k}</b>` : ''}</button>`; }
+function fbMe() { return (typeof firebase !== 'undefined' && firebase.apps.length && firebase.auth().currentUser) || null; }
+var myLvlSafe = () => { try { return hunter().lvl || 0; } catch (e) { return 0; } };
+/* Qui a le droit de lire ma carte : seulement mes amis (et ceux à qui j'ai envoyé une demande) */
+var allowT = null;
+function fbAllowSync() { clearTimeout(allowT); allowT = setTimeout(async () => { const u = fbMe(), fr = FRS(); if (!u || !fr.fb) return;
+  const ids = [...new Set([...fr.list.filter(f => fbIs(f.c)).map(f => f.c.slice(3)), ...(fr.reqOut || []).map(r => r.uid)])];
+  try { await fbDb().collection('users').doc(u.uid).set({fr: ids}, {merge: true}); fr.allowV = 1; saveLocal(); } catch (e) { console.warn('allow', e); } }, 600); }
+/* Pseudo */
+async function hFree(h) { if (!H_RE.test(h)) return false; const d = await fbDb().collection('handles').doc(h).get(); const u = fbMe(); return !d.exists || (u && d.data().uid === u.uid); }
+async function hClaim(h) {
+  const u = fbMe(); if (!u) throw new Error(T('Connexion requise', 'Sign-in required')); h = hNorm(h); if (!H_RE.test(h)) throw new Error(T('Pseudo invalide', 'Invalid username'));
+  const db = fbDb(), old = myH(), nm = (S.settings.name || '').trim();
+  await db.runTransaction(async t => { const r = db.collection('handles').doc(h), d = await t.get(r); if (d.exists && d.data().uid !== u.uid) throw new Error('taken'); t.set(r, {uid: u.uid, n: nm, nl: norm(nm), l: myLvlSafe()}); });
+  if (old && old !== h) { try { await db.collection('handles').doc(old).delete(); } catch (e) {} }
+  S.settings.handle = h; save(); try { await db.collection('users').doc(u.uid).set({h}, {merge: true}); } catch (e) {}
+  return h;
+}
+function hPub() { const u = fbMe(), h = myH(); if (!u || !h) return; const nm = (S.settings.name || '').trim(); fbDb().collection('handles').doc(h).set({uid: u.uid, n: nm, nl: norm(nm), l: myLvlSafe()}).catch(() => {}); }
+async function hByUid(id) { try { const q = await fbDb().collection('handles').where('uid', '==', id).limit(1).get(); const d = q.docs[0]; return d ? {h: d.id, ...d.data()} : null; } catch (e) { return null; } }
+/* Champ « @pseudo » (accueil, choix ou changement) : vérifie en direct et propose des variantes */
+var hField = (val) => `<div class="hin-wrap"><span>@</span><input id="hin" value="${esc(val)}" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="21" placeholder="${T('ton.pseudo', 'your.name')}"><em id="hst"></em></div>
+  <div id="hsug"></div><p class="muted small" style="margin:6px 0 0">${T('Lettres, chiffres, . et _ · 3 à 20 caractères', 'Letters, numbers, . and _ · 3 to 20 characters')}</p>`;
+var hT = null, hOk = '';
+function hCheck() {
+  clearTimeout(hT); const i = $('#hin'), st = $('#hst'), sg = $('#hsug'); if (!i) return; const h = hNorm(i.value); hOk = '';
+  if (i.value !== h && i.value.replace(/^@/, '') !== h) { const p = i.selectionStart; i.value = h; try { i.setSelectionRange(p, p); } catch (e) {} }
+  if (!H_RE.test(h)) { st.className = ''; st.textContent = h.length ? T('3 caractères min.', '3 characters min.') : ''; sg.innerHTML = ''; return; }
+  st.className = ''; st.textContent = '…';
+  hT = setTimeout(async () => { try { await fbReady(); const ok = await hFree(h); if (hNorm($('#hin') ? $('#hin').value : '') !== h) return;
+    st.className = ok ? 'ok' : 'bad'; st.textContent = ok ? '✓ ' + T('disponible', 'available') : '✕ ' + T('déjà pris', 'taken'); if (ok) { hOk = h; sg.innerHTML = ''; return; }
+    const base = h.replace(/[._]?\d+$/, '').slice(0, 14), y = String(new Date().getFullYear()).slice(2), cand = [...new Set([base + '.muscu', base + '_fit', base + y, base + '.lift', base + (10 + Math.floor(Math.random() * 89))])].filter(x => H_RE.test(x) && x !== h);
+    const free = []; for (const c of cand) { if (free.length >= 3) break; try { if (await hFree(c)) free.push(c); } catch (e) {} }
+    if (hNorm($('#hin') ? $('#hin').value : '') === h) sg.innerHTML = free.length ? `<p class="muted small" style="margin:8px 0 4px">${T('Disponibles :', 'Available:')}</p>${free.map(c => `<button class="hchip" data-act="h-pick" data-h="${c}">@${c}</button>`).join('')}` : '';
+  } catch (e) { if (e.code === 'permission-denied' || /permission/i.test(e.message || '')) { hOk = h; st.className = ''; st.textContent = T('vérifié bientôt', 'checked soon'); } else { st.className = 'bad'; st.textContent = '⚠️'; } } }, 450);
+}
+function openHandlePick(first) {
+  const nm = myH() || hNorm(S.settings.name || '');
+  modal(`<div class="row between"><h2 style="margin:0">@ ${first ? T('Choisis ton pseudo', 'Pick your username') : T('Mon @pseudo', 'My @username')}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <p class="small">${T('Unique. Tes amis te trouvent avec, sans code à copier. Ton nom affiché reste libre.', 'Unique. Friends find you with it, no code to copy. Your display name stays free.')}</p>${hField(nm)}
+    <button class="btn primary block" data-act="h-save" style="margin-top:14px">${T('Enregistrer', 'Save')}</button>`, {id: 'hpick'});
+  setTimeout(hCheck, 50);
+}
+/* Demandes d'ami */
+async function frReqSend(id, name, h) {
+  const u = fbMe(), fr = FRS(); if (!u) return; if (id === u.uid) { toast(T('😄 C\'est toi!', '😄 That\'s you!')); return; }
+  const c = 'fb:' + id; if (fr.list.some(f => f.c === c)) { toast(T('Vous êtes déjà amis', 'Already friends')); return; }
+  if ((fr.reqIn || []).some(r => r.uid === id)) return frReqAccept(id);
+  fr.reqOut = (fr.reqOut || []).filter(r => r.uid !== id); fr.reqOut.push({uid: id, name: name || '', h: h || '', t: new Date().toISOString()}); save(); fbAllowSync();
+  try { await fbDb().collection('inbox').doc(id).collection('m').add({from: u.uid, type: 'req', name: (S.settings.name || '').trim() || T('Un ami', 'A friend'), h: myH(), t: new Date().toISOString()}); toast(T(`📨 Demande envoyée${name ? ' à ' + name : ''}`, `📨 Request sent${name ? ' to ' + name : ''}`)); }
+  catch (e) { toast('⚠️ ' + e.message); }
+  frSearchRender();
+}
+async function frReqAccept(id) {
+  const fr = FRS(), r = (fr.reqIn || []).find(x => x.uid === id) || {uid: id}, c = 'fb:' + id, u = fbMe();
+  fr.reqIn = (fr.reqIn || []).filter(x => x.uid !== id); fr.reqOut = (fr.reqOut || []).filter(x => x.uid !== id);
+  if (!fr.list.some(f => f.c === c)) fr.list.push({c, n: r.name || '…', add: new Date().toISOString()});
+  NOTIFS().forEach(n => { if (n.key === 'req:' + id) { n.read = true; n.done = 'ok'; } }); save(); fbAllowSync(); fbWatch();
+  if (u) try { await fbDb().collection('inbox').doc(id).collection('m').add({from: u.uid, type: 'acc', name: (S.settings.name || '').trim() || T('Un ami', 'A friend'), h: myH(), t: new Date().toISOString()}); } catch (e) {}
+  toast(T(`✅ ${r.name || ''} est maintenant ton ami`, `✅ ${r.name || ''} is now your friend`).replace('  ', ' ')); const p = document.getElementById('reqpop'); if (p) p.remove(); bellUpd(); if (['friends', 'notifs'].includes(cur().v) && !modals.length) render();
+}
+function frReqDecline(id) {
+  const fr = FRS(); fr.reqIn = (fr.reqIn || []).filter(x => x.uid !== id); NOTIFS().forEach(n => { if (n.key === 'req:' + id) { n.read = true; n.done = 'no'; } }); save(); bellUpd(); if (['friends', 'notifs'].includes(cur().v) && !modals.length) render();
+}
+function reqShow(r) {
+  if (S.active || document.getElementById('reqpop') || !S.settings.onboarded) return;
+  const o = document.createElement('div'); o.id = 'reqpop'; o.className = 'reqpop';
+  o.innerHTML = `<div class="row" style="gap:10px"><span class="frav sm">${esc((r.name || '?')[0].toUpperCase())}</span><div style="flex:1;min-width:0"><b>${esc(r.name || '')}</b> ${r.h ? `<span class="muted small">@${esc(r.h)}</span>` : ''}<div class="muted small">${T('veut être ton ami', 'wants to be your friend')}</div></div></div>
+    <div class="row" style="gap:8px;margin-top:10px"><button class="btn primary sm" style="flex:1" data-act="req-ok" data-u="${esc(r.uid)}">${T('Accepter', 'Accept')}</button><button class="btn sm" style="flex:1" data-act="req-later">${T('Plus tard', 'Later')}</button></div>`;
+  document.body.appendChild(o); if (S.settings.haptic !== false) haptic([40, 30, 40]); setTimeout(() => { if (o.isConnected) o.remove(); }, 12000);
+}
+/* Message reçu dans ma boîte (Firebase) */
+function fbInboxMsg(m, me) {
+  const fr = FRS(), from = m.from; if (!from || from === me) return;
+  const c = 'fb:' + from, isFr = fr.list.some(f => f.c === c);
+  if (m.type === 'cheer') { cheerShow(m); notifAdd({type: 'cheer', name: m.name, e: m.e || '🔥', uid: from}); return; }
+  if (m.type === 'add' || m.type === 'req') {
+    if (isFr) { if (m.type === 'req') fbDb().collection('inbox').doc(from).collection('m').add({from: me, type: 'acc', name: (S.settings.name || '').trim(), h: myH(), t: new Date().toISOString()}).catch(() => {}); return; }
+    if ((fr.reqOut || []).some(r => r.uid === from)) { fr.reqIn = (fr.reqIn || []).concat([{uid: from, name: m.name, h: m.h || '', t: m.t}]); frReqAccept(from); return; } // demande croisée : amis direct
+    fr.reqIn = (fr.reqIn || []).filter(r => r.uid !== from); fr.reqIn.push({uid: from, name: m.name || '', h: m.h || '', t: m.t || new Date().toISOString()}); save();
+    notifAdd({type: 'req', key: 'req:' + from, uid: from, name: m.name, h: m.h || ''}); reqShow({uid: from, name: m.name, h: m.h}); return;
+  }
+  if (m.type === 'acc') {
+    fr.reqOut = (fr.reqOut || []).filter(r => r.uid !== from);
+    if (!isFr) { fr.list.push({c, n: m.name || '…', add: new Date().toISOString()}); save(); setTimeout(fbWatch, 0); }
+    fbAllowSync(); notifAdd({type: 'acc', name: m.name, h: m.h || '', uid: from}); toast(T(`🤝 ${m.name} a accepté ta demande d'ami`, `🤝 ${m.name} accepted your friend request`));
+  }
+}
+/* Notifs tirées des cartes des amis : réactions, commentaires */
+function notifScan() {
+  const fr = FRS(); if (!fr.file) return; const first = !S.notifInit;
+  fr.list.forEach(f => { const d = frData[f.c] && frData[f.c].d; if (!d) return;
+    (d.re || []).forEach(x => { if (x.to !== fr.file) return; const hs = S.history.find(y => y.id === x.s); notifAdd({type: 'react', key: 'r:' + f.c + ':' + x.s + ':' + x.e, name: d.name, e: x.e, txt: hs ? hs.routineName || '' : '', t: x.d || new Date().toISOString()}, first); });
+    (d.cm || []).forEach(x => { if (x.to !== fr.file) return; notifAdd({type: 'cmt', key: 'c:' + f.c + ':' + (x.d || x.t), name: d.name, txt: x.t, t: x.d || new Date().toISOString()}, first); }); });
+  if (first) { S.notifInit = 1; saveLocal(); }
+}
+function notifLine(n) {
+  const nm = `<b>${esc(n.name || '')}</b>`;
+  const txt = n.type === 'cheer' ? T(`${nm} t'a envoyé ${esc(n.e || '🔥')} pendant ta séance`, `${nm} sent you ${esc(n.e || '🔥')} during your workout`)
+    : n.type === 'react' ? T(`${nm} a réagi ${esc(n.e || '')} à ${n.txt ? 'ton ' + esc(n.txt) : 'ta séance'}`, `${nm} reacted ${esc(n.e || '')} to ${n.txt ? 'your ' + esc(n.txt) : 'your workout'}`)
+    : n.type === 'cmt' ? T(`${nm} a commenté : « ${esc(n.txt || '')} »`, `${nm} commented: “${esc(n.txt || '')}”`)
+    : n.type === 'acc' ? T(`${nm} a accepté ta demande d'ami 🤝`, `${nm} accepted your friend request 🤝`)
+    : n.type === 'req' ? (n.done === 'ok' ? T(`Tu es maintenant ami avec ${nm}`, `You're now friends with ${nm}`) : n.done === 'no' ? T(`Demande de ${nm} refusée`, `Request from ${nm} declined`) : T(`${nm} veut être ton ami`, `${nm} wants to be your friend`)) : esc(n.txt || '');
+  return `<div class="ntf${n.read ? '' : ' unread'}"><span class="frav sm">${esc((n.name || '?')[0].toUpperCase())}</span><div style="flex:1;min-width:0" class="small">${txt}<div class="muted">${frAgo(n.t)}</div></div>${n.read ? '' : '<i class="ndot"></i>'}</div>`;
+}
+function reqRow(r) { return `<div class="ntf unread"><span class="frav sm">${esc((r.name || '?')[0].toUpperCase())}</span><div style="flex:1;min-width:0"><b>${esc(r.name || '')}</b> ${r.h ? `<span class="muted small">@${esc(r.h)}</span>` : ''}<div class="muted small">${T('veut être ton ami', 'wants to be your friend')} · ${frAgo(r.t)}</div></div></div>
+  <div class="row" style="gap:8px;margin:-2px 0 10px"><button class="btn primary sm" style="flex:1" data-act="req-ok" data-u="${esc(r.uid)}">${T('Accepter', 'Accept')}</button><button class="btn sm" style="flex:1" data-act="req-no" data-u="${esc(r.uid)}">${T('Refuser', 'Decline')}</button></div>`; }
+function vNotifs() {
+  const fr = FRS(), ins = fr.reqIn || [], outs = fr.reqOut || [], list = NOTIFS().filter(n => !(n.type === 'req' && !n.done && ins.some(r => r.uid === n.uid)));
+  setTimeout(() => { let ch = false; NOTIFS().forEach(n => { if (!n.read && !(n.type === 'req' && !n.done)) { n.read = true; ch = true; } }); if (ch) { saveLocal(); } }, 1500);
+  return `${ins.length ? `<div class="sec-t">${T('DEMANDES D\'AMI', 'FRIEND REQUESTS')}</div>${ins.map(reqRow).join('')}` : ''}
+    <div class="sec-t">${T('RÉCENT', 'RECENT')}</div>${list.length ? list.map(notifLine).join('') : `<p class="muted center" style="margin:30px 0">${T('Rien de nouveau pour l\'instant.', 'Nothing new yet.')}</p>`}
+    ${outs.length ? `<details class="card" style="margin-top:14px"><summary class="small"><b>📨 ${T('Demandes envoyées', 'Sent requests')} (${outs.length})</b></summary>${outs.map(r => `<div class="row between small" style="margin-top:8px"><span><b>${esc(r.name || '')}</b> ${r.h ? `<span class="muted">@${esc(r.h)}</span>` : ''}</span><span class="muted">⏳ ${frAgo(r.t)}</span></div>`).join('')}</details>` : ''}`;
+}
+/* Recherche d'amis par @pseudo ou par nom */
+var frsT = null, frsRes = [], frsQ = '';
+function frSearch() {
+  clearTimeout(frsT); const i = $('#frsq'); if (!i) return; const raw = i.value.trim(), q = hNorm(raw), qn = norm(raw.replace(/^@/, '')).trim();
+  if (frCodeOf(raw) && !/^@/.test(raw)) { frsRes = []; frsQ = ''; const r = $('#frsr'); if (r) r.innerHTML = `<button class="btn primary block" data-act="fr-add-ok">${T('Ajouter avec ce code', 'Add with this code')}</button>`; return; }
+  if (q.length < 2) { frsRes = []; frsQ = ''; frSearchRender(); return; }
+  frsT = setTimeout(async () => { try { await fbSignIn(false); const db = fbDb(), col = db.collection('handles'), FP = firebase.firestore.FieldPath.documentId();
+    const [a, b] = await Promise.all([col.where(FP, '>=', q).where(FP, '<', q + '').limit(8).get(), qn.length >= 2 ? col.where('nl', '>=', qn).where('nl', '<', qn + '').limit(8).get() : Promise.resolve({docs: []})]);
+    const me = fbMe(), seen = new Set(); frsRes = [...a.docs, ...b.docs].map(d => ({h: d.id, ...d.data()})).filter(x => x.uid && (!me || x.uid !== me.uid) && !seen.has(x.uid) && seen.add(x.uid)).slice(0, 10); frsQ = q; frSearchRender();
+  } catch (e) { const r = $('#frsr'); if (r) r.innerHTML = `<p class="muted small">⚠️ ${e.code === 'permission-denied' ? T('Règles Firebase à mettre à jour', 'Firebase rules need updating') : esc(e.message || '')}</p>`; } }, 350);
+}
+function frSearchRender() {
+  const r = $('#frsr'); if (!r) return; const fr = FRS();
+  if (!frsQ) { r.innerHTML = ''; return; }
+  r.innerHTML = frsRes.length ? frsRes.map(x => { const c = 'fb:' + x.uid, st = fr.list.some(f => f.c === c) ? 'fr' : (fr.reqOut || []).some(o => o.uid === x.uid) ? 'out' : (fr.reqIn || []).some(o => o.uid === x.uid) ? 'in' : '';
+    return `<div class="ntf"><span class="frav sm">${esc((x.n || x.h || '?')[0].toUpperCase())}</span><div style="flex:1;min-width:0"><b>${esc(x.n || x.h)}</b><div class="muted small">@${esc(x.h)}${x.l ? ' · ' + T('Niv. ', 'Lv. ') + x.l : ''}</div></div>${st === 'fr' ? `<span class="pill2">✓ ${T('Amis', 'Friends')}</span>` : st === 'out' ? `<span class="pill2">⏳ ${T('Envoyée', 'Sent')}</span>` : `<button class="btn primary sm" data-act="${st === 'in' ? 'req-ok' : 'req-send'}" data-u="${esc(x.uid)}" data-n="${esc(x.n || '')}" data-h="${esc(x.h)}">${st === 'in' ? T('Accepter', 'Accept') : '+ ' + T('Ajouter', 'Add')}</button>`}</div>`; }).join('')
+    : `<p class="muted small center" style="margin:14px 0">${T('Personne trouvé avec', 'Nobody found for')} « ${esc(frsQ)} »</p>`;
+}
+function openFrAdd() {
+  if (!FRS().fb) { modal(`<div class="row between"><h2 style="margin:0">＋ ${T('Ajouter un ami', 'Add a friend')}</h2><button class="btn sm" data-act="close">✕</button></div><p class="small">${T('Colle le code que ton ami t\'a envoyé.', 'Paste the code your friend sent you.')}</p><div class="row" style="gap:8px"><input id="frin" style="flex:1" placeholder="${T('Code ami', 'Friend code')}"><button class="btn" data-act="fr-paste" style="flex:none">📋 ${T('Coller', 'Paste')}</button></div><button class="btn primary block" data-act="fr-add-ok" style="margin-top:12px">${T('Ajouter', 'Add')}</button>`); return; }
+  frsRes = []; frsQ = '';
+  modal(`<div class="row between"><h2 style="margin:0">＋ ${T('Ajouter un ami', 'Add a friend')}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <div class="hin-wrap"><span>🔍</span><input id="frsq" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="${T('@pseudo, nom ou code ami', '@username, name or friend code')}"></div><input id="frin" type="hidden">
+    <div id="frsr" style="margin-top:10px"></div>
+    <div class="row" style="gap:8px;margin-top:12px"><button class="btn sm" style="flex:1" data-act="fr-paste">📋 ${T('Coller un code', 'Paste a code')}</button><button class="btn sm" style="flex:1" data-act="fr-share">📤 ${T('Partager mon profil', 'Share my profile')}</button></div>
+    ${myH() ? `<p class="muted small center" style="margin:10px 0 0">${T('Ton pseudo', 'Your username')} : <b>@${esc(myH())}</b></p>` : ''}`, {id: 'fradd'});
+  setTimeout(() => { const i = $('#frsq'); if (i) i.focus(); }, 80);
+}
+var obSt = null;
 function obEl() { let o = document.getElementById('ob'); if (!o) { o = document.createElement('div'); o.id = 'ob'; o.className = 'ob'; document.body.appendChild(o); } return o; }
 function openOnboard(mode = 'new') {
   const st = S.settings, lastW = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)).pop();
@@ -8738,8 +8918,8 @@ function openOnboard(mode = 'new') {
   obRender();
 }
 function obClose() { const o = document.getElementById('ob'); if (o) { o.classList.add('out'); setTimeout(() => o.remove(), 250); } obSt = null; }
-const obSeg = (k, opts) => `<div class="ob-seg">${opts.map(([v, l]) => `<button class="${String(obSt.d[k]) === String(v) ? 'on' : ''}" data-act="ob-seg" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
-const obDots = () => { const n = obSt.steps.filter(s => s !== 'home').length, i = obSt.steps.slice(0, obSt.i + 1).filter(s => s !== 'home').length; return n > 1 ? `<div class="ob-dots">${Array.from({length: n}, (_, k) => `<i class="${k < i ? 'on' : ''}"></i>`).join('')}</div>` : ''; };
+var obSeg = (k, opts) => `<div class="ob-seg">${opts.map(([v, l]) => `<button class="${String(obSt.d[k]) === String(v) ? 'on' : ''}" data-act="ob-seg" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
+var obDots = () => { const n = obSt.steps.filter(s => s !== 'home').length, i = obSt.steps.slice(0, obSt.i + 1).filter(s => s !== 'home').length; return n > 1 ? `<div class="ob-dots">${Array.from({length: n}, (_, k) => `<i class="${k < i ? 'on' : ''}"></i>`).join('')}</div>` : ''; };
 function obHtCm() { const d = obSt.d; if (d.unit === 'kg') return d.htcm != null ? d.htcm : d.ht; return d.ht; }
 function obRender() {
   if (!obSt) return; const o = obEl(), d = obSt.d, step = obSt.steps[obSt.i], edit = obSt.mode === 'edit';
@@ -8763,6 +8943,8 @@ function obRender() {
     <p class="muted small" style="margin:5px 0 0">${T('C\'est le nom que tes amis vont voir.', 'This is the name your friends will see.')}</p>
     <label>${T('Unités', 'Units')}</label>${obSeg('unit', [['lb', 'lb · pi'], ['kg', 'kg · cm']])}
     ${nextBtn(T('Continuer', 'Continue'))}`;
+  else if (step === 'pseudo') h = `${obDots()}<h2 class="ob-h2">${T('Ton @pseudo', 'Your @username')}</h2><p class="muted">${T('Unique. Tes amis te trouvent avec, sans code à copier. Ton nom', 'Unique. Friends find you with it, no code to copy. Your name')} (${esc(d.name || '…')}) ${T('reste libre.', 'stays free.')}</p>
+    ${hField(d.h || hNorm(d.name))}${nextBtn(T('Continuer', 'Continue'))}`;
   else if (step === 'toi') { const ftIn = d.ht ? [Math.floor(d.ht / 30.48), Math.round((d.ht / 2.54) % 12)] : ['', ''];
     if (ftIn[1] === 12) { ftIn[0]++; ftIn[1] = 0; }
     h = `${obDots()}<h2 class="ob-h2">${T('Parle-nous de toi', 'Tell us about you')}</h2><p class="muted">${T('Pour tes calories, ton niveau de force et tes besoins. Reste privé.', 'For your calories, strength level and needs. Stays private.')}</p>
@@ -8783,6 +8965,7 @@ function obRender() {
     ${nextBtn(T('C\'est parti!', 'Let\'s go!') + ' 🚀')}`;
   o.innerHTML = `<div class="ob-in obs-${step}">${back}${h}</div>`;
   try { iconize(o); } catch (e) {}
+  if (step === 'pseudo') setTimeout(hCheck, 30);
 }
 function obCollect() {
   const d = obSt.d, v = id => { const e = document.getElementById(id); return e ? e.value.replace(',', '.').trim() : null; };
@@ -8791,6 +8974,7 @@ function obCollect() {
   const cm = v('ob_cm'); if (cm != null) d.ht = +cm > 50 && +cm < 260 ? +cm : '';
   const ft = v('ob_ft'), inch = v('ob_in'); if (ft != null) { const t = (+ft || 0) * 30.48 + (+inch || 0) * 2.54; d.ht = t > 50 && t < 260 ? Math.round(t * 10) / 10 : ''; }
   const w = v('ob_w'); if (w != null) d.w = +w > 0 ? +w : '';
+  const hi = document.getElementById('hin'); if (hi) d.h = hNorm(hi.value);
 }
 function obApply() {
   const d = obSt.d, st = S.settings;
@@ -8804,32 +8988,33 @@ async function obGoogle() {
   if (!u || !obSt) return; obSt.u = u;
   if (!obSt.d.name && u.displayName) obSt.d.name = u.displayName.trim().split(/\s+/)[0];
   try { const m = await cbMeta(u.uid); if (m && (m.sess || m.rout)) { let name = ''; try { const ud = await fbDb().collection('users').doc(u.uid).get(); name = ud.exists ? ud.data().name || '' : ''; } catch (e) {} obSt.bk = {sess: m.sess || 0, rout: m.rout || 0, name}; obSt.steps = ['home', 'back']; obSt.i = 1; obRender(); return; } } catch (e) {}
-  obSt.i = 1; obRender();
+  obSt.steps = ['home', 'prof', 'pseudo', 'toi', 'obj', 'style']; obSt.i = 1; obRender();
 }
 /* Compte Google : amis + sauvegarde activés tout seuls, sans fenêtre de code */
-async function obCloudOn(u) {
+async function obCloudOn(u, h) {
   try {
     const fr = FRS(); fr.list = fr.list || []; fr.hide = fr.hide || [];
     fr.code = await fbEnsureCode(u.uid); const fbc = 'fb:' + u.uid;
     fr.file = fbc; fr.fbPtr = fbc; fr.on = true; fr.fb = true; CB().on = true; save();
-    await fbPublish(true); cbPush(true); fbWatch(); if (cur().v === 'friends' || cur().v === 'profile') render();
+    if (h) { try { await hClaim(h); } catch (e) { S.settings.hAsk = false; } }
+    await fbPublish(true); cbPush(true); fbWatch(); fbAllowSync(); if (cur().v === 'friends' || cur().v === 'profile') render();
   } catch (e) { console.warn('obCloud', e); }
 }
 function obFinish() {
-  const u = obSt && obSt.u, mode = obSt && obSt.mode; obApply(); S.settings.onboarded = true;
+  const u = obSt && obSt.u, mode = obSt && obSt.mode, obSt0h = obSt && obSt.d.h; obApply(); S.settings.onboarded = true;
   if (mode === 'new') S.settings.tourPending = true;
   save(); obClose(); applyTheme(); render();
   if (mode === 'edit') { toast(T('✅ Profil mis à jour', '✅ Profile updated')); if (frOn()) frQueue(false); return; }
   toast(T(`👋 Bienvenue ${S.settings.name || ''}!`, `👋 Welcome ${S.settings.name || ''}!`).replace(' !', '!'));
-  if (u) obCloudOn(u);
+  if (u) obCloudOn(u, obSt0h);
   setTimeout(checkImport, 250); setTimeout(maybeTourMain, 700);
 }
 /* Strength level : 1RM estimé / poids du corps (repères généraux) */
-const SL_LIFTS = [['bench', T('Développé couché', 'Bench press'), n => /bench press/.test(n) && !/incline|decline|close|wide|dumbbell|smith|machine|floor/.test(n), {m: [.5, .75, 1, 1.5, 2], f: [.25, .5, .75, 1, 1.5]}],
+var SL_LIFTS = [['bench', T('Développé couché', 'Bench press'), n => /bench press/.test(n) && !/incline|decline|close|wide|dumbbell|smith|machine|floor/.test(n), {m: [.5, .75, 1, 1.5, 2], f: [.25, .5, .75, 1, 1.5]}],
   ['squat', 'Squat', n => /squat/.test(n) && /barbell/.test(n) && !/front|split|box|smith|hack|zercher|overhead|jump/.test(n), {m: [.75, 1.25, 1.5, 2.25, 2.75], f: [.5, .75, 1.25, 1.5, 2]}],
   ['dead', T('Soulevé de terre', 'Deadlift'), n => /deadlift/.test(n) && /barbell/.test(n) && !/romanian|stiff|sumo|deficit|rack|single|straight/.test(n), {m: [1, 1.5, 2, 2.5, 3], f: [.5, 1, 1.25, 1.75, 2.5]}],
   ['ohp', T('Développé militaire', 'Overhead press'), n => /(military|overhead|shoulder) press/.test(n) && /barbell/.test(n) && !/seated|behind|smith|push/.test(n), {m: [.35, .55, .75, 1, 1.35], f: [.2, .35, .5, .75, 1]}]];
-const SL_NAMES = () => [T('Débutant', 'Beginner'), T('Novice', 'Novice'), T('Intermédiaire', 'Intermediate'), T('Avancé', 'Advanced'), T('Élite', 'Elite')];
+var SL_NAMES = () => [T('Débutant', 'Beginner'), T('Novice', 'Novice'), T('Intermédiaire', 'Intermediate'), T('Avancé', 'Advanced'), T('Élite', 'Elite')];
 function strengthLevels() {
   const sx = S.settings.sex === 'f' ? 'f' : S.settings.sex === 'm' ? 'm' : null; if (!sx || !S.body.some(b => b.w != null)) return [];
   const bw = bodyKg(), since = Date.now() - 365 * 864e5, best = {};
