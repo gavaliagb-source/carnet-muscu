@@ -1495,7 +1495,7 @@ function renderPicker() {
   document.querySelectorAll('#pkchips .chip').forEach((c, i) => c.classList.toggle('on', i === pk.chip));
   const muscles = pk.chip >= 0 ? CHIPS[pk.chip][1] : null;
   pkResults = []; let html = '';
-  const add = (kind, name, sub, id) => { pkResults.push({kind, name, id}); return `<button class="pkrow" data-act="pick" data-i="${pkResults.length - 1}">${kind === 'new' ? '<span class="th" style="--s:36px"></span>' : kind === 'lib' ? thumbL(LIBMAP[id], 36) : thumb(name, 36)}<span>${esc(name)}${sub ? `<small>${esc(sub)}</small>` : ''}</span></button>`; };
+  const add = (kind, name, sub, id) => { pkResults.push({kind, name, id}); return `<button class="pkrow" data-act="pick" data-i="${pkResults.length - 1}">${kind === 'new' ? '<span class="th noimg" style="--s:36px"></span>' : kind === 'lib' ? thumbL(LIBMAP[id], 36) : thumb(name, 36)}<span>${esc(name)}${sub ? `<small>${esc(sub)}</small>` : ''}</span></button>`; };
   if (pk.alt && !q && !muscles) { const al = altExercises(pk.alt); if (al.length) html += `<div class="pkh">🔄 ${T('Suggestions : mêmes muscles', 'Suggestions: same muscles')}</div>` + al.map(L => add('lib', L.name, [L.p.map(m => musN(m)).join(', '), eqN(L.eq)].filter(Boolean).join(' · '), L.id)).join(''); }
   if (!pk.libOnly && !muscles) {
     const toks = norm(q).split(' ').filter(Boolean);
