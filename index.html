@@ -5491,10 +5491,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.46.8';
+const APP_VERSION = '9.47';
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
-  {v: '9.46.8', d: '2026-11-13', fr: ['👥 Amis : on voit quand la carte de chaque ami a été mise à jour, un bouton « Mettre à jour maintenant » si ta carte attend, et ta carte se republie toute seule à l\'ouverture quand c\'est possible.'], en: ['👥 Friends: see when each friend\'s card was last updated, an “Update now” button if your card is waiting, and your card republishes itself on open when possible.']},
+  {v: '9.47', d: '2026-11-13', fr: ['👥 Nouveau système d\'amis : plus de fenêtre Google après tes séances, tes séances apparaissent chez tes amis en quelques secondes, un code court qui ne change jamais (ex. GAB-4821) et tu n\'as besoin d\'entrer le code d\'un ami qu\'une seule fois. Dans Amis : « Passer au nouveau système ».', '👥 Amis : on voit quand la carte de chaque ami a été mise à jour, un bouton « Mettre à jour maintenant » si ta carte attend, et ta carte se republie toute seule à l\'ouverture quand c\'est possible.'], en: ['👥 Friends: see when each friend\'s card was last updated, an “Update now” button if your card is waiting, and your card republishes itself on open when possible.']},
   {v: '9.46.6', d: '2026-11-12', fr: ['⚔️ Mode jeu : nouvel onglet Guilde avec tout le jeu au même endroit (statut, quêtes, raid, saison, armurerie), en fenêtres qui se replient.', '🛡️ Armurerie : titres, cadres, auras, victoires, bannières, blasons et thèmes à débloquer, avec raretés (jusqu\'à Mythique), reflets et lueurs. Touche une récompense verrouillée pour la voir en grand et voir ta progression.', '📜 Collections : complète une catégorie pour débloquer une récompense secrète du Grand Maître. Badge « NOUVEAU » sur ce que tu viens de débloquer.', '🏰 Blasons de guilde et bannières fantasy animées (village, donjon, forêt enchantée, salle du trône, kraken…).', '🌟 Prestige : au niveau 100, recommence au niveau 1 avec une étoile et des récompenses exclusives.', '🏅 Plein de nouvelles médailles et de titres (« Aventurier de rang B · Ton titre »).', '🏆 Records plus justes : reps au poids du corps, plus de reps à la même charge (3 derniers mois) et record de volume (ex. 3×11 après 3×10, même nombre de séries).', '🎯 Quête « Bats un record » : bouton « Quoi battre? » qui te dit exactement quoi faire la prochaine fois, dans ta zone de reps.', '⚠️ Quête ratée : −100 XP (avant −10), à partir de maintenant seulement.', '📌 Notes et poids attachés à l\'exercice, peu importe la routine.', '⚡ Version express d\'une routine, prédiction de progression, et animations (+XP, écran de fin).', '🎪 Événements annoncés à l\'ouverture (pas d\'XP pour les anciens).', '🚀 Appli plus rapide et plus fluide (Guilde, Profil, historique, glissement entre les pages).', '🗒️ Nouveautés : un seul résumé par jour, affiché au plus une fois par jour.', '🗑️ Supprimer une séance enlève maintenant tout ce qu\'elle t\'avait donné (XP, records, médailles, quête, donjon, boss, coffre), comme si elle n\'avait jamais existé. « Annuler » remet tout.', '🎯 Guilde : « Prochaines récompenses » montre les 3 récompenses que tu es le plus près d\'avoir.', '🎁 Coffres de fin de séance (commun, rare, épique, légendaire) avec bonus d\'XP et fragments qui débloquent des récompenses exclusives.', '📖 Chaque récompense verrouillée explique clairement quoi faire pour l\'avoir.'], en: ['⚔️ Game mode: new Guild tab with the whole game in one place, in collapsible windows.', '🛡️ Armory: titles, frames, auras, victories, banners, crests and themes to unlock, with rarities up to Mythic. Tap a locked reward to preview it and see your progress.', '📜 Collections: complete a category to unlock a secret Grandmaster reward. “NEW” badge on fresh unlocks.', '🏰 Guild crests and animated fantasy banners.', '🌟 Prestige: at level 100, restart at level 1 with a star and exclusive rewards.', '🏅 Lots of new medals and titles.', '🏆 Fairer records: bodyweight reps, more reps at the same weight (last 3 months) and volume records.', '🎯 “Break a record” quest: a “What to beat?” button tells you exactly what to do next time, within your rep range.', '⚠️ Failed quest: −100 XP (was −10), from now on only.', '📌 Notes and weights follow the exercise, whatever the routine.', '⚡ Express routine version, progress prediction and animations.', '🎪 Events announced on open (no XP for old ones).', '🚀 Faster, smoother app.', '🗒️ What\'s new: one summary per day, shown at most once a day.']},
   {v: '9.23.1', d: '2026-11-11', fr: ['🗣️ Coach vocal plus court : il dit juste tes reps à faire et le poids réussi à ta dernière séance (ex. « 8 à 10 reps, 185 livres »).'], en: ['🗣️ Shorter voice coach: it just says your target reps and the weight you hit last time (e.g. “8 to 10 reps, 185 pounds”).']},
   {v: '9.23', d: '2026-11-11', fr: ['🗣️ Coach vocal (Réglages → Minuteur et son) : avec tes écouteurs, une voix t\'annonce la fin du repos et ta prochaine série (exercice, poids, reps), plus « Plus que 10 secondes ».', '☠️ Le boss dans ta séance : l\'exercice du boss affiche les séries à viser, et quand ta série le bat, le boss tombe à l\'écran.', '🔄 Remplacer un exercice propose maintenant 3 exercices qui travaillent les mêmes muscles (pratique quand la machine est prise).', '⚔️ Défis entre amis : le plus de volume, de séances ou de reps en 7 jours. Le gagnant prend +300 XP.', '🛡️ Raid de guilde : toi et tes amis additionnez vos reps de la semaine pour abattre un boss commun (1 500 reps par aventurier). Réussi = +400 XP pour tout le monde.', '💬 Commentaires : écris un petit message sous les séances et les photos de tes amis.', '🏆 Saisons de la Guilde : chaque mois, un classement de l\'XP gagnée ce mois-ci. Le 1er remporte un trophée visible sur son profil.'], en: ['🗣️ Voice coach (Settings → Timer & sound): with earbuds, a voice announces the end of rest and your next set (exercise, weight, reps), plus “10 seconds left”.', '☠️ The boss in your workout: the boss exercise shows the sets to aim for, and when your set beats it, the boss falls on screen.', '🔄 Swapping an exercise now suggests 3 exercises that work the same muscles (handy when the machine is taken).', '⚔️ Friend challenges: most volume, workouts or reps in 7 days. The winner gets +300 XP.', '🛡️ Guild raid: you and your friends add up your weekly reps to take down a shared boss (1,500 reps per adventurer). Cleared = +400 XP for everyone.', '💬 Comments: write a short message under your friends\' workouts and photos.', '🏆 Guild seasons: each month, a ranking of the XP earned that month. 1st place wins a trophy shown on their profile.']},
@@ -6479,8 +6479,9 @@ const FRS = () => (S.settings.fr = S.settings.fr || {list: [], re: [], hide: []}
 const frOn = () => !!(S.settings.fr && S.settings.fr.on && S.settings.fr.file);
 const frTokOk = () => { try { const t = JSON.parse(localStorage.getItem(GDKEY) || 'null'); return !!(t && t.exp > Date.now() + 60000 && (t.sc || '').includes(FRSCOPE)); } catch (e) { return false; } };
 let frData = (() => { try { return JSON.parse(localStorage.getItem(FRCACHE) || '{}'); } catch (e) { return {}; } })(), frBusy = false, frPubT = null, frLastLoad = 0;
-const frMsg = () => T(`Ajoute-moi en ami dans Carnet Muscu 💪\nDans l'appli Carnet Muscu : Profil → Amis → Ajouter → Coller.\nCode ami : ${FRS().file}`, `Add me as a friend on Carnet Muscu 💪\nIn the Carnet Muscu app: Profile → Friends → Add → Paste.\nFriend code: ${FRS().file}`);
-const frLink = () => location.origin + location.pathname + '#ami=' + FRS().file;
+const frMyCode = () => { const fr = FRS(); return fr.fb && fr.code ? fr.code : fr.file; };
+const frMsg = () => T(`Ajoute-moi en ami dans Carnet Muscu 💪\nDans l'appli Carnet Muscu : Profil → Amis → Ajouter → Coller.\nCode ami : ${frMyCode()}`, `Add me as a friend on Carnet Muscu 💪\nIn the Carnet Muscu app: Profile → Friends → Add → Paste.\nFriend code: ${frMyCode()}`);
+const frLink = () => location.origin + location.pathname + '#ami=' + frMyCode();
 function frAgo(iso) {
   const m = Math.round((Date.now() - new Date(iso)) / 60000);
   if (m < 60) return T(`il y a ${Math.max(1, m)} min`, `${Math.max(1, m)} min ago`);
@@ -6535,7 +6536,7 @@ async function frCardBody() {
   const fr = FRS(), hide = new Set(fr.hide || []);
   const idx = S.history.map((x, i) => [x, i]).filter(([x]) => !hide.has(x.id) && new Date(x.date) > Date.now() - 45 * 864e5).slice(-15);
   return JSON.stringify({app: 'carnet-muscu', v: 1, name: (S.settings.name || '').trim() || T('Un ami', 'A friend'), av: await frAvatar(), wk: streakWeeks(), hu: frHu(), up: new Date().toISOString(),
-    s: await frSessWithPh(idx), p: await frPhotos(), re: (fr.re || []).slice(-150), ...frSocial()});
+    s: await frSessWithPh(idx), p: await frPhotos(), re: (fr.re || []).slice(-150), ...frSocial(), ...(fr.fbPtr ? {fb: fr.fbPtr} : {})});
 }
 async function frApi(url, opt = {}) {
   const r = await fetch(url, {...opt, headers: {Authorization: 'Bearer ' + gdTok(), ...(opt.headers || {})}});
@@ -6545,7 +6546,8 @@ async function frApi(url, opt = {}) {
   return r;
 }
 /* Publie (ou met à jour) ma carte. touch = appelé par un toucher : on peut ouvrir la fenêtre Google si besoin. */
-async function frPublish(touch) {
+async function frPublish(touch) { const fr0 = FRS(); if (fr0.fb) return fbPublish(touch); return frPublishDrive(touch); }
+async function frPublishDrive(touch) {
   const fr = FRS(); if (!fr.on || frBusy) return;
   if (!frTokOk()) { if (!touch) { fr.pending = true; saveLocal(); return; } try { await gdAuth(false); } catch (e) { fr.pending = true; saveLocal(); return; } if (!frTokOk()) { fr.pending = true; saveLocal(); return; } }
   if (!navigator.onLine) { fr.pending = true; saveLocal(); return; }
@@ -6581,7 +6583,124 @@ function frAutoPub() { try { const fr = FRS(); if (!frOn()) return; const lastS 
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(frAutoPub, 1500); });
 setTimeout(frAutoPub, 3000);
 function frQueue(touch) { clearTimeout(frPubT); frPubT = setTimeout(() => frPublish(touch), touch ? 0 : 1500); }
+/* ===================== Amis via Firebase (pas de fenêtre Google à chaque séance, code court permanent) ===================== */
+const FB_CFG = {apiKey: 'AIzaSyBHzpyNNMHcGFwMlkfNFYos60YNOXx7PXo', authDomain: 'carnet-muscu-d4a6a.firebaseapp.com', projectId: 'carnet-muscu-d4a6a', storageBucket: 'carnet-muscu-d4a6a.firebasestorage.app', messagingSenderId: '504976972486', appId: '1:504976972486:web:91436db62e3271f80855c7'};
+const FB_V = '10.12.2';
+let fbP = null, fbReadyP = null, fbSubs = {}, fbInbox = null, fbRT = null;
+const fbIs = c => typeof c === 'string' && c.startsWith('fb:');
+const FBCODE = /\b([A-Za-z]{2,4}-\d{4})\b/;
+function fbLoad() {
+  if (fbP) return fbP;
+  const one = src => new Promise((ok, ko) => { const sc = document.createElement('script'); sc.src = src; sc.onload = ok; sc.onerror = () => ko(new Error(T('Connexion Internet requise', 'Internet connection required'))); document.head.appendChild(sc); });
+  const b = `https://www.gstatic.com/firebasejs/${FB_V}/`;
+  fbP = (async () => { await one(b + 'firebase-app-compat.js'); await Promise.all([one(b + 'firebase-auth-compat.js'), one(b + 'firebase-firestore-compat.js')]); if (!firebase.apps.length) firebase.initializeApp(FB_CFG); return firebase; })();
+  fbP.catch(() => { fbP = null; });
+  return fbP;
+}
+const fbDb = () => firebase.firestore();
+function fbReady() { if (fbReadyP) return fbReadyP; fbReadyP = fbLoad().then(() => new Promise(ok => { const off = firebase.auth().onAuthStateChanged(u => { off(); ok(u); }); })); fbReadyP.catch(() => { fbReadyP = null; }); return fbReadyP; }
+/* Connexion : une seule fois. Firebase la garde ensuite pour toujours (pas de fenêtre après les séances). */
+async function fbSignIn(touch, popup) {
+  await fbReady(); const a = firebase.auth(); if (a.currentUser) return a.currentUser;
+  if (!touch) return null;
+  if (!popup) try { if (!gdTok()) await gdAuth(false); if (gdTok()) { await a.signInWithCredential(firebase.auth.GoogleAuthProvider.credential(null, gdTok())); if (a.currentUser) return a.currentUser; } } catch (e) { console.warn('fb cred', e); }
+  if (!popup) throw new Error('needpopup'); // la fenêtre Firebase doit s'ouvrir directement depuis un toucher
+  const pr = new firebase.auth.GoogleAuthProvider(); if (S.gd && S.gd.email) pr.setCustomParameters({login_hint: S.gd.email});
+  await a.signInWithPopup(pr); return a.currentUser;
+}
+async function fbEnsureCode(uid) {
+  const db = fbDb(), me = await db.collection('users').doc(uid).get();
+  if (me.exists && me.data().code) return me.data().code;
+  const nm = norm((S.settings.name || '').trim()).replace(/[^a-z]/g, '').toUpperCase(), base = (nm + 'AMI').slice(0, 3);
+  for (let i = 0; i < 12; i++) {
+    const code = base + '-' + String(1000 + Math.floor(Math.random() * 9000));
+    try {
+      await db.runTransaction(async t => { const r = db.collection('codes').doc(code), d = await t.get(r); if (d.exists) throw new Error('taken'); t.set(r, {uid}); });
+      await db.collection('users').doc(uid).set({code}, {merge: true}); return code;
+    } catch (e) { if (e.message !== 'taken') throw e; }
+  }
+  throw new Error(T('Impossible de créer ton code', 'Could not create your code'));
+}
+/* Ma carte sur Firebase (même contenu que l'ancienne carte Drive, photos réduites si trop gros) */
+async function fbPublish(touch) {
+  const fr = FRS(); if (!fr.on || !fr.fb || frBusy) return;
+  let u = null; try { u = await fbSignIn(touch); } catch (e) {}
+  if (!u || !navigator.onLine) { fr.pending = true; saveLocal(); return; }
+  frBusy = true;
+  try {
+    let body = await frCardBody();
+    if (body.length > 900000) { const o = JSON.parse(body); o.p = (o.p || []).slice(-3); body = JSON.stringify(o); if (body.length > 900000) { o.p = []; (o.s || []).forEach(x => delete x.img); body = JSON.stringify(o); } }
+    await fbDb().collection('users').doc(u.uid).set({card: body, name: (S.settings.name || '').trim(), code: fr.code || '', up: new Date().toISOString()}, {merge: true});
+    fr.pending = false; fr.err = ''; fr.last = new Date().toISOString();
+  } catch (e) { fr.pending = true; fr.err = e.message || String(e); }
+  frBusy = false; saveLocal();
+  if (cur().v === 'friends') render();
+}
+async function fbFetch(c) {
+  const u = await fbSignIn(false); if (!u) throw new Error(T('connexion Amis requise', 'Friends sign-in required'));
+  const doc = await fbDb().collection('users').doc(c.slice(3)).get();
+  if (!doc.exists || !doc.data().card) throw new Error('gone');
+  const d = JSON.parse(doc.data().card); if (!d || d.app !== 'carnet-muscu') throw new Error('gone'); return d;
+}
+async function fbResolve(code) {
+  const d = await fbDb().collection('codes').doc(code.toUpperCase()).get();
+  if (!d.exists) throw new Error('gone'); return 'fb:' + d.data().uid;
+}
+/* Prévenir un ami que je l'ai ajouté : il m'ajoute automatiquement de son côté */
+async function fbNotifyAdd(c) {
+  const fr = FRS(), u = firebase.auth().currentUser; if (!u || !fr.fb || !fbIs(c)) return;
+  try { await fbDb().collection('inbox').doc(c.slice(3)).collection('m').add({from: u.uid, type: 'add', name: (S.settings.name || '').trim() || T('Un ami', 'A friend'), t: new Date().toISOString()}); } catch (e) { console.warn('inbox', e); }
+}
+const fbRerender = () => { clearTimeout(fbRT); fbRT = setTimeout(() => { frSaveCache(); saveLocal(); try { socialCheck(); } catch (e) {} if (['friends', 'profile'].includes(cur().v) && !modals.length) render(); }, 400); };
+/* Écoute en direct : les cartes de mes amis + les nouvelles demandes d'amis */
+function fbWatch() {
+  if (typeof firebase === 'undefined' || !firebase.apps.length) return;
+  const u = firebase.auth().currentUser; if (!u) return;
+  const fr = FRS(), want = fr.list.filter(f => fbIs(f.c)).map(f => f.c);
+  Object.keys(fbSubs).forEach(c => { if (!want.includes(c)) { fbSubs[c](); delete fbSubs[c]; } });
+  want.forEach(c => {
+    if (fbSubs[c]) return;
+    fbSubs[c] = fbDb().collection('users').doc(c.slice(3)).onSnapshot(doc => {
+      const f = FRS().list.find(x => x.c === c);
+      if (!doc.exists || !doc.data().card) { if (f) f.gone = true; fbRerender(); return; }
+      let d; try { d = JSON.parse(doc.data().card); } catch (e) { return; }
+      frData[c] = {d, t: Date.now()}; if (f) { f.n = d.name; f.gone = false; f.err = ''; } fbRerender();
+    }, e => { const f = FRS().list.find(x => x.c === c); if (f) f.err = e.code || e.message; });
+  });
+  if (!fbInbox) fbInbox = fbDb().collection('inbox').doc(u.uid).collection('m').onSnapshot(qs => {
+    qs.docChanges().forEach(ch => {
+      if (ch.type !== 'added') return; const m = ch.doc.data(), fr2 = FRS();
+      if (m.type === 'add' && m.from && m.from !== u.uid) {
+        const c = 'fb:' + m.from;
+        if (!fr2.list.some(f => f.c === c)) { fr2.list.push({c, n: m.name || '…', add: new Date().toISOString()}); save(); toast(T(`👥 ${m.name} t'a ajouté en ami : tu vois maintenant ses séances`, `👥 ${m.name} added you: you can now see their workouts`)); setTimeout(fbWatch, 0); }
+      }
+      ch.doc.ref.delete().catch(() => {});
+    });
+  }, e => console.warn('inbox', e));
+}
+/* Activer (ou passer à) l'amitié Firebase */
+async function fbStart() {
+  const fr = FRS(); fr.list = fr.list || []; fr.hide = fr.hide || [];
+  toast(T('⏳ Connexion…', '⏳ Signing in…'));
+  let u; try { u = await fbSignIn(true, fbStart.popup); } catch (e) {
+    if (e.message === 'needpopup') { modal(`<h2>👥 ${T('Dernière étape', 'Last step')}</h2><p>${T('Connecte-toi avec Google pour activer les amis. C\'est la seule fois : après, plus jamais de fenêtre.', 'Sign in with Google to turn on friends. This is the only time: after that, no more windows.')}</p><button class="btn primary block" data-act="fb-popup">${T('Se connecter avec Google', 'Sign in with Google')}</button>`); return; }
+    toast('⚠️ ' + (e.code === 'auth/popup-closed-by-user' ? T('Connexion annulée', 'Sign-in cancelled') : e.message)); return; }
+  if (!u) { toast(T('⚠️ Connexion annulée', '⚠️ Sign-in cancelled')); return; }
+  try { fr.code = await fbEnsureCode(u.uid); } catch (e) { toast('⚠️ ' + e.message); return; }
+  const fbc = 'fb:' + u.uid;
+  // Ancienne carte Drive : on y laisse un lien vers la nouvelle, pour que les amis passent tout seuls au nouveau système
+  if (fr.on && fr.file && !fbIs(fr.file)) { fr.fbPtr = fbc; try { await frPublishDrive(true); } catch (e) {} fr.drv = fr.file; }
+  fr.fbPtr = fbc; fr.file = fbc; fr.on = true; fr.fb = true; save();
+  await fbPublish(true);
+  fbWatch(); fr.list.filter(f => fbIs(f.c)).forEach(f => fbNotifyAdd(f.c));
+  render(); frShowCode();
+}
+/* Au démarrage : on se reconnecte en silence et on écoute les amis */
+setTimeout(async () => { try { const fr = S.settings.fr; if (!fr || !(fr.fb || (fr.list || []).some(f => fbIs(f.c)))) return; const u = await fbSignIn(false); if (!u) return; fbWatch(); if (fr.fb && fr.on && (fr.pending || (S.history.length && fr.last && S.history[S.history.length - 1].date > fr.last))) fbPublish(false); } catch (e) { console.warn('fb init', e); } }, 1800);
 async function frStart() {
+  return fbStart();
+}
+async function frStartDrive() {
   const fr = FRS(); fr.on = true; fr.hide = fr.hide || [];
   toast(T('⏳ Connexion à Google…', '⏳ Connecting to Google…'));
   try { if (!frTokOk()) await gdAuth(!gdTok() ? true : false); } catch (e) { fr.on = false; saveLocal(); toast('⚠️ ' + e.message); return; }
@@ -6590,6 +6709,9 @@ async function frStart() {
   if (fr.file) frShowCode(); else toast('⚠️ ' + (fr.err || T('Erreur Google Drive', 'Google Drive error')));
 }
 async function frStop() {
+  if (FRS().fb) { if (!confirm(T('Arrêter de partager tes séances? Tes amis ne verront plus tes séances.', 'Stop sharing your workouts? Your friends will no longer see your workouts.'))) return;
+    const fr = FRS(); try { const u = await fbSignIn(false); if (u) await fbDb().collection('users').doc(u.uid).set({card: ''}, {merge: true}); } catch (e) {}
+    fr.on = false; fr.pending = false; save(); render(); toast(T('🔒 Partage arrêté', '🔒 Sharing stopped')); return; }
   if (!confirm(T('Arrêter de partager tes séances? Ta carte sera supprimée de ton Google Drive et tes amis ne verront plus tes séances.', 'Stop sharing your workouts? Your card will be deleted from your Google Drive and friends will no longer see your workouts.'))) return;
   const fr = FRS();
   try { if (fr.file) { if (!frTokOk()) await gdAuth(false); await fetch(`https://www.googleapis.com/drive/v3/files/${fr.file}`, {method: 'DELETE', headers: {Authorization: 'Bearer ' + gdTok()}}); } } catch (e) {}
@@ -6599,11 +6721,12 @@ function frShowCode() {
   const fr = FRS();
   modal(`<div class="row between"><h2 style="margin:0">👥 ${T('Mon code ami', 'My friend code')}</h2><button class="btn sm" data-act="close">✕</button></div>
     <p class="small">${T('Envoie ton code à tes amis. Dans leur appli : Profil → Amis → Ajouter, puis ils collent ton message. Ensuite, demande-leur le leur pour les voir aussi.', 'Send your code to your friends. In their app: Profile → Friends → Add, then they paste your message. Then ask for theirs to see them too.')}</p>
-    <div class="frcode" style="margin-top:10px">${esc(fr.file)}</div>
+    <div class="frcode" style="margin-top:10px${fr.fb ? ';font-size:28px;letter-spacing:3px;text-align:center' : ''}">${esc(frMyCode())}</div>${fr.fb ? `<p class="small muted" style="margin:8px 0 0">${T('Ce code ne change jamais. Ton ami n\'a besoin de l\'entrer qu\'une fois : vous vous voyez tous les deux automatiquement.', 'This code never changes. Your friend only enters it once: you both see each other automatically.')}</p>` : ''}
     <div class="row" style="margin-top:10px"><button class="btn primary" style="flex:1" data-act="fr-share">📤 ${T('Envoyer mon code', 'Send my code')}</button><button class="btn" style="flex:1" data-act="fr-copy">📋 ${T('Copier', 'Copy')}</button></div>`);
 }
-const frCodeOf = t => { t = String(t || ''); const m = t.match(/ami=([A-Za-z0-9_-]{20,})/) || t.match(/(?:Code ami|Friend code)\s*:\s*([A-Za-z0-9_-]{20,})/i) || t.trim().match(/^([A-Za-z0-9_-]{20,})$/); return m ? m[1] : ''; };
+const frCodeOf = t => { t = String(t || ''); const s0 = t.trim().match(/^([A-Za-z]{2,4}-\d{4})$/) || t.match(/(?:Code ami|Friend code)\s*:\s*([A-Za-z]{2,4}-\d{4})(?![\w-])/i) || t.match(/ami=([A-Za-z]{2,4}-\d{4})(?![\w-])/); if (s0) return s0[1].toUpperCase(); const m = t.match(/ami=([A-Za-z0-9_-]{20,})/) || t.match(/(?:Code ami|Friend code)\s*:\s*([A-Za-z0-9_-]{20,})/i) || t.trim().match(/^([A-Za-z0-9_-]{20,})$/); return m ? m[1] : ''; };
 async function frFetch(code) {
+  if (fbIs(code)) return fbFetch(code);
   if (!GKEY) throw new Error(T('Fonction Amis pas encore configurée', 'Friends feature not configured yet'));
   const r = await fetch(`https://www.googleapis.com/drive/v3/files/${code}?alt=media&key=${GKEY}&t=${Date.now()}`, {cache: 'no-store'});
   if (r.status === 404 || r.status === 403) throw new Error('gone');
@@ -6613,12 +6736,16 @@ async function frFetch(code) {
 async function frAdd(code) {
   const fr = FRS(); code = frCodeOf(code);
   if (!code) { toast(T('⚠️ Code ami invalide', '⚠️ Invalid friend code')); return; }
+  if (FBCODE.test(code) && code.length <= 9) { // nouveau code court (ex. GAB-4821)
+    try { toast(T('⏳ Recherche de ton ami…', '⏳ Looking for your friend…')); const u = await fbSignIn(true, frAdd.popup); if (!u) return; code = await fbResolve(code); }
+    catch (e) { if (e.message === 'needpopup') { closeAll(); modal(`<h2>👥 ${T('Connexion', 'Sign in')}</h2><p>${T('Connecte-toi avec Google une seule fois pour voir tes amis.', 'Sign in with Google once to see your friends.')}</p><button class="btn primary block" data-act="fb-popup-add" data-c="${esc(code)}">${T('Se connecter avec Google', 'Sign in with Google')}</button>`); return; } toast(e.message === 'gone' ? T('⚠️ Code introuvable : vérifie-le', '⚠️ Code not found: check it') : '⚠️ ' + e.message); return; }
+  }
   if (code === fr.file) { toast(T('😄 C\'est ton propre code!', '😄 That\'s your own code!')); return; }
   if (fr.list.some(f => f.c === code)) { toast(T('Cet ami est déjà dans ta liste', 'Already in your friends')); setRoot('friends'); render(); return; }
   toast(T('⏳ Recherche de ton ami…', '⏳ Looking for your friend…'));
   try {
     const d = await frFetch(code); frData[code] = {d, t: Date.now()}; frSaveCache();
-    fr.list.push({c: code, n: d.name, add: new Date().toISOString()}); save();
+    fr.list.push({c: code, n: d.name, add: new Date().toISOString()}); save(); if (fbIs(code)) { fbWatch(); fbNotifyAdd(code); }
     if (S.settings.onboarded) { closeAll(); setRoot('friends'); } else if ($('#frin')) closeModal();
     render();
     toast(T(`✅ ${d.name} ajouté à tes amis`, `✅ ${d.name} added to your friends`));
@@ -6630,7 +6757,12 @@ async function frLoad(force) {
   const fr = S.settings.fr; if (!fr || !fr.list || !fr.list.length || !GKEY || !navigator.onLine) return;
   if (!force && Date.now() - frLastLoad < 5 * 60000) return;
   frLastLoad = Date.now();
-  await Promise.all(fr.list.map(async f => { try { const d = await frFetch(f.c); frData[f.c] = {d, t: Date.now()}; f.n = d.name; f.gone = false; f.err = ''; } catch (e) { if (e.message === 'gone') f.gone = true; else f.err = e.message; } }));
+  let moved = false;
+  await Promise.all(fr.list.map(async f => { try { const d = await frFetch(f.c); frData[f.c] = {d, t: Date.now()}; f.n = d.name; f.gone = false; f.err = '';
+    // Ton ami est passé au nouveau système : on suit le lien tout seul (pas besoin de nouveau code)
+    if (!fbIs(f.c) && d.fb && fbIs(d.fb) && !fr.list.some(x => x.c === d.fb)) { try { const u = await fbSignIn(false); if (u) { const nd = await fbFetch(d.fb); delete frData[f.c]; f.c = d.fb; frData[f.c] = {d: nd, t: Date.now()}; moved = true; } } catch (e2) {} }
+  } catch (e) { if (e.message === 'gone') f.gone = true; else f.err = e.message; } }));
+  if (moved) { save(); fbWatch(); }
   frSaveCache(); saveLocal(); socialCheck(); if (['friends', 'profile'].includes(cur().v) && !modals.length) render();
 }
 /* fil : séances des amis, plus récentes d'abord */
@@ -7219,7 +7351,8 @@ function vFriends() {
   const fr = FRS(), feed = frFeed(), rec = frReceived();
   setTimeout(() => frLoad(), 50);
   const fNew = feed.find(x => !x.f.me); if (fNew && fNew.s.d > (fr.seen || '')) { fr.seen = fNew.s.d; setTimeout(saveLocal, 0); }
-  const meCard = frOn() ? `<div class="card"><div class="row between"><div><b>🟢 ${T('Tu partages tes séances', 'You share your workouts')}</b><br><span class="muted small">${fr.pending ? T('⏳ Mise à jour à la prochaine séance', '⏳ Update at next workout') : fr.last ? T('Carte à jour · ', 'Card updated · ') + frAgo(fr.last) : ''}${fr.err ? ' · ⚠️ ' + esc(fr.err) : ''}</span>${fr.pending ? `<br><button class="btn sm" style="margin-top:6px" data-act="fr-pub">↻ ${T('Mettre à jour maintenant', 'Update now')}</button>` : ''}</div><button class="btn sm primary" data-act="fr-code">${T('Mon code', 'My code')}</button></div></div>`
+  const mig = frOn() && !fr.fb ? `<div class="card" style="border-color:var(--accent)"><b>🆕 ${T('Nouveau système d\'amis', 'New friends system')}</b><p class="small" style="margin:6px 0 10px">${T('Plus de fenêtre Google après tes séances, tes séances apparaissent chez tes amis en quelques secondes, et un code court qui ne change jamais. Tes amis qui ont la mise à jour te suivront tout seuls.', 'No more Google window after workouts, your workouts show up for friends within seconds, and a short code that never changes.')}</p><button class="btn primary block" data-act="fr-start">${T('Passer au nouveau système', 'Switch to the new system')}</button></div>` : '';
+  const meCard = frOn() ? `${mig}<div class="card"><div class="row between"><div><b>🟢 ${T('Tu partages tes séances', 'You share your workouts')}</b><br><span class="muted small">${fr.pending ? T('⏳ Mise à jour à la prochaine séance', '⏳ Update at next workout') : fr.last ? T('Carte à jour · ', 'Card updated · ') + frAgo(fr.last) : ''}${fr.err ? ' · ⚠️ ' + esc(fr.err) : ''}</span>${fr.pending ? `<br><button class="btn sm" style="margin-top:6px" data-act="fr-pub">↻ ${T('Mettre à jour maintenant', 'Update now')}</button>` : ''}</div><button class="btn sm primary" data-act="fr-code">${T('Mon code', 'My code')}</button></div></div>`
     : `<div class="card" style="border-color:var(--accent)"><h3 style="margin:0 0 6px">👥 ${T('Partage tes séances avec tes amis', 'Share your workouts with friends')}</h3>
       <p class="small" style="margin:0 0 10px">${T('Tes amis voient tes séances, tes records et ta série 🔥, et peuvent réagir. Ta carte est gardée dans <b>ton</b> Google Drive. Jamais partagés : ton poids corporel et tes mensurations. Tes photos de progrès, seulement celles que tu choisis.', 'Friends see your workouts, records and 🔥 streak, and can react. Your card is kept in <b>your</b> Google Drive. Never shared: body weight and measurements. Progress photos: only the ones you choose.')}</p>
       <button class="btn primary block" data-act="fr-start">${T('Activer avec Google', 'Turn on with Google')}</button></div>`;
@@ -7246,7 +7379,7 @@ function friendsCard() {
   return `<button class="card frcard" data-act="go" data-v="friends"><span class="frav">👥</span><span style="flex:1;text-align:left"><b>${T('Amis', 'Friends')}</b><br><span class="muted small">${n ? (feed[0] ? `${esc(feed[0].d.name)} : ${esc(feed[0].s.n)} · ${frAgo(feed[0].s.d)}` : T(`${n} ami${n > 1 ? 's' : ''}`, `${n} friend${n > 1 ? 's' : ''}`)) : T('Suis les entraînements de tes amis', 'Follow your friends\' workouts')}</span></span>${nNew ? `<span class="frbadge">${nNew}</span>` : ''}<span class="muted" style="font-size:22px">›</span></button>`;
 }
 async function checkFriendLink() {
-  const m = location.hash.match(/#ami=([A-Za-z0-9_-]{20,})/); if (!m) return;
+  const m = location.hash.match(/#ami=([A-Za-z0-9_-]{20,}|[A-Za-z]{2,4}-\d{4})/); if (!m) return;
   try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
   // Lien ouvert dans le navigateur (Messenger, Safari…) au lieu de l'appli installée : c'est une copie vide de l'appli.
   if (!isStandalone() && !S.history.length) return frLanding(m[1]);
@@ -7808,6 +7941,8 @@ document.addEventListener('click', e => {
       break; }
     case 'fr-phbig': modal(`<div class="row between"><b>${esc((frData[b.dataset.c] || {d: {}}).d.name || '')}</b><button class="btn sm" data-act="close">✕</button></div><img src="${b.src}" alt="" style="width:100%;border-radius:14px;margin-top:10px;display:block">`); break;
     case 'fr-add-ok': frAdd(($('#frin') || {}).value); break;
+    case 'fb-popup': closeAll(); fbStart.popup = true; fbStart().finally(() => { fbStart.popup = false; }); break;
+    case 'fb-popup-add': { const cc = b.dataset.c; closeAll(); frAdd.popup = true; frAdd(cc).finally(() => { frAdd.popup = false; }); break; }
     case 'fr-refresh': toast('↻'); frLoad(true).then(() => { const bad = FRS().list.filter(f => f.err); if (bad.length) toast('⚠️ ' + bad.map(f => `${f.n} : ${f.err}`).join(' · ')); }); break;
     case 'fr-pub': frPublish(true).then(() => toast(FRS().pending ? T('⚠️ Pas réussi : réessaie', '⚠️ Didn\'t work: try again') : T('✅ Ta carte est à jour', '✅ Your card is up to date'))); break;
     case 'start-express': startExpress(b.dataset.rid); break;
