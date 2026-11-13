@@ -2,7 +2,7 @@ const CACHE = 'carnet-muscu-v5';
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== 'carnet-remind').map(k => caches.delete(k)))));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== 'carnet-remind' && k !== 'carnet-img').map(k => caches.delete(k)))));
   self.clients.claim();
 });
 // Réseau d'abord (pour recevoir les mises à jour), cache si hors ligne
@@ -23,6 +23,11 @@ self.addEventListener('fetch', e => {
       net.then(r => { clearTimeout(t); fin(r); }).catch(() => { clearTimeout(t); cached().then(r => fin(r || Response.error())); });
     }));
     e.waitUntil(net.catch(() => {}));
+    return;
+  }
+  // Images des exercices : elles ne changent jamais, donc cache d'abord (plus rapide, pas de mauvaise image qui clignote)
+  if (/raw\.githubusercontent\.com$/.test(u.hostname) && /\/images\//.test(u.pathname)) {
+    e.respondWith(caches.open('carnet-img').then(c => c.match(e.request).then(hit => hit || fetch(e.request).then(r => { if (r.ok || r.type === 'opaque') c.put(e.request, r.clone()); return r; }))));
     return;
   }
   e.respondWith(fetch(e.request).then(r => {
