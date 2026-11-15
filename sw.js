@@ -11,7 +11,7 @@ self.addEventListener('fetch', e => {
   // Google (connexion et sauvegarde Drive) : jamais en cache, ce sont des données personnelles
   if (/(^|\.)google(apis)?\.com$/.test(new URL(e.request.url).hostname)) return;
   // La page elle-même : toujours vérifier auprès du serveur (sinon le cache du navigateur peut garder l'ancienne version ~10 min)
-  const u = new URL(e.request.url), page = e.request.mode === 'navigate' || (u.origin === location.origin && /\/(index\.html)?$/.test(u.pathname));
+  const u = new URL(e.request.url), page = u.origin === location.origin && /\/(index\.html)?$/.test(u.pathname); // seulement la page de l'appli (pas privacy.html)
   if (page) {
     // La page : on demande la dernière version au serveur, mais si le réseau est lent (> 2,5 s), on ouvre tout de suite
     // la version en cache — la nouvelle se télécharge quand même en arrière-plan et servira à la prochaine ouverture.
