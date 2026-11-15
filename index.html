@@ -1369,7 +1369,8 @@ function parseText(txt, defaultName) {
 }
 /* Intensité des séries (pour l'IA) : à l'échec / 1-2 reps en réserve / normal */
 const EFFORTS = () => [['fail', T('À l\'échec (0 rep en réserve)', 'To failure (0 reps in reserve)')], ['rir', T('Proche de l\'échec (1-2 reps en réserve)', 'Close to failure (1-2 reps in reserve)')], ['normal', T('Normal / je ne sais pas', 'Normal / not sure')]];
-function effTxt() {
+function effTxt() { let p = ''; try { p = expTxt(); } catch (e) {} return p + effTxt0(); }
+function effTxt0() {
   const e = S.settings.effort || (S.settings.failDefault ? 'fail' : 'normal');
   if (e === 'fail') return T(", j'aime m'entraîner à l'échec : indique avec F: quelles séries le méritent", ', I like training to failure: use F: to say which sets are worth it');
   if (e === 'rir') return T(', je garde environ 1-2 reps en réserve (RIR 1-2)', ', I keep about 1-2 reps in reserve (RIR 1-2)');
@@ -1902,7 +1903,7 @@ function finishWorkout() {
   const chest = GAME() ? chestRoll(id, exercises, prs.length) : null;
   const sysNew = syncSystem(); const evX2 = GAME() ? evDoubleXp(S.history[S.history.length - 1]) : 0; if (GAME()) evCheck();
   const meAfter = medalsEarned(), huAfter = hunter(meAfter), medDefs = meAfter.defs, medNew = Object.keys(meAfter.got).filter(k => !medBefore[k]).map(k => medDefs.find(d => d.id === k)).filter(Boolean);
-  setTimeout(() => queueCloud(1500), 0); setTimeout(remindSync, 500);
+  setTimeout(() => queueCloud(1500), 0); setTimeout(remindSync, 500); try { expCheck(); } catch (e) {}
   if (!GAME()) {}
   else if (huAfter.rk !== huBefore.rk) setTimeout(() => awaken(huBefore.rk, huAfter), 900);
   else if (huAfter.cls !== huBefore.cls && huAfter.cls !== 'none') setTimeout(() => awakenClass(huAfter.cls, huAfter), 900);
@@ -1973,7 +1974,7 @@ function replaceExercise(ei, pick) {
 function addExercise(pick) {
   const a = S.active;
   if (pick.lib) S.links[norm(pick.name)] = pick.lib;
-  a.exercises.push({name: pick.name, note: '', target: {name: pick.name, sets: 2, reps: defReps(), weight: '', note: ''}, sets: mkSets(2, lastFor(pick.name), '', defReps())});
+  a.exercises.push({name: pick.name, note: '', target: {name: pick.name, sets: defSets(), reps: defReps(), weight: '', note: ''}, sets: mkSets(defSets(), lastFor(pick.name), '', defReps())});
   save(); render(); toast('＋ Exercice ajouté');
   setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50);
 }
@@ -4258,10 +4259,10 @@ function maxTable(rec) {
 function recovery() {
   const now = Date.now(), f = {}, last = {};
   S.history.forEach(h => {
-    const hrs = (now - new Date(h.date)) / 36e5 - (+h.duration || 0) / 60; if (hrs > 96 || hrs < -1) return;
+    const hrs = (now - new Date(h.date)) / 36e5 - (+h.duration || 0) / 60; if (hrs > 100 || hrs < -1) return;
     h.exercises.forEach(e => {
       const n = work(e.sets).length, L = libEntry(e.name); if (!n || !L) return;
-      const add = (m, k) => { const rt = ['pectorals', 'lats', 'upper back', 'quads', 'hamstrings', 'glutes', 'spine'].includes(m) ? 72 : 48;
+      const xr = expRecov(), add = (m, k) => { const rt = (['pectorals', 'lats', 'upper back', 'quads', 'hamstrings', 'glutes', 'spine'].includes(m) ? 72 : 48) * xr;
         f[m] = (f[m] || 0) + Math.min(1, n * k / 6) * Math.max(0, 1 - Math.max(0, hrs) / rt); if (!last[m] || hrs < last[m]) last[m] = Math.max(0, hrs); };
       L.p.forEach(m => add(m, 1)); L.s.forEach(m => add(m, 0.5));
     });
@@ -5595,11 +5596,11 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.51.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.52.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
-  {v: '9.51.1', d: '2026-11-14', fr: ['👥 Le bouton « Ajouter » est maintenant au début de ta liste d\'amis.', '🔔 Touche une notification de like ou de commentaire : la séance s\'ouvre, avec les réactions et les commentaires, et tu peux répondre.', '👥 Ajouter un ami est plus évident : recherche par @pseudo directement dans Amis quand tu n\'en as pas encore, et une carte « Entraîne-toi avec tes amis » dans Muscu.', '⚔️ Défis : ton ami reçoit une notification et doit accepter (ou refuser). Les 7 jours commencent quand il accepte.', '🛡️ Raid : chaque aventurier compte pour 3 000 reps max, pour que personne ne porte le groupe seul. Explication plus claire.', '👑 Saison : il faut au moins 3 aventuriers actifs dans le mois pour remporter le trophée. Les anciennes victoires trop faciles sont recalculées.', '🎆 Victoires refaites : chaque fête est maintenant différente (fusées, pièces d\'or qui rebondissent, flammes, vrais flocons, éclairs, spirale, rayons divins, couronne…).', '🏞️ Bannières redessinées, plus détaillées et animées (braises, étoiles filantes, vagues, lucioles, portail…).', '📥 « Tu viens d\'une autre appli? » : importe ton fichier CSV de Hevy, Strong ou autre.', '🧭 Nouvelle visite de la Guilde. La visite ne parle plus de sauvegarde si tu es connecté avec Google.', '🧍 Une seule fiche « Mes infos » (âge, taille, sexe, poids) partout : profil, cardio, réglages. Le niveau de force a été retiré.', '🧹 Moins de doublons : le rappel de sauvegarde disparaît si la sauvegarde Google est active, et les autres options de sauvegarde sont repliées.'],
-    en: ['👥 The “Add” button is now at the start of your friends list.', '🔔 Tap a like or comment notification to open the workout, with reactions and comments, and reply.', '👥 Adding friends is clearer: search by @username right in Friends, and a “Train with your friends” card in Workout.', '⚔️ Challenges: your friend gets a notification and must accept (or decline). The 7 days start when they accept.', '🛡️ Raid: each adventurer counts for 3,000 reps max, so nobody carries the group alone.', '👑 Season: at least 3 active adventurers are needed to win the trophy. Old too-easy wins are recalculated.', '🎆 Victories redone: each celebration is now different.', '🏞️ Banners redrawn, more detailed and animated.', '📥 “Coming from another app?”: import your CSV file from Hevy, Strong or others.', '🧭 New Guild tour. The tour no longer talks about backup if you\'re signed in with Google.', '🧍 One single “My info” sheet everywhere. Strength level removed.', '🧹 Fewer duplicates: no backup reminder when Google backup is on.']},
+  {v: '9.52.0', d: '2026-11-14', fr: ['🎓 Ton niveau d\'expérience (débutant, intermédiaire, avancé) sert enfin à quelque chose : séries proposées, temps de récupération et conseils de l\'IA. Et il monte tout seul au fil de tes séances!', '📋 Nouveau compte : l\'appli te prépare un programme de départ selon ton objectif, tes séances par semaine et ton niveau, avec ton horaire de la semaine. ', '👥 Le bouton « Ajouter » est maintenant au début de ta liste d\'amis.', '🔔 Touche une notification de like ou de commentaire : la séance s\'ouvre, avec les réactions et les commentaires, et tu peux répondre.', '👥 Ajouter un ami est plus évident : recherche par @pseudo directement dans Amis quand tu n\'en as pas encore, et une carte « Entraîne-toi avec tes amis » dans Muscu.', '⚔️ Défis : ton ami reçoit une notification et doit accepter (ou refuser). Les 7 jours commencent quand il accepte.', '🛡️ Raid : chaque aventurier compte pour 3 000 reps max, pour que personne ne porte le groupe seul. Explication plus claire.', '👑 Saison : il faut au moins 3 aventuriers actifs dans le mois pour remporter le trophée. Les anciennes victoires trop faciles sont recalculées.', '🎆 Victoires refaites : chaque fête est maintenant différente (fusées, pièces d\'or qui rebondissent, flammes, vrais flocons, éclairs, spirale, rayons divins, couronne…).', '🏞️ Bannières redessinées, plus détaillées et animées (braises, étoiles filantes, vagues, lucioles, portail…).', '📥 « Tu viens d\'une autre appli? » : importe ton fichier CSV de Hevy, Strong ou autre.', '🧭 Nouvelle visite de la Guilde. La visite ne parle plus de sauvegarde si tu es connecté avec Google.', '🧍 Une seule fiche « Mes infos » (âge, taille, sexe, poids) partout : profil, cardio, réglages. Le niveau de force a été retiré.', '🧹 Moins de doublons : le rappel de sauvegarde disparaît si la sauvegarde Google est active, et les autres options de sauvegarde sont repliées.'],
+    en: ['🎓 Your experience level now matters (suggested sets, recovery, AI advice) and goes up on its own as you train.', '📋 New account: a starter program is built from your goal, weekly workouts and level, with your weekly schedule.', '👥 The “Add” button is now at the start of your friends list.', '🔔 Tap a like or comment notification to open the workout, with reactions and comments, and reply.', '👥 Adding friends is clearer: search by @username right in Friends, and a “Train with your friends” card in Workout.', '⚔️ Challenges: your friend gets a notification and must accept (or decline). The 7 days start when they accept.', '🛡️ Raid: each adventurer counts for 3,000 reps max, so nobody carries the group alone.', '👑 Season: at least 3 active adventurers are needed to win the trophy. Old too-easy wins are recalculated.', '🎆 Victories redone: each celebration is now different.', '🏞️ Banners redrawn, more detailed and animated.', '📥 “Coming from another app?”: import your CSV file from Hevy, Strong or others.', '🧭 New Guild tour. The tour no longer talks about backup if you\'re signed in with Google.', '🧍 One single “My info” sheet everywhere. Strength level removed.', '🧹 Fewer duplicates: no backup reminder when Google backup is on.']},
   {v: '9.50.0', d: '2026-11-13', fr: ['⬆️ L\'appli se met à jour toute seule dès qu\'une nouvelle version est en ligne (jamais pendant une séance).', '☁️ Sauvegarde automatique sans fenêtre Google (Réglages) : tout se sauvegarde tout seul, et sur un nouveau téléphone tout revient en te connectant.', '🟢 En direct : vois quand un ami s\'entraîne et envoie-lui un 🔥 pendant sa séance. Le raid et la saison bougent en direct.', '🌍 Classement mondial (optionnel) dans la Guilde.', '👥 Nouveau système d\'amis : plus de fenêtre Google après tes séances, tes séances apparaissent chez tes amis en quelques secondes, un code court qui ne change jamais (ex. GAB-4821) et tu n\'as besoin d\'entrer le code d\'un ami qu\'une seule fois. Dans Amis : « Passer au nouveau système ».', '👥 Amis : on voit quand la carte de chaque ami a été mise à jour, un bouton « Mettre à jour maintenant » si ta carte attend, et ta carte se republie toute seule à l\'ouverture quand c\'est possible.', '👥 Quand tu changes ton nom, tes amis voient le nouveau nom tout de suite.', '🚪 Nouvel accueil : connecte-toi avec Google, crée ton profil en 4 étapes, et sur un nouveau téléphone tout revient tout seul (« Bon retour! »).', '🧍 Ton profil (Profil → Mesures et photos) : âge, taille, IMC, besoins en calories et protéines selon ton objectif, et ton niveau de force au développé couché, squat, soulevé de terre et développé militaire.', '🎯 Ton objectif ajuste les reps proposées quand tu ajoutes un exercice (force 4-6, muscle 8-12, perte de gras 10-15).', '@ Pseudo unique : choisis ton @pseudo, et tes amis te trouvent en le cherchant (plus besoin de code).', '📨 Demandes d\'ami : il faut accepter avant que quelqu\'un voie tes séances. Seuls tes amis peuvent lire ta carte.', '🔔 Boîte de notifications : demandes d\'ami, encouragements 🔥, réactions et commentaires, avec une pastille pour ce qui est nouveau.'], en: ['👥 Friends: see when each friend\'s card was last updated, an “Update now” button if your card is waiting, and your card republishes itself on open when possible.', '👥 When you change your name, your friends see the new name right away.', '🚪 New welcome: sign in with Google, set up your profile in 4 steps, and on a new phone everything comes back on its own.', '🧍 Your profile (Profile → Measures & photos): age, height, BMI, calorie and protein needs for your goal, and your strength level on bench, squat, deadlift and overhead press.', '🎯 Your goal sets the suggested reps when you add an exercise.', '@ Unique username: friends find you by searching it (no more codes).', '📨 Friend requests: you must accept before someone sees your workouts. Only friends can read your card.', '🔔 Notifications: friend requests, cheers, reactions and comments.']},
   {v: '9.46.6', d: '2026-11-12', fr: ['⚔️ Mode jeu : nouvel onglet Guilde avec tout le jeu au même endroit (statut, quêtes, raid, saison, armurerie), en fenêtres qui se replient.', '🛡️ Armurerie : titres, cadres, auras, victoires, bannières, blasons et thèmes à débloquer, avec raretés (jusqu\'à Mythique), reflets et lueurs. Touche une récompense verrouillée pour la voir en grand et voir ta progression.', '📜 Collections : complète une catégorie pour débloquer une récompense secrète du Grand Maître. Badge « NOUVEAU » sur ce que tu viens de débloquer.', '🏰 Blasons de guilde et bannières fantasy animées (village, donjon, forêt enchantée, salle du trône, kraken…).', '🌟 Prestige : au niveau 100, recommence au niveau 1 avec une étoile et des récompenses exclusives.', '🏅 Plein de nouvelles médailles et de titres (« Aventurier de rang B · Ton titre »).', '🏆 Records plus justes : reps au poids du corps, plus de reps à la même charge (3 derniers mois) et record de volume (ex. 3×11 après 3×10, même nombre de séries).', '🎯 Quête « Bats un record » : bouton « Quoi battre? » qui te dit exactement quoi faire la prochaine fois, dans ta zone de reps.', '⚠️ Quête ratée : −100 XP (avant −10), à partir de maintenant seulement.', '📌 Notes et poids attachés à l\'exercice, peu importe la routine.', '⚡ Version express d\'une routine, prédiction de progression, et animations (+XP, écran de fin).', '🎪 Événements annoncés à l\'ouverture (pas d\'XP pour les anciens).', '🚀 Appli plus rapide et plus fluide (Guilde, Profil, historique, glissement entre les pages).', '🗒️ Nouveautés : un seul résumé par jour, affiché au plus une fois par jour.', '🗑️ Supprimer une séance enlève maintenant tout ce qu\'elle t\'avait donné (XP, records, médailles, quête, donjon, boss, coffre), comme si elle n\'avait jamais existé. « Annuler » remet tout.', '🎯 Guilde : « Prochaines récompenses » montre les 3 récompenses que tu es le plus près d\'avoir.', '🎁 Coffres de fin de séance (commun, rare, épique, légendaire) avec bonus d\'XP et fragments qui débloquent des récompenses exclusives.', '📖 Chaque récompense verrouillée explique clairement quoi faire pour l\'avoir.'], en: ['⚔️ Game mode: new Guild tab with the whole game in one place, in collapsible windows.', '🛡️ Armory: titles, frames, auras, victories, banners, crests and themes to unlock, with rarities up to Mythic. Tap a locked reward to preview it and see your progress.', '📜 Collections: complete a category to unlock a secret Grandmaster reward. “NEW” badge on fresh unlocks.', '🏰 Guild crests and animated fantasy banners.', '🌟 Prestige: at level 100, restart at level 1 with a star and exclusive rewards.', '🏅 Lots of new medals and titles.', '🏆 Fairer records: bodyweight reps, more reps at the same weight (last 3 months) and volume records.', '🎯 “Break a record” quest: a “What to beat?” button tells you exactly what to do next time, within your rep range.', '⚠️ Failed quest: −100 XP (was −10), from now on only.', '📌 Notes and weights follow the exercise, whatever the routine.', '⚡ Express routine version, progress prediction and animations.', '🎪 Events announced on open (no XP for old ones).', '🚀 Faster, smoother app.', '🗒️ What\'s new: one summary per day, shown at most once a day.']},
   {v: '9.23.1', d: '2026-11-11', fr: ['🗣️ Coach vocal plus court : il dit juste tes reps à faire et le poids réussi à ta dernière séance (ex. « 8 à 10 reps, 185 livres »).'], en: ['🗣️ Shorter voice coach: it just says your target reps and the weight you hit last time (e.g. “8 to 10 reps, 185 pounds”).']},
@@ -8540,7 +8541,7 @@ document.addEventListener('click', e => {
     case 'rd-smart': { smartPlan(rdraft.exercises); rdraft.exercises.forEach(e => { e.sl = setsOf(e).map(s => ({...s})); }); rdirty = true; render(); toast(T('⚡ Échauffements et séries à l\'échec ajoutés : modifie-les si tu veux', '⚡ Warm-ups and failure sets added: edit them if you want')); break; }
     case 'rd-set-del': { const sl = rdraft.exercises[ei].sl; if (sl.length > 1) { sl.splice(si, 1); rdirty = true; render(); } else toast('Il faut au moins une série'); break; }
     case 'rd-add-set': { const sl = rdraft.exercises[ei].sl; const l = sl.filter(s => s.t !== 'W').pop() || sl[sl.length - 1] || {w: '', r: '8-12'}; sl.push({w: l.w ?? '', r: l.r || '8-12'}); rdirty = true; render(); break; }
-    case 'rd-add-ex': openPicker({title: 'Ajouter un exercice', cb: p => { if (p.lib) S.links[norm(p.name)] = p.lib; rdraft.exercises.push({name: p.name, sets: 2, reps: defReps(), weight: '', note: '', sl: [{w: '', r: defReps()}, {w: '', r: defReps()}]}); rdirty = true; render(); setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50); }}); break;
+    case 'rd-add-ex': openPicker({title: 'Ajouter un exercice', cb: p => { if (p.lib) S.links[norm(p.name)] = p.lib; rdraft.exercises.push({name: p.name, sets: defSets(), reps: defReps(), weight: '', note: '', sl: Array.from({length: defSets()}, () => ({w: '', r: defReps()}))}); rdirty = true; render(); setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50); }}); break;
     case 'rd-ex-menu': openRdExMenu(ei); break;
     case 'rd-ex-replace': closeModal(); openPicker({title: `Remplacer « ${rdraft.exercises[ei].name} »`, alt: rdraft.exercises[ei].name, cb: p => { if (p.lib) S.links[norm(p.name)] = p.lib; rdraft.exercises[ei].name = p.name; rdirty = true; render(); }}); break;
     case 'rd-ex-up': case 'rd-ex-down': { const L2 = rdraft.exercises, j = act === 'rd-ex-up' ? ei - 1 : ei + 1; if (j >= 0 && j < L2.length) { [L2[ei], L2[j]] = [L2[j], L2[ei]]; fixSS(L2); rdirty = true; } closeModal(); render(); break; }
@@ -8854,6 +8855,56 @@ try { const sc = sessionStorage.getItem('cm-scroll'); sessionStorage.removeItem(
 const OB_GOALS = () => [['muscle', '💪', T('Prendre du muscle', 'Build muscle'), T('8 à 12 reps', '8 to 12 reps')], ['force', '⚡', T('Gagner en force', 'Get stronger'), T('4 à 6 reps, charges lourdes', '4 to 6 reps, heavy weights')], ['fat', '🔥', T('Perdre du gras', 'Lose fat'), T('10 à 15 reps et cardio', '10 to 15 reps and cardio')], ['fit', '❤️', T('Rester en forme', 'Stay fit'), T('Équilibré', 'Balanced')]];
 const defReps = () => ({force: '4-6', fat: '10-15'})[S.settings.obj] || '8-12';
 const ageOf = () => S.settings.by ? new Date().getFullYear() - S.settings.by : null;
+/* ===================== Niveau d'expérience : choisi à l'accueil, puis il monte tout seul avec tes séances ===================== */
+var EXP_ORD = ['beg', 'int', 'adv'];
+function EXP_NAME(k) { return ({beg: T('Débutant', 'Beginner'), int: T('Intermédiaire', 'Intermediate'), adv: T('Avancé', 'Advanced')})[k] || ''; }
+var EXP_REQ = {int: {n: 36, mo: 3}, adv: {n: 150, mo: 12}}; // séances et mois d'entraînement pour passer au niveau suivant
+function expMonths() { if (!S.history.length) return 0; const f = S.history.reduce((a, h) => h.date < a ? h.date : a, S.history[0].date); return (Date.now() - new Date(f)) / (30.4 * 864e5); }
+function expAuto() { const n = S.history.length, mo = expMonths(); return n >= EXP_REQ.adv.n && mo >= EXP_REQ.adv.mo ? 'adv' : n >= EXP_REQ.int.n && mo >= EXP_REQ.int.mo ? 'int' : 'beg'; }
+function expLv() { const st = S.settings; if (!st.exp) st.exp = expAuto(); const a = expAuto(); return EXP_ORD.indexOf(a) > EXP_ORD.indexOf(st.exp) ? a : st.exp; }
+function expNext() { const k = EXP_ORD[EXP_ORD.indexOf(expLv()) + 1]; if (!k) return null; const r = EXP_REQ[k]; return {k, n: r.n, mo: r.mo, dn: Math.min(S.history.length, r.n), dmo: Math.min(r.mo, Math.floor(expMonths()))}; }
+function defSets() { return expLv() === 'beg' ? 2 : 3; }
+function expRecov() { return ({beg: 1.2, adv: .9})[expLv()] || 1; } // un débutant récupère plus lentement
+function expTxt() { const lv = expLv(), g = (typeof OB_GOALS === 'function' ? OB_GOALS() : []).find(x => x[0] === S.settings.obj);
+  return T(`, mon niveau : ${EXP_NAME(lv).toLowerCase()} (${S.history.length} séances)${g ? ', mon objectif : ' + g[2].toLowerCase() : ''}`, `, my level: ${EXP_NAME(lv).toLowerCase()} (${S.history.length} workouts)${g ? ', my goal: ' + g[2].toLowerCase() : ''}`); }
+function EXP_WHAT() { return ({beg: T('2 séries proposées par exercice, des temps de récupération plus longs, et l\'IA garde des programmes simples avec les exercices de base.', '2 sets suggested per exercise, longer recovery times, and the AI keeps programs simple with basic exercises.'),
+  int: T('3 séries proposées par exercice, une récupération normale, et l\'IA peut ajouter plus de variété et de volume.', '3 sets suggested per exercise, normal recovery, and the AI can add more variety and volume.'),
+  adv: T('3 séries et plus, une récupération plus rapide, et l\'IA peut utiliser des techniques avancées (drop sets, périodisation, surcharge plus fine).', '3+ sets, faster recovery, and the AI can use advanced techniques (drop sets, periodization, finer overload).')}); }
+function expCheck() { // après une séance : on monte de niveau si on a assez d'expérience
+  const st = S.settings; if (!st.exp) { st.exp = expAuto(); return; } const before = st.exp, now = expLv(); if (now === before) return;
+  st.exp = now; save();
+  setTimeout(() => modal(`<div style="text-align:center"><div style="font-size:48px">🎓</div><h2 style="margin:6px 0">${T('Tu passes', 'You\'re now')} ${EXP_NAME(now)}!</h2>
+    <p class="small">${T(`${S.history.length} séances sur ${Math.floor(expMonths())} mois : ton expérience grandit, l'appli s'adapte.`, `${S.history.length} workouts over ${Math.floor(expMonths())} months: your experience grows, the app adapts.`)}</p></div>
+    <div class="card" style="margin:10px 0"><b>${T('Ce qui change', 'What changes')}</b><p class="small" style="margin:6px 0 0">${EXP_WHAT()[now]}</p></div>
+    <button class="btn primary block" data-act="close">${T('Super!', 'Great!')}</button>`), 2600);
+}
+/* Programme de départ, fait selon l'objectif, les séances par semaine et le niveau */
+function starterProgram(obj, days, lv) {
+  const beg = lv === 'beg', adv = lv === 'adv', S1 = beg ? 2 : 3, S2 = adv ? 4 : S1;
+  const R = ({force: ['3-6', '6-10', '8-12'], fat: ['8-12', '12-15', '15-20'], muscle: ['6-10', '8-12', '10-15']})[obj] || ['6-10', '8-12', '10-15'];
+  const C = n => ex(n, S2, R[0]), A = n => ex(n, S1, R[1]), I = n => ex(n, S1, R[2]);
+  const squat = beg ? 'Presse à cuisses' : 'Squat', dead = beg ? 'Soulevé de terre roumain' : 'Soulevé de terre', pull = beg ? 'Tirage vertical' : 'Tractions';
+  const r = (name, exs) => ({id: uid(), name, folder: DEF_FOLDER, exercises: exs});
+  const FB = [r(T('Full Body A', 'Full Body A'), [C(squat), C('Développé couché'), A('Rowing barre'), A('Développé militaire haltères'), I('Leg curl'), I('Curl haltères')]),
+    r('Full Body B', [C(dead), C('Développé incliné haltères'), A(pull), A('Fentes bulgares'), I('Élévations latérales'), I('Extension triceps poulie')]),
+    r('Full Body C', [C('Presse à cuisses'), A('Développé militaire'), A('Rowing poulie assis'), A('Hip thrust'), I('Curl marteau'), I('Mollets debout')])];
+  const UL = [r('Upper A', [C('Développé couché'), A('Rowing barre'), A('Développé militaire haltères'), A('Tirage vertical'), I('Curl haltères'), I('Extension triceps poulie')]),
+    r('Lower A', [C(squat), A('Soulevé de terre roumain'), A('Presse à cuisses'), I('Leg curl'), I('Mollets debout')]),
+    r('Upper B', [C('Développé incliné haltères'), A(pull), A('Dips'), A('Rowing poulie assis'), I('Élévations latérales')]),
+    r('Lower B', [C(dead), A('Fentes bulgares'), I('Leg extension'), A('Hip thrust'), I('Mollets assis')])];
+  const PPL = s => [r('Push ' + s, [C(s === 'A' ? 'Développé couché' : 'Développé militaire'), A(s === 'A' ? 'Développé militaire haltères' : 'Développé incliné haltères'), A('Dips'), I('Élévations latérales'), I('Extension triceps poulie')]),
+    r('Pull ' + s, [C(s === 'A' ? pull : 'Rowing barre'), A(s === 'A' ? 'Rowing barre' : 'Tirage vertical'), A('Rowing poulie assis'), I('Oiseau (deltoïde arrière)'), I(s === 'A' ? 'Curl haltères' : 'Curl marteau')]),
+    r('Legs ' + s, [C(s === 'A' ? squat : dead), A(s === 'A' ? 'Soulevé de terre roumain' : 'Presse à cuisses'), A(s === 'A' ? 'Fentes bulgares' : 'Hip thrust'), I(s === 'A' ? 'Leg curl' : 'Leg extension'), I(s === 'A' ? 'Mollets debout' : 'Mollets assis')])];
+  const arms = r(T('Bras / Épaules', 'Arms / Shoulders'), [A('Développé militaire'), I('Élévations latérales'), I('Oiseau (deltoïde arrière)'), A('Curl barre EZ'), A('Barre au front'), I('Curl marteau')]);
+  let rs, plan; // plan : jours de la semaine (0 = lundi) → index de routine (cyclique)
+  if (days <= 2) { rs = FB.slice(0, 2); plan = [0, 3]; }
+  else if (days === 3) { rs = beg ? FB : PPL('A'); plan = [0, 2, 4]; }
+  else if (days === 4) { rs = UL; plan = [0, 1, 3, 4]; }
+  else if (days === 5) { rs = [...UL, arms]; plan = [0, 1, 2, 3, 4]; }
+  else { rs = [...PPL('A'), ...PPL('B')]; plan = [0, 1, 2, 3, 4, 5]; }
+  const sched = ['rest', 'rest', 'rest', 'rest', 'rest', 'rest', 'rest']; plan.forEach((d, i) => sched[d] = rs[i % rs.length].id);
+  return {rs, sched};
+}
 /* ===================== @pseudo, demandes d'ami et notifications ===================== */
 var H_RE = /^[a-z0-9._]{3,20}$/;
 function hNorm(s) { return norm(String(s || '')).trim().replace(/^@+/, '').replace(/\s+/g, '.').replace(/[^a-z0-9._]/g, '').slice(0, 20); }
@@ -9089,6 +9140,7 @@ function obRender() {
     <div style="margin-top:12px"><button class="ob-mode ${d.game ? 'on' : ''}" data-act="ob-seg" data-k="game" data-v="1"><b>⚔️ ${T('Mode Aventurier', 'Adventurer mode')}<i></i></b><span>${T('Gagne de l\'XP, monte de rang dans la Guilde, accomplis des quêtes, ouvre des coffres et débloque des récompenses.', 'Earn XP, rank up in the Guild, complete quests, open chests and unlock rewards.')}</span></button>
     <button class="ob-mode ${d.game ? '' : 'on'}" data-act="ob-seg" data-k="game" data-v=""><b>📒 ${T('Mode Classique', 'Classic mode')}<i></i></b><span>${T('Juste ton carnet : séances, records et statistiques. Sans jeu.', 'Just your log: workouts, records and stats. No game.')}</span></button></div>
     <label>${T('Niveau d\'expérience', 'Experience level')}</label>${obSeg('exp', [['beg', T('Débutant', 'Beginner')], ['int', T('Interm.', 'Interm.')], ['adv', T('Avancé', 'Advanced')]])}
+    <p class="muted small" style="margin:8px 0 0">${EXP_WHAT()[d.exp]} ${T('Il monte tout seul au fil de tes séances.', 'It goes up on its own as you train.')}</p>
     ${nextBtn(T('C\'est parti!', 'Let\'s go!') + ' 🚀')}`;
   o.innerHTML = `<div class="ob-in obs-${step}">${back}${h}</div>`;
   try { iconize(o); } catch (e) {}
@@ -9129,7 +9181,8 @@ async function obCloudOn(u, h) {
 }
 function obFinish() {
   const u = obSt && obSt.u, mode = obSt && obSt.mode, obSt0h = obSt && obSt.d.h; obApply(); S.settings.onboarded = true;
-  if (mode === 'new') S.settings.tourPending = true;
+  if (mode === 'new') { S.settings.tourPending = true;
+    if (!S.history.length && !S.settings.xferDone) { const sp = starterProgram(S.settings.obj, +S.settings.goal || 4, S.settings.exp || 'int'); S.routines = sp.rs; S.schedule = sp.sched; S.settings.starter = 1; } }
   save(); obClose(); applyTheme(); render();
   if (mode === 'edit') { toast(T('✅ Profil mis à jour', '✅ Profile updated')); if (frOn()) frQueue(false); return; }
   toast(T(`💪 Bienvenue ${S.settings.name || ''}!`, `💪 Welcome ${S.settings.name || ''}!`).replace(' !', '!'));
@@ -9169,6 +9222,7 @@ function meCard() {
     <div class="row" style="margin:10px 0 4px;align-items:stretch">
       <div class="stat"><span class="muted small">${T('Âge', 'Age')}</span><b>${age || '—'}</b></div><div class="stat"><span class="muted small">${T('Taille', 'Height')}</span><b>${htTxt}</b></div>
       <div class="stat"><span class="muted small">${T('IMC', 'BMI')}</span><b>${bmi ? dec1(bmi) : '—'}</b></div></div>
+    ${(() => { const nx = expNext(); return `<p class="small" style="margin:8px 0 0">🎓 ${T('Niveau', 'Level')} : <b>${EXP_NAME(expLv())}</b>${nx ? ` <span class="muted">· ${T('prochain', 'next')} : ${EXP_NAME(nx.k)} (${nx.dn}/${nx.n} ${T('séances', 'workouts')}, ${nx.dmo}/${nx.mo} ${T('mois', 'months')})</span>` : ''}</p>`; })()}
     ${g ? `<p class="small" style="margin:8px 0 0">${g[1]} ${T('Objectif', 'Goal')} : <b>${g[2]}</b> · ${+st.goal || '—'} ${T('séances/sem.', 'workouts/wk')}</p>` : ''}
     ${nk ? `<p class="small" style="margin:6px 0 0">🍽️ ${T('Besoins estimés', 'Estimated needs')} : <b>≈ ${nk.target.toLocaleString(LOC())} kcal</b>/${T('jour', 'day')}${nk.target !== nk.tdee ? ` <span class="muted">(${T('maintien', 'maintenance')} ${nk.tdee.toLocaleString(LOC())})</span>` : ''} · ${T('protéines', 'protein')} <b>≈ ${nk.prot} g</b></p>` : ''}
 
