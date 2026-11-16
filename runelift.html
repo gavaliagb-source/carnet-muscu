@@ -234,7 +234,10 @@
 (function () {
   var q = new URLSearchParams(location.search).get('lang');
   var saved = null; try { saved = localStorage.getItem('rl-lang'); } catch (e) {}
-  var lang = q || saved || ((navigator.language || 'fr').toLowerCase().indexOf('fr') === 0 ? 'fr' : 'en');
+  var navs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'fr']);
+  var isFr = false; for (var i = 0; i < navs.length; i++) if (String(navs[i]).toLowerCase().indexOf('fr') === 0) isFr = true;
+  if (q !== 'fr' && q !== 'en') q = null; if (saved !== 'fr' && saved !== 'en') saved = null;
+  var lang = q || saved || (isFr ? 'fr' : 'en');
   function apply(l) {
     lang = l; document.documentElement.lang = l;
     document.querySelectorAll('[data-fr]').forEach(function (e) { e.innerHTML = e.getAttribute('data-' + l); });
