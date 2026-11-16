@@ -1,34 +1,26 @@
-# Carnet Muscu — mise en ligne gratuite (GitHub Pages)
+# Runelift
 
-## 1. Mettre l'appli en ligne (une seule fois, ~5 min)
-1. Va sur github.com → **New repository** → nom : `carnet-muscu` → **Public** → Create.
-2. Clique **uploading an existing file** et glisse les 5 fichiers :
-   `index.html`, `manifest.json`, `sw.js`, `icon-192.png`, `icon-512.png` → **Commit changes**.
-3. **Settings → Pages** → Source : *Deploy from a branch* → Branch : `main` / `(root)` → Save.
-4. Après 1-2 minutes, ton appli est à : `https://TON-NOM-GITHUB.github.io/carnet-muscu/`
+Runelift (anciennement « Carnet Muscu ») est une appli de musculation qui transforme l'entraînement en aventure :
+séances et routines, niveaux, classes, quêtes, défis entre amis et programmes faits par l'IA de ton choix.
 
-Le dépôt public contient seulement le code. Tes séances restent sur ton téléphone, personne d'autre ne les voit.
+- **Présentation** : https://gavaliagb-source.github.io/carnet-muscu/runelift.html
+- **Appli** : https://gavaliagb-source.github.io/carnet-muscu/
+- **Politique de confidentialité** : https://gavaliagb-source.github.io/carnet-muscu/privacy.html
+- **Contact** : runelift.app@gmail.com
 
-## 2. L'installer sur ton téléphone
-- **iPhone (Safari)** : ouvre le lien → bouton Partager → **Sur l'écran d'accueil**.
-- **Android (Chrome)** : ouvre le lien → menu ⋮ → **Installer l'application**.
+## Installer l'appli
 
-Elle fonctionne ensuite sans réseau au gym.
+- **Android** : ouvre le lien de l'appli dans Chrome, puis menu ⋮ → « Installer l'application ».
+- **iPhone** : ouvre le lien dans Safari, puis bouton Partager → « Sur l'écran d'accueil ».
 
-## 3. Modifier une routine avec l'IA
-1. Sur la routine : **🤖 Envoyer à l'IA** (copie la routine + tes dernières performances).
-2. Colle dans n'importe quelle IA et écris ta demande après « Ma demande : ».
-3. Copie la réponse de l'IA au complet → **📥 Coller l'IA** → **Appliquer**.
+## Ce dépôt
 
-Pour plusieurs routines d'un coup : bouton **Tout envoyer à l'IA** en bas de la page.
+Le site est publié avec GitHub Pages à partir de la branche `main`.
 
-## 4. Changer de téléphone
-Réglages → **Exporter** sur l'ancien cell → envoie-toi le fichier (courriel, Drive…) →
-ouvre l'appli sur le nouveau cell → Réglages → **Importer**.
-Fais un export de temps en temps comme sauvegarde.
-
-## Récupérer ton historique Hevy
-Dans Hevy : Profil → Réglages → **Exporter les données** (CSV) → dans Carnet Muscu : Réglages → **Importer** ce fichier.
-
-## Mettre à jour l'appli plus tard
-Remplace `index.html` dans ton dépôt GitHub. Tes données ne sont pas touchées.
+- `index.html` : l'appli au complet (une seule page).
+- `runelift.html` et `site/` : la page de présentation, ses images et sa police (Cinzel, licence OFL).
+- `privacy.html` : la politique de confidentialité (français et anglais).
+- `sw.js`, `manifest.json`, `icon-*.png` : installation sur l'écran d'accueil et fonctionnement hors ligne.
+- `exos-fr.json`, `exos-en.json` : noms et instructions des exercices.
+- `comp/` : images des compagnons (en préparation).
+- `version.json` : numéro de version, pour la mise à jour automatique.

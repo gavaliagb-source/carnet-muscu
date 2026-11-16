@@ -10,14 +10,13 @@
 <meta property="og:image" content="https://gavaliagb-source.github.io/carnet-muscu/icon-512.png">
 <meta name="theme-color" content="#0b0d10">
 <link rel="icon" href="icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="preload" href="site/cinzel.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+  @font-face{font-family:Cinzel;font-style:normal;font-weight:400 900;font-display:swap;src:url(site/cinzel.woff2) format('woff2')}
   :root{--bg:#0b0d10;--bg2:#12151a;--card:#161a20;--line:#252a33;--text:#eceef1;--muted:#9aa1ad;--accent:#c6f135;--gold:#e8c66a;--violet:#a78bfa}
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
   a{color:inherit}
   .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
   /* barre du haut */
@@ -26,7 +25,7 @@
   .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:Cinzel,serif;font-weight:800;letter-spacing:.08em;font-size:18px}
   .brand img{width:34px;height:34px;border-radius:9px}
   .top .sp{flex:1}
-  .lang{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:6px 12px;font:600 13px Inter,sans-serif;cursor:pointer}
+  .lang{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:6px 12px;font-family:inherit;font-weight:600;font-size:13px;cursor:pointer}
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:14px;padding:14px 22px;font-weight:800;text-decoration:none;border:1px solid var(--line);background:var(--card);color:var(--text);transition:transform .15s}
   .btn:hover{transform:translateY(-2px)}
   .btn.primary{background:var(--accent);color:#10140a;border-color:var(--accent);box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent);animation:pulse 2.6s infinite}
@@ -36,7 +35,7 @@
   .hero{position:relative;padding:64px 0 40px;overflow:hidden}
   .hero::before{content:"";position:absolute;inset:-20% -10% auto;height:620px;background:radial-gradient(closest-side,color-mix(in srgb,var(--accent) 18%,transparent),transparent 70%),radial-gradient(closest-side at 80% 30%,color-mix(in srgb,var(--violet) 18%,transparent),transparent 70%);pointer-events:none}
   .hero .wrap{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
-  .eyebrow{display:inline-block;font:700 12px Inter,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:999px;padding:5px 12px;margin-bottom:18px}
+  .eyebrow{display:inline-block;font-weight:700;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:999px;padding:5px 12px;margin-bottom:18px}
   h1{font-family:Cinzel,serif;font-weight:800;font-size:clamp(36px,6vw,62px);line-height:1.08;margin:0 0 16px;letter-spacing:.01em}
   h1 em{font-style:normal;color:var(--accent)}
   .lead{font-size:clamp(17px,2.2vw,20px);color:var(--muted);margin:0 0 28px;max-width:34em}
@@ -52,7 +51,7 @@
   section{padding:70px 0}
   .alt{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
   h2{font-family:Cinzel,serif;font-weight:800;font-size:clamp(28px,4vw,40px);line-height:1.15;margin:0 0 14px}
-  .kicker{font:700 12px Inter,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  .kicker{font-weight:700;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
   .feat .wrap{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
   .feat.rev .txt{order:2}
   .txt p{color:var(--muted);font-size:17px;margin:0 0 18px}

@@ -496,6 +496,7 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .ybig{text-align:center;margin:0;display:flex;flex-direction:column;gap:2px}.ybig b{font-size:26px}
 .ymonths{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;height:90px;margin-top:10px;align-items:end}.ymonths div{height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}.ymonths span{width:70%;background:var(--accent);border-radius:3px;min-height:2px}.ymonths i{font-style:normal;font-size:10px;color:var(--muted);margin-top:3px}
 .trow .btn{white-space:nowrap;display:flex;align-items:center;justify-content:center;padding-left:8px;padding-right:8px;font-size:15px}.trow .btn .ico{margin-right:6px}.trow .btn:last-child .ico{margin:0}
+@media (max-width:359px){.trow{gap:6px!important}.trow .btn{font-size:13.5px;padding-left:6px;padding-right:6px;min-width:0}.trow .btn:not(:last-child) .ico{display:none}}
 .ico{display:inline-block;vertical-align:-0.2em;flex:none}nav button .ic .ico{display:block;margin:0 auto 3px}
 .btn .ico{margin-right:6px}.tile .ico{color:var(--accent);margin-right:8px}
 .setsec{padding:0;overflow:hidden}.setsec>summary{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;list-style:none}.setsec>summary::-webkit-details-marker{display:none}
@@ -1622,11 +1623,11 @@ function openExo(name) {
   if (L && L.custom) {
     body = `<div class="chips">${L.p.map(m => `<span class="chip main">${esc(musN(m))}</span>`).join('')}</div><p class="muted small">${T('Exercice perso : pas d\'animation, mais il compte dans tes statistiques et la récupération.', 'Custom exercise: no animation, but it counts in your stats and recovery.')}</p>`;
   } else if (L) {
-    body = `${L.sim ? `<p class="muted small" style="margin:0 0 6px">🎞 ${T('Animation d\'un mouvement très proche (cet exercice n\'existe pas dans la base d\'animations).', 'Animation of a very similar movement (this exercise is not in the animation database).')}</p>` : ''}${freeEx() ? exFree(L) + '<div hidden' : '<div class="exoimg"'} id="exoimg"><img alt="" referrerpolicy="no-referrer" src="${gifUrl(L)}" data-id="${L.id}"></div>
+    body = `${L.sim ? `<p class="muted small" style="margin:0 0 6px">🎞 ${T('Animation d\'un mouvement très proche (cet exercice n\'existe pas dans la base d\'animations).', 'Animation of a very similar movement (this exercise is not in the animation database).')}</p>` : ''}<div class="exoimg" id="exoimg"><img alt="" referrerpolicy="no-referrer" src="${gifUrl(L)}" data-id="${L.id}"></div>
       <div class="chips">${L.p.map(m => `<span class="chip main">${esc(musN(m))}</span>`).join('')}${L.s.map(m => `<span class="chip">${esc(musN(m))}</span>`).join('')}</div>
       <p class="muted small" style="margin:4px 0">${L.eq ? 'Équipement : ' + esc(eqN(L.eq)) + ' · ' : ''}<b style="color:var(--accent)">Muscle principal</b> / secondaires<br>Bibliothèque : ${esc(L.name)}</p>
       <div id="exotxt">${instrHtml(L)}</div>
-      ${freeEx() ? '' : `<p class="muted small" style="font-size:11px">Animation © <a href="https://gymvisual.com/" target="_blank" rel="noopener" style="color:inherit">Gym visual</a> · base <a href="https://github.com/${REPO}" target="_blank" rel="noopener" style="color:inherit">${REPO}</a></p>`}`;
+      <p class="muted small" style="font-size:11px">Animation © <a href="https://gymvisual.com/" target="_blank" rel="noopener" style="color:inherit">Gym visual</a> · base <a href="https://github.com/${REPO}" target="_blank" rel="noopener" style="color:inherit">${REPO}</a></p>`;
   } else body = `<p class="muted">Aucune animation liée à cet exercice. Choisis-en une dans la bibliothèque.</p>`;
   if (L && !L.custom && !TXT[isEN() ? 'en' : 'fr']) loadTxt().then(() => { const b = $('#exotxt'); if (b) b.innerHTML = instrHtml(L); });
   const m = modal(`
@@ -2501,7 +2502,7 @@ function vSettings() {
       <select data-set="lang" data-notr="1"><option value="fr" ${isEN() ? '' : 'selected'}>Français</option><option value="en" ${isEN() ? 'selected' : ''}>English</option></select>
       <label>Objectif de séances par semaine</label>
       <select data-set="goal">${[0, 1, 2, 3, 4, 5, 6, 7].map(n => `<option value="${n}" ${(+S.settings.goal || 0) === n ? 'selected' : ''}>${n ? n : 'Aucun'}</option>`).join('')}</select>
-      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="swipe" ${S.settings.swipe !== false ? 'checked' : ''}> ${T('👆 Glisser pour changer de page (Entraînement ⇄ Profil, retour)', '👆 Swipe to switch pages (Workout ⇄ Profile, back)')}</label>`) +
+      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="swipe" ${S.settings.swipe !== false ? 'checked' : ''}> ${T('Glisser pour changer de page (Entraînement ⇄ Profil, retour)', 'Swipe to switch pages (Workout ⇄ Profile, back)')}</label>`) +
   setSec('wo', 'dumbbell', '🏋️', T('Séance', 'Workout'), T('Unité, repos, charges, alertes', 'Unit, rest, weights, alerts'), `
       <label>Unité</label>
       <select data-set="unit"><option value="lb" ${U() === 'lb' ? 'selected' : ''}>lb (mensurations en po)</option><option value="kg" ${U() === 'kg' ? 'selected' : ''}>kg (mensurations en cm)</option></select>
@@ -2908,18 +2909,7 @@ function chartPoints() {
 /* ===================== v3 : écrans principaux ===================== */
 /* ---------- Miniatures rondes ---------- */
 const thumbUrl = L => `https://raw.githubusercontent.com/${REPO}/main/images/${L.mid || L.id}-${L.media}.jpg`;
-/* Aperçu « sans licence » (mode test) : schéma des muscles + démo YouTube au lieu des animations Gym Visual */
-function freeEx() { return !!(S.settings.lab && S.settings.freeEx); }
-function exMap(L, w = '100%') {
-  const v = {}; (L.s || []).forEach(m => v[m] = 2.6); (L.p || []).forEach(m => v[m] = 5);
-  return `<svg viewBox="0 0 300 312" width="${w}" role="img" aria-label="${T('Muscles travaillés', 'Muscles worked')}">${bodySVG(BODY_F, v, 5, 0)}${bodySVG(BODY_B, v, 5, 160)}</svg>`;
-}
-function exYT(L) { return 'https://www.youtube.com/results?search_query=' + encodeURIComponent((L.name || '') + ' exercise proper form'); }
-function exFree(L) {
-  return `<div class="card" style="padding:10px;margin:0 0 8px">${exMap(L)}<div class="row" style="justify-content:center;gap:14px;margin-top:4px"><span class="small"><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${HEAT[4]}"></i> ${T('Principal', 'Main')}</span><span class="small"><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${HEAT[2]}"></i> ${T('Secondaire', 'Secondary')}</span></div></div>
-    <a class="btn block" href="${exYT(L)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px">▶ ${T('Voir la démo sur YouTube', 'Watch the demo on YouTube')}</a>`;
-}
-const thumbL = (L, sz = 42) => freeEx() ? `<span class="th noimg" style="--s:${sz}px"></span>` : `<span class="th${L && L.media ? '' : ' noimg'}" style="--s:${sz}px">${L && L.media ? `<img src="${thumbUrl(L)}" alt="" decoding="async" referrerpolicy="no-referrer" class="thi" onload="this.classList.add('ok')" onerror="this.parentNode.classList.add('noimg');this.remove()">` : ''}</span>`;
+const thumbL = (L, sz = 42) => `<span class="th${L && L.media ? '' : ' noimg'}" style="--s:${sz}px">${L && L.media ? `<img src="${thumbUrl(L)}" alt="" decoding="async" referrerpolicy="no-referrer" class="thi" onload="this.classList.add('ok')" onerror="this.parentNode.classList.add('noimg');this.remove()">` : ''}</span>`;
 const thumb = (name, sz = 42) => thumbL(libEntry(name), sz);
 
 /* ---------- Séries détaillées des routines ---------- */
@@ -4213,7 +4203,7 @@ function vExDetail() {
   const rec = computeRecords().find(r => norm(r.name) === norm(name));
   const pts = exPoints(name);
   const chips = [['1rm', '1RM estimé'], ['max', 'Charge max'], ['vol', 'Volume'], ['reps', 'Réps max']].map(([k, l]) => `<button class="chip ${exMetric === k ? 'on' : ''}" data-act="ex-metric" data-m="${k}">${l}</button>`).join('');
-  return `<div class="card" style="text-align:center">${L && L.media && freeEx() ? `<div style="max-width:240px;margin:0 auto">${exMap(L)}</div>` : L && L.media ? `<img class="gifbig" src="${gifUrl(L)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : thumb(name, 96)}
+  return `<div class="card" style="text-align:center">${L && L.media ? `<img class="gifbig" src="${gifUrl(L)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : thumb(name, 96)}
       <h2 style="margin-top:8px">${esc(name)}</h2>
       ${L ? `<div class="chips" style="justify-content:center">${L.p.map(m => `<span class="chip main">${esc(musN(m))}</span>`).join('')}${L.s.map(m => `<span class="chip">${esc(musN(m))}</span>`).join('')}</div>` : ''}
       <button class="btn sm" data-act="exo" data-n="${esc(name)}">📖 Instructions et lien</button></div>
@@ -4852,7 +4842,6 @@ function labOpen() {
     <div class="cpbig" style="--cc:${k.col}">${compArt(k)}</div><p class="muted small" style="text-align:center;margin:0 0 10px">${esc(compMoodTxt(k))}</p>
     <div class="compc" style="--cc:${k.col};cursor:default">${compArt(k)}<span style="flex:1;min-width:0"><span class="muted small">${T('Compagnon', 'Companion')}</span><br><b>${esc(k.name)}</b><br><span class="small muted">${esc(compMoodTxt(k))}</span></span></div>
     ${k.st >= 0 ? `<button class="btn primary block" data-act="lab-evo">✨ ${k.st === 0 ? T('Voir l\'éclosion', 'See the hatching') : T('Voir l\'évolution', 'See the evolution')}</button>` : ''}
-    <div class="card" style="margin:12px 0 0;padding:10px"><b>${T('Exercices sans licence', 'License-free exercises')}</b><p class="small muted" style="margin:4px 0 8px">${T('Aperçu : schéma des muscles + bouton YouTube au lieu des animations Gym Visual. Seulement pour toi.', 'Preview: muscle map + YouTube button instead of Gym Visual animations. Only for you.')}</p><button class="btn block${S.settings.freeEx ? ' primary' : ''}" data-act="lab-free">${S.settings.freeEx ? T('✓ Activé (toucher pour revenir aux animations)', '✓ On (tap to go back to animations)') : T('Essayer cet aperçu', 'Try this preview')}</button></div>
     <button class="btn block" data-act="lab-off" style="margin-top:8px">${T('Cacher le mode test', 'Hide test mode')}</button>
     <button class="btn block" data-act="close" style="margin-top:8px">${T('Fermer', 'Close')}</button>`;
   const m = document.querySelector('.modal .labm');
@@ -4932,7 +4921,7 @@ function hunter(me) {
   const r = HRANKS.filter(x => lvl >= x[0]).pop(), nx = HRANKS.find(x => x[0] > lvl);
   return {xp, raw, peak, p, lvl, rk: r[1], cls: hClass(p > 0 && lvl < 100 ? Math.max(lvl, 40) : lvl), title: T(r[2][0], r[2][1]), col: RKC[r[1]], cur: xp - xpAt(lvl), need: xpAt(lvl + 1) - xpAt(lvl), nextRank: nx ? {lvl: nx[0], rk: nx[1]} : null, st, nm};
 }
-const rkBadge = (rk, cls = 'mrk') => `<span class="${cls}" style="--rc:${RKC[rk]}">${rk}</span>`;
+const rkBadge = (rk, cls = 'mrk') => `<span class="${cls}" style="--rc:${RKC[rk] || '#9aa3ad'}">${esc(rk)}</span>`;
 /* ---------- Rang par muscle : force (par rapport à ton poids) + volume des 8 dernières semaines ---------- */
 const MR_MUS = ['pectorals', 'delts', 'triceps', 'biceps', 'forearms', 'abs', 'traps', 'upper back', 'lats', 'spine', 'glutes', 'quads', 'hamstrings', 'calves', 'adductors'];
 const MR_SMALL = {forearms: 6, calves: 8, abs: 8, traps: 6, adductors: 6, biceps: 9, triceps: 9, spine: 6};
@@ -5476,7 +5465,7 @@ function stDraw(full) {
   const st = stp.steps[stp.i], nx = stp.steps[stp.i + 1];
   if (full) box.innerHTML = `<div class="row between small muted"><span>${esc(T(stp.rt.n[0], stp.rt.n[1] || stp.rt.n[0]))}</span><span>${stp.i + 1}/${stp.steps.length}</span></div>
     <div class="pbar" style="margin:6px 0 10px"><div style="width:${Math.round(stp.i / stp.steps.length * 100)}%"></div></div>
-    ${st.L && st.L.media && freeEx() ? `<div class="stgif" style="background:none">${exMap(st.L)}</div>` : st.L && st.L.media ? `<div class="stgif"><img src="${gifUrl(st.L)}" alt="" referrerpolicy="no-referrer" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${gifUrl2(st.L)}'}"></div>` : ''}
+    ${st.L && st.L.media ? `<div class="stgif"><img src="${gifUrl(st.L)}" alt="" referrerpolicy="no-referrer" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${gifUrl2(st.L)}'}"></div>` : ''}
     <h2 style="margin:8px 0 2px">${esc(stName(st.it))}</h2><div id="stside" class="stside">${sideTxt(st.side)}</div>
     <svg viewBox="0 0 200 200" width="150" height="150" style="display:block;margin:4px auto"><circle cx="100" cy="100" r="88" fill="none" stroke="var(--line)" stroke-width="12"/>
       <circle id="string" cx="100" cy="100" r="88" fill="none" stroke="var(--accent)" stroke-width="12" stroke-linecap="round" transform="rotate(-90 100 100)" stroke-dasharray="552.9" stroke-dashoffset="0"/>
@@ -5677,6 +5666,83 @@ function tmFinish() {
 function tmText(t) { return `⏱ ${tmN(t)} (${mmss(tmTotal(t))})\n` + tmBlocks(t).map(b => `${b.reps} × [ ${b.steps.map(s => `${tmN(s)} ${s.mode === 'reps' ? s.reps + ' ' + T('réps', 'reps') : mmss(s.sec)}`).join(' → ')} ]`).join('\n') + '\n— Runelift 💪'; }
 
 
+/* ===================== Sécurité : données écrites par d'autres personnes =====================
+   Cartes d'amis, classement mondial, messages reçus, pseudos et liens de partage viennent d'autres téléphones.
+   Avant de s'en servir : on remplace les caractères qui pourraient être lus comme du code, et on vérifie les types. */
+function safeIn(v, dp) {
+  dp = dp || 0;
+  if (typeof v === 'string') return /[<>"`]/.test(v) ? v.replace(/[<>"`]/g, c => c === '<' ? '‹' : c === '>' ? '›' : c === '"' ? '”' : '’') : v;
+  if (v === null || typeof v !== 'object') return typeof v === 'function' ? null : v;
+  if (dp > 14) return null;
+  if (Array.isArray(v)) return v.map(x => safeIn(x, dp + 1));
+  if (typeof v.toDate === 'function') { try { return v.toDate().toISOString(); } catch (e) { return ''; } }
+  const o = {}; Object.keys(v).forEach(k => { if (k !== '__proto__') o[safeIn(k)] = safeIn(v[k], dp + 1); }); return o;
+}
+function sStr(v, n) { return (typeof v === 'string' ? v : typeof v === 'number' && isFinite(v) ? String(v) : '').slice(0, n || 60); }
+function sNum(v, d) { const x = typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' ? +v : NaN; return isFinite(x) ? x : (d || 0); }
+function sInt(v, d, lo, hi) { return Math.max(lo, Math.min(hi, Math.round(sNum(v, d)))); }
+function sImg(v) { return typeof v === 'string' && /^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(v) ? v : ''; }
+function sUid(v) { return typeof v === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(v) ? v : ''; }
+function sH(v) { return typeof v === 'string' && /^[a-z0-9._]{3,20}$/.test(v) ? v : ''; }
+function sArr(v, n) { return Array.isArray(v) ? v.slice(0, n || 200).filter(x => x && typeof x === 'object' && !Array.isArray(x)) : []; }
+/* Nom à afficher : celui de la personne, sinon son @pseudo, sinon « Un ami » dans MA langue */
+function sName(v, h) { const n = sStr(v, 40).trim(); return n && !/^(un ami|a friend)$/i.test(n) ? n : (sH(h) ? '@' + h : T('Un ami', 'A friend')); }
+function myNm() { return (S.settings.name || '').trim() || (myH() ? '@' + myH() : T('Un ami', 'A friend')); }
+function safeCard(raw) { // carte d'un ami
+  const d = safeIn(raw); if (!d || typeof d !== 'object' || Array.isArray(d)) return null;
+  d.app = sStr(d.app, 20); d.name = sStr(d.name, 40).trim(); d.av = sImg(d.av); d.wk = sNum(d.wk); d.up = sStr(d.up, 40);
+  if (d.fb != null && !/^fb:[A-Za-z0-9_-]{1,128}$/.test(d.fb)) delete d.fb;
+  const h = d.hu;
+  d.hu = h && typeof h === 'object' && RKC[h.r] ? {l: sInt(h.l, 1, 1, 9999), p: sInt(h.p, 0, 0, 999), r: h.r, xp: sNum(h.xp), c: sStr(h.c, 12), t: sStr(h.t, 40), f: sStr(h.f, 40), b: sStr(h.b, 40), e: sStr(h.e, 40)} : null;
+  d.s = sArr(d.s, 60).map(s => {
+    const o = {...s, id: sStr(s.id, 60), n: sStr(s.n, 80), d: sStr(s.d, 40), dur: sNum(s.dur), pr: sInt(s.pr, 0, 0, 99),
+      ex: sArr(s.ex, 60).map(x => { const e = {n: sStr(x.n, 100), ns: sInt(x.ns, 0, 0, 99), r: sNum(x.r)}; if (x.k === 'c' || x.k === 's') e.k = x.k; if (x.st != null) e.st = sNum(x.st); if (x.kc != null) e.kc = sNum(x.kc); if (x.w != null) e.w = sNum(x.w); if (x.u === 'kg' || x.u === 'lb') e.u = x.u; if (x.pr) e.pr = 1; return e; })};
+    delete o.img; const im = sImg(s.img); if (im) o.img = im; return o;
+  }).filter(s => s.id && s.d);
+  d.p = sArr(d.p, 20).map(x => ({id: sStr(x.id, 60), d: sStr(x.d, 20), img: sImg(x.img)})).filter(x => x.id && x.img);
+  d.re = sArr(d.re, 400).map(x => ({to: sStr(x.to, 140), s: sStr(x.s, 60), e: sStr(x.e, 8), d: sStr(x.d, 40)}));
+  d.cm = sArr(d.cm, 200).map(x => ({...x, to: sStr(x.to, 140), s: sStr(x.s, 60), t: sStr(x.t, 300), d: sStr(x.d, 40)}));
+  return d;
+}
+function cardIn(raw, h) { // carte reçue → carte vérifiée (ou null si ce n'en est pas une)
+  const d = safeCard(raw); if (!d || d.app !== 'carnet-muscu') return null;
+  d.h = sH(h) || sH(d.h); d.name = sName(d.name, d.h); return d;
+}
+function safeLive(l) { l = safeIn(l); return l && typeof l === 'object' && !Array.isArray(l) ? {r: sStr(l.r, 80), st: sStr(l.st, 40), s: sInt(l.s, 0, 0, 999), e: sInt(l.e, 0, 0, 99), n: sInt(l.n, 0, 0, 99), up: sStr(l.up, 40)} : null; }
+function safeLb(x) { x = safeIn(x); if (!x || typeof x !== 'object') x = {}; return {id: sStr(x.id, 140), n: sStr(x.n, 24), l: sInt(x.l, 1, 1, 9999), p: sInt(x.p, 0, 0, 999), rk: RKC[x.rk] ? x.rk : 'E', xp: sNum(x.xp), w: sInt(x.w, 0, 0, 99), f: sStr(x.f, 40), e: sStr(x.e, 40)}; }
+function safeHandle(id, v) { v = safeIn(v); if (!v || typeof v !== 'object') return null; const uid = sUid(v.uid), h = sH(id); return uid && h ? {h, uid, n: sStr(v.n, 40).trim(), l: sInt(v.l, 0, 0, 9999)} : null; }
+/* Contenu d'un lien ou d'un code de partage (routines, minuteurs, étirements) */
+function cleanEx(e) {
+  const name = sStr(e.name, 100).trim(); if (!name) return null;
+  const w = sNum(e.weight, -1), o = {name, sets: sInt(e.sets, 3, 1, 20), reps: sStr(e.reps, 20).trim() || '8-12', weight: w >= 0 && e.weight !== '' ? w : '', note: sStr(e.note, 300)};
+  if (e.rest != null) { const r = Math.round(sNum(e.rest)); if (r === -1 || (r >= 5 && r <= 900)) o.rest = r; }
+  if (typeof e.ss === 'string' && /^[A-Z0-9]{1,3}$/.test(e.ss)) o.ss = e.ss;
+  if (e.timed) o.timed = true; if (e.nw) o.nw = true; if (e.fplan) o.fplan = true;
+  if (e.mach && typeof e.mach === 'object' && (e.mach.u === 'kg' || e.mach.u === 'lb')) o.mach = {u: e.mach.u, v: sNum(e.mach.v)};
+  const sl = sArr(e.sl, 20).map(x => { const sw = sNum(x.w, -1), y = {w: sw >= 0 && x.w !== '' ? sw : '', r: sStr(x.r, 12)}; if (x.t === 'W' || x.t === 'F' || x.t === 'D') y.t = x.t; return y; });
+  if (sl.length) o.sl = sl;
+  return o;
+}
+function cleanTimer(t) {
+  const nm = x => Array.isArray(x) ? [sStr(x[0], 60), sStr(x[1], 60)] : sStr(x, 60);
+  let B; try { B = Array.isArray(t.blocks) ? t.blocks : tmBlocks({...t, steps: sArr(t.steps, 60)}); } catch (e) { return null; }
+  const blocks = sArr(B, 30).map(b => { const o = {reps: sInt(b.reps, 1, 1, 999), steps: sArr(b.steps, 60).map((x, i) => { const y = {n: nm(x.n), sec: sInt(x.sec, 0, 0, 36000), c: typeof x.c === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(x.c) ? x.c : TM_COL[i % TM_COL.length]}; if (x.mode === 'reps') { y.mode = 'reps'; y.reps = sInt(x.reps, 10, 1, 999); } return y; })}; if (b.skipLast) o.skipLast = true; return o; }).filter(b => b.steps.length);
+  const n = nm(t.n); return blocks.length ? {n: (Array.isArray(n) ? n[0] : n) ? n : T('Minuteur', 'Timer'), blocks} : null;
+}
+function cleanStretch(rt) {
+  const two = x => Array.isArray(x) ? [sStr(x[0], 80), sStr(x[1], 80)] : [sStr(x, 80), ''];
+  const items = sArr(rt.items, 60).map(it => ({n: two(it.n), lib: sStr(it.lib, 120), sec: sInt(it.sec, 30, 5, 3600), sides: !!it.sides})).filter(it => it.n[0]);
+  if (!items.length) return null;
+  const o = {n: two(rt.n), items}; if (!o.n[0]) o.n[0] = T('Étirements', 'Stretching'); if (rt.d != null) o.d = two(rt.d); return o;
+}
+function cleanShare(d) {
+  d = safeIn(d); if (!d || typeof d !== 'object' || !['r', 'f', 't', 's'].includes(d.k)) return null;
+  const out = {v: 1, k: d.k, from: sStr(d.from, 40).trim(), f: sStr(d.f, 60).trim()};
+  if (d.k === 'r' || d.k === 'f') out.items = sArr(d.items, 40).map(r => ({name: sStr(r.name, 80).trim() || 'Routine', exercises: sArr(r.exercises, 80).map(cleanEx).filter(Boolean)})).filter(r => r.exercises.length);
+  else out.items = sArr(d.items, 20).map(d.k === 't' ? cleanTimer : cleanStretch).filter(Boolean);
+  return out.items.length ? out : null;
+}
+
 /* ===================== Partager avec un ami (lien d'import) ===================== */
 const b64u = u8 => { let s = ''; u8.forEach(c => s += String.fromCharCode(c)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
 const ub64u = s => { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
@@ -5708,10 +5774,11 @@ async function shareItem(kind, items, label, folder) {
   shareText(txt);
 }
 function showImport(d) {
+  d = cleanShare(d); if (!d) { toast(T('⚠️ Lien de partage invalide ou incomplet', '⚠️ Invalid or incomplete share link')); return; }
   window._imp = d;
   const from = d.from ? esc(d.from) : T('Un ami', 'A friend');
   let list = '';
-  if (d.k === 'r' || d.k === 'f') list = d.items.map(r => `<div class="preview"><b>${esc(r.name)}</b><br><span class="small muted">${r.exercises.map(e => `${esc(e.name)} — ${e.sets}×${esc(e.reps)}`).join('<br>')}</span></div>`).join('');
+  if (d.k === 'r' || d.k === 'f') list = d.items.map(r => `<div class="preview"><b>${esc(r.name)}</b><br><span class="small muted">${r.exercises.map(e => `${esc(e.name)} — ${+e.sets || 0}×${esc(e.reps)}`).join('<br>')}</span></div>`).join('');
   else if (d.k === 't') list = d.items.map(t => `<div class="preview"><b>⏱ ${esc(tmN(t))}</b> · ${mmss(tmTotal(t))}</div>`).join('');
   else if (d.k === 's') list = d.items.map(rt => `<div class="preview"><b>🧘 ${esc(T(rt.n[0], rt.n[1] || rt.n[0]))}</b><br><span class="small muted">${rt.items.map(it => esc(stName(it))).join(', ')}</span></div>`).join('');
   const defF = d.f || T(`Partagé par ${d.from || 'un ami'}`, `Shared by ${d.from || 'a friend'}`);
@@ -5753,11 +5820,11 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.61.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.62.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
-  {v: '9.61.1', d: '2026-11-16', fr: ['🇬🇧 Version anglaise plus complète : plusieurs boutons et réglages restaient en français, et le programme de départ des nouveaux comptes en anglais a maintenant des noms d\'exercices en anglais.'], en: ['🇬🇧 More complete English version: several buttons and settings were still in French, and the starter program for new English accounts now uses English exercise names.']},
-  {v: '9.60.1', d: '2026-11-16', fr: ['🪨 Carnet Muscu s\'appelle maintenant Runelift ! Rien d\'autre ne change : tes séances, ta guilde et tes amis sont toujours là.'], en: ['🪨 Carnet Muscu is now called Runelift! Nothing else changes: your workouts, guild and friends are all still here.']},
+  {v: '9.62.0', d: '2026-11-16', fr: ['🔒 Sécurité renforcée : tout ce qui vient d\'autres personnes (cartes d\'amis, classement mondial, demandes, liens de partage) est vérifié avant d\'être affiché, et personne ne peut s\'ajouter à tes amis sans que tu lui aies envoyé une demande.', '👥 Amis : un ami sans nom s\'affiche avec son @pseudo au lieu de « A friend », le classement explique pourquoi quelqu\'un n\'a pas encore de niveau, et la recherche te dit quoi faire quand elle ne trouve personne.', '📱 Petits écrans : les boutons au-dessus des routines ne dépassent plus.', '🇬🇧 Version anglaise plus complète : plusieurs boutons et réglages restaient en français, et le programme de départ des nouveaux comptes en anglais a maintenant des noms d\'exercices en anglais.', '🪨 Carnet Muscu s\'appelle maintenant Runelift ! Rien d\'autre ne change : tes séances, ta guilde et tes amis sont toujours là.'],
+    en: ['🔒 Stronger security: everything that comes from other people (friend cards, world ranking, requests, share links) is checked before being displayed, and nobody can add themselves to your friends unless you sent them a request.', '👥 Friends: a friend without a name shows their @username instead of “A friend”, the ranking explains why someone has no level yet, and search tells you what to do when it finds nobody.', '📱 Small screens: the buttons above your routines no longer overflow.', '🇬🇧 More complete English version: several buttons and settings were still in French, and the starter program for new English accounts now uses English exercise names.', '🪨 Carnet Muscu is now called Runelift! Nothing else changes: your workouts, guild and friends are all still here.']},
   {v: '9.59.2', d: '2026-11-15', fr: ['🔍 Tout le monde est maintenant trouvable dans la recherche d\'amis : si tu n\'avais pas choisi de @pseudo, l\'app t\'en donne un d\'après ton nom (modifiable dans Amis).', '🛡️ Nouvelle icône : l\'emblème de la Guilde.', '🏅 Médailles : chaque catégorie se replie, avec sa barre de progression. La page est beaucoup plus courte.', '🎁 Armurerie : nouvel onglet « Coffres » avec tes 4 collections de fragments et toutes leurs récompenses.', '🔒 Nouvelle page « Politique de confidentialité » et bouton « Supprimer mon compte » (Réglages → Données et compte).'],
     en: ['🔍 Everyone can now be found in friend search: if you hadn\'t picked a @username, the app gives you one based on your name (change it in Friends).', '🛡️ New icon: the Guild emblem.', '🏅 Medals: each category folds, with its progress bar.', '🎁 Armory: new “Chests” tab with your 4 fragment collections.', '🔒 New privacy policy page and “Delete my account” button (Settings → Data & account).']},
   {v: '9.54.1', d: '2026-11-14', fr: ['🧹 Grand ménage : le blason du Mimique apparaît bien dans l\'Armurerie, « Tour de taille » ne se confond plus avec ta taille, l\'emoji Terre est remplacé par une icône, les réactions et commentaires reçus sont regroupés dans la cloche 🔔, la fenêtre « Mon code » explique le @pseudo, et l\'anglais est complété.', '🎁 Coffres : 4 sortes de fragments (Liche 💀, Dragon 🐉, Kraken 🐙, Mimique 🎁), chacune avec sa propre collection exclusive : 20 récompenses en tout (titres, cadres, thèmes, victoires, blasons, bannières). Chaque coffre donne des fragments d\'un monstre au hasard, et le légendaire en donne de 2 monstres. Tes anciens fragments comptent pour la Liche et le Mimique.', '🧭 La visite de la Guilde attend ta première séance (avant, la Guilde est vide).', '🎓 Ton niveau d\'expérience (débutant, intermédiaire, avancé) sert enfin à quelque chose : séries proposées, temps de récupération et conseils de l\'IA. Et il monte tout seul au fil de tes séances!', '📋 Nouveau compte : l\'appli te prépare un programme de départ selon ton objectif, tes séances par semaine et ton niveau, avec ton horaire de la semaine. ', '👥 Le bouton « Ajouter » est maintenant au début de ta liste d\'amis.', '🔔 Touche une notification de like ou de commentaire : la séance s\'ouvre, avec les réactions et les commentaires, et tu peux répondre.', '👥 Ajouter un ami est plus évident : recherche par @pseudo directement dans Amis quand tu n\'en as pas encore, et une carte « Entraîne-toi avec tes amis » dans Muscu.', '⚔️ Défis : ton ami reçoit une notification et doit accepter (ou refuser). Les 7 jours commencent quand il accepte.', '🛡️ Raid : chaque aventurier compte pour 3 000 reps max, pour que personne ne porte le groupe seul. Explication plus claire.', '👑 Saison : il faut au moins 3 aventuriers actifs dans le mois pour remporter le trophée. Les anciennes victoires trop faciles sont recalculées.', '🎆 Victoires refaites : chaque fête est maintenant différente (fusées, pièces d\'or qui rebondissent, flammes, vrais flocons, éclairs, spirale, rayons divins, couronne…).', '🏞️ Bannières redessinées, plus détaillées et animées (braises, étoiles filantes, vagues, lucioles, portail…).', '📥 « Tu viens d\'une autre appli? » : importe ton fichier CSV de Hevy, Strong ou autre.', '🧭 Nouvelle visite de la Guilde. La visite ne parle plus de sauvegarde si tu es connecté avec Google.', '🧍 Une seule fiche « Mes infos » (âge, taille, sexe, poids) partout : profil, cardio, réglages. Le niveau de force a été retiré.', '🧹 Moins de doublons : le rappel de sauvegarde disparaît si la sauvegarde Google est active, et les autres options de sauvegarde sont repliées.'],
@@ -5853,12 +5920,12 @@ const CHANGELOG = [
   {v: '7.2.1', d: '2026-11-04', fr: ['📤 Partager sans tes charges : ton ami reçoit « ? » et son appli reprend ses propres poids.'], en: ['📤 Share without your weights: your friend gets “?” and their app uses their own weights.']},
   {v: '7.2', d: '2026-11-04', fr: ['📤 Le partage avec un ami se fait en texte à copier-coller (Programme IA → Coller un programme).', '📥 Bouton « Coller » dans Intervalles et Étirements pour ajouter ce qu\'un ami t\'envoie.'],
     en: ['📤 Sharing with a friend is now copy-paste text (AI program → Paste a program).', '📥 “Paste” button in Intervals and Stretching to add what a friend sends you.']},
-  {v: '7.1', d: '2026-11-04', fr: ['⏱ Les durées s\'affichent en heures (1 h 20).', '✍️ Toucher une case de chiffre sélectionne tout pour écrire directement.', '📤 Partager un dossier ou une routine à un ami.'],
-    en: ['⏱ Durations shown in hours (1 h 20).', '✍️ Tapping a number box selects it so you can type right away.', '📤 Share a folder or a routine with a friend.']},
+  {v: '7.1', d: '2026-11-04', fr: ['⏱ Les durées s\'affichent en heures (1 h 20).', '✏️ Toucher une case de chiffre sélectionne tout pour écrire directement.', '📤 Partager un dossier ou une routine à un ami.'],
+    en: ['⏱ Durations shown in hours (1 h 20).', '✏️ Tapping a number box selects it so you can type right away.', '📤 Share a folder or a routine with a friend.']},
   {v: '7.0', d: '2026-11-04', fr: ['⏱ Nouvel éditeur d\'intervalles : blocs avec répétitions, étapes en temps ou en réps, couleurs.', '📱 Onglets Étirements et Intervalles dans le menu du bas.'],
     en: ['⏱ New interval editor: blocks with repetitions, time or rep steps, colors.', '📱 Stretching and Intervals tabs in the bottom menu.']},
-  {v: '6.7', d: '2026-11-04', fr: ['🎯 Réglage « Intensité de tes séries » (à l\'échec, 1-2 RIR, normal) pris en compte par l\'IA.', '👋 Écran de bienvenue pour les nouveaux.', '🤖 L\'IA donne toujours des plages de reps et peut nommer le dossier.'],
-    en: ['🎯 “How hard you train” setting (failure, 1-2 RIR, normal) used by the AI.', '👋 Welcome screen for new users.', '🤖 The AI always gives rep ranges and can name the folder.']},
+  {v: '6.7', d: '2026-11-04', fr: ['🎯 Réglage « Intensité de tes séries » (à l\'échec, 1-2 RIR, normal) pris en compte par l\'IA.', '🧭 Écran de bienvenue pour les nouveaux.', '🤖 L\'IA donne toujours des plages de reps et peut nommer le dossier.'],
+    en: ['🎯 “How hard you train” setting (failure, 1-2 RIR, normal) used by the AI.', '🧭 Welcome screen for new users.', '🤖 The AI always gives rep ranges and can name the folder.']},
   {v: '6.6', d: '2026-11-03', fr: ['🧘 Section Étirements avec routines guidées et minuteur.'], en: ['🧘 Stretching section with guided routines and timer.']}];
 const verCmp = (a, b) => { const x = String(a).split('.').map(Number), y = String(b).split('.').map(Number); for (let i = 0; i < 3; i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d; } return 0; };
 function openNews(all) {
@@ -6761,7 +6828,7 @@ const FRFILE = 'carnet-muscu-ami.json', FRCACHE = 'carnet-muscu-amis', FRSCOPE =
 const FRS = () => (S.settings.fr = S.settings.fr || {list: [], re: [], hide: []});
 const frOn = () => !!(S.settings.fr && S.settings.fr.on && S.settings.fr.file);
 const frTokOk = () => { try { const t = JSON.parse(localStorage.getItem(GDKEY) || 'null'); return !!(t && t.exp > Date.now() + 60000 && (t.sc || '').includes(FRSCOPE)); } catch (e) { return false; } };
-let frData = (() => { try { return JSON.parse(localStorage.getItem(FRCACHE) || '{}'); } catch (e) { return {}; } })(), frBusy = false, frPubT = null, frLastLoad = 0;
+let frData = (() => { try { const o = JSON.parse(localStorage.getItem(FRCACHE) || '{}'), out = {}; Object.keys(o).forEach(k => { const x = o[k] || {}, d = cardIn(x.d, x.d && x.d.h); if (d) out[k] = {...x, d, live: safeLive(x.live)}; }); return out; } catch (e) { return {}; } })(), frBusy = false, frPubT = null, frLastLoad = 0;
 const frMyCode = () => { const fr = FRS(); return fr.fb && fr.code ? fr.code : fr.file; };
 const frMsg = () => myH() ? T(`Ajoute-moi en ami dans Runelift 💪\nCherche @${myH()} dans Amis → Ajouter.\nCode ami : ${frMyCode()}`, `Add me as a friend on Runelift 💪\nSearch @${myH()} in Friends → Add.\nFriend code: ${frMyCode()}`) : T(`Ajoute-moi en ami dans Runelift 💪\nDans l'appli Runelift : Profil → Amis → Ajouter → Coller.\nCode ami : ${frMyCode()}`, `Add me as a friend on Runelift 💪\nIn the Runelift app: Profile → Friends → Add → Paste.\nFriend code: ${frMyCode()}`);
 const frLink = () => location.origin + location.pathname + '#ami=' + frMyCode();
@@ -6818,7 +6885,7 @@ async function frSessWithPh(idx) {
 async function frCardBody() {
   const fr = FRS(), hide = new Set(fr.hide || []);
   const idx = S.history.map((x, i) => [x, i]).filter(([x]) => !hide.has(x.id) && new Date(x.date) > Date.now() - 45 * 864e5).slice(-15);
-  return JSON.stringify({app: 'carnet-muscu', v: 1, name: (S.settings.name || '').trim() || T('Un ami', 'A friend'), av: await frAvatar(), wk: streakWeeks(), hu: frHu(), up: new Date().toISOString(),
+  return JSON.stringify({app: 'carnet-muscu', v: 1, name: myNm(), h: myH(), av: await frAvatar(), wk: streakWeeks(), hu: frHu(), up: new Date().toISOString(),
     s: await frSessWithPh(idx), p: await frPhotos(), re: (fr.re || []).slice(-150), ...frSocial(), ...(fr.fbPtr ? {fb: fr.fbPtr} : {})});
 }
 async function frApi(url, opt = {}) {
@@ -6923,16 +6990,16 @@ async function fbFetch(c) {
   const u = await fbSignIn(false); if (!u) throw new Error(T('connexion Amis requise', 'Friends sign-in required'));
   const doc = await fbDb().collection('users').doc(c.slice(3)).get();
   if (!doc.exists || !doc.data().card) throw new Error('gone');
-  const d = JSON.parse(doc.data().card); if (!d || d.app !== 'carnet-muscu') throw new Error('gone'); return d;
+  const d = cardIn(JSON.parse(doc.data().card), doc.data().h); if (!d) throw new Error('gone'); return d;
 }
 async function fbResolve(code) {
   const d = await fbDb().collection('codes').doc(code.toUpperCase()).get();
-  if (!d.exists) throw new Error('gone'); return 'fb:' + d.data().uid;
+  const id = d.exists ? sUid(d.data().uid) : ''; if (!id) throw new Error('gone'); return 'fb:' + id;
 }
 /* Prévenir un ami que je l'ai ajouté : il m'ajoute automatiquement de son côté */
 async function fbNotifyAdd(c) {
   const fr = FRS(), u = firebase.auth().currentUser; if (!u || !fr.fb || !fbIs(c)) return;
-  try { await fbDb().collection('inbox').doc(c.slice(3)).collection('m').add({from: u.uid, type: 'add', name: (S.settings.name || '').trim() || T('Un ami', 'A friend'), t: new Date().toISOString()}); } catch (e) { console.warn('inbox', e); }
+  try { await fbDb().collection('inbox').doc(c.slice(3)).collection('m').add({from: u.uid, type: 'add', name: myNm(), t: new Date().toISOString()}); } catch (e) { console.warn('inbox', e); }
 }
 const fbRerender = () => { clearTimeout(fbRT); fbRT = setTimeout(() => { frSaveCache(); saveLocal(); try { socialCheck(); } catch (e) {} if (['friends', 'profile', 'guild'].includes(cur().v) && !modals.length && cur().v !== 'workout') render(); }, 400); };
 /* Écoute en direct : les cartes de mes amis + les nouvelles demandes d'amis */
@@ -6946,9 +7013,9 @@ function fbWatch() {
     fbSubs[c] = fbDb().collection('users').doc(c.slice(3)).onSnapshot(doc => {
       const f = FRS().list.find(x => x.c === c);
       if (!doc.exists || !doc.data().card) { if (f) f.gone = true; fbRerender(); return; }
-      const raw = doc.data().card, live = doc.data().live || null, prev = frData[c];
-      if (prev && prev.raw === raw && JSON.stringify(prev.live || null) === JSON.stringify(live)) return; // rien de nouveau : pas de rechargement de la page
-      let d; try { d = JSON.parse(raw); } catch (e) { return; }
+      const raw = doc.data().card, live = safeLive(doc.data().live), prev = frData[c], hd = sH(doc.data().h);
+      if (prev && prev.raw === raw && (prev.d.h || '') === hd && JSON.stringify(prev.live || null) === JSON.stringify(live)) return; // rien de nouveau : pas de rechargement de la page
+      let d; try { d = cardIn(JSON.parse(raw), hd); } catch (e) { return; } if (!d) return;
       frData[c] = {d, raw, t: Date.now(), live}; if (f) { f.n = d.name; f.gone = false; f.err = ''; } fbRerender();
     }, e => { const f = FRS().list.find(x => x.c === c); if (f) f.err = e.code || e.message; });
   });
@@ -7060,7 +7127,7 @@ const cheerT = {};
 async function frCheer(c) {
   if (cheerT[c] && Date.now() - cheerT[c] < 120000) { toast(T('🔥 Déjà envoyé, attends un peu', '🔥 Already sent, wait a bit')); return; }
   const u = firebase.auth().currentUser; if (!u || !fbIs(c)) return; cheerT[c] = Date.now();
-  try { await fbDb().collection('inbox').doc(c.slice(3)).collection('m').add({from: u.uid, type: 'cheer', e: '🔥', name: (S.settings.name || '').trim() || T('Un ami', 'A friend'), t: new Date().toISOString()}); toast(T('🔥 Encouragement envoyé!', '🔥 Cheer sent!')); } catch (e) { toast('⚠️ ' + e.message); }
+  try { await fbDb().collection('inbox').doc(c.slice(3)).collection('m').add({from: u.uid, type: 'cheer', e: '🔥', name: myNm(), t: new Date().toISOString()}); toast(T('🔥 Encouragement envoyé!', '🔥 Cheer sent!')); } catch (e) { toast('⚠️ ' + e.message); }
 }
 function cheerShow(m) {
   if (Date.now() - new Date(m.t || 0) > 30 * 60000) return;
@@ -7079,10 +7146,10 @@ async function lbPush() {
 }
 async function lbLoad(force) {
   const C = lbCache(), c = C[lbTab];
-  if (!force && c && Date.now() - c.at < LB_TTL) { if (!lbData) { lbData = c.d; lbAt = c.at; if (cur().v === 'world') render(); } return; } // gardé 10 min sur le téléphone : 0 lecture
+  if (!force && c && Date.now() - c.at < LB_TTL) { if (!lbData) { lbData = Array.isArray(c.d) ? c.d.map(safeLb) : []; lbAt = c.at; if (cur().v === 'world') render(); } return; } // gardé 10 min sur le téléphone : 0 lecture
   if (!force && lbData && Date.now() - lbAt < LB_TTL) return;
   const u = await fbSignIn(false).catch(() => null); if (!u) return;
-  try { const qs = await fbDb().collection('lb').orderBy(lbTab, 'desc').limit(LB_N).get(); lbData = qs.docs.map(d => ({id: d.id, ...d.data()})); lbAt = Date.now(); C[lbTab] = {at: lbAt, d: lbData}; try { localStorage.setItem(LBKEY, JSON.stringify(C)); } catch (e) {} } catch (e) { lbData = {err: e.code || e.message}; }
+  try { const qs = await fbDb().collection('lb').orderBy(lbTab, 'desc').limit(LB_N).get(); lbData = qs.docs.map(d => safeLb({id: d.id, ...d.data()})); lbAt = Date.now(); C[lbTab] = {at: lbAt, d: lbData}; try { localStorage.setItem(LBKEY, JSON.stringify(C)); } catch (e) {} } catch (e) { lbData = {err: e.code || e.message}; }
   if (cur().v === 'world') render();
 }
 function vWorld() {
@@ -7160,7 +7227,7 @@ async function frFetch(code) {
   const r = await fetch(`https://www.googleapis.com/drive/v3/files/${code}?alt=media&key=${GKEY}&t=${Date.now()}`, {cache: 'no-store'});
   if (r.status === 404 || r.status === 403) throw new Error('gone');
   if (!r.ok) throw new Error('Google ' + r.status);
-  const d = await r.json(); if (!d || d.app !== 'carnet-muscu') throw new Error('gone'); return d;
+  const d = cardIn(await r.json()); if (!d) throw new Error('gone'); return d;
 }
 async function frAdd(code) {
   const fr = FRS(), raw = String(code || ''), hm = raw.match(/@([A-Za-z0-9._]{3,20})/);
@@ -7186,7 +7253,7 @@ async function frAdd(code) {
 function frSaveCache() { try { localStorage.setItem(FRCACHE, JSON.stringify(frData)); } catch (e) {} }
 async function frAddReq(raw, h) {
   try { const u = await fbSignIn(true, frAdd.popup); if (!u) return; let id, nm = '', hh = h || '';
-    if (h) { const d = await fbDb().collection('handles').doc(h).get(); if (!d.exists) { toast(T(`⚠️ @${h} introuvable`, `⚠️ @${h} not found`)); return; } id = d.data().uid; nm = d.data().n || ''; }
+    if (h) { const d = await fbDb().collection('handles').doc(h).get(), x = d.exists ? safeHandle(d.id, d.data()) : null; if (!x) { toast(T(`⚠️ @${h} introuvable`, `⚠️ @${h} not found`)); return; } id = x.uid; nm = x.n; }
     else { id = (await fbResolve(frCodeOf(raw))).slice(3); const x = await hByUid(id); if (x) { nm = x.n || ''; hh = x.h; } }
     closeAll(); await frReqSend(id, nm, hh); if (S.settings.onboarded) { setRoot('friends'); render(); }
   } catch (e) { if (e.message === 'needpopup') { closeAll(); modal(`<h2>👥 ${T('Connexion', 'Sign in')}</h2><p>${T('Connecte-toi avec Google une seule fois pour voir tes amis.', 'Sign in with Google once to see your friends.')}</p><button class="btn primary block" data-act="fb-popup-add" data-c="${esc(raw)}">${T('Se connecter avec Google', 'Sign in with Google')}</button>`); return; } toast(e.message === 'gone' ? T('⚠️ Code introuvable : vérifie-le', '⚠️ Code not found: check it') : '⚠️ ' + e.message); }
@@ -7228,10 +7295,10 @@ function frRanking() {
   fr.list.forEach(f => { const c = frData[f.c]; if (c && c.d) rows.push({c: f.c, d: c.d}); });
   const L = rows.filter(r => r.d.hu).sort((a, b) => b.d.hu.xp - a.d.hu.xp);
   if (L.length < 2) return '';
-  const old = rows.filter(r => !r.d.hu).map(r => r.d.name);
+  const old = rows.filter(r => !r.d.hu && !r.me).map(r => r.d.name), meNo = rows.some(r => r.me && !r.d.hu);
   return `<div class="card sysw" style="margin:0 0 12px"><div class="sysh">[ ${T('CLASSEMENT', 'RANKING')} ]</div>
     ${L.map((r, i) => `<button class="frrk ${r.me ? 'me' : ''}" data-act="fr-who" data-c="${r.c}" style="--rc:${RKC[r.d.hu.r]}"><b class="frpos">${i + 1}</b>${frAv(r.d, r.c, 'sm')}<span style="flex:1;min-width:0;text-align:left"><b>${esc(r.me ? T('Moi', 'Me') : r.d.name)}</b><br><span class="small muted">${r.d.hu.c && r.d.hu.c !== 'none' ? clsIc(r.d.hu.c) + ' ' + esc(clsName(r.d.hu.c)) : esc(huTitle(r.d.hu.r))}</span></span><span style="text-align:right">${rkBadge(r.d.hu.r, 'mrk lvrk')}<br><span class="small"><b>${T('Niv.', 'Lv.')} ${r.d.hu.l}</b></span></span></button>`).join('')}
-    ${old.length ? `<p class="small muted" style="margin:8px 0 0">${T('Pas encore de niveau pour', 'No level yet for')} ${esc(old.join(', '))} : ${T('leur appli doit être à jour (9.10 ou plus).', 'their app must be up to date (9.10 or later).')}</p>` : ''}</div>`;
+    ${meNo ? `<p class="small muted" style="margin:8px 0 0">${T('Termine ta première séance pour entrer dans le classement.', 'Finish your first workout to enter the ranking.')}</p>` : ''}${old.length ? `<p class="small muted" style="margin:8px 0 0">${T('Pas encore de niveau pour', 'No level yet for')} ${esc(old.join(', '))} : ${T('aucune séance terminée pour l\'instant.', 'no finished workout yet.')}</p>` : ''}</div>`;
 }
 function frItems(f, d) { const out = []; (d.s || []).forEach(s => out.push({f, d, s})); (d.p || []).forEach(ph => out.push({f, d, s: {id: ph.id, d: ph.d + 'T12:00:00', ph}})); return out; }
 function frFeed(onlyC) {
@@ -7263,7 +7330,7 @@ function frExLine(o) {
   return `${nm} · ${o.ns} ${T('séries', 'sets')}`;
 }
 const FR_EMO = ['🔥', '💪', '👏'];
-const frImg = (f, s, src) => `<img ${src ? `src="${src}"` : `data-ph="${s.phId || s.id}"`} alt="" data-act="fr-phbig" data-c="${f.c}" style="width:100%;max-height:55vh;object-fit:cover;border-radius:12px;margin-top:10px;display:block;cursor:zoom-in;background:var(--card2);min-height:120px">`;
+const frImg = (f, s, src) => `<img ${src ? `src="${esc(src)}"` : `data-ph="${s.phId || s.id}"`} alt="" data-act="fr-phbig" data-c="${f.c}" style="width:100%;max-height:55vh;object-fit:cover;border-radius:12px;margin-top:10px;display:block;cursor:zoom-in;background:var(--card2);min-height:120px">`;
 function frPost({f, d, s}) {
   if (s.ph) return frPhotoPost({f, d, s});
   if (f.me && s.phId) setTimeout(phFill, 0);
@@ -7281,7 +7348,7 @@ function frReactRow(f, s) {
     ${Object.keys(r).length ? `<span class="muted small" style="align-self:center">${esc([...new Set(Object.values(r).flat())].join(', '))}</span>` : ''}</div>`;
 }
 const rkFrame = (rk, f) => GAME() && rk && RKC[rk] ? ` rkf rkf-${String(rk).replace('+', 'p')}${f && FRAMES.some(x => x.id === f) ? ' frm-' + f : ''}" style="--rkc:${RKC[rk]}` : '';
-const frAv = (d, c, cls = '') => d.av ? `<img class="frav ${cls}${rkFrame(d.hu && d.hu.r, d.hu && d.hu.f)}" src="${d.av}" alt="" data-act="fr-who" data-c="${c}">` : `<span class="frav ${cls}${rkFrame(d.hu && d.hu.r, d.hu && d.hu.f)}" data-act="fr-who" data-c="${c}">${esc((d.name || '?')[0].toUpperCase())}</span>`;
+const frAv = (d, c, cls = '') => d.av ? `<img class="frav ${cls}${rkFrame(d.hu && d.hu.r, d.hu && d.hu.f)}" src="${esc(d.av)}" alt="" data-act="fr-who" data-c="${c}">` : `<span class="frav ${cls}${rkFrame(d.hu && d.hu.r, d.hu && d.hu.f)}" data-act="fr-who" data-c="${c}">${esc((String(d.name || '').replace(/^@/, '') || '?')[0].toUpperCase())}</span>`;
 function frPhotoPost({f, d, s}) {
   return `<div class="card frpost"><div class="row" style="gap:10px;align-items:center">${frAv(d, f.c)}
       <div style="flex:1;min-width:0"><b>${esc(d.name)}</b> <span class="muted small">· ${dateFr(s.d)}</span><br><span class="small">📸 ${T('a partagé une photo de progrès', 'shared a progress photo')}</span></div></div>
@@ -7486,7 +7553,7 @@ function chCard() {
   return `<div class="card" style="margin:0 0 12px"><div class="row between"><b>⚔️ ${T('Défis', 'Challenges')}</b><button class="btn sm primary" data-act="ch-new">＋ ${T('Lancer un défi', 'Start a challenge')}</button></div>
     ${L.length ? L.map(row).join('') : `<p class="small muted" style="margin:6px 0 0">${T(`Défie un ami pour 7 jours : le plus de volume, de séances ou de reps.${GAME() ? ` Le gagnant prend +${CH_XP} XP.` : ''}`, `Challenge a friend for 7 days: most volume, workouts or reps.${GAME() ? ` The winner gets +${CH_XP} XP.` : ''}`)}</p>`}</div>`;
 }
-function chSend(c, m) { const u = fbMe(); if (!u || !fbIs(c)) return; fbDb().collection('inbox').doc(c.slice(3)).collection('m').add({from: u.uid, name: (S.settings.name || '').trim() || T('Un ami', 'A friend'), t: new Date().toISOString(), ...m}).catch(() => {}); }
+function chSend(c, m) { const u = fbMe(); if (!u || !fbIs(c)) return; fbDb().collection('inbox').doc(c.slice(3)).collection('m').add({from: u.uid, name: myNm(), t: new Date().toISOString(), ...m}).catch(() => {}); }
 function chNew(pre) {
   const fr = FRS();
   if (!frOn()) { toast(T('💡 Active d\'abord le partage pour lancer un défi', '💡 Turn on sharing first to start a challenge')); return; }
@@ -8536,7 +8603,7 @@ document.addEventListener('click', e => {
     case 'me-ok': saveMe(); break;
     case 'pimg-cam': case 'pimg-alb': { const cb = window._pimgCb; closeModal(); const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*'; if (act === 'pimg-cam') i.setAttribute('capture', window._pimgFront ? 'user' : 'environment'); i.onchange = () => { if (i.files[0] && cb) cb(i.files[0]); }; i.click(); break; }
     case 'rt-upd': applyRoutineUpdate(); break;
-    case 'rt-keep': { window._rtUpd = null; const c = $('#rtupd'); if (c) c.innerHTML = `<span class="small muted">👍 ${T('Routine gardée comme avant. Les changements restent dans cette séance seulement.', 'Routine kept as it was. The changes stay in this workout only.')}</span>`; break; }
+    case 'rt-keep': { window._rtUpd = null; const c = $('#rtupd'); if (c) c.innerHTML = `<span class="small muted">✅ ${T('Routine gardée comme avant. Les changements restent dans cette séance seulement.', 'Routine kept as it was. The changes stay in this workout only.')}</span>`; break; }
     case 'h2r': h2rModal([b.dataset.hid]); break;
     case 'h2r-sel': h2rModal([...selH]); break;
     case 'h2r-ok': h2rApply(); break;
@@ -8570,10 +8637,9 @@ document.addEventListener('click', e => {
     case 'comp-info': compInfo(); break;
     case 'ver-tap': { window._vt = (window._vt || 0) + 1; clearTimeout(window._vtT); window._vtT = setTimeout(() => window._vt = 0, 2500); if (window._vt >= 7) { window._vt = 0; S.settings.lab = true; save(); render(); labOpen(); } else if (window._vt >= 4) toast(T(`Encore ${7 - window._vt}…`, `${7 - window._vt} more…`)); break; }
     case 'lab': labOpen(); break;
-    case 'lab-free': S.settings.freeEx = !S.settings.freeEx; save(); labOpen(); render(); break;
     case 'lab-set': labSel[b.dataset.k] = b.dataset.k === 'st' ? +b.dataset.v : b.dataset.v; labOpen(); break;
     case 'lab-evo': { const z = compFake(labSel.sp, labSel.st, 'happy'), a = compFake(labSel.sp, labSel.st - 1, 'happy'); compEvolve(a, z); break; }
-    case 'lab-off': S.settings.lab = false; S.settings.freeEx = false; save(); closeModal(); render(); break;
+    case 'lab-off': S.settings.lab = false; save(); closeModal(); render(); break;
     case 'comp-evo': if (window._cpEvo) { const [a, z] = window._cpEvo; window._cpEvo = null; b.remove(); compEvolve(a, z); } break;
     case 'comp-name': { S.comp = S.comp || {}; S.comp.n = ($('#compnm').value || '').trim().slice(0, 20); save(); closeModal(); render(); toast(T('Nom enregistré', 'Name saved')); break; }
     case 'cls-info': { const hu = hunter(), s = classStyle();
@@ -8689,7 +8755,7 @@ document.addEventListener('click', e => {
     case 'wl-game': S.settings.game = b.dataset.v === '1'; save(); b.parentElement.querySelectorAll('.btn').forEach(x => x.classList.toggle('on', x === b)); break;
     case 'wl-unit': S.settings.unit = b.dataset.v; save(); b.parentElement.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); break;
     case 'wl-eff': S.settings.effort = b.dataset.v; S.settings.failDefault = b.dataset.v === 'fail'; save(); b.parentElement.querySelectorAll('.btn').forEach(x => x.classList.toggle('on', x === b)); break;
-    case 'wl-ok': { const n = (($('#wlname') || {}).value || '').trim(); if (n) S.settings.name = n; S.settings.onboarded = true; save(); closeAll(); render(); toast(T(`👋 Bienvenue ${n}!`, `👋 Welcome ${n}!`).replace(' !', '!')); break; }
+    case 'wl-ok': { const n = (($('#wlname') || {}).value || '').trim(); if (n) S.settings.name = n; S.settings.onboarded = true; save(); closeAll(); render(); toast(T(`💪 Bienvenue ${n}!`, `💪 Welcome ${n}!`).replace(' !', '!')); break; }
     case 'st-go': startStretch(b.dataset.id); break;
     case 'st-new': openStEdit(null); break;
     case 'st-menu': { const rt = stAll().find(x => x.id === b.dataset.id), own = (S.stretches || []).some(x => x.id === rt.id);
@@ -8839,8 +8905,9 @@ document.addEventListener('click', e => {
     case 'cloud-connect': cloudConnect(); break;
     case 'share-app': {
       const url = location.origin + location.pathname;
-      if (isEN()) { shareText(`💪 Runelift: my workout app (routines, workouts, exercise GIFs, stats).\n\n1. Open this link in Chrome: ${url}\n2. Menu ⋮ → “Install app”.\n   On iPhone: open the link in Safari → Share button ⬆️ → “Add to Home Screen”.\n3. To never lose your data: in the app, Profile → ⚙️ Settings → Automatic backup, and follow the steps with YOUR OWN GitHub account (free).\n\nYour data stays on your phone, nobody else sees it.`); break; }
-      shareText(`💪 Runelift : mon appli d'entraînement (routines, séances, GIF des exercices, statistiques).\n\n1. Ouvre ce lien dans Chrome : ${url}\n2. Menu ⋮ → « Installer l'application ».\n   Sur iPhone : ouvre le lien dans Safari → bouton Partager ⬆️ → « Sur l'écran d'accueil ».\n3. Pour ne jamais perdre tes données : dans l'appli, Profil → ⚙️ Réglages → Sauvegarde automatique, et suis les étapes avec TON propre compte GitHub (gratuit).\n\nTes données restent sur ton téléphone, personne d'autre ne les voit.`);
+      const hh = myH() ? ' (@' + myH() + ')' : '';
+      if (isEN()) { shareText(`💪 Runelift: my workout app (routines, workouts, exercise GIFs, stats, challenges with friends).\n\n1. Open this link in Chrome: ${url}\n2. Menu ⋮ → “Install app”.\n   On iPhone: open the link in Safari → Share button ⬆️ → “Add to Home Screen”.\n3. On first launch, sign in with Google: your workouts are backed up automatically and you can add me as a friend${hh}.\n\nWithout an account, everything stays on your phone.`); break; }
+      shareText(`💪 Runelift : mon appli d'entraînement (routines, séances, GIF des exercices, statistiques, défis entre amis).\n\n1. Ouvre ce lien dans Chrome : ${url}\n2. Menu ⋮ → « Installer l'application ».\n   Sur iPhone : ouvre le lien dans Safari → bouton Partager ⬆️ → « Sur l'écran d'accueil ».\n3. Au premier lancement, connecte-toi avec Google : tes séances se sauvegardent toutes seules et tu peux m'ajouter en ami${hh}.\n\nSans compte, tout reste sur ton téléphone.`);
       break;
     }
     case 'cloud-pick': cloudPick(b.dataset.f); break;
@@ -9184,7 +9251,7 @@ async function hAuto() {
   for (const h of tries) { try { await hClaim(h); toast(T(`Ton pseudo : @${h} (tu peux le changer dans Amis)`, `Your username: @${h} (change it in Friends)`)); render(); return; } catch (e) { if (e.message !== 'taken') { console.warn('hAuto', e); return; } } }
 }
 function hPub() { const u = fbMe(), h = myH(); if (!u || !h) return; const nm = (S.settings.name || '').trim(); fbDb().collection('handles').doc(h).set({uid: u.uid, n: nm, nl: norm(nm), l: myLvlSafe()}).catch(() => {}); }
-async function hByUid(id) { try { const q = await fbDb().collection('handles').where('uid', '==', id).limit(1).get(); const d = q.docs[0]; return d ? {h: d.id, ...d.data()} : null; } catch (e) { return null; } }
+async function hByUid(id) { try { const q = await fbDb().collection('handles').where('uid', '==', id).limit(1).get(); const d = q.docs[0]; return d ? safeHandle(d.id, d.data()) : null; } catch (e) { return null; } }
 /* Champ « @pseudo » (accueil, choix ou changement) : vérifie en direct et propose des variantes */
 var hField = (val) => `<div class="hin-wrap"><span>@</span><input id="hin" value="${esc(val)}" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="21" placeholder="${T('ton.pseudo', 'your.name')}"><em id="hst"></em></div>
   <div id="hsug"></div><p class="muted small" style="margin:6px 0 0">${T('Lettres, chiffres, . et _ · 3 à 20 caractères', 'Letters, numbers, . and _ · 3 to 20 characters')}</p>`;
@@ -9214,7 +9281,7 @@ async function frReqSend(id, name, h) {
   const c = 'fb:' + id; if (fr.list.some(f => f.c === c)) { toast(T('Vous êtes déjà amis', 'Already friends')); return; }
   if ((fr.reqIn || []).some(r => r.uid === id)) return frReqAccept(id);
   fr.reqOut = (fr.reqOut || []).filter(r => r.uid !== id); fr.reqOut.push({uid: id, name: name || '', h: h || '', t: new Date().toISOString()}); save(); fbAllowSync();
-  try { await fbDb().collection('inbox').doc(id).collection('m').add({from: u.uid, type: 'req', name: (S.settings.name || '').trim() || T('Un ami', 'A friend'), h: myH(), t: new Date().toISOString()}); toast(T(`📨 Demande envoyée${name ? ' à ' + name : ''}`, `📨 Request sent${name ? ' to ' + name : ''}`)); }
+  try { await fbDb().collection('inbox').doc(id).collection('m').add({from: u.uid, type: 'req', name: myNm(), h: myH(), t: new Date().toISOString()}); toast(T(`📨 Demande envoyée${name ? ' à ' + name : ''}`, `📨 Request sent${name ? ' to ' + name : ''}`)); }
   catch (e) { toast('⚠️ ' + e.message); }
   frSearchRender();
 }
@@ -9223,7 +9290,7 @@ async function frReqAccept(id) {
   fr.reqIn = (fr.reqIn || []).filter(x => x.uid !== id); fr.reqOut = (fr.reqOut || []).filter(x => x.uid !== id);
   if (!fr.list.some(f => f.c === c)) fr.list.push({c, n: r.name || '…', add: new Date().toISOString()});
   NOTIFS().forEach(n => { if (n.key === 'req:' + id) { n.read = true; n.done = 'ok'; } }); save(); fbAllowSync(); fbWatch();
-  if (u) try { await fbDb().collection('inbox').doc(id).collection('m').add({from: u.uid, type: 'acc', name: (S.settings.name || '').trim() || T('Un ami', 'A friend'), h: myH(), t: new Date().toISOString()}); } catch (e) {}
+  if (u) try { await fbDb().collection('inbox').doc(id).collection('m').add({from: u.uid, type: 'acc', name: myNm(), h: myH(), t: new Date().toISOString()}); } catch (e) {}
   toast(T(`✅ ${r.name || ''} est maintenant ton ami`, `✅ ${r.name || ''} is now your friend`).replace('  ', ' ')); const p = document.getElementById('reqpop'); if (p) p.remove(); bellUpd(); if (['friends', 'notifs'].includes(cur().v) && !modals.length) render();
 }
 function frReqDecline(id) {
@@ -9238,8 +9305,11 @@ function reqShow(r) {
 }
 /* Message reçu dans ma boîte (Firebase) */
 function fbInboxMsg(m, me) {
-  const fr = FRS(), from = m.from; if (!from || from === me) return;
+  m = safeIn(m); if (!m || typeof m !== 'object' || Array.isArray(m)) return;
+  const fr = FRS(), from = sUid(m.from); if (!from || from === me) return;
+  m.type = sStr(m.type, 10); m.h = sH(m.h); m.name = sName(m.name, m.h); m.e = sStr(m.e, 8); m.t = sStr(m.t, 40); m.id = sStr(m.id, 80); m.k = sStr(m.k, 12);
   const c = 'fb:' + from, isFr = fr.list.some(f => f.c === c);
+  if (!isFr && !['req', 'add', 'acc'].includes(m.type)) return; // encouragements et défis : seulement entre amis
   if (m.type === 'cheer') { cheerShow(m); notifAdd({type: 'cheer', name: m.name, e: m.e || '🔥', uid: from}); return; }
   if (m.type === 'add' || m.type === 'req') {
     if (isFr) { if (m.type === 'req') fbDb().collection('inbox').doc(from).collection('m').add({from: me, type: 'acc', name: (S.settings.name || '').trim(), h: myH(), t: new Date().toISOString()}).catch(() => {}); return; }
@@ -9250,6 +9320,7 @@ function fbInboxMsg(m, me) {
   if (m.type === 'ch') { notifAdd({type: 'ch', key: 'ch:' + m.id, uid: from, name: m.name, k: m.k, chid: m.id}); toast(T(`⚔️ ${m.name} te lance un défi!`, `⚔️ ${m.name} challenges you!`)); setTimeout(() => { try { frLoad(true); } catch (e) {} }, 500); return; }
   if (m.type === 'cha' || m.type === 'chn') { notifAdd({type: m.type, key: m.type + ':' + m.id, uid: from, name: m.name, k: m.k}); toast(m.type === 'cha' ? T(`⚔️ ${m.name} a accepté ton défi!`, `⚔️ ${m.name} accepted your challenge!`) : T(`${m.name} a refusé ton défi`, `${m.name} declined your challenge`)); setTimeout(() => { try { frLoad(true); } catch (e) {} }, 500); return; }
   if (m.type === 'acc') {
+    if (!isFr && !(fr.reqOut || []).some(r => r.uid === from)) return; // je ne lui ai rien demandé : personne ne peut s'ajouter tout seul à mes amis
     fr.reqOut = (fr.reqOut || []).filter(r => r.uid !== from);
     if (!isFr) { fr.list.push({c, n: m.name || '…', add: new Date().toISOString()}); save(); setTimeout(fbWatch, 0); }
     fbAllowSync(); notifAdd({type: 'acc', name: m.name, h: m.h || '', uid: from}); toast(T(`🤝 ${m.name} a accepté ta demande d'ami`, `🤝 ${m.name} accepted your friend request`));
@@ -9315,11 +9386,11 @@ function frSearch() {
     if (!u) { const r = $('#frsr'); if (r) r.innerHTML = `<p class="muted small center" style="margin:10px 0">${T('Reconnecte-toi pour chercher tes amis.', 'Sign in again to search for friends.')}</p><button class="btn primary block" data-act="frs-login">${T('Se reconnecter', 'Sign in')}</button>`; return; }
     const db = fbDb(), col = db.collection('handles'), FP = firebase.firestore.FieldPath.documentId();
     const [a, b] = await Promise.all([col.where(FP, '>=', q).where(FP, '<', q + '').limit(8).get(), qn.length >= 2 ? col.where('nl', '>=', qn).where('nl', '<', qn + '').limit(8).get() : Promise.resolve({docs: []})]);
-    const me = fbMe(), seen = new Set(); frsRes = [...a.docs, ...b.docs].map(d => ({h: d.id, ...d.data()})).filter(x => x.uid && (!me || x.uid !== me.uid) && !seen.has(x.uid) && seen.add(x.uid)).slice(0, 10); frsQ = q; frSearchRender();
+    const me = fbMe(), seen = new Set(); frsRes = [...a.docs, ...b.docs].map(d => safeHandle(d.id, d.data())).filter(x => x && (!me || x.uid !== me.uid) && !seen.has(x.uid) && seen.add(x.uid)).slice(0, 10); frsQ = q; frSearchRender();
   } catch (e) {
     if (e.code === 'permission-denied') { // la recherche par liste est bloquée par les règles : on essaie au moins le @pseudo exact
-      try { const d = await fbDb().collection('handles').doc(q).get(), me = fbMe();
-        frsRes = d.exists && d.data().uid && (!me || d.data().uid !== me.uid) ? [{h: d.id, ...d.data()}] : []; frsQ = q; frSearchRender();
+      try { const d = await fbDb().collection('handles').doc(q).get(), me = fbMe(), x = d.exists ? safeHandle(d.id, d.data()) : null;
+        frsRes = x && (!me || x.uid !== me.uid) ? [x] : []; frsQ = q; frSearchRender();
         const r = $('#frsr'); if (r && !frsRes.length) r.innerHTML = `<p class="muted small center" style="margin:14px 0">${T('Aucun pseudo exact', 'No exact username')} « @${esc(q)} ».<br>${T('Pour l\'instant, tape le @pseudo complet de ton ami (la recherche par nom sera bientôt réactivée).', 'For now, type your friend\'s full @username (search by name will be back soon).')}</p>`;
         return; } catch (e2) {}
     }
@@ -9330,7 +9401,7 @@ function frSearchRender() {
   if (!frsQ) { r.innerHTML = ''; return; }
   r.innerHTML = frsRes.length ? frsRes.map(x => { const c = 'fb:' + x.uid, st = fr.list.some(f => f.c === c) ? 'fr' : (fr.reqOut || []).some(o => o.uid === x.uid) ? 'out' : (fr.reqIn || []).some(o => o.uid === x.uid) ? 'in' : '';
     return `<div class="ntf"><span class="frav sm">${esc((x.n || x.h || '?')[0].toUpperCase())}</span><div style="flex:1;min-width:0"><b>${esc(x.n || x.h)}</b><div class="muted small">@${esc(x.h)}${x.l ? ' · ' + T('Niv. ', 'Lv. ') + x.l : ''}</div></div>${st === 'fr' ? `<span class="pill2">✓ ${T('Amis', 'Friends')}</span>` : st === 'out' ? `<span class="pill2">⏳ ${T('Envoyée', 'Sent')}</span>` : `<button class="btn primary sm" data-act="${st === 'in' ? 'req-ok' : 'req-send'}" data-u="${esc(x.uid)}" data-n="${esc(x.n || '')}" data-h="${esc(x.h)}">${st === 'in' ? T('Accepter', 'Accept') : '+ ' + T('Ajouter', 'Add')}</button>`}</div>`; }).join('')
-    : `<p class="muted small center" style="margin:14px 0">${T('Personne trouvé avec', 'Nobody found for')} « ${esc(frsQ)} »</p>`;
+    : `<p class="muted small center" style="margin:14px 0 6px">${T('Aucun résultat pour', 'No results for')} « ${esc(frsQ)} »</p><p class="muted small center" style="margin:0 0 10px">${T('Ton ami apparaît ici une fois qu\'il a ouvert l\'appli en étant connecté. Sinon, demande-lui son code ami (Amis → Ajouter → « Partager mon profil ») et colle-le avec « Coller un code ».', 'Your friend shows up here once they have opened the app while signed in. Otherwise, ask for their friend code (Friends → Add → “Share my profile”) and paste it with “Paste a code”.')}</p>`;
 }
 function openFrAdd() {
   if (!FRS().fb) { modal(`<div class="row between"><h2 style="margin:0">＋ ${T('Ajouter un ami', 'Add a friend')}</h2><button class="btn sm" data-act="close">✕</button></div><p class="small">${T('Colle le code que ton ami t\'a envoyé.', 'Paste the code your friend sent you.')}</p><div class="row" style="gap:8px"><input id="frin" style="flex:1" placeholder="${T('Code ami', 'Friend code')}"><button class="btn" data-act="fr-paste" style="flex:none">📋 ${T('Coller', 'Paste')}</button></div><button class="btn primary block" data-act="fr-add-ok" style="margin-top:12px">${T('Ajouter', 'Add')}</button>`); return; }
