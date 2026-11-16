@@ -2062,6 +2062,19 @@ function addExercise(pick) {
 
 /* ---------- Minuteur ---------- */
 let timerEnd = 0, timerInt = null;
+/* Le repos en cours est gardé sur le téléphone : si la page se rafraîchit ou se recharge, le minuteur reprend où il en était. */
+function restSave() { try { localStorage.setItem('rn_rest', JSON.stringify({e: timerEnd, t: timerTot})); } catch (e) {} }
+function restForget() { try { localStorage.removeItem('rn_rest'); } catch (e) {} }
+function restResume() {
+  try {
+    const r = JSON.parse(localStorage.getItem('rn_rest') || 'null');
+    if (!r || !S.active || !(r.e > Date.now() + 500) || r.e - Date.now() > 3600e3) { restForget(); return; }
+    timerEnd = r.e; timerTot = Math.max(1, +r.t || 1);
+    timerBtns(); $('#timer').classList.add('show');
+    restSW(timerEnd); clearInterval(timerInt); tickTimer(); timerInt = setInterval(tickTimer, 250);
+    if (focusOn && cur().v === 'workout') setTimeout(render, 0); else setTimeout(foldPaint, 0);
+  } catch (e) {}
+}
 /* ===================== Notifications (cell + Galaxy Watch) ===================== */
 const notifOn = () => S.settings.notif === true && 'Notification' in window && Notification.permission === 'granted';
 function nextSetInfo() {
@@ -2119,7 +2132,7 @@ function timerBtns() {
   $('#tbtns').innerHTML = `<button data-act="timer-add">+30 s</button><button data-act="timer-stop">${T('Passer', 'Skip')}</button>`;
 }
 function timerDone() {
-  clearInterval(timerInt); sched = [];
+  clearInterval(timerInt); sched = []; restForget();
   const swc = navigator.serviceWorker && navigator.serviceWorker.controller;
   if (swc && notifOn()) swc.postMessage({type: 'rest-fire', at: timerEnd, title: T('✅ Repos terminé', '✅ Rest over'), body: T('À toi : ', 'Your turn: ') + nextSetInfo()});
   else notify(T('✅ Repos terminé', '✅ Rest over'), T('À toi : ', 'Your turn: ') + nextSetInfo());
@@ -2131,7 +2144,7 @@ function timerDone() {
   clearTimeout(timerFinT); timerFinT = setTimeout(() => { el.classList.remove('show', 'fin'); bigTimerClose(); }, 20000);
 }
 function startTimer(sec) {
-  timerEnd = Date.now() + sec * 1000; timerTot = sec;
+  timerEnd = Date.now() + sec * 1000; timerTot = sec; restSave();
   timerBtns();
   if (notifOn() && S.settings.notifStart !== false) { const t = new Date(timerEnd); notify(T(`⏱ Repos ${fmtRest(Math.round(sec))} — fin à ${t.getHours()}:${pad2(t.getMinutes())}`, `⏱ Rest ${fmtRest(Math.round(sec))} — ends at ${t.getHours()}:${pad2(t.getMinutes())}`), T('Ensuite : ', 'Next: ') + nextSetInfo(), {silent: true, ts: timerEnd}); }
   $('#timer').classList.add('show');
@@ -2171,7 +2184,7 @@ function tickTimer() {
   bigTimerSync();
   if (left <= 0) timerDone();
 }
-function stopTimer() { bigTimerClose(); clearInterval(timerInt); cancelBeeps(); restSW(0); clearNotif(); clearTimeout(timerFinT); $('#timer').classList.remove('show', 'fin'); if (focusOn && S.active && cur().v === 'workout') setTimeout(render, 0); else setTimeout(foldPaint, 0); }
+function stopTimer() { restForget(); bigTimerClose(); clearInterval(timerInt); cancelBeeps(); restSW(0); clearNotif(); clearTimeout(timerFinT); $('#timer').classList.remove('show', 'fin'); if (focusOn && S.active && cur().v === 'workout') setTimeout(render, 0); else setTimeout(foldPaint, 0); }
 
 /* ===================== Vues ===================== */
 const exl = n => `<span class="exlink" data-act="exo" data-n="${esc(n)}">${esc(n)}</span>`;
@@ -5868,11 +5881,11 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.62.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.62.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
-  {v: '9.62.3', d: '2026-11-16', fr: ['Boss du mois mieux expliqué : pas besoin d\'une série en plus, une de tes séries normales suffit. Les choix proposés sont maintenant les plus faciles possibles (ex. 75×10 au lieu de 95×3) et dans ta fourchette de répétitions. Touche un choix pour le mettre dans ta prochaine série.', 'La langue de l\'appli suit maintenant celle de ton téléphone (ou celle choisie sur la page Runelift) dès la première ouverture.', 'Accueil : nouvelle phrase d\'accroche et icône dessinée pour le Mode Classique.', '🔗 Un lien d\'invitation demande maintenant ta confirmation avant d\'envoyer une demande d\'ami.', '🔒 Sécurité renforcée : tout ce qui vient d\'autres personnes (cartes d\'amis, classement mondial, demandes, liens de partage) est vérifié avant d\'être affiché, et personne ne peut s\'ajouter à tes amis sans que tu lui aies envoyé une demande.', '👥 Amis : un ami sans nom s\'affiche avec son @pseudo au lieu de « A friend », le classement explique pourquoi quelqu\'un n\'a pas encore de niveau, et la recherche te dit quoi faire quand elle ne trouve personne.', '📱 Petits écrans : les boutons au-dessus des routines ne dépassent plus.', '🇬🇧 Version anglaise plus complète : plusieurs boutons et réglages restaient en français, et le programme de départ des nouveaux comptes en anglais a maintenant des noms d\'exercices en anglais.', '🪨 Carnet Muscu s\'appelle maintenant Runelift ! Rien d\'autre ne change : tes séances, ta guilde et tes amis sont toujours là.'],
-    en: ['Monthly boss explained better: no extra set needed, one of your normal sets is enough. The suggested options are now the easiest possible (e.g. 75×10 instead of 95×3) and within your rep range. Tap one to put it in your next set.', 'The app language now follows your phone (or the one picked on the Runelift page) from the very first launch.', 'Welcome screen: new tagline and a drawn icon for Classic mode; units shown in English.', '🔗 An invitation link now asks for your confirmation before sending a friend request.', '📚 Popular programs and more messages are now in English.', '🔒 Stronger security: everything that comes from other people (friend cards, world ranking, requests, share links) is checked before being displayed, and nobody can add themselves to your friends unless you sent them a request.', '👥 Friends: a friend without a name shows their @username instead of “A friend”, the ranking explains why someone has no level yet, and search tells you what to do when it finds nobody.', '📱 Small screens: the buttons above your routines no longer overflow.', '🇬🇧 More complete English version: several buttons and settings were still in French, and the starter program for new English accounts now uses English exercise names.', '🪨 Carnet Muscu is now called Runelift! Nothing else changes: your workouts, guild and friends are all still here.']},
+  {v: '9.62.4', d: '2026-11-16', fr: ['Le minuteur de repos continue maintenant si tu rafraîchis la page ou si l\'appli se recharge.', 'Boss du mois mieux expliqué : pas besoin d\'une série en plus, une de tes séries normales suffit. Les choix proposés sont maintenant les plus faciles possibles (ex. 75×10 au lieu de 95×3) et dans ta fourchette de répétitions. Touche un choix pour le mettre dans ta prochaine série.', 'La langue de l\'appli suit maintenant celle de ton téléphone (ou celle choisie sur la page Runelift) dès la première ouverture.', 'Accueil : nouvelle phrase d\'accroche et icône dessinée pour le Mode Classique.', '🔗 Un lien d\'invitation demande maintenant ta confirmation avant d\'envoyer une demande d\'ami.', '🔒 Sécurité renforcée : tout ce qui vient d\'autres personnes (cartes d\'amis, classement mondial, demandes, liens de partage) est vérifié avant d\'être affiché, et personne ne peut s\'ajouter à tes amis sans que tu lui aies envoyé une demande.', '👥 Amis : un ami sans nom s\'affiche avec son @pseudo au lieu de « A friend », le classement explique pourquoi quelqu\'un n\'a pas encore de niveau, et la recherche te dit quoi faire quand elle ne trouve personne.', '📱 Petits écrans : les boutons au-dessus des routines ne dépassent plus.', '🇬🇧 Version anglaise plus complète : plusieurs boutons et réglages restaient en français, et le programme de départ des nouveaux comptes en anglais a maintenant des noms d\'exercices en anglais.', '🪨 Carnet Muscu s\'appelle maintenant Runelift ! Rien d\'autre ne change : tes séances, ta guilde et tes amis sont toujours là.'],
+    en: ['The rest timer now keeps going if you refresh the page or the app reloads.', 'Monthly boss explained better: no extra set needed, one of your normal sets is enough. The suggested options are now the easiest possible (e.g. 75×10 instead of 95×3) and within your rep range. Tap one to put it in your next set.', 'The app language now follows your phone (or the one picked on the Runelift page) from the very first launch.', 'Welcome screen: new tagline and a drawn icon for Classic mode; units shown in English.', '🔗 An invitation link now asks for your confirmation before sending a friend request.', '📚 Popular programs and more messages are now in English.', '🔒 Stronger security: everything that comes from other people (friend cards, world ranking, requests, share links) is checked before being displayed, and nobody can add themselves to your friends unless you sent them a request.', '👥 Friends: a friend without a name shows their @username instead of “A friend”, the ranking explains why someone has no level yet, and search tells you what to do when it finds nobody.', '📱 Small screens: the buttons above your routines no longer overflow.', '🇬🇧 More complete English version: several buttons and settings were still in French, and the starter program for new English accounts now uses English exercise names.', '🪨 Carnet Muscu is now called Runelift! Nothing else changes: your workouts, guild and friends are all still here.']},
   {v: '9.59.2', d: '2026-11-15', fr: ['🔍 Tout le monde est maintenant trouvable dans la recherche d\'amis : si tu n\'avais pas choisi de @pseudo, l\'app t\'en donne un d\'après ton nom (modifiable dans Amis).', '🛡️ Nouvelle icône : l\'emblème de la Guilde.', '🏅 Médailles : chaque catégorie se replie, avec sa barre de progression. La page est beaucoup plus courte.', '🎁 Armurerie : nouvel onglet « Coffres » avec tes 4 collections de fragments et toutes leurs récompenses.', '🔒 Nouvelle page « Politique de confidentialité » et bouton « Supprimer mon compte » (Réglages → Données et compte).'],
     en: ['🔍 Everyone can now be found in friend search: if you hadn\'t picked a @username, the app gives you one based on your name (change it in Friends).', '🛡️ New icon: the Guild emblem.', '🏅 Medals: each category folds, with its progress bar.', '🎁 Armory: new “Chests” tab with your 4 fragment collections.', '🔒 New privacy policy page and “Delete my account” button (Settings → Data & account).']},
   {v: '9.54.1', d: '2026-11-14', fr: ['🧹 Grand ménage : le blason du Mimique apparaît bien dans l\'Armurerie, « Tour de taille » ne se confond plus avec ta taille, l\'emoji Terre est remplacé par une icône, les réactions et commentaires reçus sont regroupés dans la cloche 🔔, la fenêtre « Mon code » explique le @pseudo, et l\'anglais est complété.', '🎁 Coffres : 4 sortes de fragments (Liche 💀, Dragon 🐉, Kraken 🐙, Mimique 🎁), chacune avec sa propre collection exclusive : 20 récompenses en tout (titres, cadres, thèmes, victoires, blasons, bannières). Chaque coffre donne des fragments d\'un monstre au hasard, et le légendaire en donne de 2 monstres. Tes anciens fragments comptent pour la Liche et le Mimique.', '🧭 La visite de la Guilde attend ta première séance (avant, la Guilde est vide).', '🎓 Ton niveau d\'expérience (débutant, intermédiaire, avancé) sert enfin à quelque chose : séries proposées, temps de récupération et conseils de l\'IA. Et il monte tout seul au fil de tes séances!', '📋 Nouveau compte : l\'appli te prépare un programme de départ selon ton objectif, tes séances par semaine et ton niveau, avec ton horaire de la semaine. ', '👥 Le bouton « Ajouter » est maintenant au début de ta liste d\'amis.', '🔔 Touche une notification de like ou de commentaire : la séance s\'ouvre, avec les réactions et les commentaires, et tu peux répondre.', '👥 Ajouter un ami est plus évident : recherche par @pseudo directement dans Amis quand tu n\'en as pas encore, et une carte « Entraîne-toi avec tes amis » dans Muscu.', '⚔️ Défis : ton ami reçoit une notification et doit accepter (ou refuser). Les 7 jours commencent quand il accepte.', '🛡️ Raid : chaque aventurier compte pour 3 000 reps max, pour que personne ne porte le groupe seul. Explication plus claire.', '👑 Saison : il faut au moins 3 aventuriers actifs dans le mois pour remporter le trophée. Les anciennes victoires trop faciles sont recalculées.', '🎆 Victoires refaites : chaque fête est maintenant différente (fusées, pièces d\'or qui rebondissent, flammes, vrais flocons, éclairs, spirale, rayons divins, couronne…).', '🏞️ Bannières redessinées, plus détaillées et animées (braises, étoiles filantes, vagues, lucioles, portail…).', '📥 « Tu viens d\'une autre appli? » : importe ton fichier CSV de Hevy, Strong ou autre.', '🧭 Nouvelle visite de la Guilde. La visite ne parle plus de sauvegarde si tu es connecté avec Google.', '🧍 Une seule fiche « Mes infos » (âge, taille, sexe, poids) partout : profil, cardio, réglages. Le niveau de force a été retiré.', '🧹 Moins de doublons : le rappel de sauvegarde disparaît si la sauvegarde Google est active, et les autres options de sauvegarde sont repliées.'],
@@ -9010,9 +9023,9 @@ document.addEventListener('click', e => {
       e.mach = {u: U() === 'lb' ? 'kg' : 'lb', v: +$('#convin').value.replace(',', '.')};
       save(); closeModal(); render(); toast(`⚖️ ${$('#convin') ? '' : ''}${dec1(v)} ${U()}`); break;
     }
-    case 'timer-sub': timerEnd = Math.max(Date.now() + 1000, timerEnd - 15000); scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); restSW(timerEnd); tickTimer(); break;
+    case 'timer-sub': timerEnd = Math.max(Date.now() + 1000, timerEnd - 15000); restSave(); scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); restSW(timerEnd); tickTimer(); break;
     case 'timer-stop-big': closeModal(); stopTimer(); break;
-    case 'timer-add': timerTot += 30; timerEnd += 30000; scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); restSW(timerEnd); tickTimer(); break;
+    case 'timer-add': timerTot += 30; timerEnd += 30000; restSave(); scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); restSW(timerEnd); tickTimer(); break;
     case 'timer-stop': stopTimer(); break;
     case 'timer-big': bigTimerOpen(); break;
     case 'timer-go': if (!S.active) break; if (cur().v === 'workout' && $('#timer').classList.contains('show') && !$('#timer').classList.contains('fin')) { bigTimerOpen(); break; } if ($('#timer').classList.contains('fin')) stopTimer(); if (cur().v !== 'workout') { closeAll(); openWorkout(); } else scrollCur(); break;
@@ -9649,6 +9662,7 @@ else if (isIOS && !isStandalone() && !S.settings.iosHintOff) setTimeout(() => { 
 if (S.settings.onboarded) setTimeout(() => { if (!S.settings.sex && !S.settings.obAsk && !S.active && !modals.length && S.history.length) { S.settings.obAsk = true; saveLocal(); modal(`<div style="text-align:center"><div style="font-size:46px">🧍</div><h2 style="margin:4px 0">${T('Nouveau : ton profil', 'New: your profile')}</h2></div><p class="small">${T('Ajoute ton sexe, ton âge, ta taille et ton objectif pour voir ton IMC et tes <b>besoins en calories</b>. Ça reste privé : tes amis ne le voient pas.', 'Add your sex, age, height and goal to see your BMI and <b>calorie needs</b>. It stays private.')}</p><button class="btn primary block" data-act="ob-edit">${T('Compléter (30 secondes)', 'Complete (30 seconds)')}</button><button class="btn block" data-act="close" style="margin-top:8px">${T('Plus tard', 'Later')}</button>`); } }, 3500);
 checkNews();
 if (S.settings.onboarded) setTimeout(checkImport, 450);
+setTimeout(restResume, 200);
 window.addEventListener('hashchange', checkImport);
 setTimeout(checkFriendLink, 600); window.addEventListener('hashchange', checkFriendLink);
 setTimeout(() => frLoad(), 2500);
