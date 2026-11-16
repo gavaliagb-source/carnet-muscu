@@ -1,6 +1,6 @@
 {
-  "name": "Carnet Muscu",
-  "short_name": "Muscu",
+  "name": "Runelift",
+  "short_name": "Runelift",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
