@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Runelift – Ton entraînement devient une aventure</title>
+<meta name="description" content="Runelift : l'appli de musculation gratuite où ton entraînement devient une aventure. Niveaux, classes, quêtes, défis entre amis et programmes faits par ton IA.">
+<meta property="og:title" content="Runelift – Ton entraînement devient une aventure">
+<meta property="og:description" content="Appli de muscu gratuite : niveaux, classes, quêtes, défis entre amis et programmes faits par ton IA.">
+<meta property="og:image" content="https://gavaliagb-source.github.io/carnet-muscu/icon-512.png">
+<meta name="theme-color" content="#0b0d10">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0b0d10;--bg2:#12151a;--card:#161a20;--line:#252a33;--text:#eceef1;--muted:#9aa1ad;--accent:#c6f135;--gold:#e8c66a;--violet:#a78bfa}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:inherit}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+  /* barre du haut */
+  .top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top .wrap{display:flex;align-items:center;gap:12px;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:Cinzel,serif;font-weight:800;letter-spacing:.08em;font-size:18px}
+  .brand img{width:34px;height:34px;border-radius:9px}
+  .top .sp{flex:1}
+  .lang{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:6px 12px;font:600 13px Inter,sans-serif;cursor:pointer}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:14px;padding:14px 22px;font-weight:800;text-decoration:none;border:1px solid var(--line);background:var(--card);color:var(--text);transition:transform .15s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn.primary{background:var(--accent);color:#10140a;border-color:var(--accent);box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 60%,transparent);animation:pulse 2.6s infinite}
+  .top .btn{padding:9px 16px;border-radius:11px;font-size:14px}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 45%,transparent)}70%{box-shadow:0 0 0 14px transparent}100%{box-shadow:0 0 0 0 transparent}}
+  /* héros */
+  .hero{position:relative;padding:64px 0 40px;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:-20% -10% auto;height:620px;background:radial-gradient(closest-side,color-mix(in srgb,var(--accent) 18%,transparent),transparent 70%),radial-gradient(closest-side at 80% 30%,color-mix(in srgb,var(--violet) 18%,transparent),transparent 70%);pointer-events:none}
+  .hero .wrap{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+  .eyebrow{display:inline-block;font:700 12px Inter,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:999px;padding:5px 12px;margin-bottom:18px}
+  h1{font-family:Cinzel,serif;font-weight:800;font-size:clamp(36px,6vw,62px);line-height:1.08;margin:0 0 16px;letter-spacing:.01em}
+  h1 em{font-style:normal;color:var(--accent)}
+  .lead{font-size:clamp(17px,2.2vw,20px);color:var(--muted);margin:0 0 28px;max-width:34em}
+  .ctas{display:flex;flex-wrap:wrap;gap:12px}
+  .badges{display:flex;flex-wrap:wrap;gap:18px;margin-top:26px;color:var(--muted);font-size:14px}
+  .badges span::before{content:"✓ ";color:var(--accent);font-weight:800}
+  /* téléphone */
+  .phone{position:relative;width:min(300px,78vw);margin:0 auto;border-radius:38px;padding:10px;background:linear-gradient(160deg,#2a2f38,#101317);box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px #2d333d inset}
+  .phone img{display:block;width:100%;border-radius:30px;aspect-ratio:390/844;object-fit:cover;object-position:top}
+  .hero .phone{transform:rotate(3deg)}
+  .hero .phone.b{position:absolute;width:min(240px,60vw);right:58%;top:70px;transform:rotate(-7deg);opacity:.9;z-index:-1}
+  /* sections */
+  section{padding:70px 0}
+  .alt{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  h2{font-family:Cinzel,serif;font-weight:800;font-size:clamp(28px,4vw,40px);line-height:1.15;margin:0 0 14px}
+  .kicker{font:700 12px Inter,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  .feat .wrap{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+  .feat.rev .txt{order:2}
+  .txt p{color:var(--muted);font-size:17px;margin:0 0 18px}
+  ul.pts{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+  ul.pts li{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+  ul.pts b{display:block}
+  ul.pts small{color:var(--muted);font-size:14px}
+  .ico{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);font-size:17px}
+  .classes{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 18px}
+  .classes span{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:600}
+  .ai{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 18px}
+  .ai span{border-radius:10px;padding:6px 12px;font-weight:700;font-size:14px;background:var(--card);border:1px solid var(--line)}
+  /* installation */
+  .steps{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:26px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+  .step h3{margin:0 0 10px;font-size:18px}
+  .step ol{margin:0;padding-left:20px;color:var(--muted)}
+  .step ol li{margin:6px 0}
+  .step b{color:var(--text)}
+  /* FAQ */
+  .faq{display:grid;gap:12px;margin-top:22px}
+  details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+  summary{cursor:pointer;font-weight:700;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";float:right;color:var(--accent);font-weight:800}
+  details[open] summary::after{content:"–"}
+  details p{color:var(--muted);margin:10px 0 0}
+  .final{text-align:center}
+  .final img{width:96px;height:96px;border-radius:24px;margin-bottom:16px;box-shadow:0 0 50px color-mix(in srgb,var(--gold) 30%,transparent)}
+  footer{border-top:1px solid var(--line);padding:30px 0;color:var(--muted);font-size:14px}
+  footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
+  footer a{color:var(--muted)}
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s}
+  .reveal.in{opacity:1;transform:none}
+  @media (max-width:820px){
+    .hero{padding:40px 0 20px}
+    .hero .wrap,.feat .wrap,.steps{grid-template-columns:1fr}
+    .hero .phone.b{display:none}
+    .hero .phone{transform:none;margin-top:10px}
+    .feat.rev .txt{order:0}
+    section{padding:52px 0}
+    .top .btn{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="#"><img src="icon-192.png" alt="">RUNELIFT</a>
+  <span class="sp"></span>
+  <button class="lang" id="lang" type="button">EN</button>
+  <a class="btn primary" href="./" data-fr="Ouvrir l'appli" data-en="Open the app">Ouvrir l'appli</a>
+</div></header>
+
+<main>
+<section class="hero"><div class="wrap">
+  <div>
+    <span class="eyebrow" data-fr="Appli de musculation · 100 % gratuite" data-en="Workout app · 100% free">Appli de musculation · 100 % gratuite</span>
+    <h1 data-fr="Ton entraînement devient une <em>aventure</em>." data-en="Turn your workouts into an <em>adventure</em>.">Ton entraînement devient une <em>aventure</em>.</h1>
+    <p class="lead" data-fr="Note tes séances, monte de niveau, débloque ta classe d'aventurier et affronte tes amis. Ton programme? C'est ton IA préférée qui le fait." data-en="Log your workouts, level up, unlock your adventurer class and challenge your friends. Your program? Your favorite AI builds it.">Note tes séances, monte de niveau, débloque ta classe d'aventurier et affronte tes amis. Ton programme? C'est ton IA préférée qui le fait.</p>
+    <div class="ctas">
+      <a class="btn primary" href="./" data-fr="Commencer gratuitement →" data-en="Start for free →">Commencer gratuitement →</a>
+      <a class="btn" href="#installer" data-fr="Comment l'installer" data-en="How to install">Comment l'installer</a>
+    </div>
+    <div class="badges"><span data-fr="Sans pub" data-en="No ads">Sans pub</span><span data-fr="Sans abonnement" data-en="No subscription">Sans abonnement</span><span data-fr="Android et iPhone" data-en="Android &amp; iPhone">Android et iPhone</span></div>
+  </div>
+  <div style="position:relative">
+    <div class="phone b"><img data-shot="train" alt=""></div>
+    <div class="phone"><img data-shot="guild" alt="Runelift"></div>
+  </div>
+</div></section>
+
+<section class="feat alt"><div class="wrap">
+  <div class="txt reveal">
+    <div class="kicker" data-fr="La Guilde" data-en="The Guild">La Guilde</div>
+    <h2 data-fr="Chaque série te rapporte de l'XP." data-en="Every set earns you XP.">Chaque série te rapporte de l'XP.</h2>
+    <p data-fr="Runelift transforme ta régularité en progression de jeu. Plus tu t'entraînes, plus ton aventurier devient puissant." data-en="Runelift turns consistency into game progress. The more you train, the stronger your adventurer gets.">Runelift transforme ta régularité en progression de jeu. Plus tu t'entraînes, plus ton aventurier devient puissant.</p>
+    <ul class="pts">
+      <li><span class="ico">⬆</span><div><b data-fr="Niveaux et rangs, de E à S" data-en="Levels and ranks, from E to S">Niveaux et rangs, de E à S</b><small data-fr="Ta force, ton endurance, ta constance : tout compte." data-en="Strength, endurance, consistency: it all counts.">Ta force, ton endurance, ta constance : tout compte.</small></div></li>
+      <li><span class="ico">⚔</span><div><b data-fr="Quêtes du jour, donjons et boss" data-en="Daily quests, dungeons and bosses">Quêtes du jour, donjons et boss</b><small data-fr="Bats ton record du mois pour vaincre le boss." data-en="Beat your monthly record to defeat the boss.">Bats ton record du mois pour vaincre le boss.</small></div></li>
+      <li><span class="ico">🎁</span><div><b data-fr="Coffres, médailles et armurerie" data-en="Chests, medals and armory">Coffres, médailles et armurerie</b><small data-fr="Débloque des titres, des cadres, des thèmes et des célébrations." data-en="Unlock titles, frames, themes and celebrations.">Débloque des titres, des cadres, des thèmes et des célébrations.</small></div></li>
+    </ul>
+  </div>
+  <div class="reveal"><div class="phone"><img data-shot="guild" alt=""></div></div>
+</div></section>
+
+<section class="feat rev"><div class="wrap">
+  <div class="reveal"><div class="phone"><img data-shot="profile" alt=""></div></div>
+  <div class="txt reveal">
+    <div class="kicker" data-fr="Ta classe" data-en="Your class">Ta classe</div>
+    <h2 data-fr="Ta façon de t'entraîner décide de qui tu deviens." data-en="How you train decides who you become.">Ta façon de t'entraîner décide de qui tu deviens.</h2>
+    <p data-fr="Charges lourdes, gros volume, cardio, variété… Runelift analyse tes séances et te révèle ta classe d'aventurier." data-en="Heavy loads, high volume, cardio, variety… Runelift analyzes your workouts and reveals your adventurer class.">Charges lourdes, gros volume, cardio, variété… Runelift analyse tes séances et te révèle ta classe d'aventurier.</p>
+    <div class="classes"><span data-fr="🛡 Tank" data-en="🛡 Tank">🛡 Tank</span><span data-fr="⚔ Guerrier" data-en="⚔ Warrior">⚔ Guerrier</span><span data-fr="🗡 Assassin" data-en="🗡 Assassin">🗡 Assassin</span><span data-fr="📖 Mage" data-en="📖 Mage">📖 Mage</span><span data-fr="👊 Combattant" data-en="👊 Fighter">👊 Combattant</span></div>
+    <p data-fr="Et toi, t'es quoi?" data-en="So, which one are you?">Et toi, t'es quoi?</p>
+  </div>
+</div></section>
+
+<section class="feat alt"><div class="wrap">
+  <div class="txt reveal">
+    <div class="kicker" data-fr="Programme par IA" data-en="AI programs">Programme par IA</div>
+    <h2 data-fr="Ton programme, fait par ton IA. Gratuitement." data-en="Your program, built by your AI. For free.">Ton programme, fait par ton IA. Gratuitement.</h2>
+    <p data-fr="Runelift prépare un message avec ton objectif, ton niveau et ton historique. Tu le colles dans ton IA, tu recolles sa réponse : tes routines sont prêtes." data-en="Runelift prepares a message with your goal, level and history. Paste it into your AI, paste its answer back: your routines are ready.">Runelift prépare un message avec ton objectif, ton niveau et ton historique. Tu le colles dans ton IA, tu recolles sa réponse : tes routines sont prêtes.</p>
+    <div class="ai"><span>ChatGPT</span><span>Claude</span><span>Gemini</span><span data-fr="ou une autre" data-en="or any other">ou une autre</span></div>
+    <ul class="pts">
+      <li><span class="ico">✦</span><div><b data-fr="L'IA que tu connais déjà" data-en="The AI you already know">L'IA que tu connais déjà</b><small data-fr="Discute avec elle de ton programme, ajuste ce que tu veux." data-en="Chat with it about your program, adjust anything.">Discute avec elle de ton programme, ajuste ce que tu veux.</small></div></li>
+      <li><span class="ico">↻</span><div><b data-fr="Ajustements selon tes résultats" data-en="Adjustments based on your results">Ajustements selon tes résultats</b><small data-fr="Envoie ton historique et laisse l'IA corriger ce qui stagne." data-en="Send your history and let the AI fix what's stalling.">Envoie ton historique et laisse l'IA corriger ce qui stagne.</small></div></li>
+    </ul>
+  </div>
+  <div class="reveal"><div class="phone"><img data-shot="train" alt=""></div></div>
+</div></section>
+
+<section class="feat rev"><div class="wrap">
+  <div class="reveal"><div class="phone"><img data-shot="friends" alt=""></div></div>
+  <div class="txt reveal">
+    <div class="kicker" data-fr="Entre amis" data-en="With friends">Entre amis</div>
+    <h2 data-fr="Forme ta guilde. Écrase le classement." data-en="Build your guild. Top the leaderboard.">Forme ta guilde. Écrase le classement.</h2>
+    <ul class="pts">
+      <li><span class="ico">@</span><div><b data-fr="Ajoute tes amis avec leur @pseudo" data-en="Add friends by @username">Ajoute tes amis avec leur @pseudo</b><small data-fr="Vois leurs séances, réagis et commente." data-en="See their workouts, react and comment.">Vois leurs séances, réagis et commente.</small></div></li>
+      <li><span class="ico">🏆</span><div><b data-fr="Défis d'une semaine" data-en="One-week challenges">Défis d'une semaine</b><small data-fr="Le plus de volume, de répétitions ou de séances : le gagnant prend l'XP." data-en="Most volume, reps or workouts: the winner takes the XP.">Le plus de volume, de répétitions ou de séances : le gagnant prend l'XP.</small></div></li>
+      <li><span class="ico">⚑</span><div><b data-fr="Raids de guilde et saisons" data-en="Guild raids and seasons">Raids de guilde et saisons</b><small data-fr="Unissez vos répétitions contre un objectif commun." data-en="Combine your reps toward a shared goal.">Unissez vos répétitions contre un objectif commun.</small></div></li>
+    </ul>
+  </div>
+</div></section>
+
+<section class="feat alt"><div class="wrap">
+  <div class="txt reveal">
+    <div class="kicker" data-fr="Le carnet complet" data-en="The full logbook">Le carnet complet</div>
+    <h2 data-fr="Tout ce qu'il faut pour progresser." data-en="Everything you need to progress.">Tout ce qu'il faut pour progresser.</h2>
+    <ul class="pts">
+      <li><span class="ico">📚</span><div><b data-fr="Plus de 1 300 exercices" data-en="More than 1,300 exercises">Plus de 1 300 exercices</b><small data-fr="Avec instructions et muscles travaillés." data-en="With instructions and muscles worked.">Avec instructions et muscles travaillés.</small></div></li>
+      <li><span class="ico">📈</span><div><b data-fr="Records, statistiques, récupération" data-en="Records, stats, recovery">Records, statistiques, récupération</b><small data-fr="Carte des muscles, exercices qui stagnent, bilan de l'année." data-en="Muscle map, stalling exercises, year in review.">Carte des muscles, exercices qui stagnent, bilan de l'année.</small></div></li>
+      <li><span class="ico">⇪</span><div><b data-fr="Tu viens de Hevy ou Strong?" data-en="Coming from Hevy or Strong?">Tu viens de Hevy ou Strong?</b><small data-fr="Importe ton historique en un fichier CSV." data-en="Import your history with one CSV file.">Importe ton historique en un fichier CSV.</small></div></li>
+    </ul>
+  </div>
+  <div class="reveal"><div class="phone"><img data-shot="stats" alt=""></div></div>
+</div></section>
+
+<section id="installer"><div class="wrap">
+  <div class="kicker" data-fr="Installation" data-en="Install">Installation</div>
+  <h2 data-fr="Installe Runelift en 30 secondes." data-en="Install Runelift in 30 seconds.">Installe Runelift en 30 secondes.</h2>
+  <p style="color:var(--muted);margin:0" data-fr="Pas besoin de boutique : l'appli s'installe directement depuis ton navigateur." data-en="No app store needed: install it straight from your browser.">Pas besoin de boutique : l'appli s'installe directement depuis ton navigateur.</p>
+  <div class="steps">
+    <div class="step reveal"><h3>🤖 Android</h3><ol>
+      <li data-fr="Ouvre <b>cette page dans Chrome</b>." data-en="Open <b>this page in Chrome</b>.">Ouvre <b>cette page dans Chrome</b>.</li>
+      <li data-fr="Touche <b>Commencer gratuitement</b>." data-en="Tap <b>Start for free</b>.">Touche <b>Commencer gratuitement</b>.</li>
+      <li data-fr="Menu <b>⋮</b> → <b>Installer l'application</b>." data-en="Menu <b>⋮</b> → <b>Install app</b>.">Menu <b>⋮</b> → <b>Installer l'application</b>.</li>
+    </ol></div>
+    <div class="step reveal"><h3>🍎 iPhone</h3><ol>
+      <li data-fr="Ouvre <b>cette page dans Safari</b>." data-en="Open <b>this page in Safari</b>.">Ouvre <b>cette page dans Safari</b>.</li>
+      <li data-fr="Touche <b>Commencer gratuitement</b>." data-en="Tap <b>Start for free</b>.">Touche <b>Commencer gratuitement</b>.</li>
+      <li data-fr="Bouton <b>Partager</b> → <b>Sur l'écran d'accueil</b>." data-en="<b>Share</b> button → <b>Add to Home Screen</b>.">Bouton <b>Partager</b> → <b>Sur l'écran d'accueil</b>.</li>
+    </ol></div>
+  </div>
+</div></section>
+
+<section class="alt"><div class="wrap">
+  <div class="kicker">FAQ</div>
+  <h2 data-fr="Questions fréquentes" data-en="Frequently asked questions">Questions fréquentes</h2>
+  <div class="faq">
+    <details><summary data-fr="C'est vraiment gratuit?" data-en="Is it really free?">C'est vraiment gratuit?</summary><p data-fr="Oui. Pas de pub, pas d'abonnement, pas de fonctions bloquées." data-en="Yes. No ads, no subscription, no locked features.">Oui. Pas de pub, pas d'abonnement, pas de fonctions bloquées.</p></details>
+    <details><summary data-fr="Est-ce qu'il faut un compte?" data-en="Do I need an account?">Est-ce qu'il faut un compte?</summary><p data-fr="Non. Tu peux t'entraîner sans compte. Une connexion Google est seulement utile pour la sauvegarde automatique et les amis." data-en="No. You can train without an account. Google sign-in is only useful for automatic backup and friends.">Non. Tu peux t'entraîner sans compte. Une connexion Google est seulement utile pour la sauvegarde automatique et les amis.</p></details>
+    <details><summary data-fr="Où vont mes données?" data-en="Where does my data go?">Où vont mes données?</summary><p data-fr="Tes séances restent sur ton téléphone, sauf si tu actives la sauvegarde automatique. Tes amis voient seulement le résumé que tu choisis de partager. Détails dans la politique de confidentialité." data-en="Your workouts stay on your phone unless you turn on automatic backup. Your friends only see the summary you choose to share. Details in the privacy policy.">Tes séances restent sur ton téléphone, sauf si tu actives la sauvegarde automatique. Tes amis voient seulement le résumé que tu choisis de partager. Détails dans la politique de confidentialité.</p></details>
+    <details><summary data-fr="Ça marche sans le côté jeu?" data-en="Does it work without the game side?">Ça marche sans le côté jeu?</summary><p data-fr="Oui : un réglage cache tout le côté RPG si tu veux juste un carnet d'entraînement simple." data-en="Yes: one setting hides the whole RPG side if you just want a simple workout log.">Oui : un réglage cache tout le côté RPG si tu veux juste un carnet d'entraînement simple.</p></details>
+  </div>
+</div></section>
+
+<section class="final"><div class="wrap reveal">
+  <img src="icon-512.png" alt="">
+  <h2 data-fr="Ta quête commence aujourd'hui." data-en="Your quest starts today.">Ta quête commence aujourd'hui.</h2>
+  <p style="color:var(--muted);margin:0 0 24px" data-fr="Gratuit, sans pub, en français et en anglais." data-en="Free, no ads, in English and French.">Gratuit, sans pub, en français et en anglais.</p>
+  <a class="btn primary" href="./" data-fr="Commencer gratuitement →" data-en="Start for free →">Commencer gratuitement →</a>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <span>© 2026 Runelift</span>
+  <span><a href="privacy.html" data-fr="Confidentialité" data-en="Privacy">Confidentialité</a> · <a href="mailto:runelift.app@gmail.com">runelift.app@gmail.com</a></span>
+</div></footer>
+
+<script>
+(function () {
+  var q = new URLSearchParams(location.search).get('lang');
+  var saved = null; try { saved = localStorage.getItem('rl-lang'); } catch (e) {}
+  var lang = q || saved || ((navigator.language || 'fr').toLowerCase().indexOf('fr') === 0 ? 'fr' : 'en');
+  function apply(l) {
+    lang = l; document.documentElement.lang = l;
+    document.querySelectorAll('[data-fr]').forEach(function (e) { e.innerHTML = e.getAttribute('data-' + l); });
+    document.querySelectorAll('[data-shot]').forEach(function (e) { e.src = 'site/' + l + '_' + e.getAttribute('data-shot') + '.webp'; });
+    document.getElementById('lang').textContent = l === 'fr' ? 'EN' : 'FR';
+    document.title = l === 'fr' ? 'Runelift – Ton entraînement devient une aventure' : 'Runelift – Turn your workouts into an adventure';
+    try { localStorage.setItem('rl-lang', l); } catch (e) {}
+  }
+  document.getElementById('lang').addEventListener('click', function () { apply(lang === 'fr' ? 'en' : 'fr'); });
+  apply(lang);
+  var io = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, {threshold: .15}) : null;
+  document.querySelectorAll('.reveal').forEach(function (e) { if (io) io.observe(e); else e.classList.add('in'); });
+})();
+</script>
+</body>
+</html>
