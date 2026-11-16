@@ -1616,11 +1616,11 @@ function openExo(name) {
   if (L && L.custom) {
     body = `<div class="chips">${L.p.map(m => `<span class="chip main">${esc(musN(m))}</span>`).join('')}</div><p class="muted small">${T('Exercice perso : pas d\'animation, mais il compte dans tes statistiques et la récupération.', 'Custom exercise: no animation, but it counts in your stats and recovery.')}</p>`;
   } else if (L) {
-    body = `${L.sim ? `<p class="muted small" style="margin:0 0 6px">🎞 ${T('Animation d\'un mouvement très proche (cet exercice n\'existe pas dans la base d\'animations).', 'Animation of a very similar movement (this exercise is not in the animation database).')}</p>` : ''}<div class="exoimg" id="exoimg"><img alt="" referrerpolicy="no-referrer" src="${gifUrl(L)}" data-id="${L.id}"></div>
+    body = `${L.sim ? `<p class="muted small" style="margin:0 0 6px">🎞 ${T('Animation d\'un mouvement très proche (cet exercice n\'existe pas dans la base d\'animations).', 'Animation of a very similar movement (this exercise is not in the animation database).')}</p>` : ''}${freeEx() ? exFree(L) + '<div hidden' : '<div class="exoimg"'} id="exoimg"><img alt="" referrerpolicy="no-referrer" src="${gifUrl(L)}" data-id="${L.id}"></div>
       <div class="chips">${L.p.map(m => `<span class="chip main">${esc(musN(m))}</span>`).join('')}${L.s.map(m => `<span class="chip">${esc(musN(m))}</span>`).join('')}</div>
       <p class="muted small" style="margin:4px 0">${L.eq ? 'Équipement : ' + esc(eqN(L.eq)) + ' · ' : ''}<b style="color:var(--accent)">Muscle principal</b> / secondaires<br>Bibliothèque : ${esc(L.name)}</p>
       <div id="exotxt">${instrHtml(L)}</div>
-      <p class="muted small" style="font-size:11px">Animation © <a href="https://gymvisual.com/" target="_blank" rel="noopener" style="color:inherit">Gym visual</a> · base <a href="https://github.com/${REPO}" target="_blank" rel="noopener" style="color:inherit">${REPO}</a></p>`;
+      ${freeEx() ? '' : `<p class="muted small" style="font-size:11px">Animation © <a href="https://gymvisual.com/" target="_blank" rel="noopener" style="color:inherit">Gym visual</a> · base <a href="https://github.com/${REPO}" target="_blank" rel="noopener" style="color:inherit">${REPO}</a></p>`}`;
   } else body = `<p class="muted">Aucune animation liée à cet exercice. Choisis-en une dans la bibliothèque.</p>`;
   if (L && !L.custom && !TXT[isEN() ? 'en' : 'fr']) loadTxt().then(() => { const b = $('#exotxt'); if (b) b.innerHTML = instrHtml(L); });
   const m = modal(`
@@ -2902,7 +2902,18 @@ function chartPoints() {
 /* ===================== v3 : écrans principaux ===================== */
 /* ---------- Miniatures rondes ---------- */
 const thumbUrl = L => `https://raw.githubusercontent.com/${REPO}/main/images/${L.mid || L.id}-${L.media}.jpg`;
-const thumbL = (L, sz = 42) => `<span class="th${L && L.media ? '' : ' noimg'}" style="--s:${sz}px">${L && L.media ? `<img src="${thumbUrl(L)}" alt="" decoding="async" referrerpolicy="no-referrer" class="thi" onload="this.classList.add('ok')" onerror="this.parentNode.classList.add('noimg');this.remove()">` : ''}</span>`;
+/* Aperçu « sans licence » (mode test) : schéma des muscles + démo YouTube au lieu des animations Gym Visual */
+function freeEx() { return !!(S.settings.lab && S.settings.freeEx); }
+function exMap(L, w = '100%') {
+  const v = {}; (L.s || []).forEach(m => v[m] = 2.6); (L.p || []).forEach(m => v[m] = 5);
+  return `<svg viewBox="0 0 300 312" width="${w}" role="img" aria-label="${T('Muscles travaillés', 'Muscles worked')}">${bodySVG(BODY_F, v, 5, 0)}${bodySVG(BODY_B, v, 5, 160)}</svg>`;
+}
+function exYT(L) { return 'https://www.youtube.com/results?search_query=' + encodeURIComponent((L.name || '') + ' exercise proper form'); }
+function exFree(L) {
+  return `<div class="card" style="padding:10px;margin:0 0 8px">${exMap(L)}<div class="row" style="justify-content:center;gap:14px;margin-top:4px"><span class="small"><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${HEAT[4]}"></i> ${T('Principal', 'Main')}</span><span class="small"><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${HEAT[2]}"></i> ${T('Secondaire', 'Secondary')}</span></div></div>
+    <a class="btn block" href="${exYT(L)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px">▶ ${T('Voir la démo sur YouTube', 'Watch the demo on YouTube')}</a>`;
+}
+const thumbL = (L, sz = 42) => freeEx() ? `<span class="th noimg" style="--s:${sz}px"></span>` : `<span class="th${L && L.media ? '' : ' noimg'}" style="--s:${sz}px">${L && L.media ? `<img src="${thumbUrl(L)}" alt="" decoding="async" referrerpolicy="no-referrer" class="thi" onload="this.classList.add('ok')" onerror="this.parentNode.classList.add('noimg');this.remove()">` : ''}</span>`;
 const thumb = (name, sz = 42) => thumbL(libEntry(name), sz);
 
 /* ---------- Séries détaillées des routines ---------- */
@@ -4196,7 +4207,7 @@ function vExDetail() {
   const rec = computeRecords().find(r => norm(r.name) === norm(name));
   const pts = exPoints(name);
   const chips = [['1rm', '1RM estimé'], ['max', 'Charge max'], ['vol', 'Volume'], ['reps', 'Réps max']].map(([k, l]) => `<button class="chip ${exMetric === k ? 'on' : ''}" data-act="ex-metric" data-m="${k}">${l}</button>`).join('');
-  return `<div class="card" style="text-align:center">${L && L.media ? `<img class="gifbig" src="${gifUrl(L)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : thumb(name, 96)}
+  return `<div class="card" style="text-align:center">${L && L.media && freeEx() ? `<div style="max-width:240px;margin:0 auto">${exMap(L)}</div>` : L && L.media ? `<img class="gifbig" src="${gifUrl(L)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : thumb(name, 96)}
       <h2 style="margin-top:8px">${esc(name)}</h2>
       ${L ? `<div class="chips" style="justify-content:center">${L.p.map(m => `<span class="chip main">${esc(musN(m))}</span>`).join('')}${L.s.map(m => `<span class="chip">${esc(musN(m))}</span>`).join('')}</div>` : ''}
       <button class="btn sm" data-act="exo" data-n="${esc(name)}">📖 Instructions et lien</button></div>
@@ -4835,6 +4846,7 @@ function labOpen() {
     <div class="cpbig" style="--cc:${k.col}">${compArt(k)}</div><p class="muted small" style="text-align:center;margin:0 0 10px">${esc(compMoodTxt(k))}</p>
     <div class="compc" style="--cc:${k.col};cursor:default">${compArt(k)}<span style="flex:1;min-width:0"><span class="muted small">${T('Compagnon', 'Companion')}</span><br><b>${esc(k.name)}</b><br><span class="small muted">${esc(compMoodTxt(k))}</span></span></div>
     ${k.st >= 0 ? `<button class="btn primary block" data-act="lab-evo">✨ ${k.st === 0 ? T('Voir l\'éclosion', 'See the hatching') : T('Voir l\'évolution', 'See the evolution')}</button>` : ''}
+    <div class="card" style="margin:12px 0 0;padding:10px"><b>${T('Exercices sans licence', 'License-free exercises')}</b><p class="small muted" style="margin:4px 0 8px">${T('Aperçu : schéma des muscles + bouton YouTube au lieu des animations Gym Visual. Seulement pour toi.', 'Preview: muscle map + YouTube button instead of Gym Visual animations. Only for you.')}</p><button class="btn block${S.settings.freeEx ? ' primary' : ''}" data-act="lab-free">${S.settings.freeEx ? T('✓ Activé (toucher pour revenir aux animations)', '✓ On (tap to go back to animations)') : T('Essayer cet aperçu', 'Try this preview')}</button></div>
     <button class="btn block" data-act="lab-off" style="margin-top:8px">${T('Cacher le mode test', 'Hide test mode')}</button>
     <button class="btn block" data-act="close" style="margin-top:8px">${T('Fermer', 'Close')}</button>`;
   const m = document.querySelector('.modal .labm');
@@ -5458,7 +5470,7 @@ function stDraw(full) {
   const st = stp.steps[stp.i], nx = stp.steps[stp.i + 1];
   if (full) box.innerHTML = `<div class="row between small muted"><span>${esc(T(stp.rt.n[0], stp.rt.n[1] || stp.rt.n[0]))}</span><span>${stp.i + 1}/${stp.steps.length}</span></div>
     <div class="pbar" style="margin:6px 0 10px"><div style="width:${Math.round(stp.i / stp.steps.length * 100)}%"></div></div>
-    ${st.L && st.L.media ? `<div class="stgif"><img src="${gifUrl(st.L)}" alt="" referrerpolicy="no-referrer" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${gifUrl2(st.L)}'}"></div>` : ''}
+    ${st.L && st.L.media && freeEx() ? `<div class="stgif" style="background:none">${exMap(st.L)}</div>` : st.L && st.L.media ? `<div class="stgif"><img src="${gifUrl(st.L)}" alt="" referrerpolicy="no-referrer" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${gifUrl2(st.L)}'}"></div>` : ''}
     <h2 style="margin:8px 0 2px">${esc(stName(st.it))}</h2><div id="stside" class="stside">${sideTxt(st.side)}</div>
     <svg viewBox="0 0 200 200" width="150" height="150" style="display:block;margin:4px auto"><circle cx="100" cy="100" r="88" fill="none" stroke="var(--line)" stroke-width="12"/>
       <circle id="string" cx="100" cy="100" r="88" fill="none" stroke="var(--accent)" stroke-width="12" stroke-linecap="round" transform="rotate(-90 100 100)" stroke-dasharray="552.9" stroke-dashoffset="0"/>
@@ -5735,10 +5747,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.60.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.60.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
-  {v: '9.60.0', d: '2026-11-16', fr: ['🪨 Carnet Muscu s\'appelle maintenant Runelift ! Rien d\'autre ne change : tes séances, ta guilde et tes amis sont toujours là.'], en: ['🪨 Carnet Muscu is now called Runelift! Nothing else changes: your workouts, guild and friends are all still here.']},
+  {v: '9.60.1', d: '2026-11-16', fr: ['🪨 Carnet Muscu s\'appelle maintenant Runelift ! Rien d\'autre ne change : tes séances, ta guilde et tes amis sont toujours là.'], en: ['🪨 Carnet Muscu is now called Runelift! Nothing else changes: your workouts, guild and friends are all still here.']},
   {v: '9.59.2', d: '2026-11-15', fr: ['🔍 Tout le monde est maintenant trouvable dans la recherche d\'amis : si tu n\'avais pas choisi de @pseudo, l\'app t\'en donne un d\'après ton nom (modifiable dans Amis).', '🛡️ Nouvelle icône : l\'emblème de la Guilde.', '🏅 Médailles : chaque catégorie se replie, avec sa barre de progression. La page est beaucoup plus courte.', '🎁 Armurerie : nouvel onglet « Coffres » avec tes 4 collections de fragments et toutes leurs récompenses.', '🔒 Nouvelle page « Politique de confidentialité » et bouton « Supprimer mon compte » (Réglages → Données et compte).'],
     en: ['🔍 Everyone can now be found in friend search: if you hadn\'t picked a @username, the app gives you one based on your name (change it in Friends).', '🛡️ New icon: the Guild emblem.', '🏅 Medals: each category folds, with its progress bar.', '🎁 Armory: new “Chests” tab with your 4 fragment collections.', '🔒 New privacy policy page and “Delete my account” button (Settings → Data & account).']},
   {v: '9.54.1', d: '2026-11-14', fr: ['🧹 Grand ménage : le blason du Mimique apparaît bien dans l\'Armurerie, « Tour de taille » ne se confond plus avec ta taille, l\'emoji Terre est remplacé par une icône, les réactions et commentaires reçus sont regroupés dans la cloche 🔔, la fenêtre « Mon code » explique le @pseudo, et l\'anglais est complété.', '🎁 Coffres : 4 sortes de fragments (Liche 💀, Dragon 🐉, Kraken 🐙, Mimique 🎁), chacune avec sa propre collection exclusive : 20 récompenses en tout (titres, cadres, thèmes, victoires, blasons, bannières). Chaque coffre donne des fragments d\'un monstre au hasard, et le légendaire en donne de 2 monstres. Tes anciens fragments comptent pour la Liche et le Mimique.', '🧭 La visite de la Guilde attend ta première séance (avant, la Guilde est vide).', '🎓 Ton niveau d\'expérience (débutant, intermédiaire, avancé) sert enfin à quelque chose : séries proposées, temps de récupération et conseils de l\'IA. Et il monte tout seul au fil de tes séances!', '📋 Nouveau compte : l\'appli te prépare un programme de départ selon ton objectif, tes séances par semaine et ton niveau, avec ton horaire de la semaine. ', '👥 Le bouton « Ajouter » est maintenant au début de ta liste d\'amis.', '🔔 Touche une notification de like ou de commentaire : la séance s\'ouvre, avec les réactions et les commentaires, et tu peux répondre.', '👥 Ajouter un ami est plus évident : recherche par @pseudo directement dans Amis quand tu n\'en as pas encore, et une carte « Entraîne-toi avec tes amis » dans Muscu.', '⚔️ Défis : ton ami reçoit une notification et doit accepter (ou refuser). Les 7 jours commencent quand il accepte.', '🛡️ Raid : chaque aventurier compte pour 3 000 reps max, pour que personne ne porte le groupe seul. Explication plus claire.', '👑 Saison : il faut au moins 3 aventuriers actifs dans le mois pour remporter le trophée. Les anciennes victoires trop faciles sont recalculées.', '🎆 Victoires refaites : chaque fête est maintenant différente (fusées, pièces d\'or qui rebondissent, flammes, vrais flocons, éclairs, spirale, rayons divins, couronne…).', '🏞️ Bannières redessinées, plus détaillées et animées (braises, étoiles filantes, vagues, lucioles, portail…).', '📥 « Tu viens d\'une autre appli? » : importe ton fichier CSV de Hevy, Strong ou autre.', '🧭 Nouvelle visite de la Guilde. La visite ne parle plus de sauvegarde si tu es connecté avec Google.', '🧍 Une seule fiche « Mes infos » (âge, taille, sexe, poids) partout : profil, cardio, réglages. Le niveau de force a été retiré.', '🧹 Moins de doublons : le rappel de sauvegarde disparaît si la sauvegarde Google est active, et les autres options de sauvegarde sont repliées.'],
@@ -8551,9 +8563,10 @@ document.addEventListener('click', e => {
     case 'comp-info': compInfo(); break;
     case 'ver-tap': { window._vt = (window._vt || 0) + 1; clearTimeout(window._vtT); window._vtT = setTimeout(() => window._vt = 0, 2500); if (window._vt >= 7) { window._vt = 0; S.settings.lab = true; save(); render(); labOpen(); } else if (window._vt >= 4) toast(T(`Encore ${7 - window._vt}…`, `${7 - window._vt} more…`)); break; }
     case 'lab': labOpen(); break;
+    case 'lab-free': S.settings.freeEx = !S.settings.freeEx; save(); labOpen(); render(); break;
     case 'lab-set': labSel[b.dataset.k] = b.dataset.k === 'st' ? +b.dataset.v : b.dataset.v; labOpen(); break;
     case 'lab-evo': { const z = compFake(labSel.sp, labSel.st, 'happy'), a = compFake(labSel.sp, labSel.st - 1, 'happy'); compEvolve(a, z); break; }
-    case 'lab-off': S.settings.lab = false; save(); closeModal(); render(); break;
+    case 'lab-off': S.settings.lab = false; S.settings.freeEx = false; save(); closeModal(); render(); break;
     case 'comp-evo': if (window._cpEvo) { const [a, z] = window._cpEvo; window._cpEvo = null; b.remove(); compEvolve(a, z); } break;
     case 'comp-name': { S.comp = S.comp || {}; S.comp.n = ($('#compnm').value || '').trim().slice(0, 20); save(); closeModal(); render(); toast(T('Nom enregistré', 'Name saved')); break; }
     case 'cls-info': { const hu = hunter(), s = classStyle();
