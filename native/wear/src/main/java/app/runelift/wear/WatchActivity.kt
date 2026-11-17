@@ -80,6 +80,11 @@ class WatchActivity : Activity() {
         isClickable = true; isFocusable = true
         setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); click(v) }
     }
+    /* Nom trop long : il défile tout seul, comme dans Hevy. */
+    private fun marquee(text: String, sp: Float, color: Int) = tv(text, sp, color, true).apply {
+        isSingleLine = true; ellipsize = TextUtils.TruncateAt.MARQUEE; marqueeRepeatLimit = -1
+        setHorizontallyScrolling(true); isSelected = true
+    }
     private fun add(v: View, top: Float = 6f, full: Boolean = true) {
         col.addView(v, LinearLayout.LayoutParams(if (full) -1 else -2, -2).apply { topMargin = dp(top); gravity = Gravity.CENTER_HORIZONTAL })
     }
@@ -318,7 +323,7 @@ class WatchActivity : Activity() {
 
     /* ---------- Page 0 : vue d'ensemble ---------- */
     private fun overview() {
-        add(tv(WS.st?.optString("n") ?: "", 14f, Color.WHITE, true).apply { maxLines = 1; ellipsize = TextUtils.TruncateAt.END }, 4f)
+        add(marquee(WS.st?.optString("n") ?: "", 14f, Color.WHITE), 4f)
         tvClock = tv(clock(WS.elapsedMs()), 24f, Color.WHITE, true).also { add(it, 2f) }
         tvHr = tv(hrLine(), 13f, HEART, true).also { add(it, 0f) }
         if (WS.isLocal()) add(tv(WS.t("Montre seule · envoyée au téléphone à la fin", "Watch only · sent to the phone at the end"), 10f, MUTED), 2f)
@@ -347,7 +352,7 @@ class WatchActivity : Activity() {
         tvBig = tv(clock(WS.restEnd - System.currentTimeMillis() + 999), 34f, Color.WHITE, true).also { add(it, 2f) }
         tvHr = tv(hrLine(), 12f, HEART, true).also { add(it, 0f) }
         val next = if (c != null) WS.t("Ensuite : ", "Next: ") + (WS.ex(c.first)?.optString("n") ?: "") else WS.t("Dernière série faite", "Last set done")
-        add(tv(next, 12f, Color.WHITE).apply { maxLines = 2 }, 4f)
+        add(marquee(next, 12f, Color.WHITE), 4f)
         add(row(pill("+30 s", CARD, Color.WHITE, 13f, 8f) { WS.restAdd(this) },
                 pill(WS.t("Passer", "Skip"), ACC, ON_ACC, 13f, 8f) { WS.restSkip(this) }), 10f)
     }
@@ -360,7 +365,7 @@ class WatchActivity : Activity() {
 
     private fun setView(e: Int, s: Int) {
         val x = WS.ex(e); val st = WS.set(e, s)
-        add(tv(x?.optString("n") ?: "", 13f, Color.WHITE, true).apply { maxLines = 1; ellipsize = TextUtils.TruncateAt.END }, 2f)
+        add(marquee(x?.optString("n") ?: "", 13f, Color.WHITE), 2f)
         val warm = st?.optString("t") == "W"
         val (dd, nn) = s + 1 to WS.nSets(e)
         tvHr = tv((if (warm) WS.t("Échauf. · ", "Warm-up · ") else "") + "$dd/$nn   " + hrLine(), 11f, Color.WHITE, true).also { add(it, 0f) }
