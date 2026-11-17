@@ -7610,7 +7610,7 @@ function cbCard() {
     <p class="muted small" style="margin:6px 0">🔒 ${T(`Privé : toi seul peux lire ta sauvegarde. Tes photos aussi (jusqu'à ${PH_MAX}).`, `Private: only you can read your backup. Your photos too (up to ${PH_MAX}).`)}</p>
     <div class="grid2"><button class="btn primary sm" data-act="cb-on">${T('Activer', 'Turn on')}</button><button class="btn sm" data-act="cb-restore">⬇ ${T('Restaurer', 'Restore')}</button></div></div>`;
   return `<div class="card" style="border-color:var(--accent)"><h3>☁️ ${T('Sauvegarde automatique', 'Automatic backup')}</h3>
-    <p class="small" style="margin:6px 0">${c.err ? '⚠️ ' + esc(c.err) + '<br>' : ''}${c.last ? '✅ ' + T('Sauvegardé ', 'Backed up ') + ago(c.last) : '⏳ ' + T('Pas encore sauvegardé', 'Not backed up yet')}<br>📸 ${(c.phUp || []).length} / ${PH_MAX} ${T('photos sauvegardées', 'photos backed up')}${c.phFull ? ' · ' + T('limite atteinte', 'limit reached') : ''}</p>
+    <p class="small" style="margin:6px 0">${c.err ? '⚠️ ' + esc(c.err) + '<br>' : ''}${c.last ? '✅ ' + T('Sauvegardé ', 'Backed up ') + ago(c.last) : '⏳ ' + T('Pas encore sauvegardé', 'Not backed up yet')}<br>📸 ${(c.phUp || []).length} / ${PH_MAX} ${T('photos sauvegardées', 'photos backed up')}${c.phFull ? ' · ' + T('limite atteinte', 'limit reached') : ''}${c.phErr ? '<br>⚠️ ' + esc(c.phErr) : ''}</p>
     <div class="grid2"><button class="btn sm" data-act="cb-push">⬆ ${T('Sauvegarder maintenant', 'Back up now')}</button><button class="btn sm" data-act="cb-restore">⬇ ${T('Restaurer', 'Restore')}</button></div>
     <button class="btn sm ghost block" data-act="cb-off" style="margin-top:8px">${T('Désactiver', 'Turn off')}</button></div>`;
 }
