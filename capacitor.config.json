@@ -6,9 +6,16 @@
   "server": {
     "url": "https://gavaliagb-source.github.io/carnet-muscu/",
     "androidScheme": "https",
-    "allowNavigation": ["gavaliagb-source.github.io"]
+    "allowNavigation": [
+      "gavaliagb-source.github.io"
+    ]
   },
   "android": {
     "backgroundColor": "#0d0f12"
+  },
+  "plugins": {
+    "SystemBars": {
+      "style": "DARK"
+    }
   }
 }
