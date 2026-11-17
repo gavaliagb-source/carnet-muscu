@@ -287,6 +287,9 @@ class WatchActivity : Activity() {
         sig = ns
         col.removeAllViews(); tvClock = null; tvHr = null; tvBig = null; hrPrefix = ""
         col.gravity = if (on && page == 1) Gravity.CENTER else Gravity.CENTER_HORIZONTAL
+        val sw = resources.displayMetrics.widthPixels; val shh = resources.displayMetrics.heightPixels
+        if (on && page == 1 && !askAb && swapFor < 0) col.setPadding((sw * 0.07).toInt(), (shh * 0.04).toInt(), (sw * 0.07).toInt(), (shh * 0.04).toInt())
+        else col.setPadding((sw * 0.12).toInt(), (shh * 0.15).toInt(), (sw * 0.12).toInt(), (shh * 0.22).toInt())
         scroll.locked = on && page == 1 && !askAb && swapFor < 0
         if (!on) { if (detail != null) routineDetail(detail!!) else idle(); return }
         if (askAb) { col.gravity = Gravity.CENTER; abandonView(); return }
@@ -380,13 +383,19 @@ class WatchActivity : Activity() {
 
     /* ---------- Page 1 : série en cours ---------- */
     private fun rest(c: Pair<Int, Int>?) {
-        add(tv(WS.t("Repos", "Rest"), 13f, MUTED), 6f)
-        tvBig = tv(clock(WS.restEnd - System.currentTimeMillis() + 999), 34f, Color.WHITE, true).also { add(it, 2f) }
-        tvHr = tv(hrLine(), 12f, HEART, true).also { add(it, 0f) }
+        col.addView(tp(WS.t("Repos", "Rest"), 0.055f, MUTED), lp(-2, -2, 0.02f))
+        tvBig = tp(clock(WS.restEnd - System.currentTimeMillis() + 999), 0.17f, Color.WHITE, true).also { col.addView(it, lp(-2, -2, 0.01f)) }
+        tvHr = tp(hrLine(), 0.05f, HEART, true).also { col.addView(it, lp(-2, -2, 0.01f)) }
         val next = if (c != null) WS.t("Ensuite : ", "Next: ") + (WS.ex(c.first)?.optString("n") ?: "") else WS.t("Dernière série faite", "Last set done")
-        add(marquee(next, 12f, Color.WHITE), 4f)
-        add(row(pill("+30 s", CARD, Color.WHITE, 13f, 8f) { WS.restAdd(this) },
-                pill(WS.t("Passer", "Skip"), ACC, ON_ACC, 13f, 8f) { WS.restSkip(this) }), 10f)
+        col.addView(marquee(next, 12f, Color.WHITE).apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.052f) }, lp((W * 0.72f).toInt(), -2, 0.02f))
+        val bh = (W * 0.15f).toInt()
+        col.addView(LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER
+            addView(tp("+30 s", 0.055f, Color.WHITE, true).apply { background = bg(CARD, 40f); gravity = Gravity.CENTER; isClickable = true
+                setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); WS.restAdd(this@WatchActivity) } }, LinearLayout.LayoutParams((W * 0.27f).toInt(), bh).apply { rightMargin = (W * 0.025f).toInt() })
+            addView(tp(WS.t("Passer", "Skip"), 0.055f, ON_ACC, true).apply { background = bg(ACC, 40f); gravity = Gravity.CENTER; isClickable = true
+                setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); WS.restSkip(this@WatchActivity) } }, LinearLayout.LayoutParams((W * 0.30f).toInt(), bh).apply { leftMargin = (W * 0.025f).toInt() })
+        }, lp(-2, -2, 0.04f))
     }
 
     private fun allDone() {
@@ -402,11 +411,11 @@ class WatchActivity : Activity() {
 
     private fun setView(e: Int, s: Int) {
         val x = WS.ex(e); val st = WS.set(e, s)
-        col.addView(marquee(x?.optString("n") ?: "", 13f, Color.WHITE).apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.05f) }, lp((W * 0.62f).toInt(), -2, 0.01f))
+        col.addView(marquee(x?.optString("n") ?: "", 13f, Color.WHITE).apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.062f) }, lp((W * 0.70f).toInt(), -2, 0.012f))
         val warm = st?.optString("t") == "W"
         val (dd, nn) = s + 1 to WS.nSets(e)
         hrPrefix = (if (warm) WS.t("Échauf. · ", "Warm-up · ") else "") + "$dd/$nn   "
-        tvHr = tp(hrPrefix + hrLine(), 0.04f, Color.WHITE, true).also { col.addView(it, lp(-2, -2, 0.008f)) }
+        tvHr = tp(hrPrefix + hrLine(), 0.048f, Color.WHITE, true).also { col.addView(it, lp(-2, -2, 0.008f)) }
         if (x?.optInt("c", 0) == 1) {
             col.addView(tp(WS.t("Exercice chronométré ou cardio :\nà faire sur le téléphone", "Timed or cardio exercise:\nuse the phone"), 0.038f, MUTED), lp((W * 0.66f).toInt(), -2, 0.03f))
             col.addView(pill(WS.t("Suivant ›", "Next ›"), ACC, ON_ACC, 14f, 8f) { move(1) }, lp(-2, -2, 0.04f))
@@ -416,9 +425,9 @@ class WatchActivity : Activity() {
         fun fmt(f: Int, v: Double) = if (f == 0) (if (v <= 0 && !WS.hasW(e, s)) WS.t("PDC", "BW") else String.format(java.util.Locale.FRANCE, "%.1f", v)) else WS.num(v)
         fun box(label: String, f: Int): LinearLayout {
             val sel = field == f
-            val above = tp("", 0.036f, if (sel) ACC else MUTED).apply { alpha = 0.55f }
-            val mid = tp("", 0.085f, if (sel) ACC else Color.WHITE, true)
-            val below = tp("", 0.036f, if (sel) ACC else MUTED).apply { alpha = 0.55f }
+            val above = tp("", 0.046f, if (sel) ACC else MUTED).apply { alpha = 0.55f }
+            val mid = tp("", 0.108f, if (sel) ACC else Color.WHITE, true)
+            val below = tp("", 0.046f, if (sel) ACC else MUTED).apply { alpha = 0.55f }
             fun upd() {
                 val v = if (f == 0) WS.w(e, s) else WS.r(e, s); val stp = if (f == 0) WS.step() else 1.0
                 above.text = if (v - stp >= (if (f == 0) 0.0 else 1.0)) fmt(f, v - stp) else " "
@@ -428,8 +437,8 @@ class WatchActivity : Activity() {
             val wheel = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
                 background = bg(BG, 14f, if (sel) ACC else Color.parseColor("#4A515C"))
-                setPadding(0, (W * 0.012f).toInt(), 0, (W * 0.012f).toInt())
-                addView(above); addView(mid, LinearLayout.LayoutParams(-2, -2).apply { topMargin = (W * 0.006f).toInt(); bottomMargin = (W * 0.006f).toInt() }); addView(below)
+                setPadding(0, (W * 0.014f).toInt(), 0, (W * 0.014f).toInt())
+                addView(above); addView(mid, LinearLayout.LayoutParams(-2, -2).apply { topMargin = (W * 0.008f).toInt(); bottomMargin = (W * 0.008f).toInt() }); addView(below)
             }
             var y0 = 0f; var acc = 0f; var moved = false
             var vt: android.view.VelocityTracker? = null
@@ -469,28 +478,28 @@ class WatchActivity : Activity() {
             }
             return LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL
-                addView(tp(label, 0.034f, if (sel) ACC else MUTED, true))
-                addView(wheel, LinearLayout.LayoutParams((W * 0.27f).toInt(), -2).apply { topMargin = (W * 0.008f).toInt() })
+                addView(tp(label, 0.044f, if (sel) ACC else MUTED, true))
+                addView(wheel, LinearLayout.LayoutParams((W * 0.35f).toInt(), -2).apply { topMargin = (W * 0.01f).toInt() })
             }
         }
         col.addView(LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER
-            addView(box(u.replaceFirstChar { it.uppercase() }, 0), LinearLayout.LayoutParams(-2, -2).apply { rightMargin = (W * 0.015f).toInt() })
-            addView(box(WS.t("Répétitions", "Reps"), 1), LinearLayout.LayoutParams(-2, -2).apply { leftMargin = (W * 0.015f).toInt() })
-        }, lp(-2, -2, 0.02f))
+            addView(box(u.replaceFirstChar { it.uppercase() }, 0), LinearLayout.LayoutParams(-2, -2).apply { rightMargin = (W * 0.022f).toInt() })
+            addView(box(WS.t("Répétitions", "Reps"), 1), LinearLayout.LayoutParams(-2, -2).apply { leftMargin = (W * 0.022f).toInt() })
+        }, lp(-2, -2, 0.022f))
         val p = st?.optString("p") ?: ""
-        col.addView(tp(if (p.isNotEmpty()) WS.t("précéd. ", "prev. ") + p else " ", 0.034f, MUTED), lp(-2, -2, 0.012f))
-        val bd = (W * 0.13f).toInt()
-        val done = tp("✓", 0.07f, ON_ACC, true).apply {
+        col.addView(tp(if (p.isNotEmpty()) WS.t("précéd. ", "prev. ") + p else " ", 0.044f, MUTED), lp(-2, -2, 0.016f))
+        val bd = (W * 0.145f).toInt()
+        val done = tp("✓", 0.085f, ON_ACC, true).apply {
             background = bg(ACC, 40f); gravity = Gravity.CENTER; isClickable = true
             setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); field = 0; WS.done(this@WatchActivity, e, s) }
         }
         col.addView(LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER
-            addView(circle("‹") { move(-1) }, LinearLayout.LayoutParams(bd, bd).apply { rightMargin = (W * 0.02f).toInt() })
-            addView(done, LinearLayout.LayoutParams((W * 0.26f).toInt(), (W * 0.14f).toInt()))
-            addView(circle("›") { move(1) }, LinearLayout.LayoutParams(bd, bd).apply { leftMargin = (W * 0.02f).toInt() })
-        }, lp(-2, -2, 0.02f))
+            addView(circle("‹") { move(-1) }.apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.06f) }, LinearLayout.LayoutParams(bd, bd).apply { rightMargin = (W * 0.03f).toInt() })
+            addView(done, LinearLayout.LayoutParams((W * 0.27f).toInt(), (W * 0.15f).toInt()))
+            addView(circle("›") { move(1) }.apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.06f) }, LinearLayout.LayoutParams(bd, bd).apply { leftMargin = (W * 0.03f).toInt() })
+        }, lp(-2, -2, 0.022f))
     }
 
     /* ---------- Abandonner : demande de confirmation ---------- */
