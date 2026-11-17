@@ -7496,6 +7496,7 @@ function launchAct(v) {
 function phoneInit() {
   const L = LV(); if (!L || phoneInit.done) return; phoneInit.done = 1;
   L.addListener('live', d => liveAct(d && d.a));
+  L.addListener('launch', () => L.launch().then(r => launchAct(r && r.start), () => {}));
   const chk = () => { L.pending().then(r => (r && r.items || []).forEach(x => liveAct(x.a)), () => {}); L.launch().then(r => launchAct(r && r.start), () => {}); };
   chk(); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { chk(); widgetSync(true); bgSync(); } });
   setTimeout(() => { lockSync(); widgetSync(true); bgSync(); }, 2500);
