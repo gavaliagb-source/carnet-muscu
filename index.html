@@ -2022,7 +2022,7 @@ function finishWorkout() {
     else if (nv === 0 && pv === 0) { const nr = Math.max(...ws.map(s => +s.r)), pr = Math.max(...prevSets.map(s => +s.r)); if (nr > pr) prs.push({name: e.name, from: pr + ' reps', to: nr + ' reps'}); }
   });
   const meBefore = medalsEarned(), medBefore = meBefore.got, huBefore = hunter(meBefore);
-  S.history.push({id, routineId: a.routineId, routineName: a.routineName, date: a.start, duration: Math.round((Date.now() - new Date(a.start)) / 60000), exercises}); RC = {};
+  S.history.push({id, routineId: a.routineId, routineName: a.routineName, date: a.start, duration: Math.round((Date.now() - new Date(a.start)) / 60000), exercises, ...(hrSum(a.hrl) ? {hr: hrSum(a.hrl)} : {})}); RC = {};
   const wasFree = !a.routineId;
   const rtR = S.routines.find(x => x.id === a.routineId), rtCh = routineChanges(a, rtR);
   window._rtUpd = rtCh.length ? {rid: a.routineId, ex: JSON.parse(JSON.stringify(a.exercises))} : null;
@@ -2192,7 +2192,7 @@ function timerDone() {
   clearTimeout(timerFinT); timerFinT = setTimeout(() => { el.classList.remove('show', 'fin'); bigTimerClose(); }, 20000);
 }
 function startTimer(sec) {
-  timerEnd = Date.now() + sec * 1000; timerTot = sec; restSave();
+  timerEnd = Date.now() + sec * 1000; timerTot = sec; restSave(); wearPush();
   timerBtns();
   if (notifOn() && S.settings.notifStart !== false) { const t = new Date(timerEnd); notify(T(`⏱ Repos ${fmtRest(Math.round(sec))} — fin à ${t.getHours()}:${pad2(t.getMinutes())}`, `⏱ Rest ${fmtRest(Math.round(sec))} — ends at ${t.getHours()}:${pad2(t.getMinutes())}`), T('Ensuite : ', 'Next: ') + nextSetInfo(), {silent: true, ts: timerEnd}); }
   $('#timer').classList.add('show');
@@ -2232,7 +2232,7 @@ function tickTimer() {
   bigTimerSync();
   if (left <= 0) timerDone();
 }
-function stopTimer() { restForget(); bigTimerClose(); clearInterval(timerInt); cancelBeeps(); restSW(0); clearNotif(); clearTimeout(timerFinT); $('#timer').classList.remove('show', 'fin'); if (focusOn && S.active && cur().v === 'workout') setTimeout(render, 0); else setTimeout(foldPaint, 0); }
+function stopTimer() { timerEnd = 0; wearPush(); restForget(); bigTimerClose(); clearInterval(timerInt); cancelBeeps(); restSW(0); clearNotif(); clearTimeout(timerFinT); $('#timer').classList.remove('show', 'fin'); if (focusOn && S.active && cur().v === 'workout') setTimeout(render, 0); else setTimeout(foldPaint, 0); }
 
 /* ===================== Vues ===================== */
 const exl = n => `<span class="exlink" data-act="exo" data-n="${esc(n)}">${esc(n)}</span>`;
@@ -2273,7 +2273,7 @@ function vWorkout() {
   if (!a.exercises.length) return `<div class="empty">Séance vide. Ajoute ton premier exercice.</div><button class="btn primary block" data-act="add-exo">＋ Ajouter un exercice</button><div class="gap"></div><button class="btn danger block" data-act="cancel-workout">Abandonner</button>`;
   const {d: dS, n: nS} = woStats(), ce = curEx();
   const ftog = `<button class="btn sm block ftog" data-act="focus-tog">⛶ ${focusOn ? T('Voir toute la séance', 'Show the whole workout') : T('Mode focus (une série à la fois)', 'Focus mode (one set at a time)')}</button>`;
-  const prog = `<div class="wprog"><div class="row between small"><span>${ce >= 0 ? T(`Exercice ${ce + 1}/${a.exercises.length}`, `Exercise ${ce + 1}/${a.exercises.length}`) : T('✅ Tout est fait!', '✅ All done!')}</span><span class="muted">${dS}/${nS} ${T('séries', 'sets')}</span></div><div class="pbar"><div style="width:${nS ? Math.round(dS / nS * 100) : 0}%"></div></div>${woQuest(a)}</div>`;
+  const prog = `<div class="wprog"><div class="row between small"><span>${ce >= 0 ? T(`Exercice ${ce + 1}/${a.exercises.length}`, `Exercise ${ce + 1}/${a.exercises.length}`) : T('✅ Tout est fait!', '✅ All done!')}</span><span class="row" style="gap:10px"><span id="hrlive">${hrLiveTxt()}</span><span class="muted">${dS}/${nS} ${T('séries', 'sets')}</span></span></div><div class="pbar"><div style="width:${nS ? Math.round(dS / nS * 100) : 0}%"></div></div>${woQuest(a)}</div>`;
   if (focusOn) return prog + vFocus();
   return prog + ftog + (deloadOn() ? `<div class="card" style="border-color:var(--warm);padding:10px 14px"><span class="small">🪶 Semaine de récupération : charges −${S.settings.deload.pct} %</span></div>` : '') + a.exercises.map((e, ei) => {
     const last = lastFor(e.name), prev = prevFor(e.name), tm = isTimed(e);
@@ -2685,6 +2685,7 @@ function vSettings() {
       <span class="small muted" style="flex:1">${S.settings.bg ? T('Fond perso : ', 'Custom background: ') + esc(S.settings.bg) : T('Fond du thème', 'Theme background')}</span>
       ${S.settings.bg ? `<button class="btn sm" data-act="bg-reset">${T('Remettre celui du thème', "Use the theme's")}</button>` : ''}</div>`) +
   setSec('import', 'down', '📥', T('Importer d\'une autre appli', 'Import from another app'), T('Hevy, Strong, FitNotes…', 'Hevy, Strong, FitNotes…'), `${importHelp()}`) +
+  (WR() ? setSec('watch', 'watch', '⌚', T('Montre', 'Watch'), T('Appli Runelift sur Galaxy Watch / Wear OS', 'Runelift app on Galaxy Watch / Wear OS'), wearBody()) : '') +
   (HC() ? setSec('health', 'heart', '❤️', T('Santé Android', 'Android health'), hcOn() ? T('Health Connect activé', 'Health Connect on') : T('Health Connect, Samsung Health, montre', 'Health Connect, Samsung Health, watch'), hcBody()) : '') +
   setSec('cloud', 'cloud', '💾', T('Sauvegarde', 'Backup'), cbOn() ? T('☁️ Automatique (sans fenêtre) activée', '☁️ Automatic backup on') : gdOn() ? T('☁️ Google Drive activé', '☁️ Google Drive on') : cloudOn() ? T('☁️ Automatique activée', '☁️ Automatic backup on') : S.settings.lastBackup ? T('Dernière : ', 'Last: ') + ago(S.settings.lastBackup) : T('⚠️ Jamais sauvegardé', '⚠️ Never backed up'), `${cbCard()}${cbOn() ? `<details class="card" style="padding:10px 12px"><summary class="small"><b>${T('Autres façons de sauvegarder (pas nécessaire)', 'Other ways to back up (not needed)')}</b></summary>${gdCard()}${simpleBackupCard()}${cloudCard()}</details>` : gdCard() + simpleBackupCard() + cloudCard()}
       <p class="muted small" style="margin:12px 0 0">${T('Importer accepte aussi l\'export CSV de Hevy, Strong et des autres applis (date, exercice, poids, reps).', 'Import also accepts CSV exports from Hevy, Strong and other apps (date, exercise, weight, reps).')}</p>
@@ -6108,10 +6109,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.66.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.67.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
-  {v: '9.66.0', d: '2026-11-17', fr: ['❤️ Appli Android : la fréquence cardiaque de ta montre (via Samsung Health et Health Connect) s\'affiche dans chaque séance de l\'historique : moyenne, maximum et graphique.', '❤️ Appli Android : Health Connect. Dans Réglages → Santé Android, active-le pour envoyer chaque séance (durée et calories estimées) vers Health Connect, Samsung Health et ta montre, et recevoir ton poids dans tes Mesures.'], en: ['❤️ Android app: your watch heart rate (via Samsung Health and Health Connect) shows in each workout in your history: average, max and chart.', '❤️ Android app: Health Connect. In Settings → Android health, turn it on to send each workout (duration and estimated calories) to Health Connect, Samsung Health and your watch, and receive your weight in your Measures.']},
+  {v: '9.67.0', d: '2026-11-17', fr: ['⌚ Appli Runelift pour Galaxy Watch / Wear OS (test) : exercice et série en cours au poignet, bouton « Fait » pour cocher ta série, repos qui vibre sur la montre et fréquence cardiaque en direct dans ta séance. Le cardio mesuré par la montre est gardé dans la séance (moyenne, max et graphique).', '❤️ Appli Android : la fréquence cardiaque de ta montre (via Samsung Health et Health Connect) s\'affiche dans chaque séance de l\'historique : moyenne, maximum et graphique.', '❤️ Appli Android : Health Connect. Dans Réglages → Santé Android, active-le pour envoyer chaque séance (durée et calories estimées) vers Health Connect, Samsung Health et ta montre, et recevoir ton poids dans tes Mesures.'], en: ['⌚ Runelift app for Galaxy Watch / Wear OS (test): current exercise and set on your wrist, a "Done" button to check your set, rest that vibrates on the watch and live heart rate in your workout. Heart rate measured by the watch is kept in the workout (average, max and chart).', '❤️ Android app: your watch heart rate (via Samsung Health and Health Connect) shows in each workout in your history: average, max and chart.', '❤️ Android app: Health Connect. In Settings → Android health, turn it on to send each workout (duration and estimated calories) to Health Connect, Samsung Health and your watch, and receive your weight in your Measures.']},
   {v: '9.64.5', d: '2026-11-16', fr: ['Connexion Google sur Android : envoie le jeton d\'identité à Firebase (au lieu du jeton d\'accès).', 'Connexion Google sur Android : utilise maintenant le projet Firebase pour que les comptes et les amis fonctionnent.', 'Connexion Google sur Android : le message d\'erreur indique maintenant la vraie cause.', 'Préparation de l\'appli Android : connexion Google native.', '📚 5 nouveaux programmes prêts (11 au total) : Débutant 2 jours, Force 5×5, Haltères seulement, PPL + Upper / Lower (5 jours) et Upper / Lower / Full body (3 jours).', '✨ Nouveau : séance générée selon ta récupération (écran Entraînement). Choisis 30, 45, 60 ou 90 minutes : l\'appli propose des exercices pour tes muscles reposés et ceux que tu as moins travaillés cette semaine, et laisse au repos les muscles fatigués. « Autre proposition » en donne une différente.', '🤖 Assistant IA amélioré : le message contient maintenant ton profil (âge, taille, poids, objectif, points forts et faibles, exercices qui stagnent) pour des conseils plus précis. Les boutons ChatGPT et Claude ouvrent l\'IA avec le message déjà écrit quand c\'est possible. L\'analyse donne un bilan même si tu n\'écris pas de question.', '🗓️ Nouveau : bilan de la semaine. Il s\'ouvre tout seul au début de chaque semaine (séances, temps, volume, records, comparés à la semaine d\'avant) et reste disponible dans Statistiques.', 'Image de séance à partager : ton nom, ton niveau et ton rang apparaissent maintenant en bas, avec la signature Runelift.', '🎯 Nouveau : objectif de poids (Profil → Mesures et photos). Choisis ton poids visé : barre de progression et date estimée selon ta tendance.', 'Le chrono d\'une série, un minuteur d\'intervalles et une routine d\'étirements en cours reprennent maintenant après un rafraîchissement.', 'Fil des amis : la réaction « bravo » a maintenant une icône de fête au lieu d\'un pouce.', 'Le mode focus reste activé si la page se rafraîchit pendant la séance.', 'Le boss du mois s\'affiche aussi en mode focus, avec un texte plus court. Petits écrans : la charge (ex. 287.5) n\'est plus coupée dans les séries.', 'Petits écrans : la fenêtre « Modifier la séance » ne déborde plus. Dernières icônes dessinées à la place des émojis (Collection, demandes d\'ami, besoins estimés).', 'Le « +5 XP » quand tu coches une série reste affiché un peu plus longtemps (1,8 seconde).', 'Le minuteur de repos continue maintenant si tu rafraîchis la page ou si l\'appli se recharge.', 'Boss du mois mieux expliqué : pas besoin d\'une série en plus, une de tes séries normales suffit. Les choix proposés sont maintenant les plus faciles possibles (ex. 75×10 au lieu de 95×3) et dans ta fourchette de répétitions. Touche un choix pour le mettre dans ta prochaine série.', 'La langue de l\'appli suit maintenant celle de ton téléphone (ou celle choisie sur la page Runelift) dès la première ouverture.', 'Accueil : nouvelle phrase d\'accroche et icône dessinée pour le Mode Classique.', '🔗 Un lien d\'invitation demande maintenant ta confirmation avant d\'envoyer une demande d\'ami.', '🔒 Sécurité renforcée : tout ce qui vient d\'autres personnes (cartes d\'amis, classement mondial, demandes, liens de partage) est vérifié avant d\'être affiché, et personne ne peut s\'ajouter à tes amis sans que tu lui aies envoyé une demande.', '👥 Amis : un ami sans nom s\'affiche avec son @pseudo au lieu de « A friend », le classement explique pourquoi quelqu\'un n\'a pas encore de niveau, et la recherche te dit quoi faire quand elle ne trouve personne.', '📱 Petits écrans : les boutons au-dessus des routines ne dépassent plus.', '🇬🇧 Version anglaise plus complète : plusieurs boutons et réglages restaient en français, et le programme de départ des nouveaux comptes en anglais a maintenant des noms d\'exercices en anglais.', '🪨 Carnet Muscu s\'appelle maintenant Runelift ! Rien d\'autre ne change : tes séances, ta guilde et tes amis sont toujours là.'],
     en: ['Android app groundwork: native Google sign-in.', '📚 5 new ready-made programs (11 in total): Beginner 2 days, Strength 5×5, Dumbbells only, PPL + Upper / Lower (5 days) and Upper / Lower / Full body (3 days).', '✨ New: workout generated from your recovery (Training screen). Pick 30, 45, 60 or 90 minutes: the app suggests exercises for your rested muscles and the ones you trained less this week, and leaves tired muscles to rest. “Another suggestion” gives a different one.', '🤖 Better AI assistant: the message now includes your profile (age, height, weight, goal, strong and weak points, stalled exercises) for more precise advice. The ChatGPT and Claude buttons open the AI with the message already typed in when possible. The analysis gives a review even if you do not write a question.', '🗓️ New: weekly recap. It opens by itself at the start of each week (workouts, time, volume, records, compared to the week before) and stays available in Statistics.', 'Workout image to share: your name, level and rank now appear at the bottom, with the Runelift signature.', '🎯 New: weight goal (Profile → Measurements and photos). Pick your target weight: progress bar and estimated date based on your trend.', 'A set stopwatch, an interval timer and a stretching routine in progress now resume after a refresh.', 'Friends feed: the “bravo” reaction now uses a party icon instead of a thumb.', 'Focus mode stays on if the page refreshes during a workout.', 'The monthly boss also shows in focus mode, with shorter text. Small screens: the weight (e.g. 287.5) is no longer cut off in set rows.', 'Small screens: the “Edit workout” window no longer overflows. Last emojis replaced by drawn icons (Collection, friend requests, estimated needs).', 'The “+5 XP” shown when you tick a set now stays on screen a bit longer (1.8 seconds).', 'The rest timer now keeps going if you refresh the page or the app reloads.', 'Monthly boss explained better: no extra set needed, one of your normal sets is enough. The suggested options are now the easiest possible (e.g. 75×10 instead of 95×3) and within your rep range. Tap one to put it in your next set.', 'The app language now follows your phone (or the one picked on the Runelift page) from the very first launch.', 'Welcome screen: new tagline and a drawn icon for Classic mode; units shown in English.', '🔗 An invitation link now asks for your confirmation before sending a friend request.', '📚 Popular programs and more messages are now in English.', '🔒 Stronger security: everything that comes from other people (friend cards, world ranking, requests, share links) is checked before being displayed, and nobody can add themselves to your friends unless you sent them a request.', '👥 Friends: a friend without a name shows their @username instead of “A friend”, the ranking explains why someone has no level yet, and search tells you what to do when it finds nobody.', '📱 Small screens: the buttons above your routines no longer overflow.', '🇬🇧 More complete English version: several buttons and settings were still in French, and the starter program for new English accounts now uses English exercise names.', '🪨 Carnet Muscu is now called Runelift! Nothing else changes: your workouts, guild and friends are all still here.']},
   {v: '9.59.2', d: '2026-11-15', fr: ['🔍 Tout le monde est maintenant trouvable dans la recherche d\'amis : si tu n\'avais pas choisi de @pseudo, l\'app t\'en donne un d\'après ton nom (modifiable dans Amis).', '🛡️ Nouvelle icône : l\'emblème de la Guilde.', '🏅 Médailles : chaque catégorie se replie, avec sa barre de progression. La page est beaucoup plus courte.', '🎁 Armurerie : nouvel onglet « Coffres » avec tes 4 collections de fragments et toutes leurs récompenses.', '🔒 Nouvelle page « Politique de confidentialité » et bouton « Supprimer mon compte » (Réglages → Données et compte).'],
@@ -7262,6 +7263,56 @@ async function hcWeights() {
   }
   S.settings.hcW = Date.now(); if (n) save(); else saveLocal(); return n;
 }
+function hrSum(pts) {
+  pts = (pts || []).filter(x => x[1] > 25 && x[1] < 250).sort((x, y) => x[0] - y[0]); if (pts.length < 3) return null;
+  const v = pts.map(x => x[1]), st = Math.ceil(pts.length / 120);
+  return {avg: Math.round(v.reduce((p, c) => p + c, 0) / v.length), max: Math.max(...v), min: Math.min(...v), pts: pts.filter((x, i) => i % st === 0 || i === pts.length - 1)};
+}
+/* ===================== Montre (appli Runelift sur Wear OS) ===================== */
+function WR() { try { return isNative() && window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.RLWear || null; } catch (e) { return null; } }
+var wearLast = '', wearT = 0, wearBpm = 0, wearBpmT = 0, wearSeen = 0, wearSt = null;
+function wearState() {
+  const A = S.active, lang = isEN() ? 'en' : 'fr';
+  if (!A) return {on: 0, lang};
+  return {on: 1, id: A.start, u: U(), lang, re: timerEnd > Date.now() ? timerEnd : 0, rt: timerTot || 0,
+    ex: A.exercises.map(e => ({n: e.name, rest: +e.rest === -1 ? 0 : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)), c: isCardio(e) || isTimed(e) ? 1 : 0,
+      s: e.sets.map(x => ({w: x.w === '' || x.w == null ? '' : +x.w, r: x.r !== '' && x.r != null ? +x.r : (+x.ph || 0), d: x.done ? 1 : 0, t: x.t || ''}))}))};
+}
+function wearPush(force) {
+  if (!WR()) return; clearTimeout(wearT);
+  wearT = setTimeout(() => { const j = JSON.stringify(wearState()); if (!force && j === wearLast) return; wearLast = j; WR().setState({json: j}).catch(() => {}); }, 250);
+}
+function fakeAct(act, ds) { const x = document.createElement('button'); x.dataset.act = act; Object.entries(ds || {}).forEach(([k, v]) => x.dataset[k] = String(v)); x.style.display = 'none'; document.body.appendChild(x); try { x.click(); } finally { x.remove(); } }
+function hrLiveTxt() { return wearBpm && Date.now() - wearBpmT < 20000 ? `<span style="color:#ef5a6f;font-weight:700">${IC('heart', '♥', 13)} ${wearBpm}</span>` : ''; }
+function hrLive() { const el = document.getElementById('hrlive'); if (el) el.innerHTML = hrLiveTxt(); }
+function wearCmd(d) {
+  wearSeen = Date.now(); const A = S.active;
+  if (d.a === 'hello' || !A) { wearPush(true); return; }
+  if (d.a === 'done') {
+    const e = A.exercises[+d.e], x = e && e.sets[+d.s];
+    if (x && !x.done) fakeAct('done', {e: +d.e, s: +d.s});
+  } else if (d.a === 'rest') {
+    if (d.skip) stopTimer(); else if (+d.add && timerEnd > Date.now()) fakeAct('timer-add', {});
+  } else if (d.a === 'hr') {
+    const b = Math.round(+d.bpm); if (!(b > 25 && b < 250)) return;
+    const t = Math.round(((+d.t || Date.now()) - new Date(A.start).getTime()) / 1000);
+    A.hrl = A.hrl || []; A.hrl.push([t, b]); if (A.hrl.length > 1600) A.hrl = A.hrl.filter((x, i) => i % 2 === 0);
+    wearBpm = b; wearBpmT = Date.now(); hrLive(); if (A.hrl.length % 6 === 0) saveLocal(); return;
+  }
+  wearPush(true);
+}
+function wearInit() {
+  const W = WR(); if (!W || wearInit.done) return; wearInit.done = 1;
+  W.addListener('cmd', d => { try { wearCmd(d || {}); } catch (e) { console.warn('wear', e); } });
+  setInterval(hrLive, 5000); wearPush(true);
+}
+function wearBody() {
+  if (!wearSt) { WR().status().then(r => { wearSt = r || {nodes: 0}; render(); }, () => { wearSt = {nodes: 0}; render(); }); return `<p class="muted small">${T('Recherche de ta montre…', 'Looking for your watch…')}</p>`; }
+  const ok = wearSt.nodes > 0, nm = (wearSt.names || []).join(', ');
+  return `<p class="small" style="margin:4px 0 8px">${ok ? `<b style="color:var(--accent)">${T('Montre connectée', 'Watch connected')}</b>${nm ? ' · ' + esc(nm) : ''}` : `<b>${T('Aucune montre connectée', 'No watch connected')}</b>`}${wearSeen ? ` · ${T('appli Runelift active sur la montre', 'Runelift app active on the watch')}` : ''}</p>
+    <p class="muted small" style="margin:0 0 10px">${T('Avec l\'appli Runelift installée sur ta montre : vois l\'exercice et la série en cours, coche tes séries au poignet, le repos vibre sur la montre et ta fréquence cardiaque s\'affiche en direct pendant la séance. Ouvre Runelift sur la montre après avoir lancé ta séance sur le téléphone.', 'With the Runelift app installed on your watch: see the current exercise and set, check sets from your wrist, rest vibrates on the watch and your heart rate shows live during the workout. Open Runelift on the watch after starting your workout on the phone.')}</p>
+    <button class="btn sm block" data-act="wear-refresh">${T('Vérifier la connexion', 'Check connection')}</button>`;
+}
 var hrTried = {};
 function hcHeart() { return hcOn() && !!(hcSt && (hcSt.granted || []).includes('heart')); }
 async function hcHrFill() {
@@ -7273,10 +7324,8 @@ async function hcHrFill() {
     hrTried[h.id] = now;
     let r; try { r = await HC().readHeartRate({start: new Date(a).toISOString(), end: new Date(b).toISOString()}); } catch (e) { break; }
     const pts = ((r && r.items) || []).map(x => [Math.round((new Date(x.t).getTime() - a) / 1000), Math.round(+x.bpm)]).filter(x => x[1] > 25 && x[1] < 250).sort((x, y) => x[0] - y[0]);
-    if (pts.length < 3) continue;
-    const v = pts.map(x => x[1]), st = Math.ceil(pts.length / 120);
-    h.hr = {avg: Math.round(v.reduce((p, c) => p + c, 0) / v.length), max: Math.max(...v), min: Math.min(...v), pts: pts.filter((x, i) => i % st === 0 || i === pts.length - 1)};
-    n++;
+    const sm = hrSum(pts); if (!sm) continue;
+    h.hr = sm; n++;
   }
   if (n) save(); return n;
 }
@@ -8503,7 +8552,7 @@ addEventListener('resize', () => { const w = foldActive(); if (w !== foldWas) { 
 document.addEventListener('toggle', e => { const d = e.target; if (!d || !d.dataset || !d.dataset.gid) return; S.settings.gOpen = S.settings.gOpen || {}; S.settings.gOpen[d.dataset.gid] = d.open; save(); }, true);
 let animNext = true, ANIM = true; // les graphiques s'animent seulement à l'ouverture d'un écran (pas à chaque mise à jour)
 function render() {
-  RC = {};
+  RC = {}; wearPush();
   ANIM = !!navAnim || animNext; animNext = false;
   if (selR && cur().v !== 'train') { selR = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
   if (selH && !HVIEWS.includes(cur().v)) { selH = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
@@ -9057,6 +9106,7 @@ document.addEventListener('click', e => {
     case 'gd-connect': gdConnect(); break;
     case 'wl-gd': window._wlGd = Date.now(); closeModal(); gdConnect(); setTimeout(maybeTourMain, 16000); break;
     case 'hc-on': (async () => { if (!HC()) return; let r; try { r = await HC().request(); } catch (e) { toast('⚠️ ' + T('Health Connect indisponible', 'Health Connect unavailable')); return; } hcSt = Object.assign(hcSt || {available: true}, {granted: r.granted || []}); if (!(r.granted || []).length) { toast(T('Accès refusé dans Health Connect', 'Access denied in Health Connect')); render(); return; } S.settings.hc = true; save(); render(); const n = await hcSyncAll(), w = await hcWeights(); render(); toast(T(`❤️ Health Connect activé · ${n} séance${n > 1 ? 's' : ''} envoyée${n > 1 ? 's' : ''}${w ? ` · ${w} poids reçu${w > 1 ? 's' : ''}` : ''}`, `❤️ Health Connect on · ${n} workout${n !== 1 ? 's' : ''} sent${w ? ` · ${w} weight${w > 1 ? 's' : ''} received` : ''}`)); })(); break;
+    case 'wear-refresh': wearSt = null; wearPush(true); render(); break;
     case 'hc-off': S.settings.hc = false; save(); render(); toast(T('Health Connect désactivé', 'Health Connect turned off')); break;
     case 'hc-sync': hcSyncAll().then(n => toast(T(`❤️ ${n} séance${n > 1 ? 's' : ''} envoyée${n > 1 ? 's' : ''} à Health Connect`, `❤️ ${n} workout${n !== 1 ? 's' : ''} sent to Health Connect`))); break;
     case 'hc-settings': if (HC()) HC().openSettings().catch(() => {}); hcSt = null; break;
@@ -9346,7 +9396,7 @@ document.addEventListener('click', e => {
     }
     case 'timer-sub': timerEnd = Math.max(Date.now() + 1000, timerEnd - 15000); restSave(); scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); restSW(timerEnd); tickTimer(); break;
     case 'timer-stop-big': closeModal(); stopTimer(); break;
-    case 'timer-add': timerTot += 30; timerEnd += 30000; restSave(); scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); restSW(timerEnd); tickTimer(); break;
+    case 'timer-add': timerTot += 30; timerEnd += 30000; restSave(); wearPush(); scheduleBeeps(Math.max(0, (timerEnd - Date.now()) / 1000)); restSW(timerEnd); tickTimer(); break;
     case 'timer-stop': stopTimer(); break;
     case 'timer-big': bigTimerOpen(); break;
     case 'timer-go': if (!S.active) break; if (cur().v === 'workout' && $('#timer').classList.contains('show') && !$('#timer').classList.contains('fin')) { bigTimerOpen(); break; } if ($('#timer').classList.contains('fin')) stopTimer(); if (cur().v !== 'workout') { closeAll(); openWorkout(); } else scrollCur(); break;
@@ -10013,6 +10063,7 @@ function runResume() {
   setInterval(runSave, 1500); addEventListener('pagehide', runSave);
 }
 setTimeout(runResume, 350);
+setTimeout(wearInit, 600);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && hcOn()) hcHrFill().then(n => { if (n) { render(); toast(T('❤️ Fréquence cardiaque ajoutée à ta séance', '❤️ Heart rate added to your workout')); } }); });
 setTimeout(() => { if (hcOn()) hcHrFill().then(n => { if (n) render(); }); if (hcOn() && Date.now() - (+S.settings.hcW || 0) > 6 * 3600e3) hcWeights().then(n => { if (n) { render(); toast(T(`❤️ ${n} poids reçu${n > 1 ? 's' : ''} de Health Connect`, `❤️ ${n} weight${n > 1 ? 's' : ''} received from Health Connect`)); } }); }, 3000);
 window.addEventListener('hashchange', checkImport);
