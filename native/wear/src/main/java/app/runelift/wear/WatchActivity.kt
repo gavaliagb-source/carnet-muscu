@@ -77,16 +77,33 @@ class WatchActivity : Activity() {
         isClickable = true; isFocusable = true
         setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); click(v) }
     }
-    private fun circle(text: String, click: (View) -> Unit) = tv(text, 16f, Color.WHITE, true).apply {
-        background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(CARD) }
-        layoutParams = LinearLayout.LayoutParams(dp(36f), dp(36f))
-        isClickable = true; isFocusable = true
+    /* Flèche ‹ › dessinée dans un rond : plus grosse et plus nette qu'un caractère, comme dans Hevy. */
+    private fun arrowBtn(dir: Int, desc: String, click: (View) -> Unit): View = object : View(this) {
+        private val pb = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+        private val pl = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE; style = android.graphics.Paint.Style.STROKE
+            strokeCap = android.graphics.Paint.Cap.ROUND; strokeJoin = android.graphics.Paint.Join.ROUND
+        }
+        private val path = android.graphics.Path()
+        override fun onDraw(c: android.graphics.Canvas) {
+            val cx = width / 2f; val cy = height / 2f; val r = minOf(width, height) / 2f
+            pb.color = if (isPressed) Color.parseColor("#3A424E") else CARD
+            c.drawCircle(cx, cy, r, pb)
+            val a = r * 0.40f; val b = r * 0.20f
+            pl.strokeWidth = r * 0.14f
+            path.reset(); path.moveTo(cx - dir * b, cy - a); path.lineTo(cx + dir * b, cy); path.lineTo(cx - dir * b, cy + a)
+            c.drawPath(path, pl)
+        }
+        override fun drawableStateChanged() { super.drawableStateChanged(); invalidate() }
+    }.apply {
+        contentDescription = desc; isClickable = true; isFocusable = true
         setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); click(v) }
     }
     /* Nom trop long : il défile tout seul, comme dans Hevy. */
     private fun marquee(text: String, sp: Float, color: Int) = tv(text, sp, color, true).apply {
         isSingleLine = true; ellipsize = TextUtils.TruncateAt.MARQUEE; marqueeRepeatLimit = -1
         setHorizontallyScrolling(true); isSelected = true
+        isHorizontalFadingEdgeEnabled = true; setFadingEdgeLength(dp(16f))
     }
     private fun add(v: View, top: Float = 6f, full: Boolean = true) {
         col.addView(v, LinearLayout.LayoutParams(if (full) -1 else -2, -2).apply { topMargin = dp(top); gravity = Gravity.CENTER_HORIZONTAL })
@@ -159,6 +176,7 @@ class WatchActivity : Activity() {
     private fun tapText(t: String) {
         fun find(v: View): View? {
             if (v is TextView && v.text.toString().contains(t)) return v
+            if (v.contentDescription?.toString()?.contains(t) == true) return v
             if (v is android.view.ViewGroup) for (i in 0 until v.childCount) find(v.getChildAt(i))?.let { return it }
             return null
         }
@@ -489,16 +507,16 @@ class WatchActivity : Activity() {
         }, lp(-2, -2, 0.022f))
         val p = st?.optString("p") ?: ""
         col.addView(tp(if (p.isNotEmpty()) WS.t("précéd. ", "prev. ") + p else " ", 0.044f, MUTED), lp(-2, -2, 0.016f))
-        val bd = (W * 0.145f).toInt()
+        val bd = (W * 0.15f).toInt()
         val done = tp("✓", 0.085f, ON_ACC, true).apply {
             background = bg(ACC, 40f); gravity = Gravity.CENTER; isClickable = true
             setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); field = 0; WS.done(this@WatchActivity, e, s) }
         }
         col.addView(LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER
-            addView(circle("‹") { move(-1) }.apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.085f); includeFontPadding = false }, LinearLayout.LayoutParams(bd, bd).apply { rightMargin = (W * 0.03f).toInt() })
+            addView(arrowBtn(-1, WS.t("Série précédente", "Previous set")) { move(-1) }, LinearLayout.LayoutParams(bd, bd).apply { rightMargin = (W * 0.03f).toInt() })
             addView(done, LinearLayout.LayoutParams((W * 0.27f).toInt(), (W * 0.15f).toInt()))
-            addView(circle("›") { move(1) }.apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.085f); includeFontPadding = false }, LinearLayout.LayoutParams(bd, bd).apply { leftMargin = (W * 0.03f).toInt() })
+            addView(arrowBtn(1, WS.t("Série suivante", "Next set")) { move(1) }, LinearLayout.LayoutParams(bd, bd).apply { leftMargin = (W * 0.03f).toInt() })
         }, lp(-2, -2, 0.022f))
     }
 
