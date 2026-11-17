@@ -34,6 +34,7 @@ jobs:
             echo "Empreinte SHA-1 de la clé : $SHA"
             if [ "$SHA" != "CD:10:80:63:BF:72:00:59:26:CC:41:D5:CC:CC:D1:46:87:A8:6F:14" ]; then echo "::error::La clé dans le secret ANDROID_KEYSTORE_B64 est incomplète ou différente"; exit 1; fi
             printf "\nandroid { signingConfigs { debug { storeFile file('runelift.p12'); storePassword 'android'; keyAlias 'runelift'; keyPassword 'android'; storeType 'pkcs12' } } }\n" >> android/app/build.gradle
+            printf "\nandroid { signingConfigs { debug { storeFile file('../app/runelift.p12'); storePassword 'android'; keyAlias 'runelift'; keyPassword 'android'; storeType 'pkcs12' } } }\n" >> android/wear/build.gradle
             echo "Signature stable activée"
           else
             echo "Pas de clé : signature de test temporaire"
@@ -41,14 +42,16 @@ jobs:
       - name: Compiler l'APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
-      - run: cp android/app/build/outputs/apk/debug/app-debug.apk runelift-test.apk
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk runelift-test.apk && cp android/wear/build/outputs/apk/debug/wear-debug.apk runelift-montre.apk
       - uses: actions/upload-artifact@v4
         with:
           name: runelift-test-apk
-          path: runelift-test.apk
+          path: |
+            runelift-test.apk
+            runelift-montre.apk
       - name: Publier dans les Releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete android-test --yes --cleanup-tag || true
-          gh release create android-test runelift-test.apk --target android --prerelease --title "Runelift Android (test)" --notes "Version de test : connexion Google native et Health Connect (séances et poids)."
+          gh release create android-test runelift-test.apk runelift-montre.apk --target android --prerelease --title "Runelift Android (test)" --notes "Version de test : runelift-test.apk pour le téléphone, runelift-montre.apk pour la montre (Wear OS)."

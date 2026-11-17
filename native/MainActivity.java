@@ -13,6 +13,7 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(RLHealthPlugin.class);
+        registerPlugin(RLWearPlugin.class);
         super.onCreate(savedInstanceState);
     }
 

@@ -8,7 +8,7 @@ rw(f'{A}/build.gradle', lambda s: s.replace("classpath 'com.android.tools.build:
 def app(s):
     s = s.replace("apply plugin: 'com.android.application'", "apply plugin: 'com.android.application'\napply plugin: 'org.jetbrains.kotlin.android'", 1)
     s = s.replace("    buildTypes {", "    kotlinOptions {\n        jvmTarget = JavaVersion.VERSION_21.toString()\n    }\n    buildTypes {", 1)
-    s = s.replace("dependencies {", "dependencies {\n    implementation 'androidx.health.connect:connect-client:1.1.0'\n    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0'", 1)
+    s = s.replace("dependencies {", "dependencies {\n    implementation 'com.google.android.gms:play-services-wearable:19.0.0'\n    implementation 'androidx.health.connect:connect-client:1.1.0'\n    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0'", 1)
     return s
 rw(f'{A}/app/build.gradle', app)
 PERMS = ['WRITE_EXERCISE', 'WRITE_ACTIVE_CALORIES_BURNED', 'READ_WEIGHT', 'READ_HEART_RATE']
@@ -35,7 +35,7 @@ def man(s):
     return s.replace('    </application>', act + '    </application>', 1)
 rw(f'{A}/app/src/main/AndroidManifest.xml', man)
 d = f'{A}/app/src/main/java/app/runelift/'
-for f in ['MainActivity.java', 'RLHealthPlugin.kt', 'HealthPrivacyActivity.kt']:
+for f in ['MainActivity.java', 'RLHealthPlugin.kt', 'HealthPrivacyActivity.kt', 'RLWearPlugin.kt']:
     shutil.copy(f'native/{f}', d + f)
 print('Health Connect ajouté')
 
@@ -55,3 +55,9 @@ rw(res + 'values/styles.xml', lambda s: s.replace('''<style name="AppTheme.NoAct
         <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>'''))
 print('Icône et démarrage ajoutés')
+
+# Appli de la montre (Wear OS)
+if os.path.isdir(f'{A}/wear'): shutil.rmtree(f'{A}/wear')
+shutil.copytree('native/wear', f'{A}/wear')
+with open(f'{A}/settings.gradle', 'a', encoding='utf-8') as f: f.write("\ninclude ':wear'\n")
+print('Appli montre ajoutée')
