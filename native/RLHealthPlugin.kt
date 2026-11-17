@@ -1,0 +1,152 @@
+package app.runelift
+
+import androidx.activity.result.ActivityResult
+import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.PermissionController
+import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.Record
+import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.records.metadata.Metadata
+import androidx.health.connect.client.request.ReadRecordsRequest
+import androidx.health.connect.client.time.TimeRangeFilter
+import androidx.health.connect.client.units.Energy
+import com.getcapacitor.JSArray
+import com.getcapacitor.JSObject
+import com.getcapacitor.Plugin
+import com.getcapacitor.PluginCall
+import com.getcapacitor.PluginMethod
+import com.getcapacitor.annotation.ActivityCallback
+import com.getcapacitor.annotation.CapacitorPlugin
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
+
+/* Pont Runelift <-> Health Connect : envoie les séances (et leurs calories) et lit le poids. */
+@CapacitorPlugin(name = "RLHealth")
+class RLHealthPlugin : Plugin() {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val contract = PermissionController.createRequestPermissionResultContract()
+    private val pWorkout = HealthPermission.getWritePermission(ExerciseSessionRecord::class)
+    private val pKcal = HealthPermission.getWritePermission(ActiveCaloriesBurnedRecord::class)
+    private val pWeight = HealthPermission.getReadPermission(WeightRecord::class)
+    private val perms = setOf(pWorkout, pKcal, pWeight)
+
+    private fun sdk() = HealthConnectClient.getSdkStatus(context)
+    private fun client() = HealthConnectClient.getOrCreate(context)
+
+    private fun PluginCall.safe(block: suspend PluginCall.() -> Unit) {
+        val c = this
+        scope.launch {
+            try { c.block() } catch (e: CancellationException) { throw e } catch (e: Throwable) { c.reject(e.message ?: e.toString()) }
+        }
+    }
+
+    private fun grantedJs(g: Set<String>): JSArray {
+        val a = JSArray()
+        if (pWorkout in g) a.put("workout")
+        if (pKcal in g) a.put("calories")
+        if (pWeight in g) a.put("weight")
+        return a
+    }
+
+    @PluginMethod
+    fun status(call: PluginCall) {
+        val s = sdk()
+        val r = JSObject()
+        r.put("available", s == HealthConnectClient.SDK_AVAILABLE)
+        r.put("reason", when (s) {
+            HealthConnectClient.SDK_AVAILABLE -> "ok"
+            HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> "update"
+            else -> "missing"
+        })
+        if (s != HealthConnectClient.SDK_AVAILABLE) { r.put("granted", JSArray()); call.resolve(r); return }
+        call.safe { r.put("granted", grantedJs(client().permissionController.getGrantedPermissions())); resolve(r) }
+    }
+
+    @PluginMethod
+    fun request(call: PluginCall) {
+        if (sdk() != HealthConnectClient.SDK_AVAILABLE) { call.reject("unavailable"); return }
+        call.safe {
+            val g = client().permissionController.getGrantedPermissions()
+            if (g.containsAll(perms)) { resolve(JSObject().put("granted", grantedJs(g))); return@safe }
+            startActivityForResult(this, contract.createIntent(context, perms), "permDone")
+        }
+    }
+
+    @ActivityCallback
+    private fun permDone(call: PluginCall?, result: ActivityResult) {
+        if (call == null) return
+        call.safe { resolve(JSObject().put("granted", grantedJs(client().permissionController.getGrantedPermissions()))) }
+    }
+
+    @PluginMethod
+    fun saveWorkout(call: PluginCall) {
+        if (sdk() != HealthConnectClient.SDK_AVAILABLE) { call.reject("unavailable"); return }
+        val id = call.getString("id") ?: run { call.reject("id"); return }
+        val start = Instant.parse(call.getString("start") ?: run { call.reject("start"); return })
+        var end = Instant.parse(call.getString("end") ?: run { call.reject("end"); return })
+        if (!end.isAfter(start)) end = start.plusSeconds(60)
+        val title = call.getString("title")
+        val kcal = call.getDouble("kcal") ?: 0.0
+        call.safe {
+            val c = client()
+            val g = c.permissionController.getGrantedPermissions()
+            val rules = ZoneId.systemDefault().rules
+            val so = rules.getOffset(start)
+            val eo = rules.getOffset(end)
+            val recs = mutableListOf<Record>()
+            if (pWorkout in g) recs.add(ExerciseSessionRecord(
+                startTime = start, startZoneOffset = so, endTime = end, endZoneOffset = eo,
+                metadata = Metadata.manualEntry(clientRecordId = "rl-w-$id"),
+                exerciseType = ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING,
+                title = title))
+            if (kcal > 0 && pKcal in g) recs.add(ActiveCaloriesBurnedRecord(
+                startTime = start, startZoneOffset = so, endTime = end, endZoneOffset = eo,
+                energy = Energy.kilocalories(kcal),
+                metadata = Metadata.manualEntry(clientRecordId = "rl-c-$id")))
+            if (recs.isEmpty()) { reject("no_permission"); return@safe }
+            c.insertRecords(recs)
+            resolve(JSObject().put("ok", true).put("count", recs.size))
+        }
+    }
+
+    @PluginMethod
+    fun readWeight(call: PluginCall) {
+        if (sdk() != HealthConnectClient.SDK_AVAILABLE) { call.reject("unavailable"); return }
+        val days = (call.getInt("days") ?: 30).toLong()
+        call.safe {
+            val c = client()
+            if (pWeight !in c.permissionController.getGrantedPermissions()) { reject("no_permission"); return@safe }
+            val res = c.readRecords(ReadRecordsRequest(WeightRecord::class, TimeRangeFilter.after(Instant.now().minusSeconds(days * 86400))))
+            val a = JSArray()
+            for (w in res.records) {
+                if (w.metadata.dataOrigin.packageName == context.packageName) continue
+                a.put(JSObject().put("t", w.time.toString()).put("kg", w.weight.inKilograms))
+            }
+            resolve(JSObject().put("items", a))
+        }
+    }
+
+    @PluginMethod
+    fun openSettings(call: PluginCall) {
+        try {
+            val i = android.content.Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS)
+            i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(i)
+            call.resolve()
+        } catch (e: Exception) {
+            try {
+                val i = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.google.android.apps.healthdata"))
+                i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(i)
+                call.resolve()
+            } catch (e2: Exception) { call.reject(e2.message ?: "error") }
+        }
+    }
+}
