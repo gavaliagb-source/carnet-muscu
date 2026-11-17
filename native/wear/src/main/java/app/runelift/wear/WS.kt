@@ -30,6 +30,7 @@ object WS {
     var lastState = 0L
     private var hrl = JSONArray()
     private var startWait: String? = null
+    private var endedId: String? = null   // séance du téléphone terminée/abandonnée depuis la montre
     private var app: Context? = null
     private val ui = ArrayList<() -> Unit>()
     private val main = Handler(Looper.getMainLooper())
@@ -61,8 +62,8 @@ object WS {
         val now = System.currentTimeMillis()
         if (now - lastTile > 5000) { lastTile = now; RLTile.refresh(c) }
     }
-    fun on() = st?.optInt("on", 0) == 1
-    fun phoneOn() = phone?.optInt("on", 0) == 1
+    fun on() = if (local != null) true else phoneOn()
+    fun phoneOn() = phone?.optInt("on", 0) == 1 && (endedId == null || phone?.optString("id") != endedId)
     fun en() = st?.optString("lang") == "en"
     fun t(fr: String, en: String) = if (en()) en else fr
     fun routines(): JSONArray? = phone?.optJSONArray("rts")
@@ -89,6 +90,7 @@ object WS {
         app?.let { try { it.getSharedPreferences("rl_ws", Context.MODE_PRIVATE).edit().putString("phone", j).apply() } catch (e: Exception) {} }
         val now = System.currentTimeMillis()
         lastState = now
+        if (phone?.optInt("on", 0) != 1) endedId = null
         if (phoneOn()) startWait = null
         app?.let { flush(it) }
         if (local != null) { changed(); return }   // séance sur la montre seule : on garde la nôtre
@@ -222,7 +224,10 @@ object WS {
         val l = local
         if (l == null) {
             val m = JSONObject().put("a", a); if (e >= 0) m.put("e", e); if (s >= 0) m.put("s", s); if (t != null) m.put("t", t)
-            send(ctx, m); return
+            send(ctx, m)
+            // Abandon : la montre arrête tout de suite, le téléphone suivra dès qu'il reçoit le message.
+            if (a == "cancel") { endedId = phone?.optString("id"); restEnd = 0; exSel = -1; edits.clear(); pending.clear(); changed() }
+            return
         }
         val sets = ex(e)?.optJSONArray("s")
         when (a) {
@@ -236,7 +241,7 @@ object WS {
 
     fun finish(ctx: Context) {
         val l = local
-        if (l == null) { send(ctx, JSONObject().put("a", "finish")); return }
+        if (l == null) { send(ctx, JSONObject().put("a", "finish")); endedId = phone?.optString("id"); restEnd = 0; exSel = -1; edits.clear(); pending.clear(); changed(); return }
         val ex = JSONArray()
         val src = l.optJSONArray("ex") ?: JSONArray()
         for (i in 0 until src.length()) {
