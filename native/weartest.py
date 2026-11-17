@@ -41,14 +41,17 @@ def nodes():
         res.append((nd.get('text') or '', (b[0] + b[2]) // 2, (b[1] + b[3]) // 2))
     return res
 
-def tap_text(t, wait=1.6):
-    for _ in range(3):
-        for txt, x, y in nodes():
-            if t in txt:
-                adb('shell', 'input', 'tap', str(x), str(y)); log('toucher', repr(t), x, y); time.sleep(wait); return True
+def tap_text(t, wait=2.5):
+    # Appuie sur le bouton par son texte (crochet de test de l'appli en mode démo).
+    sh(f"am start -n {PKG}/app.runelift.wear.WatchActivity --es rl_tap '{t}'")
+    log('toucher', repr(t)); time.sleep(wait); return True
+
+def wait_app(maxs=60):
+    for i in range(maxs):
+        if 'WatchActivity' in sh('dumpsys window | grep -E "mCurrentFocus|mFocusedApp"'):
+            time.sleep(4); log('appli prête après', i, 's'); return True
         time.sleep(1)
-    found = [txt for txt, x, y in nodes() if txt][:20]
-    log('INTROUVABLE', repr(t), '— textes visibles :', found); return False
+    log('appli pas prête'); return False
 
 def swipe(x1, y1, x2, y2, ms=150, wait=1.2):
     adb('shell', 'input', 'swipe', *map(lambda v: str(int(v)), (x1, y1, x2, y2, ms))); time.sleep(wait)
@@ -67,7 +70,7 @@ sh('input keyevent KEYCODE_WAKEUP'); sh('svc power stayon true')
 def launch(demo=True):
     sh(f'am force-stop {PKG}')
     sh(f'am start -n {PKG}/app.runelift.wear.WatchActivity' + (' --ez rl_demo true' if demo else ''))
-    time.sleep(5)
+    time.sleep(3); wait_app()
 
 launch()
 shot('routines')
@@ -103,9 +106,8 @@ for line in gfx.splitlines():
 # même écran avec le texte de la montre en grand
 sh('settings put system font_scale 1.3'); launch(False); shot('serie_texte_grand')
 sh('settings put system font_scale 1.0')
-launch(False)
-swipe(W * 0.88, H / 2, W * 0.12, H / 2, 120, 1.5)
-tap_text('Abandonner', 1.5); tap_text('Oui', 2); shot('apres_abandon')
+sh('am start -n app.runelift/app.runelift.wear.WatchActivity --ez rl_tapmode true')
+time.sleep(4); shot('reprise_apres_relance')
 crash = adb('logcat', '-d', '-b', 'crash').decode('utf-8', 'ignore')
 open(os.path.join(OUT, 'plantages.txt'), 'w').write(crash or '(aucun)')
 log('PLANTAGES :', 'aucun' if not crash.strip() else crash[:3000])

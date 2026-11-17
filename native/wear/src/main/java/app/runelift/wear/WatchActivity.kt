@@ -30,7 +30,7 @@ import kotlin.math.abs
 /* Écran de la montre, façon Hevy : 3 pages pendant la séance (glisser à gauche / droite).
    Page 0 = tous les exercices, page 1 = série en cours, page 2 = options. */
 class WatchActivity : Activity() {
-    companion object { @Volatile var visible = false }
+    companion object { @Volatile var visible = false; @Volatile var demoMode = false }
 
     private val BG = Color.parseColor("#0D0F12")
     private val MUTED = Color.parseColor("#8A93A0")
@@ -122,7 +122,7 @@ class WatchActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WS.init(this)
-        if (intent?.getBooleanExtra("rl_demo", false) == true) WS.demo(this)
+        if (intent?.getBooleanExtra("rl_demo", false) == true) { demoMode = true; WS.demo(this) }
         fromTile(intent)
         scroll = LockScroll(this).apply { setBackgroundColor(BG); isVerticalScrollBarEnabled = false; isFocusable = true; isFocusableInTouchMode = true }
         col = LinearLayout(this).apply {
@@ -150,7 +150,22 @@ class WatchActivity : Activity() {
         i.removeExtra("start")
         if (!WS.on() && rid.isNotEmpty()) { WS.load(this); h.postDelayed({ WS.start(this, rid) }, 400) }
     }
-    override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); setIntent(intent); fromTile(intent) }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent); setIntent(intent); fromTile(intent)
+        // Tests sur émulateur seulement : « touche » le bouton qui contient ce texte.
+        val t = intent.getStringExtra("rl_tap")
+        if (demoMode && !t.isNullOrEmpty()) h.postDelayed({ tapText(t) }, 300)
+    }
+    private fun tapText(t: String) {
+        fun find(v: View): View? {
+            if (v is TextView && v.text.toString().contains(t)) return v
+            if (v is android.view.ViewGroup) for (i in 0 until v.childCount) find(v.getChildAt(i))?.let { return it }
+            return null
+        }
+        var v: View? = find(col) ?: return
+        while (v != null && !v.isClickable) v = v.parent as? View
+        v?.performClick()
+    }
 
     /* Lunette tactile / couronne : on la prend avant la liste qui défile, pour monter ou descendre les chiffres. */
     override fun dispatchGenericMotionEvent(ev: MotionEvent): Boolean {
