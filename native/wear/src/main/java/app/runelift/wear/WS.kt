@@ -28,14 +28,20 @@ object WS {
     var exSel = -1
     val edits = HashMap<String, DoubleArray>()
     var lastState = 0L
+    @Volatile var ver = 0          // change à chaque modification de la séance (évite de tout recalculer)
+    private var lastFlush = 0L
     private var hrl = JSONArray()
     private var startWait: String? = null
+    private var startTag = 0L
     private var endedId: String? = null   // séance du téléphone terminée/abandonnée depuis la montre
     private var app: Context? = null
     private val ui = ArrayList<() -> Unit>()
     private val main = Handler(Looper.getMainLooper())
 
     fun isLocal() = local != null
+
+    /* Mode démo (tests sur émulateur seulement : lancé avec l'option rl_demo). */
+    fun demo(ctx: Context) { init(ctx); local = null; saveLocal(); update(Demo.JSON) }
 
     /* À appeler au démarrage de chaque composant : récupère la séance locale et le dernier état du téléphone. */
     fun init(ctx: Context) {
@@ -48,6 +54,7 @@ object WS {
     }
     private fun prefs() = app!!.getSharedPreferences("rl_ws", Context.MODE_PRIVATE)
     private fun saveLocal() {
+        ver++
         val a = app ?: return
         a.getSharedPreferences("rl_ws", Context.MODE_PRIVATE).edit()
             .putString("local", local?.toString()).putString("hrl", hrl.toString()).apply()
@@ -123,12 +130,13 @@ object WS {
         val o = try { JSONObject(j) } catch (e: Exception) { return }
         val old = phone
         phone = o
+        ver++
         app?.let { try { it.getSharedPreferences("rl_ws", Context.MODE_PRIVATE).edit().putString("phone", j).apply() } catch (e: Exception) {} }
         val now = System.currentTimeMillis()
         lastState = now
         if (phone?.optInt("on", 0) != 1) endedId = null
         if (phoneOn()) startWait = null
-        app?.let { flush(it) }
+        if (now - lastFlush > 20000) app?.let { lastFlush = now; flush(it) }
         if (local != null) { changed(); return }   // séance sur la montre seule : on garde la nôtre
         if (old == null || old.optString("id") != o.optString("id")) { exSel = -1; pending.clear(); edits.clear() }
         pending.entries.removeIf { (k, t0) ->
@@ -200,8 +208,17 @@ object WS {
             .addOnSuccessListener { nodes ->
                 if (nodes.isEmpty()) { goLocal(a, rid); return@addOnSuccessListener }
                 startWait = rid
-                send(a, JSONObject().put("a", "start").put("rid", rid).put("t", System.currentTimeMillis()))
-                main.postDelayed({ if (startWait == rid && !phoneOn()) goLocal(a, rid) }, 6000)
+                val t0 = System.currentTimeMillis()
+                startTag = t0
+                send(a, JSONObject().put("a", "start").put("rid", rid).put("t", t0))
+                main.postDelayed({
+                    if (startWait == rid && !phoneOn()) {
+                        // Le téléphone n'a pas répondu à temps : la montre continue seule,
+                        // et on dit au téléphone d'oublier ce démarrage s'il le reçoit plus tard.
+                        send(a, JSONObject().put("a", "start-cancel").put("t", t0))
+                        goLocal(a, rid)
+                    }
+                }, 6000)
             }
             .addOnFailureListener { goLocal(a, rid) }
     }
@@ -247,7 +264,7 @@ object WS {
             val m = JSONObject().put("a", "done").put("e", e).put("s", s)
             edits["$e:$s"]?.let { m.put("w", it[0]).put("r", it[1].toInt()) }
             edits.remove("$e:$s")
-            send(ctx, m)
+            send(ctx, m); ver++
         }
         val x = ex(e)
         val r = x?.optInt("rest", 90) ?: 90

@@ -60,6 +60,7 @@ class WatchActivity : Activity() {
     private var lastRot = 0L
     private var streak = 0
     private var dragging = false
+    private var fling: Runnable? = null
     private var askAb = false      // page « Es-tu sûr de vouloir abandonner ? »
     private var swapFor = -1       // liste pour remplacer un exercice
     private lateinit var gd: GestureDetector
@@ -121,6 +122,7 @@ class WatchActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WS.init(this)
+        if (intent?.getBooleanExtra("rl_demo", false) == true) WS.demo(this)
         fromTile(intent)
         scroll = LockScroll(this).apply { setBackgroundColor(BG); isVerticalScrollBarEnabled = false; isFocusable = true; isFocusableInTouchMode = true }
         col = LinearLayout(this).apply {
@@ -133,7 +135,7 @@ class WatchActivity : Activity() {
         setContentView(scroll)
         gd = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
             override fun onFling(e1: MotionEvent?, e2: MotionEvent, vx: Float, vy: Float): Boolean {
-                if (e1 == null || !WS.on()) return false
+                if (e1 == null || !WS.on() || dragging || askAb || swapFor >= 0) return false
                 val dx = e2.x - e1.x; val dy = e2.y - e1.y
                 if (abs(dx) < dp(45f) || abs(dx) < abs(dy) * 1.4f) return false
                 val np = if (dx < 0) (page + 1).coerceAtMost(2) else (page - 1).coerceAtLeast(0)
@@ -248,13 +250,15 @@ class WatchActivity : Activity() {
     private fun paintLight() {
         if (WS.on() != lastOn) { paint(); return }
         if (!WS.on()) return
-        tvClock?.text = clock(WS.elapsedMs())
-        tvHr?.text = hrLine()
+        tvClock?.let { set(it, clock(WS.elapsedMs())) }
+        tvHr?.let { set(it, hrPrefix + hrLine()) }
         val now = System.currentTimeMillis()
-        if (WS.restEnd > now) tvBig?.text = clock(WS.restEnd - now + 999)
+        if (WS.restEnd > now) tvBig?.let { set(it, clock(WS.restEnd - now + 999)) }
         else if (sig.contains("|rest|")) paint()
     }
 
+    private fun set(t: TextView, s: String) { if (t.text.toString() != s) t.text = s }
+    private var hrPrefix = ""
     private var lastOn = false
     private fun paint() {
         if (dragging) return
@@ -263,10 +267,10 @@ class WatchActivity : Activity() {
         val now = System.currentTimeMillis()
         val c = WS.cur()
         val resting = on && WS.restEnd > now
-        val ns = listOf(on, page, detail, if (resting) "|rest|" else "|set|", c, field, WS.st?.toString()?.hashCode(), WS.pending.keys.sorted(), WS.edits.entries.joinToString { it.key + it.value.joinToString() }, if (armed(arm)) arm else "", WS.exSel, Img.version, WS.isLocal(), askAb, swapFor).joinToString("#")
+        val ns = listOf(on, page, detail, if (resting) "|rest|" else "|set|", c, field, WS.ver, WS.pending.keys.sorted(), WS.edits.entries.joinToString { it.key + it.value.joinToString() }, if (armed(arm)) arm else "", WS.exSel, Img.version, WS.isLocal(), askAb, swapFor).joinToString("#")
         if (ns == sig) { paintLight(); return }
         sig = ns
-        col.removeAllViews(); tvClock = null; tvHr = null; tvBig = null
+        col.removeAllViews(); tvClock = null; tvHr = null; tvBig = null; hrPrefix = ""
         col.gravity = if (on && page == 1) Gravity.CENTER else Gravity.CENTER_HORIZONTAL
         scroll.locked = on && page == 1 && !askAb && swapFor < 0
         if (!on) { if (detail != null) routineDetail(detail!!) else idle(); return }
@@ -386,7 +390,8 @@ class WatchActivity : Activity() {
         col.addView(marquee(x?.optString("n") ?: "", 13f, Color.WHITE).apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.05f) }, lp((W * 0.62f).toInt(), -2, 0.01f))
         val warm = st?.optString("t") == "W"
         val (dd, nn) = s + 1 to WS.nSets(e)
-        tvHr = tp((if (warm) WS.t("Échauf. · ", "Warm-up · ") else "") + "$dd/$nn   " + hrLine(), 0.04f, Color.WHITE, true).also { col.addView(it, lp(-2, -2, 0.008f)) }
+        hrPrefix = (if (warm) WS.t("Échauf. · ", "Warm-up · ") else "") + "$dd/$nn   "
+        tvHr = tp(hrPrefix + hrLine(), 0.04f, Color.WHITE, true).also { col.addView(it, lp(-2, -2, 0.008f)) }
         if (x?.optInt("c", 0) == 1) {
             col.addView(tp(WS.t("Exercice chronométré ou cardio :\nà faire sur le téléphone", "Timed or cardio exercise:\nuse the phone"), 0.038f, MUTED), lp((W * 0.66f).toInt(), -2, 0.03f))
             col.addView(pill(WS.t("Suivant ›", "Next ›"), ACC, ON_ACC, 14f, 8f) { move(1) }, lp(-2, -2, 0.04f))
@@ -415,7 +420,7 @@ class WatchActivity : Activity() {
             var vt: android.view.VelocityTracker? = null
             wheel.setOnTouchListener { v, ev ->
                 when (ev.actionMasked) {
-                    MotionEvent.ACTION_DOWN -> { dragging = true; v.parent.requestDisallowInterceptTouchEvent(true); y0 = ev.y; acc = 0f; moved = false; vt = android.view.VelocityTracker.obtain(); vt?.addMovement(ev) }
+                    MotionEvent.ACTION_DOWN -> { fling?.let { h.removeCallbacks(it) }; fling = null; dragging = true; v.parent.requestDisallowInterceptTouchEvent(true); y0 = ev.y; acc = 0f; moved = false; vt = android.view.VelocityTracker.obtain(); vt?.addMovement(ev) }
                     MotionEvent.ACTION_MOVE -> {
                         vt?.addMovement(ev)
                         acc += y0 - ev.y; y0 = ev.y
@@ -429,17 +434,18 @@ class WatchActivity : Activity() {
                         if (!moved && ev.actionMasked == MotionEvent.ACTION_UP) { dragging = false; field = f; paint() }
                         else {
                             // Coup de doigt fort = défile vite ; la lunette sert à être précis.
-                            var n = (abs(vy) / dp(90f)).toInt().coerceAtMost(60)
+                            val total = (abs(vy) / dp(90f)).toInt().coerceAtMost(60)
+                            var n = total
                             val dir = if (vy < 0) 1.0 else -1.0
                             if (n > 0) {
-                                var delay = 10L
+                                // Rapide au début, ralentit à la fin (environ 1 seconde au maximum).
                                 val r = object : Runnable { override fun run() {
-                                    if (n-- <= 0) { dragging = false; field = f; paint(); return }
+                                    if (n-- <= 0) { fling = null; dragging = false; field = f; paint(); return }
                                     WS.adjust(e, s, f, dir, true); upd()
                                     if (n % 2 == 0) wheel.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                                    delay += 3; h.postDelayed(this, delay)
+                                    h.postDelayed(this, 8L + (30L * (total - n) / total))
                                 } }
-                                h.post(r)
+                                fling = r; h.post(r)
                             } else { dragging = false; field = f; paint() }
                         }
                     }
