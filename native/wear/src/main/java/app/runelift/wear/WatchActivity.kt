@@ -94,16 +94,22 @@ class WatchActivity : Activity() {
         orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER
         vs.forEach { addView(it, LinearLayout.LayoutParams(-2, -2).apply { setMargins(dp(3f), 0, dp(3f), 0) }) }
     }
-    private fun img(url: String?, size: Float): ImageView = ImageView(this).apply {
-        scaleType = ImageView.ScaleType.CENTER_CROP
-        background = bg(Color.WHITE, size)
-        clipToOutline = true
-        layoutParams = LinearLayout.LayoutParams(dp(size), dp(size))
-        if (!url.isNullOrEmpty()) Img.load(this@WatchActivity, url) { b -> if (isAttachedToWindow || parent != null) setImageBitmap(b) }
+    /* Image ronde de l'exercice ; tant qu'elle n'est pas là, une lettre de couleur. */
+    private fun img(key: String?, name: String, size: Float): View {
+        val fr = android.widget.FrameLayout(this)
+        fr.layoutParams = LinearLayout.LayoutParams(dp(size), dp(size))
+        fr.background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.parseColor("#3A424E")) }
+        fr.clipToOutline = true
+        fr.addView(tv(name.trim().take(1).uppercase(), size * 0.42f, ACC, true), android.widget.FrameLayout.LayoutParams(-1, -1))
+        val iv = ImageView(this).apply { scaleType = ImageView.ScaleType.CENTER_CROP }
+        fr.addView(iv, android.widget.FrameLayout.LayoutParams(-1, -1))
+        if (!key.isNullOrEmpty()) Img.load(this, key) { b -> iv.background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(Color.WHITE) }; iv.setImageBitmap(b) }
+        else Img.empty++
+        return fr
     }
-    private fun withImg(url: String?, content: View): LinearLayout = LinearLayout(this).apply {
+    private fun withImg(key: String?, name: String, content: View, size: Float = 44f): LinearLayout = LinearLayout(this).apply {
         orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
-        addView(img(url, 34f))
+        addView(img(key, name, size))
         addView(content, LinearLayout.LayoutParams(0, -2, 1f).apply { leftMargin = dp(8f) })
     }
     private fun armed(k: String) = arm == k && System.currentTimeMillis() - armT < 4000
@@ -218,6 +224,7 @@ class WatchActivity : Activity() {
         WS.onUi(uiCb)
         WS.load(this)
         WS.send(this, JSONObject().put("a", "hello"))
+        if (Img.ok == 0) WS.send(this, JSONObject().put("a", "imgs"))
         perms()
         sig = ""; paint()
         scroll.requestFocus()
@@ -319,7 +326,7 @@ class WatchActivity : Activity() {
         for (i in 0 until (ex?.length() ?: 0)) {
             val e = ex!!.optJSONObject(i) ?: continue
             val n = e.optInt("s", 0)
-            add(withImg(e.optString("i"), tv(e.optString("n") + if (n > 0) "\n" + WS.t("$n séries", "$n sets") else "", 12f, Color.WHITE).apply { gravity = Gravity.START }), 7f)
+            add(withImg(e.optString("i"), e.optString("n"), tv(e.optString("n") + if (n > 0) "\n" + WS.t("$n séries", "$n sets") else "", 12f, Color.WHITE).apply { gravity = Gravity.START }), 7f)
         }
         add(pill(WS.t("‹ Retour", "‹ Back"), CARD, Color.WHITE, 13f, 7f) { detail = null; paint() }, 12f, false)
     }
@@ -344,11 +351,12 @@ class WatchActivity : Activity() {
             val txt = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL
                 addView(tv(x.optString("n"), 13f, Color.WHITE, true).apply { gravity = Gravity.START; maxLines = 2 })
                 addView(tv(WS.t("$d/$n séries", "$d/$n sets"), 11f, if (d == n && n > 0) ACC else MUTED).apply { gravity = Gravity.START }) }
-            box.addView(withImg(x.optString("i"), txt))
+            box.addView(withImg(x.optString("i"), x.optString("n"), txt))
             add(box, 7f)
         }
         add(pill(if (armed("fin")) WS.t("Confirmer : terminer", "Confirm: finish") else WS.t("Terminer l'entraînement", "Finish workout"), ACC, ON_ACC, 13f, 9f) { confirmOr("fin") { WS.finish(this) } }, 12f)
         add(pill(WS.t("Abandonner", "Discard"), CARD, RED, 13f, 9f) { askAb = true; paint() }, 6f)
+        add(tv(WS.t("Images : ${Img.ok} ok · ${Img.fail} en attente · ${Img.empty} sans lien", "Images: ${Img.ok} ok · ${Img.fail} pending · ${Img.empty} no link"), 9f, Color.parseColor("#5A626E")), 10f)
     }
 
     /* ---------- Page 1 : série en cours ---------- */
@@ -479,17 +487,26 @@ class WatchActivity : Activity() {
         add(tv(WS.t("Remplacer", "Replace"), 12f, MUTED), 0f)
         add(marquee(cur, 14f, Color.WHITE), 2f)
         val seen = HashSet<String>(); seen.add(cur.lowercase())
-        fun item(n: String, l: String?) = add(pill(n, CARD, Color.WHITE, 12f, 8f) { WS.swap(this, e, n, l); swapFor = -1; page = 1; WS.exSel = e; paint() }, 6f)
-        val alt = x.optJSONArray("alt")
+        fun item(n: String, l: String?, i: String) {
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+                background = bg(CARD, 22f); setPadding(dp(6f), dp(5f), dp(12f), dp(5f)); isClickable = true
+                setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); WS.swap(this@WatchActivity, e, n, l, i); swapFor = -1; page = 1; WS.exSel = e; paint() }
+            }
+            row.addView(withImg(i, n, tv(n, 12f, Color.WHITE, true).apply { gravity = Gravity.START; maxLines = 2 }, 36f), LinearLayout.LayoutParams(-1, -2))
+            add(row, 6f)
+        }
+        val alt = WS.altOf(e)
         if (alt != null && alt.length() > 0) {
             add(tv(WS.t("Similaires", "Similar"), 12f, ACC, true), 10f)
-            for (i in 0 until alt.length()) { val a = alt.optJSONObject(i) ?: continue; val n = a.optString("n"); if (n.isEmpty() || !seen.add(n.lowercase())) continue; item(n, a.optString("l")) }
+            for (k in 0 until alt.length()) { val a = alt.optJSONObject(k) ?: continue; val n = a.optString("n"); if (n.isEmpty() || !seen.add(n.lowercase())) continue; item(n, a.optString("l"), a.optString("i")) }
         }
-        val mine = WS.mine()
-        if (mine != null && mine.length() > 0) {
+        val mine = WS.mineList().filter { seen.add(it.first.lowercase()) }
+        if (mine.isNotEmpty()) {
             add(tv(WS.t("Mes exercices", "My exercises"), 12f, ACC, true), 10f)
-            for (i in 0 until mine.length()) { val n = mine.optString(i); if (n.isEmpty() || !seen.add(n.lowercase())) continue; item(n, null) }
+            mine.forEach { item(it.first, null, it.second) }
         }
+        if ((alt == null || alt.length() == 0) && mine.isEmpty()) add(tv(WS.t("Ouvre Runelift sur le téléphone une fois pour recevoir ta liste d'exercices.", "Open Runelift on the phone once to get your exercise list."), 12f, MUTED), 8f)
         add(pill(WS.t("Annuler", "Cancel"), CARD, MUTED, 13f, 8f) { swapFor = -1; paint() }, 12f, false)
     }
 

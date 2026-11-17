@@ -21,6 +21,12 @@ import java.util.concurrent.TimeUnit
    Si le téléphone ne les a pas encore envoyées, la montre essaie de les télécharger elle-même. */
 object Img {
     @Volatile var version = 0
+    @Volatile var ok = 0
+    @Volatile var fail = 0
+    @Volatile var empty = 0
+    const val BASE = "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/"
+    /* La montre reçoit une clé courte (ex. 0150-eYnzaCm) ; on refait le lien complet, identique à celui du téléphone. */
+    fun url(k: String?): String = if (k.isNullOrEmpty()) "" else if (k.startsWith("http")) k else "$BASE$k.jpg"
     private val asked = java.util.Collections.synchronizedSet(HashSet<String>())
     private val mem = LruCache<String, Bitmap>(60)
     private val pool = Executors.newFixedThreadPool(2)
@@ -63,7 +69,9 @@ object Img {
         } catch (e: Exception) {}
     }
 
-    fun load(ctx: Context, url: String, cb: (Bitmap) -> Unit) {
+    fun load(ctx: Context, key: String, cb: (Bitmap) -> Unit) {
+        val url = url(key)
+        if (url.isEmpty()) { empty++; return }
         mem.get(url)?.let { cb(it); return }
         val a = ctx.applicationContext
         pool.execute {
@@ -80,8 +88,9 @@ object Img {
                         c.disconnect()
                     } catch (e: Exception) { f.delete() }
                 }
-                if (!f.exists() || f.length() == 0L) return@execute
-                val b = decode(f) ?: return@execute
+                if (!f.exists() || f.length() == 0L) { fail++; return@execute }
+                val b = decode(f) ?: run { fail++; f.delete(); return@execute }
+                ok++
                 mem.put(url, b)
                 main.post { cb(b) }
             } catch (e: Exception) {}

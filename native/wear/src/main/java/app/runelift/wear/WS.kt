@@ -70,10 +70,34 @@ object WS {
     fun mine(): JSONArray? = phone?.optJSONArray("mine")
 
     /* Remplacer un exercice (machine prise, etc.). */
-    fun swap(ctx: Context, e: Int, n: String, l: String?) {
+    /* Tes exercices (pour « Remplacer ») : liste envoyée par le téléphone, sinon ceux de tes routines. */
+    fun mineList(): List<Pair<String, String>> {
+        val out = ArrayList<Pair<String, String>>(); val seen = HashSet<String>()
+        fun add(n: String, i: String) { if (n.isNotEmpty() && seen.add(n.lowercase())) out.add(n to i) }
+        val m = mine()
+        if (m != null) for (k in 0 until m.length()) { val o = m.optJSONObject(k); if (o != null) add(o.optString("n"), o.optString("i")) else add(m.optString(k), imgOf(m.optString(k))) }
+        val rts = routines()
+        if (rts != null) for (r in 0 until rts.length()) { val ex = rts.optJSONObject(r)?.optJSONArray("ex") ?: continue; for (k in 0 until ex.length()) { val o = ex.optJSONObject(k) ?: continue; add(o.optString("n"), o.optString("i")) } }
+        return out
+    }
+    /* Exercices similaires : ceux de la séance, sinon ceux connus dans tes routines pour le même exercice. */
+    fun altOf(e: Int): JSONArray? {
+        val x = ex(e) ?: return null
+        x.optJSONArray("alt")?.let { if (it.length() > 0) return it }
+        val n = x.optString("n"); val rts = routines() ?: return null
+        for (r in 0 until rts.length()) { val ex = rts.optJSONObject(r)?.optJSONArray("ex") ?: continue; for (k in 0 until ex.length()) { val o = ex.optJSONObject(k) ?: continue; if (o.optString("n") == n) o.optJSONArray("alt")?.let { if (it.length() > 0) return it } } }
+        return null
+    }
+    fun imgOf(n: String): String {
+        val rts = routines() ?: return ""
+        for (r in 0 until rts.length()) { val ex = rts.optJSONObject(r)?.optJSONArray("ex") ?: continue; for (k in 0 until ex.length()) { val o = ex.optJSONObject(k) ?: continue; if (o.optString("n") == n && o.optString("i").isNotEmpty()) return o.optString("i") } }
+        return ""
+    }
+
+    fun swap(ctx: Context, e: Int, n: String, l: String?, img: String = "") {
         if (local == null) { val m = JSONObject().put("a", "swap").put("e", e).put("n", n); if (!l.isNullOrEmpty()) m.put("l", l); send(ctx, m); return }
         val x = ex(e) ?: return
-        x.put("n", n).put("i", "").put("alt", JSONArray())
+        x.put("n", n).put("i", img).put("alt", JSONArray())
         val ss = x.optJSONArray("s") ?: JSONArray()
         for (k in 0 until ss.length()) { val y = ss.optJSONObject(k) ?: continue; if (y.optInt("d", 0) != 1) y.put("w", "").put("p", "") }
         edits.keys.removeIf { it.startsWith("$e:") }

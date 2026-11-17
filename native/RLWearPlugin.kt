@@ -97,14 +97,7 @@ class RLWearPlugin : Plugin() {
         call.resolve()
         val ctx = context.applicationContext
         Thread {
-            val p = ctx.getSharedPreferences("rl_wear", Context.MODE_PRIVATE)
-            val sent = HashSet(p.getStringSet("imgs", emptySet()) ?: emptySet())
-            for (u in urls) {
-                val k = Integer.toHexString(u.hashCode())
-                if (k in sent) continue
-                if (pushImage(ctx, u)) sent.add(k)
-            }
-            p.edit().putStringSet("imgs", sent).apply()
+            for (u in urls) pushImage(ctx, u)
         }.start()
     }
 
