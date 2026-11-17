@@ -103,7 +103,6 @@ class WatchActivity : Activity() {
     private fun marquee(text: String, sp: Float, color: Int) = tv(text, sp, color, true).apply {
         isSingleLine = true; ellipsize = TextUtils.TruncateAt.MARQUEE; marqueeRepeatLimit = -1
         setHorizontallyScrolling(true); isSelected = true
-        isHorizontalFadingEdgeEnabled = true; setFadingEdgeLength(dp(16f))
     }
     private fun add(v: View, top: Float = 6f, full: Boolean = true) {
         col.addView(v, LinearLayout.LayoutParams(if (full) -1 else -2, -2).apply { topMargin = dp(top); gravity = Gravity.CENTER_HORIZONTAL })
