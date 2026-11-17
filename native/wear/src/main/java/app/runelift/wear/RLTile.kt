@@ -14,7 +14,7 @@ import androidx.wear.protolayout.TimelineBuilders
 import androidx.wear.tiles.RequestBuilders
 import androidx.wear.tiles.TileBuilders
 import androidx.wear.tiles.TileService
-import com.google.common.util.concurrent.Futures
+import androidx.concurrent.futures.CallbackToFutureAdapter
 import com.google.common.util.concurrent.ListenableFuture
 
 /* Tuile Runelift : glisse à gauche depuis le cadran.
@@ -78,9 +78,12 @@ class RLTile : TileService() {
         val tile = TileBuilders.Tile.Builder().setResourcesVersion("1")
             .setFreshnessIntervalMillis(if (WS.on()) 60_000L else 30 * 60_000L)
             .setTileTimeline(TimelineBuilders.Timeline.fromLayoutElement(root)).build()
-        return Futures.immediateFuture(tile)
+        return done(tile)
     }
 
     override fun onTileResourcesRequest(requestParams: RequestBuilders.ResourcesRequest): ListenableFuture<ResourceBuilders.Resources> =
-        Futures.immediateFuture(ResourceBuilders.Resources.Builder().setVersion("1").build())
+        done(ResourceBuilders.Resources.Builder().setVersion("1").build())
+
+    /* Réponse immédiate (sans la grosse bibliothèque Guava, pour une appli plus légère). */
+    private fun <T> done(v: T): ListenableFuture<T> = CallbackToFutureAdapter.getFuture { c -> c.set(v); "runelift" }
 }
