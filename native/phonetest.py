@@ -1,6 +1,11 @@
 """Teste l'appli téléphone sur un émulateur Android : lancement, site chargé, extensions natives, écrans, erreurs."""
 import json, os, re, subprocess, sys, time, urllib.request
 import websocket
+def argtxt(a):
+    if 'value' in a: return str(a['value'])
+    pv = a.get('preview')
+    if pv: return a.get('description', '') + ' {' + ', '.join(f"{q.get('name')}: {q.get('value')}" for q in pv.get('properties', [])) + '}'
+    return a.get('description', '')
 
 APK, OUT = sys.argv[1], sys.argv[2]
 os.makedirs(OUT, exist_ok=True)
@@ -39,7 +44,7 @@ def cdp(method, params=None):
     while True:
         m = json.loads(ws.recv())
         if m.get('method') == 'Runtime.exceptionThrown': errs.append(m['params']['exceptionDetails'].get('exception', {}).get('description', m['params']['exceptionDetails'].get('text', ''))[:300])
-        if m.get('method') == 'Runtime.consoleAPICalled' and m['params'].get('type') in ('error', 'warning'): errs.append(m['params'].get('type') + ': ' + ' '.join(str(a.get('value', a.get('description', a.get('preview', '')))) for a in m['params'].get('args', []))[:400])
+        if m.get('method') == 'Runtime.consoleAPICalled' and m['params'].get('type') in ('error', 'warning'): errs.append(m['params'].get('type') + ': ' + ' '.join(argtxt(a) for a in m['params'].get('args', []))[:400])
         if m.get('id') == mid[0]: return m
 def ev(expr, wait=True):
     r = cdp('Runtime.evaluate', {'expression': expr, 'awaitPromise': wait, 'returnByValue': True})
@@ -56,7 +61,7 @@ else:
         try:
             ws.settimeout(2); m = json.loads(ws.recv())
             if m.get('method') == 'Runtime.exceptionThrown': errs.append('démarrage: ' + str(m['params']['exceptionDetails'].get('exception', {}).get('description', m['params']['exceptionDetails'].get('text', '')))[:300])
-            if m.get('method') == 'Runtime.consoleAPICalled' and m['params'].get('type') in ('error', 'warning'): errs.append('démarrage ' + m['params'].get('type') + ': ' + ' '.join(str(a.get('value', a.get('description', a.get('preview', '')))) for a in m['params'].get('args', []))[:400])
+            if m.get('method') == 'Runtime.consoleAPICalled' and m['params'].get('type') in ('error', 'warning'): errs.append('démarrage ' + m['params'].get('type') + ': ' + ' '.join(argtxt(a) for a in m['params'].get('args', []))[:400])
         except Exception: pass
     ws.settimeout(60)
     log('erreurs au démarrage :', errs or 'aucune'); errs.clear()

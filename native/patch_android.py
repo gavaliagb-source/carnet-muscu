@@ -62,6 +62,8 @@ rw(res + 'values/styles.xml', lambda s: s.replace('''<style name="AppTheme.NoAct
         <item name="windowSplashScreenBackground">@color/rl_splash_bg</item>
         <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>'''))
+# Fond de la fenêtre sombre : les barres du haut et du bas prennent cette couleur (sinon blanches en mode clair)
+rw(res + 'values/styles.xml', lambda s: re.sub(r'(<style name="AppTheme\.NoActionBar"[^>]*>)', r'\1\n        <item name="android:windowBackground">@color/rl_splash_bg</item>', s, count=1))
 print('Icône et démarrage ajoutés')
 
 # Appli de la montre (Wear OS)
