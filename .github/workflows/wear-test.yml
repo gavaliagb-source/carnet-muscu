@@ -4,7 +4,7 @@ on:
   push:
     branches: [android]
 permissions:
-  contents: read
+  contents: write
 jobs:
   test:
     if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[test-montre]')
@@ -46,3 +46,11 @@ jobs:
         with:
           name: captures-montre
           path: captures
+      - name: Publier les captures (branche captures-montre)
+        if: always()
+        run: |
+          mkdir -p captures && cd captures
+          git init -q -b captures-montre
+          git config user.email "actions@github.com"; git config user.name "actions"
+          git add -A && git commit -qm "Captures du test $GITHUB_RUN_ID" || true
+          git push -f -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" captures-montre

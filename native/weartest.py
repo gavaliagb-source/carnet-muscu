@@ -47,7 +47,8 @@ def tap_text(t, wait=1.6):
             if t in txt:
                 adb('shell', 'input', 'tap', str(x), str(y)); log('toucher', repr(t), x, y); time.sleep(wait); return True
         time.sleep(1)
-    log('INTROUVABLE', repr(t)); return False
+    found = [txt for txt, x, y in nodes() if txt][:20]
+    log('INTROUVABLE', repr(t), '— textes visibles :', found); return False
 
 def swipe(x1, y1, x2, y2, ms=150, wait=1.2):
     adb('shell', 'input', 'swipe', *map(lambda v: str(int(v)), (x1, y1, x2, y2, ms))); time.sleep(wait)
@@ -59,6 +60,9 @@ log(adb('install', '-r', '-g', APK, timeout=240).decode('utf-8', 'ignore'))
 for p in ['android.permission.BODY_SENSORS', 'android.permission.POST_NOTIFICATIONS']:
     sh(f'pm grant {PKG} {p}')
 sh('logcat -c')
+
+sh('settings put secure user_setup_complete 1'); sh('settings put global device_provisioned 1')
+sh('input keyevent KEYCODE_WAKEUP'); sh('svc power stayon true')
 
 def launch(demo=True):
     sh(f'am force-stop {PKG}')
