@@ -63,6 +63,7 @@ class RLHealthPlugin : Plugin() {
         val s = sdk()
         val r = JSObject()
         r.put("available", s == HealthConnectClient.SDK_AVAILABLE)
+        r.put("ver", 2) // 2 = séances envoyées comme musculation
         r.put("reason", when (s) {
             HealthConnectClient.SDK_AVAILABLE -> "ok"
             HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> "update"
@@ -107,7 +108,7 @@ class RLHealthPlugin : Plugin() {
             if (pWorkout in g) recs.add(ExerciseSessionRecord(
                 startTime = start, startZoneOffset = so, endTime = end, endZoneOffset = eo,
                 metadata = Metadata.manualEntry(clientRecordId = "rl-w-$id"),
-                exerciseType = ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING,
+                exerciseType = ExerciseSessionRecord.EXERCISE_TYPE_WEIGHTLIFTING, // Samsung Health affiche « Musculation » (l'entraînement de force y devient « Autre entraînement »)
                 title = title))
             if (kcal > 0 && pKcal in g) recs.add(ActiveCaloriesBurnedRecord(
                 startTime = start, startZoneOffset = so, endTime = end, endZoneOffset = eo,
