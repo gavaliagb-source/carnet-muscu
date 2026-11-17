@@ -1,10 +1,13 @@
 name: Test montre (émulateur)
 on:
   workflow_dispatch:
+  push:
+    branches: [android]
 permissions:
   contents: read
 jobs:
   test:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[test-montre]')
     runs-on: ubuntu-latest
     timeout-minutes: 50
     steps:
