@@ -11,11 +11,13 @@
     ]
   },
   "android": {
-    "backgroundColor": "#0d0f12"
+    "backgroundColor": "#0d0f12",
+    "webContentsDebuggingEnabled": true
   },
   "plugins": {
     "SystemBars": {
       "style": "DARK"
     }
-  }
+  },
+  "loggingBehavior": "none"
 }
