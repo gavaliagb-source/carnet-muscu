@@ -88,6 +88,7 @@ class WatchActivity : Activity() {
             v.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
             if (WS.restEnd > System.currentTimeMillis()) { WS.restSkip(this); return@setOnClickListener }
             val c = WS.cur() ?: return@setOnClickListener
+            if (WS.ex(c.first)?.optInt("c", 0) == 1) { move(1); return@setOnClickListener }
             WS.done(this, c.first, c.second)
         }
         btnPlus.setOnClickListener { WS.restAdd(this) }
@@ -195,6 +196,6 @@ class WatchActivity : Activity() {
             else -> "× $r"
         }
         tvBig.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (tvBig.text.length > 12) 22f else 28f)
-        btnMain.text = WS.t("✓  Fait", "✓  Done")
+        btnMain.text = if (x?.optInt("c", 0) == 1) WS.t("Suivant ›", "Next ›") else WS.t("✓  Fait", "✓  Done")
     }
 }
