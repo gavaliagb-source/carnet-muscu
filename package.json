@@ -5,7 +5,8 @@
   "description": "Coquille Android de Runelift (Capacitor). Le contenu de l'appli vient du site.",
   "dependencies": {
     "@capacitor/android": "^8.6.2",
-    "@capacitor/core": "^8.6.2"
+    "@capacitor/core": "^8.6.2",
+    "@capgo/capacitor-social-login": "^8.7.11"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.6.2"

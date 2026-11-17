@@ -20,6 +20,8 @@ jobs:
       - run: npm install
       - run: npx cap add android
       - run: npx cap sync android
+      - name: Activité principale (connexion Google)
+        run: cp native/MainActivity.java android/app/src/main/java/app/runelift/MainActivity.java
       - name: Signature stable (si la clé est dans les secrets)
         env:
           KS: ${{ secrets.ANDROID_KEYSTORE_B64 }}
@@ -44,4 +46,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete android-test --yes --cleanup-tag || true
-          gh release create android-test runelift-test.apk --target android --prerelease --title "Runelift Android (test)" --notes "Version de test. Pas encore de connexion Google ni de Health Connect."
+          gh release create android-test runelift-test.apk --target android --prerelease --title "Runelift Android (test)" --notes "Version de test : connexion Google native. Pas encore de Health Connect."
