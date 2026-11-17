@@ -20,6 +20,8 @@ object WS {
     var bpm = 0
     var bpmT = 0L
     var exSel = -1
+    val edits = HashMap<String, DoubleArray>()
+    var lastState = 0L
     private val ui = ArrayList<() -> Unit>()
     private val main = Handler(Looper.getMainLooper())
 
@@ -50,7 +52,8 @@ object WS {
         val old = st
         st = o
         val now = System.currentTimeMillis()
-        if (old == null || old.optString("id") != o.optString("id")) { exSel = -1; pending.clear() }
+        lastState = now
+        if (old == null || old.optString("id") != o.optString("id")) { exSel = -1; pending.clear(); edits.clear() }
         pending.entries.removeIf { (k, t0) ->
             val p = k.split(":"); val e = p[0].toInt(); val s = p[1].toInt()
             set(e, s)?.optInt("d", 0) == 1 || now - t0 > 30000
@@ -58,7 +61,7 @@ object WS {
         val re = o.optLong("re", 0)
         if (re > now) { restEnd = re; restTot = o.optInt("rt", restTot) }
         else if (pending.isEmpty() && restEnd > now) restEnd = 0
-        if (!on()) { restEnd = 0; pending.clear(); exSel = -1 }
+        if (!on()) { restEnd = 0; pending.clear(); exSel = -1; edits.clear() }
         changed()
     }
 
@@ -79,10 +82,28 @@ object WS {
         }
     }
 
+    /* Charge et répétitions affichées : celles modifiées sur la montre, sinon celles du téléphone. */
+    fun w(e: Int, s: Int): Double = edits["$e:$s"]?.get(0) ?: (set(e, s)?.opt("w") as? Number)?.toDouble() ?: set(e, s)?.optString("w")?.toDoubleOrNull() ?: 0.0
+    fun r(e: Int, s: Int): Double = edits["$e:$s"]?.get(1) ?: set(e, s)?.optDouble("r", 0.0) ?: 0.0
+    fun hasW(e: Int, s: Int) = edits.containsKey("$e:$s") || (set(e, s)?.optString("w") ?: "").isNotEmpty()
+    fun step() = if (st?.optString("u") == "kg") 2.5 else 5.0
+    fun adjust(e: Int, s: Int, field: Int, d: Double) {
+        val a = doubleArrayOf(w(e, s), r(e, s))
+        a[field] = if (field == 0) maxOf(0.0, a[field] + d * step()) else maxOf(1.0, a[field] + d)
+        edits["$e:$s"] = a
+        changed()
+    }
+
+    fun start(ctx: Context, rid: String) { send(ctx, JSONObject().put("a", "start").put("rid", rid)) }
+    fun finish(ctx: Context) { send(ctx, JSONObject().put("a", "finish")) }
+
     fun done(ctx: Context, e: Int, s: Int) {
         val now = System.currentTimeMillis()
         pending["$e:$s"] = now
-        send(ctx, JSONObject().put("a", "done").put("e", e).put("s", s))
+        val m = JSONObject().put("a", "done").put("e", e).put("s", s)
+        edits["$e:$s"]?.let { m.put("w", it[0]).put("r", it[1].toInt()) }
+        edits.remove("$e:$s")
+        send(ctx, m)
         val x = ex(e)
         val r = x?.optInt("rest", 90) ?: 90
         if (r > 0 && x?.optInt("c", 0) != 1) { restTot = r; restEnd = now + r * 1000L }
