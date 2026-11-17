@@ -122,6 +122,7 @@ class RLLivePlugin : Plugin() {
             val v = i?.getStringExtra("rl_start") ?: return
             prefs(ctx).edit().putString("launch", v).putLong("launchT", System.currentTimeMillis()).apply()
             i.removeExtra("rl_start")
+            instance?.notifyListeners("launch", JSObject().put("start", v), true) // appli déjà ouverte
         }
 
         fun schedule(ctx: Context, on: Boolean) {
