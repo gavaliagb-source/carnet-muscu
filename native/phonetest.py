@@ -29,7 +29,7 @@ for k in range(20):
         try:
             pages = json.load(urllib.request.urlopen('http://127.0.0.1:9222/json', timeout=5))
             pg = [p for p in pages if p.get('type') == 'page' and 'webSocketDebuggerUrl' in p]
-            if pg: ws = websocket.create_connection(pg[0]['webSocketDebuggerUrl'], timeout=60); log('page :', pg[0].get('url')); break
+            if pg: ws = websocket.create_connection(pg[0]['webSocketDebuggerUrl'], timeout=60, suppress_origin=True); log('page :', pg[0].get('url')); break
         except Exception as e: log('devtools', e)
     time.sleep(3)
 errs = []
@@ -39,7 +39,7 @@ def cdp(method, params=None):
     while True:
         m = json.loads(ws.recv())
         if m.get('method') == 'Runtime.exceptionThrown': errs.append(m['params']['exceptionDetails'].get('exception', {}).get('description', m['params']['exceptionDetails'].get('text', ''))[:300])
-        if m.get('method') == 'Runtime.consoleAPICalled' and m['params'].get('type') == 'error': errs.append('console: ' + ' '.join(str(a.get('value', a.get('description', ''))) for a in m['params'].get('args', []))[:300])
+        if m.get('method') == 'Runtime.consoleAPICalled' and m['params'].get('type') in ('error', 'warning'): errs.append(m['params'].get('type') + ': ' + ' '.join(str(a.get('value', a.get('description', a.get('preview', '')))) for a in m['params'].get('args', []))[:400])
         if m.get('id') == mid[0]: return m
 def ev(expr, wait=True):
     r = cdp('Runtime.evaluate', {'expression': expr, 'awaitPromise': wait, 'returnByValue': True})
@@ -50,7 +50,16 @@ def ev(expr, wait=True):
 if not ws:
     log('IMPOSSIBLE de joindre la page de l\'appli')
 else:
-    cdp('Runtime.enable')
+    cdp('Runtime.enable'); cdp('Page.enable')
+    cdp('Page.reload'); t0 = time.time()
+    while time.time() - t0 < 20:  # messages de la console au démarrage
+        try:
+            ws.settimeout(2); m = json.loads(ws.recv())
+            if m.get('method') == 'Runtime.exceptionThrown': errs.append('démarrage: ' + str(m['params']['exceptionDetails'].get('exception', {}).get('description', m['params']['exceptionDetails'].get('text', '')))[:300])
+            if m.get('method') == 'Runtime.consoleAPICalled' and m['params'].get('type') in ('error', 'warning'): errs.append('démarrage ' + m['params'].get('type') + ': ' + ' '.join(str(a.get('value', a.get('description', a.get('preview', '')))) for a in m['params'].get('args', []))[:400])
+        except Exception: pass
+    ws.settimeout(60)
+    log('erreurs au démarrage :', errs or 'aucune'); errs.clear()
     log('version :', ev('APP_VERSION'), '| natif :', ev('isNative()'), '| Health Connect :', ev('!!HC()'), '| montre :', ev('!!WR()'))
     log('extensions :', ev('Object.keys(Capacitor.Plugins).join(", ")'))
     log('Health Connect status :', ev('Capacitor.Plugins.RLHealth.status().then(r=>JSON.stringify(r)).catch(e=>"err "+e.message)'))
