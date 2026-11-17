@@ -6,6 +6,7 @@ import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.records.metadata.Metadata
@@ -35,7 +36,8 @@ class RLHealthPlugin : Plugin() {
     private val pWorkout = HealthPermission.getWritePermission(ExerciseSessionRecord::class)
     private val pKcal = HealthPermission.getWritePermission(ActiveCaloriesBurnedRecord::class)
     private val pWeight = HealthPermission.getReadPermission(WeightRecord::class)
-    private val perms = setOf(pWorkout, pKcal, pWeight)
+    private val pHr = HealthPermission.getReadPermission(HeartRateRecord::class)
+    private val perms = setOf(pWorkout, pKcal, pWeight, pHr)
 
     private fun sdk() = HealthConnectClient.getSdkStatus(context)
     private fun client() = HealthConnectClient.getOrCreate(context)
@@ -52,6 +54,7 @@ class RLHealthPlugin : Plugin() {
         if (pWorkout in g) a.put("workout")
         if (pKcal in g) a.put("calories")
         if (pWeight in g) a.put("weight")
+        if (pHr in g) a.put("heart")
         return a
     }
 
@@ -129,6 +132,28 @@ class RLHealthPlugin : Plugin() {
                 if (w.metadata.dataOrigin.packageName == context.packageName) continue
                 a.put(JSObject().put("t", w.time.toString()).put("kg", w.weight.inKilograms))
             }
+            resolve(JSObject().put("items", a))
+        }
+    }
+
+    @PluginMethod
+    fun readHeartRate(call: PluginCall) {
+        if (sdk() != HealthConnectClient.SDK_AVAILABLE) { call.reject("unavailable"); return }
+        val start = Instant.parse(call.getString("start") ?: run { call.reject("start"); return })
+        val end = Instant.parse(call.getString("end") ?: run { call.reject("end"); return })
+        call.safe {
+            val c = client()
+            if (pHr !in c.permissionController.getGrantedPermissions()) { reject("no_permission"); return@safe }
+            val a = JSArray()
+            var token: String? = null
+            do {
+                val res = c.readRecords(ReadRecordsRequest(HeartRateRecord::class, TimeRangeFilter.between(start, end), pageSize = 1000, pageToken = token))
+                for (r in res.records) for (x in r.samples) {
+                    if (x.time.isBefore(start) || x.time.isAfter(end)) continue
+                    a.put(JSObject().put("t", x.time.toString()).put("bpm", x.beatsPerMinute))
+                }
+                token = res.pageToken
+            } while (token != null && a.length() < 20000)
             resolve(JSObject().put("items", a))
         }
     }

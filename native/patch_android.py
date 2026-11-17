@@ -11,7 +11,7 @@ def app(s):
     s = s.replace("dependencies {", "dependencies {\n    implementation 'androidx.health.connect:connect-client:1.1.0'\n    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0'", 1)
     return s
 rw(f'{A}/app/build.gradle', app)
-PERMS = ['WRITE_EXERCISE', 'WRITE_ACTIVE_CALORIES_BURNED', 'READ_WEIGHT']
+PERMS = ['WRITE_EXERCISE', 'WRITE_ACTIVE_CALORIES_BURNED', 'READ_WEIGHT', 'READ_HEART_RATE']
 def man(s):
     ps = ''.join(f'    <uses-permission android:name="android.permission.health.{p}" />\n' for p in PERMS)
     ps += '    <queries>\n        <package android:name="com.google.android.apps.healthdata" />\n    </queries>\n'
