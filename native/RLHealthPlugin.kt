@@ -107,13 +107,13 @@ class RLHealthPlugin : Plugin() {
             val recs = mutableListOf<Record>()
             if (pWorkout in g) recs.add(ExerciseSessionRecord(
                 startTime = start, startZoneOffset = so, endTime = end, endZoneOffset = eo,
-                metadata = Metadata.manualEntry(clientRecordId = "rl-w-$id"),
+                metadata = Metadata.manualEntry(clientRecordId = "rl-w-$id", clientRecordVersion = 2L),
                 exerciseType = ExerciseSessionRecord.EXERCISE_TYPE_WEIGHTLIFTING, // Samsung Health affiche « Musculation » (l'entraînement de force y devient « Autre entraînement »)
                 title = title))
             if (kcal > 0 && pKcal in g) recs.add(ActiveCaloriesBurnedRecord(
                 startTime = start, startZoneOffset = so, endTime = end, endZoneOffset = eo,
                 energy = Energy.kilocalories(kcal),
-                metadata = Metadata.manualEntry(clientRecordId = "rl-c-$id")))
+                metadata = Metadata.manualEntry(clientRecordId = "rl-c-$id", clientRecordVersion = 2L)))
             if (recs.isEmpty()) { reject("no_permission"); return@safe }
             c.insertRecords(recs)
             resolve(JSObject().put("ok", true).put("count", recs.size))
