@@ -84,6 +84,32 @@ else:
     ev("(()=>{const b=document.querySelector('[data-act=check]');if(b)b.click();return 1})()"); time.sleep(2); shot('serie_cochee')
     ev("(()=>{window.confirm=()=>true;S.active.exercises.forEach(e=>e.sets.forEach(s=>{s.done=true;if(s.r===''||s.r==null)s.r=s.ph||8;if(s.w===''||s.w==null)s.w=50}));fakeAct('finish',{});return S.history.length})()"); time.sleep(3); shot('fin_seance')
     log('séances dans l\'historique :', ev('S.history.length'))
+    # Écran verrouillé : séance en cours puis repos avec « +30 s »
+    def notif():
+        d = sh('dumpsys notification --noredact'); i = d.find('pkg=app.runelift')
+        return re.findall(r'android\.(?:title|text)=String \(([^)]*)\)', d[i:i + 6000]) if i >= 0 else []
+    ev("(()=>{startWorkout(S.routines[0].id);return 1})()"); time.sleep(3)
+    log('notification séance :', notif()[:2])
+    ev("(()=>{startTimer(60);return 1})()"); time.sleep(3)
+    log('notification repos :', notif()[:2], '| reste', ev('Math.round((timerEnd-Date.now())/1000)'), 's')
+    sh('cmd statusbar expand-notifications'); time.sleep(2); shot('notification_repos')
+    x = sh('uiautomator dump /sdcard/n.xml >/dev/null; cat /sdcard/n.xml'); m = re.search(r'text="\+30 s"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', x)
+    if m:
+        a1, b1, a2, b2 = map(int, m.groups()); sh(f'input tap {(a1 + a2) // 2} {(b1 + b2) // 2}'); time.sleep(3)
+        log('après « +30 s » dans la notification : reste', ev('Math.round((timerEnd-Date.now())/1000)'), 's (attendu environ 84)')
+    else: log('bouton « +30 s » introuvable dans la notification')
+    sh('cmd statusbar collapse'); time.sleep(1)
+    # Widget et vérification des amis
+    log('widget déclaré :', 'RLWidget' in sh('dumpsys appwidget'))
+    log('état téléphone :', ev('Capacitor.Plugins.RLLive.status().then(r=>JSON.stringify(r))'))
+    ev("Capacitor.Plugins.RLLive.bg({on:true,rt:'faux',key:FB_CFG.apiKey,pid:FB_CFG.projectId,uid:'test',fr:[['x','Ami']],lang:'fr'}).then(()=>Capacitor.Plugins.RLLive.bgNow())"); time.sleep(15)
+    log('vérification des amis (faux compte, doit échouer proprement) :', ev('Capacitor.Plugins.RLLive.status().then(r=>JSON.stringify(r))'))
+    # Ouverture depuis le widget : démarre la routine du jour
+    ev("(()=>{window.confirm=()=>true;fakeAct('cancel-workout',{});return 1})()"); time.sleep(2)
+    rid = ev('S.routines[1].id')
+    sh(f'am start -n {PKG}/.MainActivity --es rl_start {rid}'); time.sleep(5)
+    log('ouvert depuis le widget → séance :', ev('S.active && S.active.routineName'), '(attendu', ev('S.routines[1].name'), ')')
+
     log('erreurs dans la page :', errs if errs else 'aucune')
 
 crash = sh('logcat -d -b crash'); fatal = [l for l in sh('logcat -d').splitlines() if 'FATAL EXCEPTION' in l or ('AndroidRuntime' in l and ' E ' in l)]
