@@ -74,6 +74,12 @@ class WatchActivity : Activity() {
         isClickable = true; isFocusable = true
         setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); click(v) }
     }
+    private fun circle(text: String, click: (View) -> Unit) = tv(text, 16f, Color.WHITE, true).apply {
+        background = GradientDrawable().apply { shape = GradientDrawable.OVAL; setColor(CARD) }
+        layoutParams = LinearLayout.LayoutParams(dp(36f), dp(36f))
+        isClickable = true; isFocusable = true
+        setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); click(v) }
+    }
     private fun add(v: View, top: Float = 6f, full: Boolean = true) {
         col.addView(v, LinearLayout.LayoutParams(if (full) -1 else -2, -2).apply { topMargin = dp(top); gravity = Gravity.CENTER_HORIZONTAL })
     }
@@ -107,7 +113,8 @@ class WatchActivity : Activity() {
         col = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL
             val w = resources.displayMetrics.widthPixels
-            setPadding((w * 0.12).toInt(), (w * 0.09).toInt(), (w * 0.12).toInt(), (w * 0.2).toInt())
+            setPadding((w * 0.12).toInt(), (w * 0.07).toInt(), (w * 0.12).toInt(), (w * 0.12).toInt())
+            minimumHeight = resources.displayMetrics.heightPixels
         }
         scroll.addView(col)
         setContentView(scroll)
@@ -248,6 +255,7 @@ class WatchActivity : Activity() {
         if (ns == sig) { paintLight(); return }
         sig = ns
         col.removeAllViews(); tvClock = null; tvHr = null; tvBig = null
+        col.gravity = if (on && page == 1) Gravity.CENTER else Gravity.CENTER_HORIZONTAL
         if (!on) { if (detail != null) routineDetail(detail!!) else idle(); return }
         dots()
         when (page) {
@@ -352,10 +360,10 @@ class WatchActivity : Activity() {
 
     private fun setView(e: Int, s: Int) {
         val x = WS.ex(e); val st = WS.set(e, s)
-        add(tv(x?.optString("n") ?: "", 14f, Color.WHITE, true).apply { maxLines = 1; ellipsize = TextUtils.TruncateAt.END }, 2f)
+        add(tv(x?.optString("n") ?: "", 13f, Color.WHITE, true).apply { maxLines = 1; ellipsize = TextUtils.TruncateAt.END }, 2f)
         val warm = st?.optString("t") == "W"
         val (dd, nn) = s + 1 to WS.nSets(e)
-        tvHr = tv((if (warm) WS.t("Échauf. · ", "Warm-up · ") else "") + "$dd/$nn   " + hrLine(), 12f, Color.WHITE, true).also { add(it, 0f) }
+        tvHr = tv((if (warm) WS.t("Échauf. · ", "Warm-up · ") else "") + "$dd/$nn   " + hrLine(), 11f, Color.WHITE, true).also { add(it, 0f) }
         if (x?.optInt("c", 0) == 1) {
             add(tv(WS.t("Exercice chronométré ou cardio : à faire sur le téléphone", "Timed or cardio exercise: use the phone"), 12f, MUTED), 8f)
             add(row(pill("‹", CARD, Color.WHITE, 17f, 5f) { move(-1) }, pill(WS.t("Suivant", "Next"), ACC, ON_ACC, 14f, 8f) { move(1) }, pill("›", CARD, Color.WHITE, 17f, 5f) { move(1) }), 10f)
@@ -365,9 +373,9 @@ class WatchActivity : Activity() {
         fun fmt(f: Int, v: Double) = if (f == 0) (if (v <= 0 && !WS.hasW(e, s)) WS.t("PDC", "BW") else String.format(java.util.Locale.FRANCE, "%.1f", v)) else WS.num(v)
         fun box(label: String, f: Int): LinearLayout {
             val sel = field == f
-            val above = tv("", 13f, if (sel) ACC else MUTED).apply { alpha = 0.45f }
-            val mid = tv("", 24f, if (sel) ACC else Color.WHITE, true)
-            val below = tv("", 13f, if (sel) ACC else MUTED).apply { alpha = 0.45f }
+            val above = tv("", 10f, if (sel) ACC else MUTED).apply { alpha = 0.5f }
+            val mid = tv("", 21f, if (sel) ACC else Color.WHITE, true)
+            val below = tv("", 10f, if (sel) ACC else MUTED).apply { alpha = 0.5f }
             fun upd() {
                 val v = if (f == 0) WS.w(e, s) else WS.r(e, s); val st = if (f == 0) WS.step() else 1.0
                 above.text = if (v - st >= (if (f == 0) 0.0 else 1.0)) fmt(f, v - st) else ""
@@ -377,7 +385,7 @@ class WatchActivity : Activity() {
             val wheel = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
                 background = bg(BG, 16f, if (sel) ACC else Color.parseColor("#4A515C"))
-                setPadding(dp(4f), dp(2f), dp(4f), dp(2f)); minimumWidth = dp(76f)
+                setPadding(dp(4f), dp(1f), dp(4f), dp(1f)); minimumWidth = dp(66f)
                 addView(above); addView(mid); addView(below)
             }
             var y0 = 0f; var acc = 0f; var moved = false
@@ -416,16 +424,20 @@ class WatchActivity : Activity() {
             }
             return LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
-                addView(tv(label, 11f, if (sel) ACC else MUTED, true))
+                addView(tv(label, 10f, if (sel) ACC else MUTED, true))
                 addView(wheel)
             }
         }
-        add(row(box(u.replaceFirstChar { it.uppercase() }, 0), box(WS.t("Répétitions", "Reps"), 1)), 4f)
+        add(row(box(u.replaceFirstChar { it.uppercase() }, 0), box(WS.t("Répétitions", "Reps"), 1)), 3f)
         val p = st?.optString("p") ?: ""
-        if (p.isNotEmpty()) add(tv(WS.t("précéd. ", "prev. ") + p, 11f, MUTED), 4f)
-        add(row(pill("‹", CARD, Color.WHITE, 17f, 6f) { move(-1) },
-                pill("  ✓  ", ACC, ON_ACC, 20f, 6f) { field = 0; WS.done(this, e, s) },
-                pill("›", CARD, Color.WHITE, 17f, 6f) { move(1) }), 8f)
+        if (p.isNotEmpty()) add(tv(WS.t("précéd. ", "prev. ") + p, 10f, MUTED), 3f)
+        val done = pill("✓", ACC, ON_ACC, 18f, 0f) { field = 0; WS.done(this, e, s) }.apply { gravity = Gravity.CENTER; minWidth = dp(64f); minHeight = dp(40f) }
+        add(LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER
+            addView(circle("‹") { move(-1) }, LinearLayout.LayoutParams(dp(36f), dp(36f)).apply { rightMargin = dp(6f) })
+            addView(done, LinearLayout.LayoutParams(-2, dp(40f)))
+            addView(circle("›") { move(1) }, LinearLayout.LayoutParams(dp(36f), dp(36f)).apply { leftMargin = dp(6f) })
+        }, 5f)
     }
 
     /* ---------- Page 2 : options ---------- */
