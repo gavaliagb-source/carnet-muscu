@@ -60,6 +60,8 @@ class WatchActivity : Activity() {
     private var lastRot = 0L
     private var streak = 0
     private var dragging = false
+    private var askAb = false      // page « Es-tu sûr de vouloir abandonner ? »
+    private var swapFor = -1       // liste pour remplacer un exercice
     private lateinit var gd: GestureDetector
 
     private fun dp(v: Float) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, resources.displayMetrics).toInt()
@@ -158,6 +160,7 @@ class WatchActivity : Activity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
+        if (askAb || swapFor >= 0) { askAb = false; swapFor = -1; paint(); return }
         if (!WS.on() && detail != null) { detail = null; paint(); return }
         if (WS.on() && page != 1) { page = 1; paint(); return }
         @Suppress("DEPRECATION") super.onBackPressed()
@@ -249,17 +252,19 @@ class WatchActivity : Activity() {
     private fun paint() {
         if (dragging) return
         val on = WS.on()
-        if (on != lastOn) { lastOn = on; service(); page = 1; detail = null }
+        if (on != lastOn) { lastOn = on; service(); page = 1; detail = null; askAb = false; swapFor = -1 }
         val now = System.currentTimeMillis()
         val c = WS.cur()
         val resting = on && WS.restEnd > now
-        val ns = listOf(on, page, detail, if (resting) "|rest|" else "|set|", c, field, WS.st?.toString()?.hashCode(), WS.pending.keys.sorted(), WS.edits.entries.joinToString { it.key + it.value.joinToString() }, if (armed(arm)) arm else "", WS.exSel, Img.version, WS.isLocal()).joinToString("#")
+        val ns = listOf(on, page, detail, if (resting) "|rest|" else "|set|", c, field, WS.st?.toString()?.hashCode(), WS.pending.keys.sorted(), WS.edits.entries.joinToString { it.key + it.value.joinToString() }, if (armed(arm)) arm else "", WS.exSel, Img.version, WS.isLocal(), askAb, swapFor).joinToString("#")
         if (ns == sig) { paintLight(); return }
         sig = ns
         col.removeAllViews(); tvClock = null; tvHr = null; tvBig = null
         col.gravity = if (on && page == 1) Gravity.CENTER else Gravity.CENTER_HORIZONTAL
-        scroll.locked = on && page == 1
+        scroll.locked = on && page == 1 && !askAb && swapFor < 0
         if (!on) { if (detail != null) routineDetail(detail!!) else idle(); return }
+        if (askAb) { col.gravity = Gravity.CENTER; abandonView(); return }
+        if (swapFor >= 0) { swapView(swapFor); return }
         dots()
         when (page) {
             0 -> overview()
@@ -342,6 +347,8 @@ class WatchActivity : Activity() {
             box.addView(withImg(x.optString("i"), txt))
             add(box, 7f)
         }
+        add(pill(if (armed("fin")) WS.t("Confirmer : terminer", "Confirm: finish") else WS.t("Terminer l'entraînement", "Finish workout"), ACC, ON_ACC, 13f, 9f) { confirmOr("fin") { WS.finish(this) } }, 12f)
+        add(pill(WS.t("Abandonner", "Discard"), CARD, RED, 13f, 9f) { askAb = true; paint() }, 6f)
     }
 
     /* ---------- Page 1 : série en cours ---------- */
@@ -457,6 +464,35 @@ class WatchActivity : Activity() {
         }, lp(-2, -2, 0.02f))
     }
 
+    /* ---------- Abandonner : demande de confirmation ---------- */
+    private fun abandonView() {
+        add(tv(WS.t("Abandonner la séance ?", "Discard the workout?"), 16f, Color.WHITE, true), 0f)
+        add(tv(WS.t("Elle ne sera pas enregistrée.", "It won't be saved."), 12f, MUTED), 4f)
+        add(pill(WS.t("Oui, abandonner", "Yes, discard"), RED, Color.WHITE, 14f, 10f) { askAb = false; page = 1; WS.cmd(this, "cancel") }, 12f)
+        add(pill(WS.t("Non, continuer", "No, keep going"), CARD, Color.WHITE, 14f, 10f) { askAb = false; paint() }, 8f)
+    }
+
+    /* ---------- Remplacer un exercice : similaires d'abord, puis les autres ---------- */
+    private fun swapView(e: Int) {
+        val x = WS.ex(e) ?: run { swapFor = -1; paint(); return }
+        val cur = x.optString("n")
+        add(tv(WS.t("Remplacer", "Replace"), 12f, MUTED), 0f)
+        add(marquee(cur, 14f, Color.WHITE), 2f)
+        val seen = HashSet<String>(); seen.add(cur.lowercase())
+        fun item(n: String, l: String?) = add(pill(n, CARD, Color.WHITE, 12f, 8f) { WS.swap(this, e, n, l); swapFor = -1; page = 1; WS.exSel = e; paint() }, 6f)
+        val alt = x.optJSONArray("alt")
+        if (alt != null && alt.length() > 0) {
+            add(tv(WS.t("Similaires", "Similar"), 12f, ACC, true), 10f)
+            for (i in 0 until alt.length()) { val a = alt.optJSONObject(i) ?: continue; val n = a.optString("n"); if (n.isEmpty() || !seen.add(n.lowercase())) continue; item(n, a.optString("l")) }
+        }
+        val mine = WS.mine()
+        if (mine != null && mine.length() > 0) {
+            add(tv(WS.t("Mes exercices", "My exercises"), 12f, ACC, true), 10f)
+            for (i in 0 until mine.length()) { val n = mine.optString(i); if (n.isEmpty() || !seen.add(n.lowercase())) continue; item(n, null) }
+        }
+        add(pill(WS.t("Annuler", "Cancel"), CARD, MUTED, 13f, 8f) { swapFor = -1; paint() }, 12f, false)
+    }
+
     /* ---------- Page 2 : options ---------- */
     private fun options(c: Pair<Int, Int>?) {
         if (c != null) {
@@ -469,9 +505,10 @@ class WatchActivity : Activity() {
             add(pill(WS.t("Type : ", "Type: ") + types[i].second, CARD, Color.WHITE, 13f, 9f) { WS.cmd(this, "type", e, s, types[(i + 1) % types.size].first) }, 6f)
             if (WS.nSets(e) > 1) add(pill(if (armed("del")) WS.t("Confirmer", "Confirm") else WS.t("Supprimer la série", "Delete set"), CARD, RED, 13f, 9f) { confirmOr("del") { WS.cmd(this, "del-set", e, s) } }, 6f)
             add(tv(WS.t("Options d'exercice", "Exercise options"), 13f, Color.WHITE, true), 12f)
+            add(pill(WS.t("Remplacer l'exercice", "Replace exercise"), CARD, Color.WHITE, 13f, 9f) { swapFor = e; scroll.scrollTo(0, 0); paint() }, 6f)
             add(pill(WS.t("Exercice suivant", "Next exercise"), CARD, Color.WHITE, 13f, 9f) { move(1); page = 1; paint() }, 6f)
         }
         add(pill(if (armed("fin")) WS.t("Confirmer : terminer", "Confirm: finish") else WS.t("Terminer l'entraînement", "Finish workout"), ACC, ON_ACC, 13f, 10f) { confirmOr("fin") { WS.finish(this) } }, 14f)
-        add(pill(if (armed("ab")) WS.t("Confirmer : abandonner", "Confirm: discard") else WS.t("Abandonner", "Discard"), CARD, RED, 13f, 9f) { confirmOr("ab") { WS.cmd(this, "cancel") } }, 6f)
+        add(pill(WS.t("Abandonner", "Discard"), CARD, RED, 13f, 9f) { askAb = true; paint() }, 6f)
     }
 }

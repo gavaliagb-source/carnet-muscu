@@ -67,6 +67,18 @@ object WS {
     fun en() = st?.optString("lang") == "en"
     fun t(fr: String, en: String) = if (en()) en else fr
     fun routines(): JSONArray? = phone?.optJSONArray("rts")
+    fun mine(): JSONArray? = phone?.optJSONArray("mine")
+
+    /* Remplacer un exercice (machine prise, etc.). */
+    fun swap(ctx: Context, e: Int, n: String, l: String?) {
+        if (local == null) { val m = JSONObject().put("a", "swap").put("e", e).put("n", n); if (!l.isNullOrEmpty()) m.put("l", l); send(ctx, m); return }
+        val x = ex(e) ?: return
+        x.put("n", n).put("i", "").put("alt", JSONArray())
+        val ss = x.optJSONArray("s") ?: JSONArray()
+        for (k in 0 until ss.length()) { val y = ss.optJSONObject(k) ?: continue; if (y.optInt("d", 0) != 1) y.put("w", "").put("p", "") }
+        edits.keys.removeIf { it.startsWith("$e:") }
+        saveLocal(); changed()
+    }
 
     fun ex(e: Int): JSONObject? = st?.optJSONArray("ex")?.optJSONObject(e)
     fun nEx() = st?.optJSONArray("ex")?.length() ?: 0
@@ -190,7 +202,7 @@ object WS {
             val sets = JSONArray()
             if (sl != null && sl.length() > 0) for (k in 0 until sl.length()) { val x = sl.optJSONObject(k) ?: continue; sets.put(JSONObject().put("w", x.opt("w") ?: "").put("r", x.optInt("r", 0)).put("t", x.optString("t")).put("p", x.optString("p")).put("d", 0)) }
             else for (k in 0 until maxOf(1, e.optInt("s", 3))) sets.put(JSONObject().put("w", "").put("r", 10).put("t", "").put("p", "").put("d", 0))
-            ex.put(JSONObject().put("n", e.optString("n")).put("i", e.optString("i")).put("rest", e.optInt("rest", 90)).put("c", e.optInt("c", 0)).put("s", sets))
+            ex.put(JSONObject().put("n", e.optString("n")).put("i", e.optString("i")).put("alt", e.optJSONArray("alt") ?: JSONArray()).put("rest", e.optInt("rest", 90)).put("c", e.optInt("c", 0)).put("s", sets))
         }
         local = JSONObject().put("on", 1).put("local", 1).put("id", now).put("st", now).put("rid", rid).put("n", r.optString("n"))
             .put("u", phone?.optString("u", "lb") ?: "lb").put("kg", phone?.optInt("kg", 75) ?: 75)
