@@ -38,3 +38,20 @@ d = f'{A}/app/src/main/java/app/runelift/'
 for f in ['MainActivity.java', 'RLHealthPlugin.kt', 'HealthPrivacyActivity.kt']:
     shutil.copy(f'native/{f}', d + f)
 print('Health Connect ajouté')
+
+# Icône et écran de démarrage Runelift
+import glob
+res = f'{A}/app/src/main/res/'
+for f in glob.glob(res + 'drawable*/splash.png'): os.remove(f)
+for f in glob.glob(res + 'drawable*/ic_launcher_background.xml') + glob.glob(res + 'drawable-v24/ic_launcher_foreground.xml'): os.remove(f)
+for root, _, files in os.walk('native/res'):
+    for fn in files:
+        rel = os.path.relpath(os.path.join(root, fn), 'native/res'); os.makedirs(os.path.dirname(res + rel), exist_ok=True)
+        shutil.copy(os.path.join(root, fn), res + rel)
+rw(res + 'values/styles.xml', lambda s: s.replace('''<style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="android:background">@drawable/splash</item>''', '''<style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="android:background">@drawable/splash</item>
+        <item name="windowSplashScreenBackground">@color/rl_splash_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>'''))
+print('Icône et démarrage ajoutés')
