@@ -128,7 +128,7 @@ class WatchActivity : Activity() {
         col = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL
             val w = resources.displayMetrics.widthPixels
-            setPadding((w * 0.12).toInt(), (w * 0.07).toInt(), (w * 0.12).toInt(), (w * 0.12).toInt())
+            setPadding((w * 0.12).toInt(), (w * 0.15).toInt(), (w * 0.12).toInt(), (w * 0.22).toInt())
             minimumHeight = resources.displayMetrics.heightPixels
         }
         scroll.addView(col)

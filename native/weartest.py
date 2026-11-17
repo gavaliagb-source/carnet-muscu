@@ -44,12 +44,12 @@ def nodes():
 def tap_text(t, wait=2.5):
     # Appuie sur le bouton par son texte (crochet de test de l'appli en mode démo).
     sh(f"am start -n {PKG}/app.runelift.wear.WatchActivity --es rl_tap '{t}'")
-    log('toucher', repr(t)); time.sleep(wait); return True
+    log('toucher', repr(t)); time.sleep(wait); wait_app(20); return True
 
 def wait_app(maxs=60):
     for i in range(maxs):
         if 'WatchActivity' in sh('dumpsys window | grep -E "mCurrentFocus|mFocusedApp"'):
-            time.sleep(4); log('appli prête après', i, 's'); return True
+            time.sleep(2); log('appli prête après', i, 's'); return True
         time.sleep(1)
     log('appli pas prête'); return False
 
@@ -81,7 +81,7 @@ sh(f'dumpsys gfxinfo {PKG} reset')
 tap_text('Commencer', 4); shot('serie')
 # roue de la charge : petit glissement puis coup de doigt fort
 cx, cy = W / 2 - W * 0.15, H * 0.5
-swipe(cx, cy + 15, cx, cy - 15, 250, 1); shot('roue_glisse')
+shot('avant_roue'); swipe(cx, cy + 15, cx, cy - 15, 250, 1.5); shot('roue_glisse')
 swipe(cx, cy + 30, cx, cy - 60, 40, 2.5); shot('roue_coup_fort')
 for _ in range(3): sh('input rotaryencoder scroll --axis SCROLL -1'); time.sleep(0.3)
 shot('lunette')
@@ -104,7 +104,7 @@ open(os.path.join(OUT, 'fluidite.txt'), 'w').write(gfx)
 for line in gfx.splitlines():
     if re.search(r'Total frames|Janky frames|percentile|Slow|Frame deadline', line): log('fluidité', line.strip())
 # même écran avec le texte de la montre en grand
-sh('settings put system font_scale 1.3'); launch(False); shot('serie_texte_grand')
+sh('settings put system font_scale 1.3'); launch(False); time.sleep(6); shot('serie_texte_grand')
 sh('settings put system font_scale 1.0')
 sh('am start -n app.runelift/app.runelift.wear.WatchActivity --ez rl_tapmode true')
 time.sleep(4); shot('reprise_apres_relance')
