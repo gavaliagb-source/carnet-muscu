@@ -41,13 +41,27 @@ class HrService : Service(), SensorEventListener {
             val nm = getSystemService(NotificationManager::class.java)
             nm.createNotificationChannel(NotificationChannel("rl_live", "Runelift", NotificationManager.IMPORTANCE_LOW))
             val pi = PendingIntent.getActivity(this, 0, Intent(this, WatchActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-            val n = NotificationCompat.Builder(this, "rl_live")
-                .setSmallIcon(R.mipmap.ic_launcher)
+            val nb = NotificationCompat.Builder(this, "rl_live")
+                .setSmallIcon(R.drawable.ic_ongoing)
                 .setContentTitle("Runelift")
                 .setContentText(WS.t("Séance en cours", "Workout in progress"))
+                .setCategory(NotificationCompat.CATEGORY_WORKOUT)
                 .setOngoing(true)
                 .setContentIntent(pi)
-                .build()
+            // Icône Runelift en bas du cadran tant que la séance est en cours (comme Hevy).
+            try {
+                val status = androidx.wear.ongoing.Status.Builder()
+                    .addTemplate("#t#")
+                    .addPart("t", androidx.wear.ongoing.Status.StopwatchPart(android.os.SystemClock.elapsedRealtime() - WS.elapsedMs()))
+                    .build()
+                androidx.wear.ongoing.OngoingActivity.Builder(applicationContext, 7, nb)
+                    .setStaticIcon(R.drawable.ic_ongoing)
+                    .setTouchIntent(pi)
+                    .setStatus(status)
+                    .build()
+                    .apply(applicationContext)
+            } catch (e: Exception) {}
+            val n = nb.build()
             ServiceCompat.startForeground(this, 7, n, if (Build.VERSION.SDK_INT >= 34) ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH else 0)
         } catch (e: Exception) { stopSelf(); return }
         try {

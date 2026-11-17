@@ -86,12 +86,12 @@ object WS {
     fun w(e: Int, s: Int): Double = edits["$e:$s"]?.get(0) ?: (set(e, s)?.opt("w") as? Number)?.toDouble() ?: set(e, s)?.optString("w")?.toDoubleOrNull() ?: 0.0
     fun r(e: Int, s: Int): Double = edits["$e:$s"]?.get(1) ?: set(e, s)?.optDouble("r", 0.0) ?: 0.0
     fun hasW(e: Int, s: Int) = edits.containsKey("$e:$s") || (set(e, s)?.optString("w") ?: "").isNotEmpty()
-    fun step() = if (st?.optString("u") == "kg") 2.5 else 5.0
-    fun adjust(e: Int, s: Int, field: Int, d: Double) {
+    fun step() = 0.5
+    fun adjust(e: Int, s: Int, field: Int, d: Double, quiet: Boolean = false) {
         val a = doubleArrayOf(w(e, s), r(e, s))
-        a[field] = if (field == 0) maxOf(0.0, a[field] + d * step()) else maxOf(1.0, a[field] + d)
+        a[field] = if (field == 0) maxOf(0.0, Math.round((a[field] + d * step()) * 2) / 2.0) else maxOf(1.0, a[field] + d)
         edits["$e:$s"] = a
-        changed()
+        if (!quiet) changed()
     }
 
     /* Couleur principale choisie sur le téléphone (thème Runelift). */

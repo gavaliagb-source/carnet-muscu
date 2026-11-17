@@ -20,6 +20,7 @@ import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -56,6 +57,9 @@ class WatchActivity : Activity() {
     private var tvHr: TextView? = null
     private var tvBig: TextView? = null
     private var rotAcc = 0f
+    private var lastRot = 0L
+    private var streak = 0
+    private var dragging = false
     private lateinit var gd: GestureDetector
 
     private fun dp(v: Float) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, resources.displayMetrics).toInt()
@@ -76,6 +80,18 @@ class WatchActivity : Activity() {
     private fun row(vararg vs: View): LinearLayout = LinearLayout(this).apply {
         orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER
         vs.forEach { addView(it, LinearLayout.LayoutParams(-2, -2).apply { setMargins(dp(3f), 0, dp(3f), 0) }) }
+    }
+    private fun img(url: String?, size: Float): ImageView = ImageView(this).apply {
+        scaleType = ImageView.ScaleType.CENTER_CROP
+        background = bg(Color.WHITE, size)
+        clipToOutline = true
+        layoutParams = LinearLayout.LayoutParams(dp(size), dp(size))
+        if (!url.isNullOrEmpty()) Img.load(this@WatchActivity, url) { b -> if (isAttachedToWindow || parent != null) setImageBitmap(b) }
+    }
+    private fun withImg(url: String?, content: View): LinearLayout = LinearLayout(this).apply {
+        orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+        addView(img(url, 34f))
+        addView(content, LinearLayout.LayoutParams(0, -2, 1f).apply { leftMargin = dp(8f) })
     }
     private fun armed(k: String) = arm == k && System.currentTimeMillis() - armT < 4000
     private fun confirmOr(k: String, run: () -> Unit) {
@@ -125,10 +141,14 @@ class WatchActivity : Activity() {
         if (ev.action == MotionEvent.ACTION_SCROLL && ev.isFromSource(InputDevice.SOURCE_ROTARY_ENCODER) && WS.on() && page == 1 && WS.restEnd <= System.currentTimeMillis()) {
             val c = WS.cur()
             if (c != null && WS.ex(c.first)?.optInt("c", 0) != 1) {
-                rotAcc += -ev.getAxisValue(MotionEvent.AXIS_SCROLL) * ViewConfiguration.get(this).scaledVerticalScrollFactor
-                val stepPx = dp(28f).toFloat()
-                while (rotAcc >= stepPx) { rotAcc -= stepPx; WS.adjust(c.first, c.second, field, 1.0); scroll.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK) }
-                while (rotAcc <= -stepPx) { rotAcc += stepPx; WS.adjust(c.first, c.second, field, -1.0); scroll.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK) }
+                val v = -ev.getAxisValue(MotionEvent.AXIS_SCROLL)
+                if (v == 0f) return true
+                val now = System.currentTimeMillis()
+                streak = if (now - lastRot < 140) streak + 1 else 0
+                lastRot = now
+                val mult = if (field == 0) (if (streak > 10) 10 else if (streak > 4) 4 else 1) else (if (streak > 8) 3 else 1)
+                WS.adjust(c.first, c.second, field, (if (v > 0) 1.0 else -1.0) * mult)
+                scroll.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                 return true
             }
         }
@@ -203,6 +223,7 @@ class WatchActivity : Activity() {
 
     private var lastOn = false
     private fun paint() {
+        if (dragging) return
         val on = WS.on()
         if (on != lastOn) { lastOn = on; service(); page = 1; detail = null }
         val now = System.currentTimeMillis()
@@ -265,7 +286,7 @@ class WatchActivity : Activity() {
         for (i in 0 until (ex?.length() ?: 0)) {
             val e = ex!!.optJSONObject(i) ?: continue
             val n = e.optInt("s", 0)
-            add(tv(e.optString("n") + if (n > 0) "\n" + WS.t("$n séries", "$n sets") else "", 12f, Color.WHITE).apply { gravity = Gravity.START }, 6f)
+            add(withImg(e.optString("i"), tv(e.optString("n") + if (n > 0) "\n" + WS.t("$n séries", "$n sets") else "", 12f, Color.WHITE).apply { gravity = Gravity.START }), 7f)
         }
         add(pill(WS.t("‹ Retour", "‹ Back"), CARD, Color.WHITE, 13f, 7f) { detail = null; paint() }, 12f, false)
     }
@@ -282,12 +303,14 @@ class WatchActivity : Activity() {
             val box = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL; gravity = Gravity.START
                 background = bg(CARD, 22f, if (e == cur) ACC else 0)
-                setPadding(dp(14f), dp(8f), dp(14f), dp(8f))
+                setPadding(dp(8f), dp(7f), dp(12f), dp(7f))
                 isClickable = true
                 setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); WS.exSel = e; field = 0; page = 1; scroll.scrollTo(0, 0); paint() }
             }
-            box.addView(tv(x.optString("n"), 13f, Color.WHITE, true).apply { gravity = Gravity.START; maxLines = 2 })
-            box.addView(tv(WS.t("$d/$n séries", "$d/$n sets"), 11f, if (d == n && n > 0) ACC else MUTED).apply { gravity = Gravity.START })
+            val txt = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL
+                addView(tv(x.optString("n"), 13f, Color.WHITE, true).apply { gravity = Gravity.START; maxLines = 2 })
+                addView(tv(WS.t("$d/$n séries", "$d/$n sets"), 11f, if (d == n && n > 0) ACC else MUTED).apply { gravity = Gravity.START }) }
+            box.addView(withImg(x.optString("i"), txt))
             add(box, 7f)
         }
     }
@@ -321,22 +344,67 @@ class WatchActivity : Activity() {
             return
         }
         val u = WS.st?.optString("u", "lb") ?: "lb"
-        val wv = WS.w(e, s); val rv = WS.r(e, s)
-        fun box(label: String, value: String, f: Int) = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
-            addView(tv(label, 11f, if (field == f) ACC else MUTED, true))
-            addView(tv(value, if (value.length > 5) 20f else 26f, if (field == f) ACC else Color.WHITE, true).apply {
-                background = bg(BG, 14f, if (field == f) ACC else Color.parseColor("#4A515C"))
-                minWidth = dp(70f); setPadding(dp(6f), dp(8f), dp(6f), dp(8f))
-            })
-            isClickable = true
-            setOnClickListener { field = f; paint() }
+        fun fmt(f: Int, v: Double) = if (f == 0) (if (v <= 0 && !WS.hasW(e, s)) WS.t("PDC", "BW") else String.format(java.util.Locale.FRANCE, "%.1f", v)) else WS.num(v)
+        fun box(label: String, f: Int): LinearLayout {
+            val sel = field == f
+            val above = tv("", 13f, if (sel) ACC else MUTED).apply { alpha = 0.45f }
+            val mid = tv("", 24f, if (sel) ACC else Color.WHITE, true)
+            val below = tv("", 13f, if (sel) ACC else MUTED).apply { alpha = 0.45f }
+            fun upd() {
+                val v = if (f == 0) WS.w(e, s) else WS.r(e, s); val st = if (f == 0) WS.step() else 1.0
+                above.text = if (v - st >= (if (f == 0) 0.0 else 1.0)) fmt(f, v - st) else ""
+                mid.text = fmt(f, v); below.text = fmt(f, v + st)
+            }
+            upd()
+            val wheel = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
+                background = bg(BG, 16f, if (sel) ACC else Color.parseColor("#4A515C"))
+                setPadding(dp(4f), dp(2f), dp(4f), dp(2f)); minimumWidth = dp(76f)
+                addView(above); addView(mid); addView(below)
+            }
+            var y0 = 0f; var acc = 0f; var moved = false
+            var vt: android.view.VelocityTracker? = null
+            wheel.setOnTouchListener { v, ev ->
+                when (ev.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> { dragging = true; v.parent.requestDisallowInterceptTouchEvent(true); y0 = ev.y; acc = 0f; moved = false; vt = android.view.VelocityTracker.obtain(); vt?.addMovement(ev) }
+                    MotionEvent.ACTION_MOVE -> {
+                        vt?.addMovement(ev)
+                        acc += y0 - ev.y; y0 = ev.y
+                        val stepPx = dp(14f).toFloat()
+                        while (acc >= stepPx) { acc -= stepPx; moved = true; WS.adjust(e, s, f, 1.0, true); upd(); v.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK) }
+                        while (acc <= -stepPx) { acc += stepPx; moved = true; WS.adjust(e, s, f, -1.0, true); upd(); v.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK) }
+                    }
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        vt?.addMovement(ev); vt?.computeCurrentVelocity(1000)
+                        val vy = vt?.yVelocity ?: 0f; vt?.recycle(); vt = null
+                        if (!moved && ev.actionMasked == MotionEvent.ACTION_UP) { dragging = false; field = f; paint() }
+                        else {
+                            // élan : un coup de doigt rapide fait défiler plusieurs valeurs
+                            var n = (abs(vy) / dp(260f)).toInt().coerceAtMost(30)
+                            val dir = if (vy < 0) 1.0 else -1.0
+                            if (n > 0) {
+                                var delay = 25L
+                                val r = object : Runnable { override fun run() {
+                                    if (n-- <= 0) { dragging = false; field = f; paint(); return }
+                                    WS.adjust(e, s, f, dir, true); upd(); wheel.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                                    delay += 8; h.postDelayed(this, delay)
+                                } }
+                                h.post(r)
+                            } else { dragging = false; field = f; paint() }
+                        }
+                    }
+                }
+                true
+            }
+            return LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
+                addView(tv(label, 11f, if (sel) ACC else MUTED, true))
+                addView(wheel)
+            }
         }
-        val wTxt = if (wv > 0 || WS.hasW(e, s)) WS.num(wv) else WS.t("PDC", "BW")
-        add(row(box(u.replaceFirstChar { it.uppercase() }, wTxt, 0), box(WS.t("Reps", "Reps"), WS.num(rv), 1)), 6f)
+        add(row(box(u.replaceFirstChar { it.uppercase() }, 0), box(WS.t("Répétitions", "Reps"), 1)), 4f)
         val p = st?.optString("p") ?: ""
         if (p.isNotEmpty()) add(tv(WS.t("précéd. ", "prev. ") + p, 11f, MUTED), 4f)
-        add(row(pill("−", CARD, Color.WHITE, 16f, 3f) { WS.adjust(e, s, field, -1.0) }, pill("+", CARD, Color.WHITE, 16f, 3f) { WS.adjust(e, s, field, 1.0) }), 6f)
         add(row(pill("‹", CARD, Color.WHITE, 17f, 6f) { move(-1) },
                 pill("  ✓  ", ACC, ON_ACC, 20f, 6f) { field = 0; WS.done(this, e, s) },
                 pill("›", CARD, Color.WHITE, 17f, 6f) { move(1) }), 8f)
