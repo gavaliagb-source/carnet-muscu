@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit
    Si le téléphone ne les a pas encore envoyées, la montre essaie de les télécharger elle-même. */
 object Img {
     @Volatile var version = 0
+    private val asked = java.util.Collections.synchronizedSet(HashSet<String>())
     private val mem = LruCache<String, Bitmap>(60)
     private val pool = Executors.newFixedThreadPool(2)
     private val main = Handler(Looper.getMainLooper())
@@ -69,6 +70,8 @@ object Img {
             try {
                 val f = file(a, url)
                 if (!f.exists() || f.length() == 0L) fromLayer(a, url, f)
+                // Pas encore reçue : on la demande au téléphone (il l'envoie même si Runelift y est fermé).
+                if ((!f.exists() || f.length() == 0L) && asked.add(url)) WS.send(a, org.json.JSONObject().put("a", "img").put("u", url))
                 if (!f.exists() || f.length() == 0L) {
                     try {
                         val c = URL(url).openConnection() as HttpURLConnection

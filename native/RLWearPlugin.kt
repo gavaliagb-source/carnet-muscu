@@ -31,6 +31,27 @@ class RLWearPlugin : Plugin() {
             if (a.length() < 4000) a.put(j)
             p.edit().putString(Q, a.toString()).apply()
         }
+        /* Télécharge une image d'exercice, la réduit et l'envoie à la montre. */
+        fun pushImage(ctx: Context, u: String): Boolean {
+            if (!u.startsWith("https://")) return false
+            return try {
+                val k = Integer.toHexString(u.hashCode())
+                val c = URL(u).openConnection() as HttpURLConnection
+                c.connectTimeout = 8000; c.readTimeout = 15000
+                val raw = c.inputStream.use { it.readBytes() }; c.disconnect()
+                val b0 = BitmapFactory.decodeByteArray(raw, 0, raw.size) ?: return false
+                val sz = 112; val sc = sz.toFloat() / maxOf(b0.width, b0.height)
+                val b = if (sc < 1f) Bitmap.createScaledBitmap(b0, (b0.width * sc).toInt().coerceAtLeast(1), (b0.height * sc).toInt().coerceAtLeast(1), true) else b0
+                val out = ByteArrayOutputStream(); b.compress(Bitmap.CompressFormat.JPEG, 82, out)
+                val req = PutDataMapRequest.create("/rl/img/$k").apply {
+                    dataMap.putAsset("a", Asset.createFromBytes(out.toByteArray()))
+                    dataMap.putString("u", u)
+                    dataMap.putLong("t", System.currentTimeMillis())
+                }.asPutDataRequest()
+                com.google.android.gms.tasks.Tasks.await(Wearable.getDataClient(ctx).putDataItem(req))
+                true
+            } catch (e: Exception) { false }
+        }
         fun lang(ctx: Context) = ctx.getSharedPreferences("rl_wear", Context.MODE_PRIVATE).getString("lang", "fr") ?: "fr"
     }
 
@@ -81,21 +102,7 @@ class RLWearPlugin : Plugin() {
             for (u in urls) {
                 val k = Integer.toHexString(u.hashCode())
                 if (k in sent) continue
-                try {
-                    val c = URL(u).openConnection() as HttpURLConnection
-                    c.connectTimeout = 8000; c.readTimeout = 15000
-                    val raw = c.inputStream.use { it.readBytes() }; c.disconnect()
-                    val b0 = BitmapFactory.decodeByteArray(raw, 0, raw.size) ?: continue
-                    val sz = 112; val sc = sz.toFloat() / maxOf(b0.width, b0.height)
-                    val b = if (sc < 1f) Bitmap.createScaledBitmap(b0, (b0.width * sc).toInt().coerceAtLeast(1), (b0.height * sc).toInt().coerceAtLeast(1), true) else b0
-                    val out = ByteArrayOutputStream(); b.compress(Bitmap.CompressFormat.JPEG, 82, out)
-                    val req = PutDataMapRequest.create("/rl/img/$k").apply {
-                        dataMap.putAsset("a", Asset.createFromBytes(out.toByteArray()))
-                        dataMap.putString("u", u)
-                    }.asPutDataRequest()
-                    com.google.android.gms.tasks.Tasks.await(Wearable.getDataClient(ctx).putDataItem(req))
-                    sent.add(k)
-                } catch (e: Exception) {}
+                if (pushImage(ctx, u)) sent.add(k)
             }
             p.edit().putStringSet("imgs", sent).apply()
         }.start()

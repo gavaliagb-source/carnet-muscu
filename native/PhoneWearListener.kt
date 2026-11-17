@@ -23,6 +23,7 @@ class PhoneWearListener : WearableListenerService() {
         if (!e.path.startsWith("/rl/")) return
         val j = String(e.data, Charsets.UTF_8)
         val a = try { JSONObject(j).optString("a") } catch (x: Exception) { "" }
+        if (a == "img") { try { RLWearPlugin.pushImage(this, JSONObject(j).optString("u")) } catch (x: Exception) {}; return }
         val p = RLWearPlugin.instance
         if (p == null && a == "start") {
             // Appli fermée : la montre continue seule et enverra la séance à la fin.

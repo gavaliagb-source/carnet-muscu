@@ -40,7 +40,7 @@ class WatchActivity : Activity() {
     private val ACC get() = WS.acc()
     private val ON_ACC get() = WS.onAcc()
 
-    private lateinit var scroll: ScrollView
+    private lateinit var scroll: LockScroll
     private lateinit var col: LinearLayout
     private val h = Handler(Looper.getMainLooper())
     private val uiCb: () -> Unit = { paint() }
@@ -114,7 +114,7 @@ class WatchActivity : Activity() {
         super.onCreate(savedInstanceState)
         WS.init(this)
         fromTile(intent)
-        scroll = ScrollView(this).apply { setBackgroundColor(BG); isVerticalScrollBarEnabled = false; isFocusable = true; isFocusableInTouchMode = true }
+        scroll = LockScroll(this).apply { setBackgroundColor(BG); isVerticalScrollBarEnabled = false; isFocusable = true; isFocusableInTouchMode = true }
         col = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL
             val w = resources.displayMetrics.widthPixels
@@ -170,11 +170,8 @@ class WatchActivity : Activity() {
             if (c != null && WS.ex(c.first)?.optInt("c", 0) != 1) {
                 val v = -ev.getAxisValue(MotionEvent.AXIS_SCROLL)
                 if (v == 0f) return true
-                val now = System.currentTimeMillis()
-                streak = if (now - lastRot < 140) streak + 1 else 0
-                lastRot = now
-                val mult = if (field == 0) (if (streak > 10) 10 else if (streak > 4) 4 else 1) else (if (streak > 8) 3 else 1)
-                WS.adjust(c.first, c.second, field, (if (v > 0) 1.0 else -1.0) * mult)
+                // Lunette = réglage précis : un cran à la fois.
+                WS.adjust(c.first, c.second, field, if (v > 0) 1.0 else -1.0)
                 scroll.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                 return true
             }
@@ -261,6 +258,7 @@ class WatchActivity : Activity() {
         sig = ns
         col.removeAllViews(); tvClock = null; tvHr = null; tvBig = null
         col.gravity = if (on && page == 1) Gravity.CENTER else Gravity.CENTER_HORIZONTAL
+        scroll.locked = on && page == 1
         if (!on) { if (detail != null) routineDetail(detail!!) else idle(); return }
         dots()
         when (page) {
@@ -363,35 +361,40 @@ class WatchActivity : Activity() {
         add(pill(if (armed("fin")) WS.t("Confirmer", "Confirm") else WS.t("Terminer l'entraînement", "Finish workout"), ACC, ON_ACC, 13f) { confirmOr("fin") { WS.finish(this) } }, 12f)
     }
 
+    /* Tailles calculées sur la largeur de l'écran : tout tient dans le rond, quelle que soit la taille du texte de la montre. */
+    private val W get() = resources.displayMetrics.widthPixels.toFloat()
+    private fun tp(text: String, frac: Float, color: Int, bold: Boolean = false) = tv(text, 10f, color, bold).apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * frac); includeFontPadding = false }
+    private fun lp(w: Int, h: Int, top: Float = 0f) = LinearLayout.LayoutParams(w, h).apply { topMargin = (W * top).toInt(); gravity = Gravity.CENTER_HORIZONTAL }
+
     private fun setView(e: Int, s: Int) {
         val x = WS.ex(e); val st = WS.set(e, s)
-        add(marquee(x?.optString("n") ?: "", 13f, Color.WHITE), 2f)
+        col.addView(marquee(x?.optString("n") ?: "", 13f, Color.WHITE).apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.05f) }, lp((W * 0.62f).toInt(), -2, 0.01f))
         val warm = st?.optString("t") == "W"
         val (dd, nn) = s + 1 to WS.nSets(e)
-        tvHr = tv((if (warm) WS.t("Échauf. · ", "Warm-up · ") else "") + "$dd/$nn   " + hrLine(), 11f, Color.WHITE, true).also { add(it, 0f) }
+        tvHr = tp((if (warm) WS.t("Échauf. · ", "Warm-up · ") else "") + "$dd/$nn   " + hrLine(), 0.04f, Color.WHITE, true).also { col.addView(it, lp(-2, -2, 0.008f)) }
         if (x?.optInt("c", 0) == 1) {
-            add(tv(WS.t("Exercice chronométré ou cardio : à faire sur le téléphone", "Timed or cardio exercise: use the phone"), 12f, MUTED), 8f)
-            add(row(pill("‹", CARD, Color.WHITE, 17f, 5f) { move(-1) }, pill(WS.t("Suivant", "Next"), ACC, ON_ACC, 14f, 8f) { move(1) }, pill("›", CARD, Color.WHITE, 17f, 5f) { move(1) }), 10f)
+            col.addView(tp(WS.t("Exercice chronométré ou cardio :\nà faire sur le téléphone", "Timed or cardio exercise:\nuse the phone"), 0.038f, MUTED), lp((W * 0.66f).toInt(), -2, 0.03f))
+            col.addView(pill(WS.t("Suivant ›", "Next ›"), ACC, ON_ACC, 14f, 8f) { move(1) }, lp(-2, -2, 0.04f))
             return
         }
         val u = WS.st?.optString("u", "lb") ?: "lb"
         fun fmt(f: Int, v: Double) = if (f == 0) (if (v <= 0 && !WS.hasW(e, s)) WS.t("PDC", "BW") else String.format(java.util.Locale.FRANCE, "%.1f", v)) else WS.num(v)
         fun box(label: String, f: Int): LinearLayout {
             val sel = field == f
-            val above = tv("", 10f, if (sel) ACC else MUTED).apply { alpha = 0.5f }
-            val mid = tv("", 21f, if (sel) ACC else Color.WHITE, true)
-            val below = tv("", 10f, if (sel) ACC else MUTED).apply { alpha = 0.5f }
+            val above = tp("", 0.036f, if (sel) ACC else MUTED).apply { alpha = 0.55f }
+            val mid = tp("", 0.085f, if (sel) ACC else Color.WHITE, true)
+            val below = tp("", 0.036f, if (sel) ACC else MUTED).apply { alpha = 0.55f }
             fun upd() {
-                val v = if (f == 0) WS.w(e, s) else WS.r(e, s); val st = if (f == 0) WS.step() else 1.0
-                above.text = if (v - st >= (if (f == 0) 0.0 else 1.0)) fmt(f, v - st) else ""
-                mid.text = fmt(f, v); below.text = fmt(f, v + st)
+                val v = if (f == 0) WS.w(e, s) else WS.r(e, s); val stp = if (f == 0) WS.step() else 1.0
+                above.text = if (v - stp >= (if (f == 0) 0.0 else 1.0)) fmt(f, v - stp) else " "
+                mid.text = fmt(f, v); below.text = fmt(f, v + stp)
             }
             upd()
             val wheel = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
-                background = bg(BG, 16f, if (sel) ACC else Color.parseColor("#4A515C"))
-                setPadding(dp(4f), dp(1f), dp(4f), dp(1f)); minimumWidth = dp(66f)
-                addView(above); addView(mid); addView(below)
+                background = bg(BG, 14f, if (sel) ACC else Color.parseColor("#4A515C"))
+                setPadding(0, (W * 0.012f).toInt(), 0, (W * 0.012f).toInt())
+                addView(above); addView(mid, LinearLayout.LayoutParams(-2, -2).apply { topMargin = (W * 0.006f).toInt(); bottomMargin = (W * 0.006f).toInt() }); addView(below)
             }
             var y0 = 0f; var acc = 0f; var moved = false
             var vt: android.view.VelocityTracker? = null
@@ -401,7 +404,7 @@ class WatchActivity : Activity() {
                     MotionEvent.ACTION_MOVE -> {
                         vt?.addMovement(ev)
                         acc += y0 - ev.y; y0 = ev.y
-                        val stepPx = dp(14f).toFloat()
+                        val stepPx = dp(10f).toFloat()
                         while (acc >= stepPx) { acc -= stepPx; moved = true; WS.adjust(e, s, f, 1.0, true); upd(); v.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK) }
                         while (acc <= -stepPx) { acc += stepPx; moved = true; WS.adjust(e, s, f, -1.0, true); upd(); v.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK) }
                     }
@@ -410,15 +413,16 @@ class WatchActivity : Activity() {
                         val vy = vt?.yVelocity ?: 0f; vt?.recycle(); vt = null
                         if (!moved && ev.actionMasked == MotionEvent.ACTION_UP) { dragging = false; field = f; paint() }
                         else {
-                            // élan : un coup de doigt rapide fait défiler plusieurs valeurs
-                            var n = (abs(vy) / dp(260f)).toInt().coerceAtMost(30)
+                            // Coup de doigt fort = défile vite ; la lunette sert à être précis.
+                            var n = (abs(vy) / dp(90f)).toInt().coerceAtMost(60)
                             val dir = if (vy < 0) 1.0 else -1.0
                             if (n > 0) {
-                                var delay = 25L
+                                var delay = 10L
                                 val r = object : Runnable { override fun run() {
                                     if (n-- <= 0) { dragging = false; field = f; paint(); return }
-                                    WS.adjust(e, s, f, dir, true); upd(); wheel.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                                    delay += 8; h.postDelayed(this, delay)
+                                    WS.adjust(e, s, f, dir, true); upd()
+                                    if (n % 2 == 0) wheel.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                                    delay += 3; h.postDelayed(this, delay)
                                 } }
                                 h.post(r)
                             } else { dragging = false; field = f; paint() }
@@ -428,21 +432,29 @@ class WatchActivity : Activity() {
                 true
             }
             return LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
-                addView(tv(label, 10f, if (sel) ACC else MUTED, true))
-                addView(wheel)
+                orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL
+                addView(tp(label, 0.034f, if (sel) ACC else MUTED, true))
+                addView(wheel, LinearLayout.LayoutParams((W * 0.27f).toInt(), -2).apply { topMargin = (W * 0.008f).toInt() })
             }
         }
-        add(row(box(u.replaceFirstChar { it.uppercase() }, 0), box(WS.t("Répétitions", "Reps"), 1)), 3f)
-        val p = st?.optString("p") ?: ""
-        if (p.isNotEmpty()) add(tv(WS.t("précéd. ", "prev. ") + p, 10f, MUTED), 3f)
-        val done = pill("✓", ACC, ON_ACC, 18f, 0f) { field = 0; WS.done(this, e, s) }.apply { gravity = Gravity.CENTER; minWidth = dp(64f); minHeight = dp(40f) }
-        add(LinearLayout(this).apply {
+        col.addView(LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER
-            addView(circle("‹") { move(-1) }, LinearLayout.LayoutParams(dp(36f), dp(36f)).apply { rightMargin = dp(6f) })
-            addView(done, LinearLayout.LayoutParams(-2, dp(40f)))
-            addView(circle("›") { move(1) }, LinearLayout.LayoutParams(dp(36f), dp(36f)).apply { leftMargin = dp(6f) })
-        }, 5f)
+            addView(box(u.replaceFirstChar { it.uppercase() }, 0), LinearLayout.LayoutParams(-2, -2).apply { rightMargin = (W * 0.015f).toInt() })
+            addView(box(WS.t("Répétitions", "Reps"), 1), LinearLayout.LayoutParams(-2, -2).apply { leftMargin = (W * 0.015f).toInt() })
+        }, lp(-2, -2, 0.02f))
+        val p = st?.optString("p") ?: ""
+        col.addView(tp(if (p.isNotEmpty()) WS.t("précéd. ", "prev. ") + p else " ", 0.034f, MUTED), lp(-2, -2, 0.012f))
+        val bd = (W * 0.13f).toInt()
+        val done = tp("✓", 0.07f, ON_ACC, true).apply {
+            background = bg(ACC, 40f); gravity = Gravity.CENTER; isClickable = true
+            setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); field = 0; WS.done(this@WatchActivity, e, s) }
+        }
+        col.addView(LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER
+            addView(circle("‹") { move(-1) }, LinearLayout.LayoutParams(bd, bd).apply { rightMargin = (W * 0.02f).toInt() })
+            addView(done, LinearLayout.LayoutParams((W * 0.26f).toInt(), (W * 0.14f).toInt()))
+            addView(circle("›") { move(1) }, LinearLayout.LayoutParams(bd, bd).apply { leftMargin = (W * 0.02f).toInt() })
+        }, lp(-2, -2, 0.02f))
     }
 
     /* ---------- Page 2 : options ---------- */
