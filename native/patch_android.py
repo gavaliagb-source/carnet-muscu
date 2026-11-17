@@ -14,6 +14,7 @@ rw(f'{A}/app/build.gradle', app)
 PERMS = ['WRITE_EXERCISE', 'WRITE_ACTIVE_CALORIES_BURNED', 'READ_WEIGHT', 'READ_HEART_RATE']
 def man(s):
     ps = ''.join(f'    <uses-permission android:name="android.permission.health.{p}" />\n' for p in PERMS)
+    ps += '    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n'
     ps += '    <queries>\n        <package android:name="com.google.android.apps.healthdata" />\n    </queries>\n'
     s = s.replace('</manifest>', ps + '</manifest>', 1)
     act = '''        <activity android:name=".HealthPrivacyActivity" android:exported="true">
@@ -32,10 +33,17 @@ def man(s):
             </intent-filter>
         </activity-alias>
 '''
+    act += '''        <service android:name=".PhoneWearListener" android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/rl/" />
+            </intent-filter>
+        </service>
+'''
     return s.replace('    </application>', act + '    </application>', 1)
 rw(f'{A}/app/src/main/AndroidManifest.xml', man)
 d = f'{A}/app/src/main/java/app/runelift/'
-for f in ['MainActivity.java', 'RLHealthPlugin.kt', 'HealthPrivacyActivity.kt', 'RLWearPlugin.kt']:
+for f in ['MainActivity.java', 'RLHealthPlugin.kt', 'HealthPrivacyActivity.kt', 'RLWearPlugin.kt', 'PhoneWearListener.kt']:
     shutil.copy(f'native/{f}', d + f)
 print('Health Connect ajouté')
 

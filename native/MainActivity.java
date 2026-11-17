@@ -15,6 +15,10 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
         registerPlugin(RLHealthPlugin.class);
         registerPlugin(RLWearPlugin.class);
         super.onCreate(savedInstanceState);
+        if (android.os.Build.VERSION.SDK_INT >= 33 && checkSelfPermission("android.permission.POST_NOTIFICATIONS") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            android.content.SharedPreferences p = getSharedPreferences("rl_wear", MODE_PRIVATE);
+            if (!p.getBoolean("askedNotif", false)) { p.edit().putBoolean("askedNotif", true).apply(); requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 7); }
+        }
     }
 
     @Override
