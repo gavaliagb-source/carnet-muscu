@@ -72,7 +72,7 @@ def launch(demo=True):
     sh(f'am start -n {PKG}/app.runelift.wear.WatchActivity' + (' --ez rl_demo true' if demo else ''))
     time.sleep(3); wait_app()
 
-launch()
+launch(); time.sleep(25)
 shot('routines')
 swipe(W / 2, H * 0.75, W / 2, H * 0.3, 300); shot('routines_bas'); swipe(W / 2, H * 0.3, W / 2, H * 0.8, 300)
 tap_text('Épaule bras'); shot('detail_routine')
@@ -80,14 +80,14 @@ swipe(W / 2, H * 0.75, W / 2, H * 0.3, 300); shot('detail_bas'); swipe(W / 2, H 
 sh(f'dumpsys gfxinfo {PKG} reset')
 tap_text('Commencer', 4); shot('serie')
 # roue de la charge : petit glissement puis coup de doigt fort
-cx, cy = W / 2 - W * 0.15, H * 0.5
-shot('avant_roue'); swipe(cx, cy + 15, cx, cy - 15, 250, 1.5); shot('roue_glisse')
-swipe(cx, cy + 30, cx, cy - 60, 40, 2.5); shot('roue_coup_fort')
-for _ in range(3): sh('input rotaryencoder scroll --axis SCROLL -1'); time.sleep(0.3)
-shot('lunette')
 tap_text('✓', 2); shot('repos')
 tap_text('+30', 1); shot('repos_plus30')
 tap_text('Passer', 1.5); shot('serie_2')
+wx, rx, cy = W * 0.346, W * 0.645, H * 0.476
+swipe(wx, cy + 20, wx, cy - 22, 350, 2); shot('roue_charge_lent')
+swipe(wx, cy + 45, wx, cy - 70, 45, 3); shot('roue_charge_coup_fort')
+swipe(rx, cy - 20, rx, cy + 22, 350, 2); shot('roue_reps_baisse')
+r = sh('input rotaryencoder scroll --axis SCROLL -1'); log('lunette :', r.strip()[:100]); time.sleep(1.5); shot('lunette')
 swipe(W * 0.12, H / 2, W * 0.88, H / 2, 120, 1.5); shot('liste_exos')
 swipe(W / 2, H * 0.8, W / 2, H * 0.25, 300); swipe(W / 2, H * 0.8, W / 2, H * 0.25, 300); shot('liste_exos_bas')
 swipe(W * 0.88, H / 2, W * 0.12, H / 2, 120, 1.5)
