@@ -1,0 +1,13 @@
+{
+  "name": "runelift-android",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Coquille Android de Runelift (Capacitor). Le contenu de l'appli vient du site.",
+  "dependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/core": "^8.6.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.2"
+  }
+}
