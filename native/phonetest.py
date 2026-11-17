@@ -34,7 +34,7 @@ for k in range(20):
         try:
             pages = json.load(urllib.request.urlopen('http://127.0.0.1:9222/json', timeout=5))
             pg = [p for p in pages if p.get('type') == 'page' and 'webSocketDebuggerUrl' in p]
-            if pg: ws = websocket.create_connection(pg[0]['webSocketDebuggerUrl'], timeout=60, suppress_origin=True); log('page :', pg[0].get('url')); break
+            if pg: ws = websocket.create_connection(pg[0]['webSocketDebuggerUrl'], timeout=150, suppress_origin=True); log('page :', pg[0].get('url')); break
         except Exception as e: log('devtools', e)
     time.sleep(3)
 errs = []
@@ -63,7 +63,7 @@ else:
             if m.get('method') == 'Runtime.exceptionThrown': errs.append('démarrage: ' + str(m['params']['exceptionDetails'].get('exception', {}).get('description', m['params']['exceptionDetails'].get('text', '')))[:300])
             if m.get('method') == 'Runtime.consoleAPICalled' and m['params'].get('type') in ('error', 'warning'): errs.append('démarrage ' + m['params'].get('type') + ': ' + ' '.join(argtxt(a) for a in m['params'].get('args', []))[:400])
         except Exception: pass
-    ws.settimeout(60)
+    ws.settimeout(150)
     log('erreurs au démarrage :', errs or 'aucune'); errs.clear()
     log('version :', ev('APP_VERSION'), '| natif :', ev('isNative()'), '| Health Connect :', ev('!!HC()'), '| montre :', ev('!!WR()'))
     log('extensions :', ev('Object.keys(Capacitor.Plugins).join(", ")'))
