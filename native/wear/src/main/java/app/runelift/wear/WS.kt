@@ -8,11 +8,17 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.Wearable
+import org.json.JSONArray
 import org.json.JSONObject
 
-/* État partagé de la montre : la séance envoyée par le téléphone + ce qu'on a coché ici. */
+/* État partagé de la montre.
+   - phone : la séance (ou les routines) envoyée par le téléphone.
+   - local : une séance faite sur la montre seule (téléphone loin ou appli fermée), gardée sur la montre
+     puis envoyée au téléphone à la fin. */
 object WS {
-    var st: JSONObject? = null
+    private var phone: JSONObject? = null
+    private var local: JSONObject? = null
+    val st: JSONObject? get() = local ?: phone
     val pending = HashMap<String, Long>()
     var restEnd = 0L
     var restTot = 0
@@ -22,15 +28,44 @@ object WS {
     var exSel = -1
     val edits = HashMap<String, DoubleArray>()
     var lastState = 0L
+    private var hrl = JSONArray()
+    private var startWait: String? = null
+    private var app: Context? = null
     private val ui = ArrayList<() -> Unit>()
     private val main = Handler(Looper.getMainLooper())
 
+    fun isLocal() = local != null
+
+    /* À appeler au démarrage de chaque composant : récupère la séance locale et le dernier état du téléphone. */
+    fun init(ctx: Context) {
+        if (app != null) return
+        app = ctx.applicationContext
+        val p = prefs()
+        try { p.getString("local", null)?.let { local = JSONObject(it) } } catch (e: Exception) {}
+        try { p.getString("hrl", null)?.let { hrl = JSONArray(it) } } catch (e: Exception) {}
+        try { if (phone == null) p.getString("phone", null)?.let { phone = JSONObject(it) } } catch (e: Exception) {}
+    }
+    private fun prefs() = app!!.getSharedPreferences("rl_ws", Context.MODE_PRIVATE)
+    private fun saveLocal() {
+        val a = app ?: return
+        a.getSharedPreferences("rl_ws", Context.MODE_PRIVATE).edit()
+            .putString("local", local?.toString()).putString("hrl", hrl.toString()).apply()
+    }
+
     fun onUi(f: () -> Unit) { ui.add(f) }
     fun offUi(f: () -> Unit) { ui.remove(f) }
-    fun changed() { main.post { ui.toList().forEach { it() } } }
+    private var lastTile = 0L
+    fun changed() {
+        main.post { ui.toList().forEach { it() } }
+        val c = app ?: return
+        val now = System.currentTimeMillis()
+        if (now - lastTile > 5000) { lastTile = now; RLTile.refresh(c) }
+    }
     fun on() = st?.optInt("on", 0) == 1
+    fun phoneOn() = phone?.optInt("on", 0) == 1
     fun en() = st?.optString("lang") == "en"
     fun t(fr: String, en: String) = if (en()) en else fr
+    fun routines(): JSONArray? = phone?.optJSONArray("rts")
 
     fun ex(e: Int): JSONObject? = st?.optJSONArray("ex")?.optJSONObject(e)
     fun nEx() = st?.optJSONArray("ex")?.length() ?: 0
@@ -49,10 +84,14 @@ object WS {
 
     fun update(j: String) {
         val o = try { JSONObject(j) } catch (e: Exception) { return }
-        val old = st
-        st = o
+        val old = phone
+        phone = o
+        app?.let { try { it.getSharedPreferences("rl_ws", Context.MODE_PRIVATE).edit().putString("phone", j).apply() } catch (e: Exception) {} }
         val now = System.currentTimeMillis()
         lastState = now
+        if (phoneOn()) startWait = null
+        app?.let { flush(it) }
+        if (local != null) { changed(); return }   // séance sur la montre seule : on garde la nôtre
         if (old == null || old.optString("id") != o.optString("id")) { exSel = -1; pending.clear(); edits.clear() }
         pending.entries.removeIf { (k, t0) ->
             val p = k.split(":"); val e = p[0].toInt(); val s = p[1].toInt()
@@ -66,23 +105,25 @@ object WS {
     }
 
     fun load(ctx: Context) {
+        init(ctx)
         Wearable.getDataClient(ctx).dataItems.addOnSuccessListener { buf ->
             var j: String? = null
             for (it in buf) if (it.uri.path == "/rl/state") j = DataMapItem.fromDataItem(it).dataMap.getString("j")
             buf.release()
             if (j != null) update(j)
         }
+        flush(ctx)
     }
 
     fun send(ctx: Context, body: JSONObject) {
         val data = body.toString().toByteArray(Charsets.UTF_8)
-        val app = ctx.applicationContext
-        Wearable.getNodeClient(app).connectedNodes.addOnSuccessListener { nodes ->
-            nodes.forEach { Wearable.getMessageClient(app).sendMessage(it.id, "/rl/cmd", data) }
+        val a = ctx.applicationContext
+        Wearable.getNodeClient(a).connectedNodes.addOnSuccessListener { nodes ->
+            nodes.forEach { Wearable.getMessageClient(a).sendMessage(it.id, "/rl/cmd", data) }
         }
     }
 
-    /* Charge et répétitions affichées : celles modifiées sur la montre, sinon celles du téléphone. */
+    /* Charge et répétitions affichées : celles modifiées sur la montre, sinon celles de la séance. */
     fun w(e: Int, s: Int): Double = edits["$e:$s"]?.get(0) ?: (set(e, s)?.opt("w") as? Number)?.toDouble() ?: set(e, s)?.optString("w")?.toDoubleOrNull() ?: 0.0
     fun r(e: Int, s: Int): Double = edits["$e:$s"]?.get(1) ?: set(e, s)?.optDouble("r", 0.0) ?: 0.0
     fun hasW(e: Int, s: Int) = edits.containsKey("$e:$s") || (set(e, s)?.optString("w") ?: "").isNotEmpty()
@@ -96,7 +137,7 @@ object WS {
 
     /* Couleur principale choisie sur le téléphone (thème Runelift). */
     fun acc(): Int {
-        val a = (st?.optString("acc") ?: "").trim()
+        val a = (st?.optString("acc") ?: phone?.optString("acc") ?: "").trim()
         try {
             if (a.startsWith("#")) {
                 val h = if (a.length == 4) "#" + a[1] + a[1] + a[2] + a[2] + a[3] + a[3] else a
@@ -108,23 +149,68 @@ object WS {
         return android.graphics.Color.parseColor("#C6F135")
     }
     fun onAcc(): Int { val c = acc(); val l = 0.299 * android.graphics.Color.red(c) + 0.587 * android.graphics.Color.green(c) + 0.114 * android.graphics.Color.blue(c); return if (l > 150) android.graphics.Color.BLACK else android.graphics.Color.WHITE }
-    fun elapsedMs(): Long = try { System.currentTimeMillis() - java.time.Instant.parse(st?.optString("st")).toEpochMilli() } catch (e: Exception) { 0L }
+    fun startMs(): Long = try { java.time.Instant.parse(st?.optString("st")).toEpochMilli() } catch (e: Exception) { System.currentTimeMillis() }
+    fun elapsedMs(): Long = System.currentTimeMillis() - startMs()
     fun kcal(): Int = (5.0 * (st?.optInt("kg", 75) ?: 75) * elapsedMs() / 3600000.0).toInt()
-    fun cmd(ctx: Context, a: String, e: Int = -1, s: Int = -1, t: String? = null) {
-        val m = JSONObject().put("a", a); if (e >= 0) m.put("e", e); if (s >= 0) m.put("s", s); if (t != null) m.put("t", t)
-        send(ctx, m)
+
+    /* ---------- Démarrer : avec le téléphone si son appli répond, sinon seule ---------- */
+    fun start(ctx: Context, rid: String) {
+        init(ctx)
+        if (local != null) return
+        val a = ctx.applicationContext
+        Wearable.getNodeClient(a).connectedNodes
+            .addOnSuccessListener { nodes ->
+                if (nodes.isEmpty()) { goLocal(a, rid); return@addOnSuccessListener }
+                startWait = rid
+                send(a, JSONObject().put("a", "start").put("rid", rid).put("t", System.currentTimeMillis()))
+                main.postDelayed({ if (startWait == rid && !phoneOn()) goLocal(a, rid) }, 6000)
+            }
+            .addOnFailureListener { goLocal(a, rid) }
     }
 
-    fun start(ctx: Context, rid: String) { send(ctx, JSONObject().put("a", "start").put("rid", rid)) }
-    fun finish(ctx: Context) { send(ctx, JSONObject().put("a", "finish")) }
+    /* Le téléphone répond que son appli est fermée : la montre continue seule. */
+    fun noPhone(ctx: Context) { val r = startWait ?: return; goLocal(ctx.applicationContext, r) }
 
+    private fun goLocal(ctx: Context, rid: String) {
+        init(ctx)
+        if (local != null || phoneOn()) return
+        startWait = null
+        val rts = routines() ?: return
+        var r: JSONObject? = null
+        for (i in 0 until rts.length()) if (rts.optJSONObject(i)?.optString("id") == rid) r = rts.optJSONObject(i)
+        r ?: return
+        val now = java.time.Instant.now().toString()
+        val ex = JSONArray()
+        val src = r.optJSONArray("ex") ?: JSONArray()
+        for (i in 0 until src.length()) {
+            val e = src.optJSONObject(i) ?: continue
+            val sl = e.optJSONArray("sl")
+            val sets = JSONArray()
+            if (sl != null && sl.length() > 0) for (k in 0 until sl.length()) { val x = sl.optJSONObject(k) ?: continue; sets.put(JSONObject().put("w", x.opt("w") ?: "").put("r", x.optInt("r", 0)).put("t", x.optString("t")).put("p", x.optString("p")).put("d", 0)) }
+            else for (k in 0 until maxOf(1, e.optInt("s", 3))) sets.put(JSONObject().put("w", "").put("r", 10).put("t", "").put("p", "").put("d", 0))
+            ex.put(JSONObject().put("n", e.optString("n")).put("i", e.optString("i")).put("rest", e.optInt("rest", 90)).put("c", e.optInt("c", 0)).put("s", sets))
+        }
+        local = JSONObject().put("on", 1).put("local", 1).put("id", now).put("st", now).put("rid", rid).put("n", r.optString("n"))
+            .put("u", phone?.optString("u", "lb") ?: "lb").put("kg", phone?.optInt("kg", 75) ?: 75)
+            .put("lang", phone?.optString("lang", "fr") ?: "fr").put("acc", phone?.optString("acc") ?: "").put("ex", ex)
+        hrl = JSONArray(); exSel = -1; pending.clear(); edits.clear(); restEnd = 0
+        saveLocal(); changed()
+    }
+
+    /* ---------- Actions (téléphone ou séance locale) ---------- */
     fun done(ctx: Context, e: Int, s: Int) {
         val now = System.currentTimeMillis()
-        pending["$e:$s"] = now
-        val m = JSONObject().put("a", "done").put("e", e).put("s", s)
-        edits["$e:$s"]?.let { m.put("w", it[0]).put("r", it[1].toInt()) }
-        edits.remove("$e:$s")
-        send(ctx, m)
+        if (local != null) {
+            val x = set(e, s) ?: return
+            edits["$e:$s"]?.let { x.put("w", it[0]).put("r", it[1].toInt()) }
+            x.put("d", 1); edits.remove("$e:$s"); saveLocal()
+        } else {
+            pending["$e:$s"] = now
+            val m = JSONObject().put("a", "done").put("e", e).put("s", s)
+            edits["$e:$s"]?.let { m.put("w", it[0]).put("r", it[1].toInt()) }
+            edits.remove("$e:$s")
+            send(ctx, m)
+        }
         val x = ex(e)
         val r = x?.optInt("rest", 90) ?: 90
         if (r > 0 && x?.optInt("c", 0) != 1) { restTot = r; restEnd = now + r * 1000L }
@@ -132,15 +218,82 @@ object WS {
         changed()
     }
 
+    fun cmd(ctx: Context, a: String, e: Int = -1, s: Int = -1, t: String? = null) {
+        val l = local
+        if (l == null) {
+            val m = JSONObject().put("a", a); if (e >= 0) m.put("e", e); if (s >= 0) m.put("s", s); if (t != null) m.put("t", t)
+            send(ctx, m); return
+        }
+        val sets = ex(e)?.optJSONArray("s")
+        when (a) {
+            "add-set" -> if (sets != null) { val last = sets.optJSONObject(sets.length() - 1); sets.put(JSONObject().put("w", last?.opt("w") ?: "").put("r", last?.optInt("r", 10) ?: 10).put("t", if (last?.optString("t") == "W") "" else last?.optString("t") ?: "").put("p", "").put("d", 0)) }
+            "type" -> set(e, s)?.put("t", t ?: "")
+            "del-set" -> if (sets != null && sets.length() > 1) { sets.remove(s); edits.clear() }
+            "cancel" -> { local = null; hrl = JSONArray(); restEnd = 0; exSel = -1; edits.clear() }
+        }
+        saveLocal(); changed()
+    }
+
+    fun finish(ctx: Context) {
+        val l = local
+        if (l == null) { send(ctx, JSONObject().put("a", "finish")); return }
+        val ex = JSONArray()
+        val src = l.optJSONArray("ex") ?: JSONArray()
+        for (i in 0 until src.length()) {
+            val e = src.optJSONObject(i) ?: continue
+            val sets = JSONArray(); val ss = e.optJSONArray("s") ?: JSONArray()
+            for (k in 0 until ss.length()) { val x = ss.optJSONObject(k) ?: continue; sets.put(JSONObject().put("w", x.opt("w") ?: "").put("r", x.optInt("r", 0)).put("t", x.optString("t")).put("d", x.optInt("d", 0))) }
+            ex.put(JSONObject().put("n", e.optString("n")).put("s", sets))
+        }
+        val payload = JSONObject().put("id", l.optString("id")).put("n", l.optString("n")).put("rid", l.optString("rid"))
+            .put("st", l.optString("st")).put("end", System.currentTimeMillis()).put("ex", ex).put("hr", hrl)
+        val p = prefs()
+        val box = try { JSONArray(p.getString("outbox", "[]")) } catch (e: Exception) { JSONArray() }
+        box.put(JSONObject().put("a", "import").put("s", payload).toString())
+        p.edit().putString("outbox", box.toString()).apply()
+        local = null; hrl = JSONArray(); restEnd = 0; exSel = -1; edits.clear(); pending.clear()
+        saveLocal(); changed()
+        flush(ctx)
+    }
+
+    /* Envoie au téléphone les séances faites sur la montre seule (réessaie tant que ce n'est pas passé). */
+    fun flush(ctx: Context) {
+        init(ctx)
+        val p = prefs()
+        val box = try { JSONArray(p.getString("outbox", "[]")) } catch (e: Exception) { JSONArray() }
+        if (box.length() == 0) return
+        val a = ctx.applicationContext
+        Wearable.getNodeClient(a).connectedNodes.addOnSuccessListener { nodes ->
+            val n = nodes.firstOrNull() ?: return@addOnSuccessListener
+            for (i in 0 until box.length()) {
+                val item = box.optString(i)
+                Wearable.getMessageClient(a).sendMessage(n.id, "/rl/cmd", item.toByteArray(Charsets.UTF_8)).addOnSuccessListener {
+                    val cur = try { JSONArray(p.getString("outbox", "[]")) } catch (e: Exception) { JSONArray() }
+                    val keep = JSONArray(); for (k in 0 until cur.length()) if (cur.optString(k) != item) keep.put(cur.optString(k))
+                    p.edit().putString("outbox", keep.toString()).apply()
+                }
+            }
+        }
+    }
+    fun outboxCount(): Int = try { JSONArray(prefs().getString("outbox", "[]")).length() } catch (e: Exception) { 0 }
+
+    /* Cardio : envoyé en direct au téléphone, ou gardé dans la séance locale. */
+    fun hr(ctx: Context, b: Int, now: Long) {
+        val l = local
+        if (l == null) { send(ctx, JSONObject().put("a", "hr").put("bpm", b).put("t", now)); return }
+        hrl.put(JSONArray().put((now - startMs()) / 1000).put(b))
+        if (hrl.length() % 12 == 0) saveLocal()
+    }
+
     fun restAdd(ctx: Context) {
         val now = System.currentTimeMillis()
-        if (restEnd > now) { restEnd += 30000; restTot += 30; send(ctx, JSONObject().put("a", "rest").put("add", 30)) }
+        if (restEnd > now) { restEnd += 30000; restTot += 30; if (local == null) send(ctx, JSONObject().put("a", "rest").put("add", 30)) }
         changed()
     }
 
     fun restSkip(ctx: Context) {
         restEnd = 0
-        send(ctx, JSONObject().put("a", "rest").put("skip", 1))
+        if (local == null) send(ctx, JSONObject().put("a", "rest").put("skip", 1))
         changed()
     }
 

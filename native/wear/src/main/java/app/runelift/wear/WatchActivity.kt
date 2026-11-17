@@ -101,6 +101,8 @@ class WatchActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WS.init(this)
+        fromTile(intent)
         scroll = ScrollView(this).apply { setBackgroundColor(BG); isVerticalScrollBarEnabled = false; isFocusable = true; isFocusableInTouchMode = true }
         col = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL
@@ -119,6 +121,19 @@ class WatchActivity : Activity() {
                 return true
             }
         })
+    }
+
+    private fun fromTile(i: Intent?) {
+        val rid = i?.getStringExtra("start") ?: return
+        i.removeExtra("start")
+        if (!WS.on() && rid.isNotEmpty()) { WS.load(this); h.postDelayed({ WS.start(this, rid) }, 400) }
+    }
+    override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); setIntent(intent); fromTile(intent) }
+
+    /* Lunette tactile / couronne : on la prend avant la liste qui défile, pour monter ou descendre les chiffres. */
+    override fun dispatchGenericMotionEvent(ev: MotionEvent): Boolean {
+        if (ev.action == MotionEvent.ACTION_SCROLL && ev.isFromSource(InputDevice.SOURCE_ROTARY_ENCODER) && onGenericMotionEvent(ev)) return true
+        return super.dispatchGenericMotionEvent(ev)
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
@@ -229,7 +244,7 @@ class WatchActivity : Activity() {
         val now = System.currentTimeMillis()
         val c = WS.cur()
         val resting = on && WS.restEnd > now
-        val ns = listOf(on, page, detail, if (resting) "|rest|" else "|set|", c, field, WS.st?.toString()?.hashCode(), WS.pending.keys.sorted(), WS.edits.entries.joinToString { it.key + it.value.joinToString() }, if (armed(arm)) arm else "", WS.exSel).joinToString("#")
+        val ns = listOf(on, page, detail, if (resting) "|rest|" else "|set|", c, field, WS.st?.toString()?.hashCode(), WS.pending.keys.sorted(), WS.edits.entries.joinToString { it.key + it.value.joinToString() }, if (armed(arm)) arm else "", WS.exSel, Img.version, WS.isLocal()).joinToString("#")
         if (ns == sig) { paintLight(); return }
         sig = ns
         col.removeAllViews(); tvClock = null; tvHr = null; tvBig = null
@@ -251,11 +266,13 @@ class WatchActivity : Activity() {
     /* ---------- Hors séance : routines ---------- */
     private fun idle() {
         add(tv("Runelift", 17f, ACC, true), 0f)
-        val rts = WS.st?.optJSONArray("rts")
+        val rts = WS.routines()
         if (rts == null || rts.length() == 0) {
             add(tv(WS.t("Ouvre Runelift sur ton téléphone pour voir tes routines.", "Open Runelift on your phone to see your routines."), 13f, MUTED), 8f)
             return
         }
+        val ob = WS.outboxCount()
+        if (ob > 0) add(tv(WS.t("$ob séance(s) en attente d'envoi au téléphone", "$ob workout(s) waiting to be sent to the phone"), 11f, ACC), 4f)
         add(tv(WS.t("Mes routines", "My routines"), 13f, Color.WHITE, true), 6f)
         for (i in 0 until rts.length()) {
             val r = rts.optJSONObject(i) ?: continue
@@ -275,7 +292,7 @@ class WatchActivity : Activity() {
     }
 
     private fun routineDetail(id: String) {
-        val rts = WS.st?.optJSONArray("rts") ?: run { detail = null; idle(); return }
+        val rts = WS.routines() ?: run { detail = null; idle(); return }
         var r: JSONObject? = null
         for (i in 0 until rts.length()) if (rts.optJSONObject(i)?.optString("id") == id) r = rts.optJSONObject(i)
         if (r == null) { detail = null; idle(); return }
@@ -296,6 +313,7 @@ class WatchActivity : Activity() {
         add(tv(WS.st?.optString("n") ?: "", 14f, Color.WHITE, true).apply { maxLines = 1; ellipsize = TextUtils.TruncateAt.END }, 4f)
         tvClock = tv(clock(WS.elapsedMs()), 24f, Color.WHITE, true).also { add(it, 2f) }
         tvHr = tv(hrLine(), 13f, HEART, true).also { add(it, 0f) }
+        if (WS.isLocal()) add(tv(WS.t("Montre seule · envoyée au téléphone à la fin", "Watch only · sent to the phone at the end"), 10f, MUTED), 2f)
         val cur = WS.cur()?.first
         for (e in 0 until WS.nEx()) {
             val x = WS.ex(e) ?: continue

@@ -24,12 +24,18 @@ class PhoneWearListener : WearableListenerService() {
         val j = String(e.data, Charsets.UTF_8)
         val a = try { JSONObject(j).optString("a") } catch (x: Exception) { "" }
         val p = RLWearPlugin.instance
+        if (p == null && a == "start") {
+            // Appli fermée : la montre continue seule et enverra la séance à la fin.
+            try { com.google.android.gms.wearable.Wearable.getMessageClient(this).sendMessage(e.sourceNodeId, "/rl/cmd", "{\"a\":\"nophone\"}".toByteArray()) } catch (x: Exception) {}
+            notify(false); return
+        }
         if (p != null) Handler(Looper.getMainLooper()).post { p.deliver(j) }
         else if (a != "hello") RLWearPlugin.queue(this, j)
-        if (!RLWearPlugin.fg && (a == "start" || (p == null && a == "done"))) notifyStart()
+        if (a == "import" && (p == null || !RLWearPlugin.fg)) notify(true)
+        else if (!RLWearPlugin.fg && a == "start") notify(false)
     }
 
-    private fun notifyStart() {
+    private fun notify(done: Boolean) {
         try {
             val en = RLWearPlugin.lang(this) == "en"
             val nm = getSystemService(NotificationManager::class.java)
@@ -38,8 +44,8 @@ class PhoneWearListener : WearableListenerService() {
             val pi = PendingIntent.getActivity(this, 2, i, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
             val n = NotificationCompat.Builder(this, "rl_watch")
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(if (en) "Workout started on your watch" else "Séance lancée sur la montre")
-                .setContentText(if (en) "Tap to sync with Runelift" else "Touche pour synchroniser avec Runelift")
+                .setContentTitle(if (done) (if (en) "Watch workout ready" else "Séance de la montre prête") else (if (en) "Workout started on your watch" else "Séance lancée sur la montre"))
+                .setContentText(if (done) (if (en) "Tap to add it to Runelift" else "Touche pour l'ajouter à Runelift") else (if (en) "Tap to sync with Runelift" else "Touche pour synchroniser avec Runelift"))
                 .setContentIntent(pi)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

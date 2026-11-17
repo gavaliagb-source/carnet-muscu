@@ -37,6 +37,7 @@ class HrService : Service(), SensorEventListener {
 
     override fun onCreate() {
         super.onCreate()
+        WS.init(this)
         try {
             val nm = getSystemService(NotificationManager::class.java)
             nm.createNotificationChannel(NotificationChannel("rl_live", "Runelift", NotificationManager.IMPORTANCE_LOW))
@@ -85,7 +86,7 @@ class HrService : Service(), SensorEventListener {
         WS.bpm = b; WS.bpmT = now; WS.changed()
         if (now - lastSent >= 5000) {
             lastSent = now
-            WS.send(this, JSONObject().put("a", "hr").put("bpm", b).put("t", now))
+            WS.hr(this, b, now)
         }
     }
 
