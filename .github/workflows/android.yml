@@ -27,7 +27,9 @@ jobs:
           KS: ${{ secrets.ANDROID_KEYSTORE_B64 }}
         run: |
           if [ -n "$KS" ]; then
-            printf '%s' "$KS" | tr -d ' \r\n\t' | base64 -d > android/app/runelift.p12
+            K=$(printf '%s' "$KS" | tr -d ' \r\n\t')
+            echo "Longueur du secret : ${#K} (attendu 3516) · début de l'empreinte : $(printf '%s' "$K" | sha256sum | cut -c1-16)"
+            printf '%s' "$K" | base64 -d > android/app/runelift.p12 || { echo "::error::Le secret ANDROID_KEYSTORE_B64 n'est pas le bon texte (voir la longueur ci-dessus)"; exit 1; }
             SHA=$(keytool -list -v -keystore android/app/runelift.p12 -storepass android -storetype pkcs12 | grep -m1 'SHA1:' | awk '{print $2}')
             echo "Empreinte SHA-1 de la clé : $SHA"
             if [ "$SHA" != "CD:10:80:63:BF:72:00:59:26:CC:41:D5:CC:CC:D1:46:87:A8:6F:14" ]; then echo "::error::La clé dans le secret ANDROID_KEYSTORE_B64 est incomplète ou différente"; exit 1; fi
