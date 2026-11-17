@@ -496,9 +496,9 @@ class WatchActivity : Activity() {
         }
         col.addView(LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER
-            addView(circle("‹") { move(-1) }.apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.06f) }, LinearLayout.LayoutParams(bd, bd).apply { rightMargin = (W * 0.03f).toInt() })
+            addView(circle("‹") { move(-1) }.apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.085f); includeFontPadding = false }, LinearLayout.LayoutParams(bd, bd).apply { rightMargin = (W * 0.03f).toInt() })
             addView(done, LinearLayout.LayoutParams((W * 0.27f).toInt(), (W * 0.15f).toInt()))
-            addView(circle("›") { move(1) }.apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.06f) }, LinearLayout.LayoutParams(bd, bd).apply { leftMargin = (W * 0.03f).toInt() })
+            addView(circle("›") { move(1) }.apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.085f); includeFontPadding = false }, LinearLayout.LayoutParams(bd, bd).apply { leftMargin = (W * 0.03f).toInt() })
         }, lp(-2, -2, 0.022f))
     }
 
