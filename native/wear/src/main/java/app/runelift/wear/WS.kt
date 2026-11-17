@@ -94,6 +94,27 @@ object WS {
         changed()
     }
 
+    /* Couleur principale choisie sur le téléphone (thème Runelift). */
+    fun acc(): Int {
+        val a = (st?.optString("acc") ?: "").trim()
+        try {
+            if (a.startsWith("#")) {
+                val h = if (a.length == 4) "#" + a[1] + a[1] + a[2] + a[2] + a[3] + a[3] else a
+                return android.graphics.Color.parseColor(h)
+            }
+            val m = Regex("rgba?\\(([^)]+)\\)").find(a)
+            if (m != null) { val p = m.groupValues[1].split(",").map { it.trim().toFloat().toInt() }; return android.graphics.Color.rgb(p[0], p[1], p[2]) }
+        } catch (e: Exception) {}
+        return android.graphics.Color.parseColor("#C6F135")
+    }
+    fun onAcc(): Int { val c = acc(); val l = 0.299 * android.graphics.Color.red(c) + 0.587 * android.graphics.Color.green(c) + 0.114 * android.graphics.Color.blue(c); return if (l > 150) android.graphics.Color.BLACK else android.graphics.Color.WHITE }
+    fun elapsedMs(): Long = try { System.currentTimeMillis() - java.time.Instant.parse(st?.optString("st")).toEpochMilli() } catch (e: Exception) { 0L }
+    fun kcal(): Int = (5.0 * (st?.optInt("kg", 75) ?: 75) * elapsedMs() / 3600000.0).toInt()
+    fun cmd(ctx: Context, a: String, e: Int = -1, s: Int = -1, t: String? = null) {
+        val m = JSONObject().put("a", a); if (e >= 0) m.put("e", e); if (s >= 0) m.put("s", s); if (t != null) m.put("t", t)
+        send(ctx, m)
+    }
+
     fun start(ctx: Context, rid: String) { send(ctx, JSONObject().put("a", "start").put("rid", rid)) }
     fun finish(ctx: Context) { send(ctx, JSONObject().put("a", "finish")) }
 

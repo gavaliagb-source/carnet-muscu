@@ -14,7 +14,7 @@
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="Runelift"
-        android:theme="@android:style/Theme.DeviceDefault">
+        android:theme="@style/RLTheme">
         <uses-library android:name="com.google.android.wearable" android:required="false" />
         <meta-data android:name="com.google.android.wearable.standalone" android:value="false" />
 

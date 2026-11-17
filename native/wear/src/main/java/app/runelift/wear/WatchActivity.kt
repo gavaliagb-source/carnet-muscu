@@ -11,7 +11,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.TextUtils
 import android.util.TypedValue
+import android.view.GestureDetector
 import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.InputDevice
@@ -22,17 +24,20 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import org.json.JSONObject
+import kotlin.math.abs
 
-/* Écran de la montre, inspiré de Hevy : démarrer une routine, ajuster charge/reps (écran ou lunette), cocher, repos, terminer. */
+/* Écran de la montre, façon Hevy : 3 pages pendant la séance (glisser à gauche / droite).
+   Page 0 = tous les exercices, page 1 = série en cours, page 2 = options. */
 class WatchActivity : Activity() {
     companion object { @Volatile var visible = false }
 
     private val BG = Color.parseColor("#0D0F12")
-    private val ACC = Color.parseColor("#C6F135")
     private val MUTED = Color.parseColor("#8A93A0")
     private val HEART = Color.parseColor("#EF5A6F")
-    private val CARD = Color.parseColor("#1F242C")
-    private val SEL = Color.parseColor("#2C3440")
+    private val CARD = Color.parseColor("#262C35")
+    private val RED = Color.parseColor("#FF5A5A")
+    private val ACC get() = WS.acc()
+    private val ON_ACC get() = WS.onAcc()
 
     private lateinit var scroll: ScrollView
     private lateinit var col: LinearLayout
@@ -41,21 +46,27 @@ class WatchActivity : Activity() {
     private val loop = object : Runnable {
         override fun run() { WS.checkRest(this@WatchActivity); paintLight(); h.postDelayed(this, 500) }
     }
-    private var field = 0          // 0 = charge, 1 = répétitions (ce que la lunette modifie)
-    private var finishArm = 0L     // « Terminer » demande un 2e toucher
-    private var sig = ""           // évite de tout reconstruire à chaque seconde
-    private var tvTop: TextView? = null
+    private var page = 1
+    private var detail: String? = null      // routine ouverte (avant de commencer)
+    private var field = 0                   // 0 = charge, 1 = répétitions
+    private var arm = ""                    // bouton qui attend une confirmation
+    private var armT = 0L
+    private var sig = ""
+    private var tvClock: TextView? = null
+    private var tvHr: TextView? = null
     private var tvBig: TextView? = null
     private var rotAcc = 0f
+    private lateinit var gd: GestureDetector
 
     private fun dp(v: Float) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, resources.displayMetrics).toInt()
     private fun tv(text: String, sp: Float, color: Int, bold: Boolean = false) = TextView(this).apply {
         this.text = text; setTextSize(TypedValue.COMPLEX_UNIT_SP, sp); setTextColor(color); gravity = Gravity.CENTER
         if (bold) typeface = Typeface.DEFAULT_BOLD
     }
-    private fun pill(text: String, bg: Int, fg: Int, sp: Float, padH: Float, padV: Float, click: (View) -> Unit) = tv(text, sp, fg, true).apply {
-        background = GradientDrawable().apply { setColor(bg); cornerRadius = dp(40f).toFloat() }
-        setPadding(dp(padH), dp(padV), dp(padH), dp(padV))
+    private fun bg(color: Int, r: Float, stroke: Int = 0) = GradientDrawable().apply { setColor(color); cornerRadius = dp(r).toFloat(); if (stroke != 0) setStroke(dp(2f), stroke) }
+    private fun pill(text: String, bgc: Int, fg: Int, sp: Float = 14f, padV: Float = 10f, click: (View) -> Unit) = tv(text, sp, fg, true).apply {
+        background = bg(bgc, 40f)
+        setPadding(dp(14f), dp(padV), dp(14f), dp(padV))
         isClickable = true; isFocusable = true
         setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); click(v) }
     }
@@ -66,6 +77,11 @@ class WatchActivity : Activity() {
         orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER
         vs.forEach { addView(it, LinearLayout.LayoutParams(-2, -2).apply { setMargins(dp(3f), 0, dp(3f), 0) }) }
     }
+    private fun armed(k: String) = arm == k && System.currentTimeMillis() - armT < 4000
+    private fun confirmOr(k: String, run: () -> Unit) {
+        if (armed(k)) { arm = ""; run() } else { arm = k; armT = System.currentTimeMillis(); h.postDelayed({ paint() }, 4100) }
+        paint()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,15 +89,40 @@ class WatchActivity : Activity() {
         col = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL
             val w = resources.displayMetrics.widthPixels
-            setPadding((w * 0.11).toInt(), (w * 0.12).toInt(), (w * 0.11).toInt(), (w * 0.18).toInt())
+            setPadding((w * 0.12).toInt(), (w * 0.09).toInt(), (w * 0.12).toInt(), (w * 0.2).toInt())
         }
         scroll.addView(col)
         setContentView(scroll)
+        gd = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onFling(e1: MotionEvent?, e2: MotionEvent, vx: Float, vy: Float): Boolean {
+                if (e1 == null || !WS.on()) return false
+                val dx = e2.x - e1.x; val dy = e2.y - e1.y
+                if (abs(dx) < dp(45f) || abs(dx) < abs(dy) * 1.4f) return false
+                val np = if (dx < 0) (page + 1).coerceAtMost(2) else (page - 1).coerceAtLeast(0)
+                if (np != page) { page = np; scroll.scrollTo(0, 0); scroll.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK); paint() }
+                return true
+            }
+        })
     }
 
-    /* Lunette tactile / couronne : ajuste la charge ou les répétitions pendant la séance. */
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (gd.onTouchEvent(ev)) {
+            val c = MotionEvent.obtain(ev); c.action = MotionEvent.ACTION_CANCEL; super.dispatchTouchEvent(c); c.recycle()
+            return true
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        if (!WS.on() && detail != null) { detail = null; paint(); return }
+        if (WS.on() && page != 1) { page = 1; paint(); return }
+        @Suppress("DEPRECATION") super.onBackPressed()
+    }
+
+    /* Lunette / couronne : ajuste la charge ou les répétitions de la série en cours. */
     override fun onGenericMotionEvent(ev: MotionEvent): Boolean {
-        if (ev.action == MotionEvent.ACTION_SCROLL && ev.isFromSource(InputDevice.SOURCE_ROTARY_ENCODER) && WS.on() && WS.restEnd <= System.currentTimeMillis()) {
+        if (ev.action == MotionEvent.ACTION_SCROLL && ev.isFromSource(InputDevice.SOURCE_ROTARY_ENCODER) && WS.on() && page == 1 && WS.restEnd <= System.currentTimeMillis()) {
             val c = WS.cur()
             if (c != null && WS.ex(c.first)?.optInt("c", 0) != 1) {
                 rotAcc += -ev.getAxisValue(MotionEvent.AXIS_SCROLL) * ViewConfiguration.get(this).scaledVerticalScrollFactor
@@ -144,118 +185,178 @@ class WatchActivity : Activity() {
     }
 
     private fun clock(ms: Long): String { val s = (ms / 1000).coerceAtLeast(0); return if (s >= 3600) String.format("%d:%02d:%02d", s / 3600, s / 60 % 60, s % 60) else String.format("%d:%02d", s / 60, s % 60) }
-
-    private fun topText(): String {
+    private fun hrLine(): String {
         val now = System.currentTimeMillis()
-        val parts = mutableListOf<String>()
-        WS.st?.optString("st")?.let { iso -> try { parts.add(clock(now - java.time.Instant.parse(iso).toEpochMilli())) } catch (e: Exception) {} }
-        if (WS.bpm > 0 && now - WS.bpmT < 20000) parts.add("♥ ${WS.bpm}")
-        val (d, n) = WS.doneCount(); parts.add("$d/$n")
-        return parts.joinToString("  ·  ")
+        val hr = if (WS.bpm > 0 && now - WS.bpmT < 20000) "♥ ${WS.bpm}   " else ""
+        return "$hr${WS.kcal()} kcal"
     }
 
-    /* Mise à jour légère chaque demi-seconde (chrono, cardio, compte à rebours). */
     private fun paintLight() {
         if (WS.on() != lastOn) { paint(); return }
         if (!WS.on()) return
-        tvTop?.text = topText()
+        tvClock?.text = clock(WS.elapsedMs())
+        tvHr?.text = hrLine()
         val now = System.currentTimeMillis()
         if (WS.restEnd > now) tvBig?.text = clock(WS.restEnd - now + 999)
-        else if (sig.startsWith("rest")) paint()
+        else if (sig.contains("|rest|")) paint()
     }
 
     private var lastOn = false
     private fun paint() {
         val on = WS.on()
-        if (on != lastOn) { lastOn = on; service() }
+        if (on != lastOn) { lastOn = on; service(); page = 1; detail = null }
         val now = System.currentTimeMillis()
         val c = WS.cur()
         val resting = on && WS.restEnd > now
-        val ns = if (!on) "idle:" + (WS.st?.optJSONArray("rts")?.toString() ?: "") + WS.lastState.coerceAtMost(1)
-        else (if (resting) "rest" else "set") + ":" + c + ":" + field + ":" + (c?.let { WS.w(it.first, it.second).toString() + "x" + WS.r(it.first, it.second) } ?: "") + ":" + WS.pending.size + ":" + finishArm + ":" + WS.nEx()
+        val ns = listOf(on, page, detail, if (resting) "|rest|" else "|set|", c, field, WS.st?.toString()?.hashCode(), WS.pending.keys.sorted(), WS.edits.entries.joinToString { it.key + it.value.joinToString() }, if (armed(arm)) arm else "", WS.exSel).joinToString("#")
         if (ns == sig) { paintLight(); return }
         sig = ns
-        col.removeAllViews(); tvTop = null; tvBig = null
-        if (!on) { idle(); return }
-        tvTop = tv(topText(), 12f, MUTED, true).also { add(it, 0f) }
-        if (resting) { rest(c); return }
-        if (c == null) { allDone(); return }
-        setView(c.first, c.second)
+        col.removeAllViews(); tvClock = null; tvHr = null; tvBig = null
+        if (!on) { if (detail != null) routineDetail(detail!!) else idle(); return }
+        dots()
+        when (page) {
+            0 -> overview()
+            2 -> options(c)
+            else -> if (resting) rest(c) else if (c == null) allDone() else setView(c.first, c.second)
+        }
     }
 
+    private fun dots() {
+        val r = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER }
+        for (i in 0..2) r.addView(View(this).apply { background = bg(if (i == page) Color.WHITE else Color.parseColor("#4A515C"), 10f) }, LinearLayout.LayoutParams(dp(6f), dp(6f)).apply { setMargins(dp(3f), 0, dp(3f), 0) })
+        add(r, 0f)
+    }
+
+    /* ---------- Hors séance : routines ---------- */
     private fun idle() {
-        add(tv("Runelift", 18f, ACC, true), 0f)
+        add(tv("Runelift", 17f, ACC, true), 0f)
         val rts = WS.st?.optJSONArray("rts")
         if (rts == null || rts.length() == 0) {
             add(tv(WS.t("Ouvre Runelift sur ton téléphone pour voir tes routines.", "Open Runelift on your phone to see your routines."), 13f, MUTED), 8f)
             return
         }
-        add(tv(WS.t("Démarrer une routine", "Start a routine"), 12f, MUTED), 4f)
+        add(tv(WS.t("Mes routines", "My routines"), 13f, Color.WHITE, true), 6f)
         for (i in 0 until rts.length()) {
             val r = rts.optJSONObject(i) ?: continue
-            val b = pill(r.optString("n") + "\n" + WS.t("${r.optInt("c")} exercices", "${r.optInt("c")} exercises"), CARD, Color.WHITE, 14f, 14f, 10f) {
-                WS.start(this, r.optString("id"))
-                (it as TextView).text = WS.t("Démarrage…", "Starting…")
+            val today = r.optInt("td", 0) == 1
+            val box = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
+                background = bg(CARD, 24f, if (today) ACC else 0)
+                setPadding(dp(12f), dp(9f), dp(12f), dp(9f))
+                isClickable = true
+                setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); detail = r.optString("id"); scroll.scrollTo(0, 0); paint() }
             }
-            add(b, 8f)
+            if (today) box.addView(tv(WS.t("Aujourd'hui", "Today"), 11f, ACC, true))
+            box.addView(tv(r.optString("n"), 14f, Color.WHITE, true))
+            box.addView(tv(WS.t("${r.optJSONArray("ex")?.length() ?: 0} exercices", "${r.optJSONArray("ex")?.length() ?: 0} exercises"), 11f, MUTED))
+            add(box, 8f)
         }
     }
 
+    private fun routineDetail(id: String) {
+        val rts = WS.st?.optJSONArray("rts") ?: run { detail = null; idle(); return }
+        var r: JSONObject? = null
+        for (i in 0 until rts.length()) if (rts.optJSONObject(i)?.optString("id") == id) r = rts.optJSONObject(i)
+        if (r == null) { detail = null; idle(); return }
+        add(tv(r.optString("n"), 15f, Color.WHITE, true), 0f)
+        add(pill(WS.t("Commencer", "Start"), ACC, ON_ACC, 15f) { v -> WS.start(this, id); (v as TextView).text = WS.t("Démarrage…", "Starting…") }, 8f)
+        val ex = r.optJSONArray("ex")
+        add(tv(WS.t("${ex?.length() ?: 0} exercices", "${ex?.length() ?: 0} exercises"), 13f, Color.WHITE, true), 10f)
+        for (i in 0 until (ex?.length() ?: 0)) {
+            val e = ex!!.optJSONObject(i) ?: continue
+            val n = e.optInt("s", 0)
+            add(tv(e.optString("n") + if (n > 0) "\n" + WS.t("$n séries", "$n sets") else "", 12f, Color.WHITE).apply { gravity = Gravity.START }, 6f)
+        }
+        add(pill(WS.t("‹ Retour", "‹ Back"), CARD, Color.WHITE, 13f, 7f) { detail = null; paint() }, 12f, false)
+    }
+
+    /* ---------- Page 0 : vue d'ensemble ---------- */
+    private fun overview() {
+        add(tv(WS.st?.optString("n") ?: "", 14f, Color.WHITE, true).apply { maxLines = 1; ellipsize = TextUtils.TruncateAt.END }, 4f)
+        tvClock = tv(clock(WS.elapsedMs()), 24f, Color.WHITE, true).also { add(it, 2f) }
+        tvHr = tv(hrLine(), 13f, HEART, true).also { add(it, 0f) }
+        val cur = WS.cur()?.first
+        for (e in 0 until WS.nEx()) {
+            val x = WS.ex(e) ?: continue
+            val n = WS.nSets(e); val d = (0 until n).count { WS.isDone(e, it) }
+            val box = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL; gravity = Gravity.START
+                background = bg(CARD, 22f, if (e == cur) ACC else 0)
+                setPadding(dp(14f), dp(8f), dp(14f), dp(8f))
+                isClickable = true
+                setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); WS.exSel = e; field = 0; page = 1; scroll.scrollTo(0, 0); paint() }
+            }
+            box.addView(tv(x.optString("n"), 13f, Color.WHITE, true).apply { gravity = Gravity.START; maxLines = 2 })
+            box.addView(tv(WS.t("$d/$n séries", "$d/$n sets"), 11f, if (d == n && n > 0) ACC else MUTED).apply { gravity = Gravity.START })
+            add(box, 7f)
+        }
+    }
+
+    /* ---------- Page 1 : série en cours ---------- */
     private fun rest(c: Pair<Int, Int>?) {
         add(tv(WS.t("Repos", "Rest"), 13f, MUTED), 6f)
         tvBig = tv(clock(WS.restEnd - System.currentTimeMillis() + 999), 34f, Color.WHITE, true).also { add(it, 2f) }
+        tvHr = tv(hrLine(), 12f, HEART, true).also { add(it, 0f) }
         val next = if (c != null) WS.t("Ensuite : ", "Next: ") + (WS.ex(c.first)?.optString("n") ?: "") else WS.t("Dernière série faite", "Last set done")
-        add(tv(next, 13f, Color.WHITE).apply { maxLines = 2 }, 4f)
-        add(row(pill("+30 s", CARD, Color.WHITE, 14f, 14f, 8f) { WS.restAdd(this) },
-                pill(WS.t("Passer", "Skip"), ACC, Color.BLACK, 14f, 16f, 8f) { WS.restSkip(this) }), 10f)
+        add(tv(next, 12f, Color.WHITE).apply { maxLines = 2 }, 4f)
+        add(row(pill("+30 s", CARD, Color.WHITE, 13f, 8f) { WS.restAdd(this) },
+                pill(WS.t("Passer", "Skip"), ACC, ON_ACC, 13f, 8f) { WS.restSkip(this) }), 10f)
     }
 
     private fun allDone() {
-        add(tv(WS.t("Tout est fait !", "All done!"), 17f, ACC, true), 8f)
-        finishButton(12f)
-    }
-
-    private fun finishButton(top: Float) {
-        val armed = System.currentTimeMillis() - finishArm < 4000
-        add(pill(if (armed) WS.t("Confirmer : terminer", "Confirm: finish") else WS.t("Terminer la séance", "Finish workout"),
-            if (armed) HEART else CARD, Color.WHITE, 13f, 14f, 8f) {
-            if (System.currentTimeMillis() - finishArm < 4000) { finishArm = 0; WS.finish(this) }
-            else { finishArm = System.currentTimeMillis(); h.postDelayed({ paint() }, 4100) }
-            paint()
-        }, top, false)
+        add(tv(WS.t("Tout est fait !", "All done!"), 17f, ACC, true), 10f)
+        tvHr = tv(hrLine(), 12f, HEART, true).also { add(it, 2f) }
+        add(pill(if (armed("fin")) WS.t("Confirmer", "Confirm") else WS.t("Terminer l'entraînement", "Finish workout"), ACC, ON_ACC, 13f) { confirmOr("fin") { WS.finish(this) } }, 12f)
     }
 
     private fun setView(e: Int, s: Int) {
         val x = WS.ex(e); val st = WS.set(e, s)
-        val cardio = x?.optInt("c", 0) == 1
-        add(tv(x?.optString("n") ?: "", 16f, Color.WHITE, true).apply { maxLines = 2 }, 4f)
+        add(tv(x?.optString("n") ?: "", 14f, Color.WHITE, true).apply { maxLines = 1; ellipsize = TextUtils.TruncateAt.END }, 2f)
         val warm = st?.optString("t") == "W"
-        add(tv((if (warm) WS.t("Échauffement · ", "Warm-up · ") else "") + WS.t("Série ${s + 1}/${WS.nSets(e)}", "Set ${s + 1}/${WS.nSets(e)}"), 12f, MUTED), 2f)
-        if (cardio) {
+        val (dd, nn) = s + 1 to WS.nSets(e)
+        tvHr = tv((if (warm) WS.t("Échauf. · ", "Warm-up · ") else "") + "$dd/$nn   " + hrLine(), 12f, Color.WHITE, true).also { add(it, 0f) }
+        if (x?.optInt("c", 0) == 1) {
             add(tv(WS.t("Exercice chronométré ou cardio : à faire sur le téléphone", "Timed or cardio exercise: use the phone"), 12f, MUTED), 8f)
-            add(pill(WS.t("Exercice suivant ›", "Next exercise ›"), ACC, Color.BLACK, 15f, 20f, 9f) { move(1) }, 10f, false)
-            add(row(pill("‹", CARD, Color.WHITE, 18f, 14f, 4f) { move(-1) }, pill("›", CARD, Color.WHITE, 18f, 14f, 4f) { move(1) }), 8f)
-            finishButton(10f)
+            add(row(pill("‹", CARD, Color.WHITE, 17f, 5f) { move(-1) }, pill(WS.t("Suivant", "Next"), ACC, ON_ACC, 14f, 8f) { move(1) }, pill("›", CARD, Color.WHITE, 17f, 5f) { move(1) }), 10f)
             return
         }
         val u = WS.st?.optString("u", "lb") ?: "lb"
         val wv = WS.w(e, s); val rv = WS.r(e, s)
-        val wTxt = if (wv > 0 || WS.hasW(e, s)) "${WS.num(wv)} $u" else WS.t("Poids du corps", "Bodyweight")
-        fun valRow(label: String, value: String, f: Int) = row(
-            pill("−", CARD, Color.WHITE, 18f, 13f, 2f) { WS.adjust(e, s, f, -1.0) },
-            tv(value, if (value.length > 9) 17f else 22f, if (field == f) ACC else Color.WHITE, true).apply {
-                minWidth = dp(92f)
-                background = GradientDrawable().apply { setColor(if (field == f) SEL else BG); cornerRadius = dp(12f).toFloat() }
-                setPadding(dp(6f), dp(2f), dp(6f), dp(2f))
-                contentDescription = label
-                setOnClickListener { field = f; paint() }
-            },
-            pill("+", CARD, Color.WHITE, 18f, 13f, 2f) { WS.adjust(e, s, f, 1.0) })
-        add(valRow(WS.t("Charge", "Weight"), wTxt, 0), 8f)
-        add(valRow(WS.t("Répétitions", "Reps"), "× ${WS.num(rv)}", 1), 6f)
-        add(tv(WS.t("Lunette : ajuste la valeur en vert", "Bezel: adjusts the green value"), 10f, MUTED), 4f)
-        add(pill(WS.t("✓  Fait", "✓  Done"), ACC, Color.BLACK, 17f, 30f, 10f) { field = 0; WS.done(this, e, s) }, 10f, false)
-        add(row(pill("‹", CARD, Color.WHITE, 18f, 14f, 4f) { move(-1) }, pill("›", CARD, Color.WHITE, 18f, 14f, 4f) { move(1) }), 8f)
-        finishButton(10f)
+        fun box(label: String, value: String, f: Int) = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
+            addView(tv(label, 11f, if (field == f) ACC else MUTED, true))
+            addView(tv(value, if (value.length > 5) 20f else 26f, if (field == f) ACC else Color.WHITE, true).apply {
+                background = bg(BG, 14f, if (field == f) ACC else Color.parseColor("#4A515C"))
+                minWidth = dp(70f); setPadding(dp(6f), dp(8f), dp(6f), dp(8f))
+            })
+            isClickable = true
+            setOnClickListener { field = f; paint() }
+        }
+        val wTxt = if (wv > 0 || WS.hasW(e, s)) WS.num(wv) else WS.t("PDC", "BW")
+        add(row(box(u.replaceFirstChar { it.uppercase() }, wTxt, 0), box(WS.t("Reps", "Reps"), WS.num(rv), 1)), 6f)
+        val p = st?.optString("p") ?: ""
+        if (p.isNotEmpty()) add(tv(WS.t("précéd. ", "prev. ") + p, 11f, MUTED), 4f)
+        add(row(pill("−", CARD, Color.WHITE, 16f, 3f) { WS.adjust(e, s, field, -1.0) }, pill("+", CARD, Color.WHITE, 16f, 3f) { WS.adjust(e, s, field, 1.0) }), 6f)
+        add(row(pill("‹", CARD, Color.WHITE, 17f, 6f) { move(-1) },
+                pill("  ✓  ", ACC, ON_ACC, 20f, 6f) { field = 0; WS.done(this, e, s) },
+                pill("›", CARD, Color.WHITE, 17f, 6f) { move(1) }), 8f)
+    }
+
+    /* ---------- Page 2 : options ---------- */
+    private fun options(c: Pair<Int, Int>?) {
+        if (c != null) {
+            val (e, s) = c
+            add(tv(WS.t("Options de série", "Set options"), 13f, Color.WHITE, true), 4f)
+            add(pill(WS.t("Ajouter une série", "Add a set"), CARD, Color.WHITE, 13f, 9f) { WS.cmd(this, "add-set", e) }, 6f)
+            val t = WS.set(e, s)?.optString("t") ?: ""
+            val types = listOf("" to WS.t("Normale", "Normal"), "W" to WS.t("Échauffement", "Warm-up"), "D" to "Dropset", "F" to WS.t("Échec", "Failure"))
+            val i = types.indexOfFirst { it.first == t }.coerceAtLeast(0)
+            add(pill(WS.t("Type : ", "Type: ") + types[i].second, CARD, Color.WHITE, 13f, 9f) { WS.cmd(this, "type", e, s, types[(i + 1) % types.size].first) }, 6f)
+            if (WS.nSets(e) > 1) add(pill(if (armed("del")) WS.t("Confirmer", "Confirm") else WS.t("Supprimer la série", "Delete set"), CARD, RED, 13f, 9f) { confirmOr("del") { WS.cmd(this, "del-set", e, s) } }, 6f)
+            add(tv(WS.t("Options d'exercice", "Exercise options"), 13f, Color.WHITE, true), 12f)
+            add(pill(WS.t("Exercice suivant", "Next exercise"), CARD, Color.WHITE, 13f, 9f) { move(1); page = 1; paint() }, 6f)
+        }
+        add(pill(if (armed("fin")) WS.t("Confirmer : terminer", "Confirm: finish") else WS.t("Terminer l'entraînement", "Finish workout"), ACC, ON_ACC, 13f, 10f) { confirmOr("fin") { WS.finish(this) } }, 14f)
+        add(pill(if (armed("ab")) WS.t("Confirmer : abandonner", "Confirm: discard") else WS.t("Abandonner", "Discard"), CARD, RED, 13f, 9f) { confirmOr("ab") { WS.cmd(this, "cancel") } }, 6f)
     }
 }
