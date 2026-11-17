@@ -20,6 +20,17 @@ jobs:
       - run: npm install
       - run: npx cap add android
       - run: npx cap sync android
+      - name: Signature stable (si la clé est dans les secrets)
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KS" ]; then
+            echo "$KS" | base64 -d > android/app/runelift.p12
+            printf "\nandroid { signingConfigs { debug { storeFile file('runelift.p12'); storePassword 'android'; keyAlias 'runelift'; keyPassword 'android'; storeType 'pkcs12' } } }\n" >> android/app/build.gradle
+            echo "Signature stable activée"
+          else
+            echo "Pas de clé : signature de test temporaire"
+          fi
       - name: Compiler l'APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
