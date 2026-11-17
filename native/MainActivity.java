@@ -14,7 +14,9 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(RLHealthPlugin.class);
         registerPlugin(RLWearPlugin.class);
+        registerPlugin(RLLivePlugin.class);
         super.onCreate(savedInstanceState);
+        RLLivePlugin.takeIntent(this, getIntent()); // ouvert depuis le widget ou une notification
         // Barres du haut et du bas sombres comme l'appli (sinon blanches quand le téléphone est en mode clair)
         android.view.Window w = getWindow(); int bg = 0xFF0D0F12;
         w.getDecorView().setBackgroundColor(bg);
@@ -25,6 +27,12 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
             android.content.SharedPreferences p = getSharedPreferences("rl_wear", MODE_PRIVATE);
             if (!p.getBoolean("askedNotif", false)) { p.edit().putBoolean("askedNotif", true).apply(); requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 7); }
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        RLLivePlugin.takeIntent(this, intent);
     }
 
     @Override

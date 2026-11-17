@@ -8,7 +8,7 @@ rw(f'{A}/build.gradle', lambda s: s.replace("classpath 'com.android.tools.build:
 def app(s):
     s = s.replace("apply plugin: 'com.android.application'", "apply plugin: 'com.android.application'\napply plugin: 'org.jetbrains.kotlin.android'", 1)
     s = s.replace("    buildTypes {", "    kotlinOptions {\n        jvmTarget = JavaVersion.VERSION_21.toString()\n    }\n    buildTypes {", 1)
-    s = s.replace("dependencies {", "dependencies {\n    implementation 'com.google.android.gms:play-services-wearable:19.0.0'\n    implementation 'androidx.health.connect:connect-client:1.1.0'\n    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0'", 1)
+    s = s.replace("dependencies {", "dependencies {\n    implementation 'androidx.work:work-runtime:2.9.1'\n    implementation 'com.google.android.gms:play-services-wearable:19.0.0'\n    implementation 'androidx.health.connect:connect-client:1.1.0'\n    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0'", 1)
     return s
 rw(f'{A}/app/build.gradle', app)
 PERMS = ['WRITE_EXERCISE', 'WRITE_ACTIVE_CALORIES_BURNED', 'READ_WEIGHT', 'READ_HEART_RATE']
@@ -40,10 +40,18 @@ def man(s):
             </intent-filter>
         </service>
 '''
+    act += '''        <receiver android:name=".RLLiveReceiver" android:exported="false" />
+        <receiver android:name=".RLWidget" android:exported="false" android:label="Runelift">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/rl_widget_info" />
+        </receiver>
+'''
     return s.replace('    </application>', act + '    </application>', 1)
 rw(f'{A}/app/src/main/AndroidManifest.xml', man)
 d = f'{A}/app/src/main/java/app/runelift/'
-for f in ['MainActivity.java', 'RLHealthPlugin.kt', 'HealthPrivacyActivity.kt', 'RLWearPlugin.kt', 'PhoneWearListener.kt']:
+for f in ['MainActivity.java', 'RLHealthPlugin.kt', 'HealthPrivacyActivity.kt', 'RLWearPlugin.kt', 'PhoneWearListener.kt', 'RLLivePlugin.kt', 'RLLiveReceiver.kt', 'RLWidget.kt', 'RLBgWorker.kt']:
     shutil.copy(f'native/{f}', d + f)
 print('Health Connect ajouté')
 
