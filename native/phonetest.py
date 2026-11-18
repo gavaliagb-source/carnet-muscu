@@ -75,8 +75,20 @@ else:
         if(!S.routines.length){const sp=starterProgram('muscle',4,'int');S.routines=sp.rs;S.schedule=sp.sched;}
         save(); closeAll(); document.querySelectorAll('#ob,#tour,#authgate').forEach(x=>x.remove()); setRoot('train'); render(); return 'ok'})()""")
       time.sleep(2); shot('accueil')
+      cdp('Debugger.enable')
+      def where():  # l'appli ne répond plus : on met la page en pause pour voir où elle tourne
+          mid[0] += 1; ws.send(json.dumps({'id': mid[0], 'method': 'Debugger.pause'})); t0 = time.time()
+          while time.time() - t0 < 40:
+              m = json.loads(ws.recv())
+              if m.get('method') == 'Debugger.paused':
+                  fr = m['params']['callFrames'][:14]
+                  log('BLOQUÉE ICI :', ' <- '.join(f"{f['functionName'] or '(anonyme)'}:{f['location']['lineNumber'] + 1}" for f in fr)); return
       for v in ['train', 'stretch', 'cardio', 'timers', 'guild', 'profile', 'settings', 'stats', 'history', 'friends']:
-          ev(f"(()=>{{closeAll();document.querySelectorAll('#tour,#authgate').forEach(x=>x.remove());stack=[{{v:'{v}'}}];render();window.scrollTo(0,0);return 1}})()")
+          ws.settimeout(25)
+          try: ev(f"(()=>{{closeAll();document.querySelectorAll('#tour,#authgate').forEach(x=>x.remove());stack=[{{v:'{v}'}}];render();window.scrollTo(0,0);return 1}})()")
+          except websocket.WebSocketTimeoutException:
+              log('écran', v, 'ne répond plus'); ws.settimeout(60); where(); raise
+          ws.settimeout(150)
           time.sleep(1.5); shot('ecran_' + v)
       ev("(()=>{stack=[{v:'settings'}];secOpen.add('health');secOpen.add('watch');render();const e=document.querySelector('[data-sec=health]');if(e)e.scrollIntoView();return 1})()"); time.sleep(1.5); shot('reglages_sante')
       # Une séance : commencer, cocher une série, repos, terminer
