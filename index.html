@@ -874,6 +874,7 @@ html.moving .dghero{animation-play-state:paused}
 .avatar.rkf.frm-guilde,.avatar.rkf.frm-gcrown{border-width:4px}
 :is(.pfhead,.frhero,.gldhead).bn{aspect-ratio:2.4/1;align-content:center}
 .emb img,.cosem img,.gldcrest img,.gldpick img{display:block;height:100%;width:auto;max-width:100%;object-fit:contain}.cosem:has(img){width:54px!important;height:54px}.emb:has(img){height:1.55em;vertical-align:-.45em}.gldpick button img{height:34px}
+.setpc .armprev{width:100%;overflow:hidden}.setpc .cosbn{width:100%;min-width:0;height:36px}
 </style>
 </head>
 <body>
@@ -6403,9 +6404,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.83.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.83.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.83.2', d: '2026-11-18', fr: ['Armurerie : les bannières ne dépassent plus de leur case dans les ensembles (Grand Maître, Prestige…).'], en: ['Armory: banners no longer overflow their tile inside sets.']},
   {v: '9.83.1', d: '2026-11-18', fr: ['Armurerie : les emblèmes sont maintenant des écussons peints (18 refaits : Écu de l\'Aventurier, Flamme du Phénix, Foudre, Grimoire, Clé, Crâne, Lames, Tour, Coupe, Arc, Couronne, Gemme, Dragon, Étoile, Ouroboros, Bouclier de guilde, Roi-Liche, Mimique). Ils s\'affichent aussi sur le profil, le classement et le blason de guilde.'], en: ['Armory: emblems are now painted crests (18 redone). They also show on the profile, leaderboard and guild crest.']},
   {v: '9.82.1', d: '2026-11-18', fr: ['Une seule classe : l\'ancienne classe (Mage, Tank…) est retirée, ta classe (Guerrier, Rôdeur, Moine, Soigneur) s\'affiche partout (profil, carte de héros) et se change depuis la carte « Ta classe » de la Guilde.', 'Profil : les noms de mois de la grille d\'activité ne se superposent plus.', 'Le bouton « Tout l\'historique » n\'a plus de texte en trop.', 'Anglais : « 1 séance · 3 séries » est maintenant traduit.'], en: ['One single class: the old class (Mage, Tank…) is removed, your class (Warrior, Ranger, Monk, Healer) shows everywhere (profile, hero card) and can be changed from the “Your class” card in the Guild.', 'Profile: month names on the activity grid no longer overlap.', 'The "Full history" button no longer has extra text.', 'English: "1 workout · 3 sets" is now translated.']},
   {v: '9.82.0', d: '2026-11-18', fr: ['Équilibrage de la guilde : 12 membres au maximum. Au-delà de 6 membres, chaque membre en plus rapporte un peu moins d\'XP de guilde. Raid : tu dois avoir fait au moins la moitié de ta part (750 reps) pour recevoir l\'XP du raid, le nombre de moines et de soigneurs qui comptent monte avec la taille du groupe (1, 2 puis 3), et les 4 classes ensemble donnent +15 % de dégâts.'], en: ['Guild balance: 12 members max. Beyond 6 members, each extra member adds a bit less guild XP. Raid: you must have done at least half your share (750 reps) to receive the raid XP, the number of monks and healers that count grows with group size (1, 2 then 3), and all 4 classes together give +15% damage.']},
