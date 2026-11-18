@@ -6,7 +6,7 @@
     android:background="@drawable/rl_widget_bg"
     android:orientation="vertical"
     android:gravity="center_vertical"
-    android:padding="14dp">
+    android:padding="12dp">
     <TextView
         android:id="@+id/rlw_head"
         android:layout_width="wrap_content"
@@ -24,7 +24,7 @@
         android:maxLines="1"
         android:text="Runelift"
         android:textColor="#FFFFFFFF"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:textStyle="bold" />
     <TextView
         android:id="@+id/rlw_sub"
@@ -34,16 +34,16 @@
         android:maxLines="1"
         android:text=""
         android:textColor="#FF8A93A0"
-        android:textSize="13sp" />
+        android:textSize="12sp" />
     <TextView
         android:id="@+id/rlw_btn"
         android:layout_width="wrap_content"
-        android:layout_height="36dp"
-        android:layout_marginTop="10dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="8dp"
         android:background="@drawable/rl_widget_btn"
         android:gravity="center"
-        android:paddingStart="18dp"
-        android:paddingEnd="18dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
         android:text="Commencer"
         android:textColor="#FF0D0F12"
         android:textSize="14sp"
