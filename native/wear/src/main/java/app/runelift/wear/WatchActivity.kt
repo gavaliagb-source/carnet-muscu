@@ -403,7 +403,7 @@ class WatchActivity : Activity() {
         col.addView(tp(WS.t("Repos", "Rest"), 0.055f, MUTED), lp(-2, -2, 0.02f))
         tvBig = tp(clock(WS.restEnd - System.currentTimeMillis() + 999), 0.17f, Color.WHITE, true).also { col.addView(it, lp(-2, -2, 0.01f)) }
         tvHr = tp(hrLine(), 0.05f, HEART, true).also { col.addView(it, lp(-2, -2, 0.01f)) }
-        val next = if (c != null) WS.t("Ensuite : ", "Next: ") + (WS.ex(c.first)?.optString("n") ?: "") else WS.t("Dernière série faite", "Last set done")
+        val next = if (c != null) WS.t("Ensuite : ", "Next: ") + (WS.ex(c.first)?.optString("n") ?: "") + (WS.set(c.first, c.second)?.optString("p", "")?.takeIf { it.isNotEmpty() }?.let { WS.t(" · dernière fois : ", " · last time: ") + it } ?: "") else WS.t("Dernière série faite", "Last set done")
         col.addView(marquee(next, 12f, Color.WHITE).apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.052f) }, lp((W * 0.72f).toInt(), -2, 0.02f))
         val bh = (W * 0.15f).toInt()
         col.addView(LinearLayout(this).apply {
@@ -428,7 +428,7 @@ class WatchActivity : Activity() {
 
     private fun setView(e: Int, s: Int) {
         val x = WS.ex(e); val st = WS.set(e, s)
-        col.addView(marquee(x?.optString("n") ?: "", 13f, Color.WHITE).apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.062f) }, lp((W * 0.70f).toInt(), -2, 0.012f))
+        col.addView(marquee((x?.optString("n") ?: "") + (st?.optString("p", "")?.takeIf { it.isNotEmpty() }?.let { WS.t(" · dernière fois : ", " · last time: ") + it } ?: ""), 13f, Color.WHITE).apply { setTextSize(TypedValue.COMPLEX_UNIT_PX, W * 0.062f) }, lp((W * 0.70f).toInt(), -2, 0.012f))
         val warm = st?.optString("t") == "W"
         val (dd, nn) = s + 1 to WS.nSets(e)
         hrPrefix = (if (warm) WS.t("Échauf. · ", "Warm-up · ") else "") + "$dd/$nn   "
