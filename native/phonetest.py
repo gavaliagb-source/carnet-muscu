@@ -117,9 +117,9 @@ else:
           a1, b1, a2, b2 = map(int, m.groups()); sh(f'input tap {(a1 + a2) // 2} {(b1 + b2) // 2}'); time.sleep(3)
           log('après « +30 s » (appui dans la notification) : reste', ev('Math.round((timerEnd-Date.now())/1000)'), 's, avant', r0, 's')
       else:
-          log('bouton non repéré à l\'écran (extrait :', re.findall(r'text="([^"]{1,20})"', x)[:25], ') → envoi direct du bouton')
-          sh('am broadcast -n app.runelift/.RLLiveReceiver -a app.runelift.LIVE_ADD30'); time.sleep(3)
-          log('après « +30 s » (envoi direct) : reste', ev('Math.round((timerEnd-Date.now())/1000)'), 's, avant', r0, 's')
+          # le chrono qui défile empêche la lecture de l'écran : appui à l'emplacement du bouton (même écran à chaque test, voir capture)
+          sh('input tap 223 1036'); time.sleep(3)
+          log('après « +30 s » (appui à l\'écran) : reste', ev('Math.round((timerEnd-Date.now())/1000)'), 's, avant', r0, 's (attendu environ +27)')
       sh('cmd statusbar collapse'); time.sleep(1)
       # Widget et vérification des amis
       log('widget déclaré :', 'RLWidget' in sh('dumpsys appwidget'))
