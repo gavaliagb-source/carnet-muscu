@@ -267,7 +267,10 @@ object WS {
             send(ctx, m); ver++
         }
         val x = ex(e)
-        val r = x?.optInt("rest", 90) ?: 90
+        val tp = set(e, s)?.optString("t", "") ?: ""
+        val rw = phone?.optInt("rw", 45)?.takeIf { it > 0 } ?: 45
+        val rd = phone?.optInt("rd", 0) ?: 0
+        val r = if (tp == "W") rw else if (tp == "D" && rd > 0) rd else (x?.optInt("rest", 90) ?: 90)
         if (r > 0 && x?.optInt("c", 0) != 1) { restTot = r; restEnd = now + r * 1000L }
         if (exSel == e && (0 until nSets(e)).all { isDone(e, it) }) exSel = -1
         changed()
