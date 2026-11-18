@@ -118,5 +118,7 @@ else:
 crash = sh('logcat -d -b crash'); fatal = [l for l in sh('logcat -d').splitlines() if 'FATAL EXCEPTION' in l or ('AndroidRuntime' in l and ' E ' in l)]
 log('plantages :', (crash.strip()[:1500] or 'aucun'), fatal[:10])
 log('toujours en vie :', bool(sh(f'pidof {PKG}').strip()))
+lg = sh('logcat -d -b main,system,events,crash')
+log('fin du processus / erreurs Android :', '\n'.join([l for l in lg.splitlines() if ('runelift' in l and re.search(r'died|Kill|kill|ANR|Exception|FATAL|crash|Force', l)) or 'AndroidRuntime' in l][-40:]) or 'rien')
 cons = [l for l in sh('logcat -d -s Capacitor/Console:E chromium:E').splitlines() if l.strip()][:30]
 log('console (erreurs) :', '\n'.join(cons) or 'aucune')
