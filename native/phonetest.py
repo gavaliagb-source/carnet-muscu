@@ -120,5 +120,9 @@ log('plantages :', (crash.strip()[:1500] or 'aucun'), fatal[:10])
 log('toujours en vie :', bool(sh(f'pidof {PKG}').strip()))
 lg = sh('logcat -d -b main,system,events,crash')
 log('fin du processus / erreurs Android :', '\n'.join([l for l in lg.splitlines() if ('runelift' in l and re.search(r'died|Kill|kill|ANR|Exception|FATAL|crash|Force', l)) or 'AndroidRuntime' in l][-40:]) or 'rien')
+m = re.search(r'Process app\.runelift \(pid (\d+)\) has died', lg)
+if m:
+    pid = m.group(1); ll = [l for l in sh('logcat -d -b main,system').splitlines() if f' {pid} ' in l and 'devtools' not in l]
+    log('derniers messages de l\'appli avant la fin :', '\n'.join(ll[-60:]))
 cons = [l for l in sh('logcat -d -s Capacitor/Console:E chromium:E').splitlines() if l.strip()][:30]
 log('console (erreurs) :', '\n'.join(cons) or 'aucune')
