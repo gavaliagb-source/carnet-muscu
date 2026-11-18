@@ -1,0 +1,53 @@
+installation : Performing Streamed Install
+Success
+capture lancement
+page : https://gavaliagb-source.github.io/carnet-muscu/
+erreurs au démarrage : aucune
+version : 9.77.0 | natif : True | Health Connect : True | montre : False
+extensions : SystemBars, RLHealth, RLLive, SocialLogin, CapacitorCookies, WebView, RLWear, CapacitorHttp
+Health Connect status : {"available":true,"ver":2,"reason":"ok","granted":["workout","calories","weight","heart"]}
+Montre status : {"nodes":0,"err":"17: API: Wearable.API is not available on this device. Connection failed with: ConnectionResult{statusCode=API_UNAVAILABLE, resolution=null, message=null}"}
+capture accueil
+capture ecran_train
+capture ecran_stretch
+capture ecran_cardio
+capture ecran_timers
+capture ecran_guild
+capture ecran_profile
+capture ecran_settings
+capture ecran_stats
+capture ecran_history
+capture ecran_friends
+capture reglages_sante
+séance : Upper A
+capture seance
+capture serie_cochee
+capture fin_seance
+séances dans l'historique : 1
+notification séance : ['Upper A', 'Développé couché · set 1/2']
+notification repos : ['Rest · Upper A', 'Next: Développé couché · set 1/2'] | reste 57 s
+capture notification_repos
+après « +30 s » (appui à l'écran) : reste 38 s, avant 11 s (attendu environ +27)
+widget déclaré : True
+état téléphone : {"notif":true,"bg":false,"bgErr":"","bgLast":0,"widgets":0}
+vérification des amis (faux compte, doit échouer proprement) : {"notif":true,"bg":true,"bgErr":"token 403","bgLast":0,"widgets":0}
+ouvert depuis le widget → séance : Lower A (attendu Lower A )
+erreurs dans la page : aucune
+plantages : aucun []
+toujours en vie : True
+fin du processus / erreurs Android : 11-18 03:45:09.733  6061  6061 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-18 03:45:09.827  6061  6061 I AndroidRuntime: Using default boot image
+11-18 03:45:09.827  6061  6061 I AndroidRuntime: Leaving lock profiling enabled
+11-18 03:45:10.524  6061  6061 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-18 03:45:21.167  6061  6061 D AndroidRuntime: Shutting down VM
+11-18 03:45:24.226  6089  6089 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-18 03:45:24.231  6089  6089 I AndroidRuntime: Using default boot image
+11-18 03:45:24.231  6089  6089 I AndroidRuntime: Leaving lock profiling enabled
+11-18 03:45:24.517  6089  6089 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-18 03:45:35.197  6089  6089 D AndroidRuntime: Shutting down VM
+11-18 03:45:38.236  6166  6166 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-18 03:45:38.241  6166  6166 I AndroidRuntime: Using default boot image
+11-18 03:45:38.241  6166  6166 I AndroidRuntime: Leaving lock profiling enabled
+11-18 03:45:38.382  6166  6166 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-18 03:45:49.264  6166  6166 D AndroidRuntime: Shutting down VM
+console (erreurs) : aucune
