@@ -15,7 +15,7 @@
             android:layout_width="22dp"
             android:layout_height="22dp"
             android:scaleType="centerCrop"
-            android:src="@mipmap/ic_launcher" />
+            android:src="@drawable/rl_widget_logo" />
         <TextView
             android:id="@+id/rlw_head"
             android:layout_width="match_parent"
