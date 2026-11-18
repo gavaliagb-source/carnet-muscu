@@ -465,7 +465,7 @@ class WatchActivity : Activity() {
                     MotionEvent.ACTION_MOVE -> {
                         vt?.addMovement(ev)
                         acc += y0 - ev.y; y0 = ev.y
-                        val stepPx = dp(10f).toFloat()
+                        val stepPx = dp(18f).toFloat()
                         while (acc >= stepPx) { acc -= stepPx; moved = true; WS.adjust(e, s, f, 1.0, true); upd(); v.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK) }
                         while (acc <= -stepPx) { acc += stepPx; moved = true; WS.adjust(e, s, f, -1.0, true); upd(); v.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK) }
                     }
@@ -475,7 +475,7 @@ class WatchActivity : Activity() {
                         if (!moved && ev.actionMasked == MotionEvent.ACTION_UP) { dragging = false; field = f; paint() }
                         else {
                             // Coup de doigt fort = défile vite ; la lunette sert à être précis.
-                            val total = (abs(vy) / dp(90f)).toInt().coerceAtMost(60)
+                            val total = (abs(vy) / dp(220f)).toInt().coerceAtMost(22)
                             var n = total
                             val dir = if (vy < 0) 1.0 else -1.0
                             if (n > 0) {
@@ -483,8 +483,8 @@ class WatchActivity : Activity() {
                                 val r = object : Runnable { override fun run() {
                                     if (n-- <= 0) { fling = null; dragging = false; field = f; paint(); return }
                                     WS.adjust(e, s, f, dir, true); upd()
-                                    if (n % 2 == 0) wheel.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                                    h.postDelayed(this, 8L + (30L * (total - n) / total))
+                                    if (n % 3 == 0) wheel.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                                    val q = (total - n).toFloat() / total; h.postDelayed(this, 26L + (110f * q * q).toLong())
                                 } }
                                 fling = r; h.post(r)
                             } else { dragging = false; field = f; paint() }
