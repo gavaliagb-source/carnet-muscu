@@ -6404,9 +6404,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.83.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.83.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.83.4', d: '2026-11-18', fr: ['Ensembles : les récompenses secrètes (Grand Maître…) restent cachées (« ??? ») tant que tu ne les as pas débloquées.'], en: ['Sets: secret rewards stay hidden (“???”) until unlocked.']},
   {v: '9.83.3', d: '2026-11-18', fr: ['Armurerie : le Sceau du Grand Maître a son écusson peint.'], en: ['Armory: the Grandmaster Seal now has its painted crest.']},
   {v: '9.83.2', d: '2026-11-18', fr: ['Armurerie : les bannières ne dépassent plus de leur case dans les ensembles (Grand Maître, Prestige…).'], en: ['Armory: banners no longer overflow their tile inside sets.']},
   {v: '9.83.1', d: '2026-11-18', fr: ['Armurerie : les emblèmes sont maintenant des écussons peints (18 refaits : Écu de l\'Aventurier, Flamme du Phénix, Foudre, Grimoire, Clé, Crâne, Lames, Tour, Coupe, Arc, Couronne, Gemme, Dragon, Étoile, Ouroboros, Bouclier de guilde, Roi-Liche, Mimique). Ils s\'affichent aussi sur le profil, le classement et le blason de guilde.'], en: ['Armory: emblems are now painted crests (18 redone). They also show on the profile, leaderboard and guild crest.']},
@@ -8987,7 +8988,7 @@ function setsBody() {
   return `<p class="small muted" style="margin:8px 0">${T('Équipe au moins 3 pièces d\'un même ensemble : ta carte de héros prend sa couleur, ton nom brille sur ton profil et tes amis voient l\'ensemble.', 'Equip at least 3 pieces of the same set: your hero card takes its color, your name glows on your profile and your friends see the set.')}</p>` + SETS.map(s => {
     const P = setPieces(s); if (!P.length) return ''; const own = P.filter(p => p.own.length).length, on = P.filter(p => p.on).length, act = cur && cur.id === s.id;
     return `<div class="setcard${act ? ' on' : ''}" style="--sc:${s.c}"><div class="row between"><b style="color:${s.c}">${esc(T(s.n[0], s.n[1]))}</b><span class="small">${act ? `<b class="setact">${T('ACTIF', 'ACTIVE')}</b>` : `${on} / 3 ${T('équipées', 'equipped')}`}</span></div>
-      <div class="setpcs">${P.map(p => `<button class="setpc${p.own.length ? '' : ' locked'}${p.on ? ' on' : ''}" data-act="cos-prev" data-kind="${p.k}" data-id="${esc(p.x.id)}"><span class="armprev">${rwPrev(p.k, p.x)}</span><small>${esc(T(p.x.n[0], p.x.n[1]))}</small></button>`).join('')}</div>
+      <div class="setpcs">${P.map(p => `<button class="setpc${p.own.length ? '' : ' locked'}${p.on ? ' on' : ''}" data-act="cos-prev" data-kind="${p.k}" data-id="${esc(p.x.id)}"><span class="armprev">${p.x.secret && !p.own.length ? '<span class="armmyst">?</span>' : rwPrev(p.k, p.x)}</span><small>${p.x.secret && !p.own.length ? '???' : esc(T(p.x.n[0], p.x.n[1]))}</small></button>`).join('')}</div>
       <div class="row between small" style="margin-top:8px;align-items:center"><span class="muted">${own} / ${P.length} ${T('pièces obtenues', 'pieces owned')}</span>${own >= 3 && !act ? `<button class="btn sm primary" data-act="set-eq" data-id="${s.id}">${T('Équiper l\'ensemble', 'Equip the set')}</button>` : ''}</div></div>`;
   }).join('');
 }
