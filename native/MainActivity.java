@@ -16,6 +16,14 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
         registerPlugin(RLWearPlugin.class);
         registerPlugin(RLLivePlugin.class);
         super.onCreate(savedInstanceState);
+        // Geste / bouton « retour » : on remonte dans l'historique de l'appli (la page gère ses fenêtres et sous-pages), on ne quitte qu'à la racine.
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override public void handleOnBackPressed() {
+                android.webkit.WebView wv = getBridge() != null ? getBridge().getWebView() : null;
+                if (wv != null && wv.canGoBack()) { wv.goBack(); return; }
+                setEnabled(false); getOnBackPressedDispatcher().onBackPressed(); setEnabled(true);
+            }
+        });
         RLLivePlugin.takeIntent(this, getIntent()); // ouvert depuis le widget ou une notification
         // Barres du haut et du bas sombres comme l'appli (sinon blanches quand le téléphone est en mode clair)
         android.view.Window w = getWindow(); int bg = 0xFF0D0F12;
