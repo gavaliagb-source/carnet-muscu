@@ -1385,7 +1385,7 @@ function applyTheme() {
   if (t === 'auto') t = matchMedia('(prefers-color-scheme: light)').matches ? 'clair' : 'noir';
   const de = document.documentElement;
   de.dataset.theme = t;
-  de.classList.toggle('lux', S.settings.lux !== false);
+  de.classList.add('lux');
   const a = S.settings.accent;
   if (a && /^#[0-9a-f]{6}$/i.test(a)) {
     const n = parseInt(a.slice(1), 16), lum = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
@@ -2909,7 +2909,6 @@ function vSettings() {
       <p class="muted small" style="margin:8px 0 0">${T('C\'est le téléphone qui choisit le moment exact, environ une fois par jour, même quand l\'appli est fermée. Ça demande que l\'appli soit installée (Chrome ⋮ → Installer l\'appli). Si tu t\'es entraîné aujourd\'hui, aucun rappel.', 'The phone picks the exact time, about once a day, even when the app is closed. The app must be installed (Chrome ⋮ → Install app). If you trained today, no reminder.')}</p>` : ''}`) +
   setSec('look', 'palette', '🎨', T('Apparence', 'Appearance'), T('Thème, couleurs, fond, icônes', 'Theme, colors, background, icons'), `<p class="muted small" style="margin:4px 0 0">Thèmes prêts à utiliser :</p>
       <div class="grid2" style="margin-top:10px">${THEMES.map(([k, l, c]) => `<button class="btn sm ${(S.settings.theme || 'noir') === k ? 'on' : ''}" style="text-align:left" data-act="theme" data-t="${k}"><span class="sw" style="background:${c}"></span>${l}</button>`).join('')}</div>
-      <button class="btn block ${S.settings.lux !== false ? 'on' : ''}" style="margin-top:12px;text-align:left" data-act="lux">${T('Style premium : ' + (S.settings.lux !== false ? 'activé' : 'désactivé'), 'Premium style: ' + (S.settings.lux !== false ? 'on' : 'off'))}<span class="muted small" style="display:block;font-weight:500">${T('Cartes en relief, titres soignés, boutons raffinés. Marche avec tous les thèmes.', 'Raised cards, refined titles and buttons. Works with every theme.')}</span></button>
       ${myThemesHtml()}
       <label style="margin-top:16px">Couleur des boutons (personnalisée)</label>
       <div class="chips">${ACCENTS.map(c => `<button class="chip" data-act="accent-pick" data-c="${c}" style="background:${c};border-color:${S.settings.accent === c ? 'var(--text)' : c};width:34px;height:34px;padding:0" aria-label="Couleur ${c}"></button>`).join('')}</div>
@@ -6567,9 +6566,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.88.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.88.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.88.3', d: '2026-11-21', fr: ['Le style premium est maintenant le style de l\'appli : le bouton pour le couper est retiré.'], en: ['Premium style is now the app\'s style: the toggle is removed.']},
   {v: '9.88.2', d: '2026-11-21', fr: ['Records : le cardio affiche maintenant ta plus longue durée et ta plus longue distance (au lieu de « reps »).', 'Les décimales s\'écrivent avec une virgule en français partout (records, arsenal, poids, rapport du mois).', 'Récupération : « Cardio » n\'apparaît plus comme un muscle.', 'Historique : « 1 exo » au lieu de « 1 exos ».', 'Comparer : une progression de 0 % s\'affiche « = » en gris au lieu d\'une flèche verte.', 'Séance : le bouton pour retirer une série est compact, sur la même ligne que les autres.', 'Style : les cases à cocher des réglages ne passent plus en majuscules.', 'Anglais : plus d\'espace avant les deux-points.'], en: ['Records: cardio now shows your longest time and distance (instead of “reps”).', 'Recovery: “Cardio” no longer shows as a muscle.', 'History: “1 exercise” instead of “1 exercises”.', 'Compare: a 0% change shows a grey “=” instead of a green arrow.', 'Workout: the remove-set button is compact, on the same row.', 'English: no more space before colons; decimals use a dot.']},
   {v: '9.88.1', d: '2026-11-21', fr: ['Style premium : fenêtres, tuiles de stats et écrans vides plus soignés ; les croix et coches deviennent de vraies icônes ; quelques derniers emojis remplacés.'], en: ['Premium style: sheets, stat tiles and empty screens refined; crosses and ticks are now real icons; a few last emojis replaced.']},
   {v: '9.88.0', d: '2026-11-21', fr: ['Style premium activé pour tout le monde (désactivable dans Réglages → Apparence). Cartes en relief, titres plus soignés, boutons raffinés, chiffres alignés. Marche avec tous les thèmes et se coupe d\'un bouton.'], en: ['Premium style now on for everyone (can be turned off in Settings → Appearance). Raised cards, refined titles and buttons, aligned numbers. Works with every theme and can be turned off.']},
@@ -10788,7 +10788,6 @@ document.addEventListener('click', e => {
 
     /* progrès */
     case 'prog-tab': progTab = b.dataset.p; render(); break;
-    case 'lux': S.settings.lux = S.settings.lux === false; save(); applyTheme(); render(); break;
     case 'theme': S.settings.theme = b.dataset.t; save(); applyTheme(); render(); break;
     case 'rec-sort': recSort = b.dataset.s; render(); break;
     case 'apply-sug': {
