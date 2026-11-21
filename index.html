@@ -6569,9 +6569,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.89.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.89.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.89.4', d: '2026-11-21', fr: ['Amis : la carte « Tu partages tes séances / Mon code » en haut est retirée. « Mon code ami » est maintenant dans « Ajouter ».'], en: ['Friends: the “You share your workouts / My code” card is removed. “My friend code” is now in “Add”.']},
   {v: '9.89.3', d: '2026-11-21', fr: ['Défis entre amis : le message de victoire dit maintenant contre qui, le type de défi et les deux scores (ex. « Défi gagné contre Tania (le plus de volume) : 12 400 lb contre 9 800 lb. +300 XP »).'], en: ['Friend challenges: the win message now shows who you beat, the challenge type and both scores.']},
   {v: '9.89.2', d: '2026-11-21', fr: ['Bande Guilde : la carte de statut s\'affiche en entier (elle n\'est plus coupée sous le titre), et Quête, Donjon et Boss ne passent plus sous la barre du haut.'], en: ['Guild strip: the status card now shows in full, and Quest, Dungeon and Boss no longer slide under the top bar.']},
   {v: '9.89.1', d: '2026-11-21', fr: ['Bande Guilde : toute la ligne du haut (« GUILDE … Niv. ») t\'amène sur ton statut, qui s\'illumine. Avant, il fallait viser le petit « Niv. » exactement.'], en: ['Guild strip: the whole top line now takes you to your status, highlighted.']},
@@ -9599,7 +9600,7 @@ function vFriends() {
   setTimeout(() => frLoad(), 50);
   const fNew = feed.find(x => !x.f.me); if (fNew && fNew.s.d > (fr.seen || '')) { fr.seen = fNew.s.d; setTimeout(saveLocal, 0); }
   const mig = frOn() && !fr.fb ? `<div class="card" style="border-color:var(--accent)"><b>🆕 ${T('Nouveau système d\'amis', 'New friends system')}</b><p class="small" style="margin:6px 0 10px">${T('Plus de fenêtre Google après tes séances, tes séances apparaissent chez tes amis en quelques secondes, et un code court qui ne change jamais. Tes amis qui ont la mise à jour te suivront tout seuls.', 'No more Google window after workouts, your workouts show up for friends within seconds, and a short code that never changes.')}</p><button class="btn primary block" data-act="fr-start">${T('Passer au nouveau système', 'Switch to the new system')}</button></div>` : '';
-  const meCard = frOn() ? `${mig}<div class="card"><div class="row between"><div><b>🟢 ${T('Tu partages tes séances', 'You share your workouts')}</b><br><span class="muted small">${fr.pending ? T('⏳ Mise à jour à la prochaine séance', '⏳ Update at next workout') : fr.last ? T('Carte à jour · ', 'Card updated · ') + frAgo(fr.last) : ''}${fr.err ? ' · ⚠️ ' + esc(fr.err) : ''}</span>${fr.pending ? `<br><button class="btn sm" style="margin-top:6px" data-act="fr-pub">↻ ${T('Mettre à jour maintenant', 'Update now')}</button>` : ''}</div><button class="btn sm primary" data-act="fr-code">${T('Mon code', 'My code')}</button></div></div>`
+  const meCard = frOn() ? `${mig}${fr.pending || fr.err ? `<div class="card"><span class="muted small">${fr.pending ? T('⏳ Ta carte sera mise à jour à la prochaine séance', '⏳ Your card updates at your next workout') : ''}${fr.err ? '⚠️ ' + esc(fr.err) : ''}</span>${fr.pending ? `<br><button class="btn sm" style="margin-top:6px" data-act="fr-pub">↻ ${T('Mettre à jour maintenant', 'Update now')}</button>` : ''}</div>` : ''}`
     : `<div class="card" style="border-color:var(--accent)"><h3 style="margin:0 0 6px">👥 ${T('Partage tes séances avec tes amis', 'Share your workouts with friends')}</h3>
       <p class="small" style="margin:0 0 10px">${T('Tes amis voient tes séances, tes records et ta série 🔥, et peuvent réagir. Tu te connectes une seule fois avec Google, ensuite tout se met à jour tout seul. Jamais partagés : ton poids corporel et tes mensurations. Tes photos de progrès, seulement celles que tu choisis.', 'Friends see your workouts, records and 🔥 streak, and can react. You sign in with Google once, then everything updates on its own. Never shared: body weight and measurements. Progress photos: only the ones you choose.')}</p>
       <button class="btn primary block" data-act="fr-start">${T('Activer avec Google', 'Turn on with Google')}</button></div>`;
@@ -11265,6 +11266,7 @@ function openFrAdd() {
     <div class="hin-wrap"><span>🔍</span><input id="frsq" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="${T('@pseudo, nom ou code ami', '@username, name or friend code')}"></div><input id="frin" type="hidden">
     <div id="frsr" style="margin-top:10px"></div>
     <div class="row" style="gap:8px;margin-top:12px"><button class="btn sm" style="flex:1" data-act="fr-paste">📋 ${T('Coller un code', 'Paste a code')}</button><button class="btn sm" style="flex:1" data-act="fr-share">📤 ${T('Partager mon profil', 'Share my profile')}</button></div>
+    <button class="btn sm block" style="margin-top:8px" data-act="fr-code">${ic('hash', 15)} ${T('Mon code ami', 'My friend code')}</button>
     ${myH() ? `<p class="muted small center" style="margin:10px 0 0">${T('Ton pseudo', 'Your username')}${CLN()} <b>@${esc(myH())}</b></p>` : ''}`, {id: 'fradd'});
   setTimeout(() => { const i = $('#frsq'); if (i) i.focus(); }, 80);
 }
