@@ -1426,6 +1426,7 @@ function back() {
   stack.pop(); navAnim = 'back'; render(); const _y = cur().y || 0; window.scrollTo(0, _y); if (_y) setTimeout(() => window.scrollTo(0, _y), 60);
   if (cur().v === 'workout') setTimeout(() => { if (woY) window.scrollTo(0, woY); else scrollCur(); }, 30);
 }
+const TABY = {};
 function setRoot(v) { stack = [{v}]; }
 window.addEventListener('popstate', () => { if (modals.length) { closeModal(); return; } back(); });
 let histMode = 'list', progTab = 'ex', volPeriod = 'cur', bodyMetric = 'w', progEx = null;
@@ -6431,9 +6432,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.85.6'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.85.7'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.85.7', d: '2026-11-21', fr: ['Les onglets du bas retiennent ta position : en revenant sur Muscu, Cardio, Profil, etc., tu retrouves où tu étais. Toucher l\'onglet actif remonte en haut.'], en: ['Bottom tabs now remember your scroll position: coming back to Train, Cardio, Profile, etc. puts you where you were. Tapping the active tab scrolls to top.']},
   {v: '9.85.6', d: '2026-11-21', fr: ['Guilde : ta classe est maintenant dans la carte Statut (plus de carte séparée).'], en: ['Guild: your class is now inside the Status card (no more separate card).']},
   {v: '9.85.5', d: '2026-11-21', fr: ['Photos de progrès : quand une photo prise sur un autre appareil est vide, l\'appli va maintenant la chercher dans ta sauvegarde en ouvrant « Mesures et photos » (elle doit d\'abord avoir été sauvegardée depuis l\'autre appareil).'], en: ['Progress photos: when a photo taken on another device is blank, the app now fetches it from your backup when you open "Measures & photos" (it must first have been backed up from the other device).']},
   {v: '9.85.4', d: '2026-11-21', fr: ['Les photos prises pendant une séance apparaissent maintenant aussi dans « Photos de progrès » (Mesures et photos), avec comparaison avant/après et partage aux amis.'], en: ['Photos taken during a workout now also appear in "Progress photos" (Measures & photos), with before/after comparison and friend sharing.']},
@@ -9902,7 +9904,7 @@ document.addEventListener('click', e => {
   const gs = e.target.closest('[data-gsec]');
   if (gs && e.target.closest('.gstrip')) { const sec = gs.dataset.gsec; if (sec !== 'status') { S.settings.gOpen = S.settings.gOpen || {}; S.settings.gOpen[sec] = true; save(); } navAnim = false; setRoot('guild'); render(); window.scrollTo(0, 0); setTimeout(() => { const t = sec === 'status' ? document.getElementById('gstatus') : document.querySelector('[data-gid="' + sec + '"]'); if (t) t.scrollIntoView({block: 'start'}); }, 80); return; }
   const n = e.target.closest('[data-tab]');
-  if (n) { const ti = ROOT_TABS.indexOf(n.dataset.tab), fi = ROOT_TABS.indexOf(stack[0].v); navAnim = false; setRoot(n.dataset.tab); render(); window.scrollTo(0, 0); return; } // onglets du bas : affichage net immédiat, sans fondu
+  if (n) { const ti = ROOT_TABS.indexOf(n.dataset.tab), fi = ROOT_TABS.indexOf(stack[0].v); navAnim = false; const t0 = n.dataset.tab, same = stack.length === 1 && stack[0].v === t0; if (stack.length === 1) TABY[stack[0].v] = Math.round(scrollY); setRoot(t0); render(); const y0 = same ? 0 : (TABY[t0] || 0); window.scrollTo(0, y0); if (y0) setTimeout(() => window.scrollTo(0, y0), 60); return; } // onglets du bas : affichage net immédiat, sans fondu
   const b = e.target.closest('[data-act]'); if (!b) return;
   const act = b.dataset.act, rid = b.dataset.rid, r = S.routines.find(x => x.id === rid);
   const ei = +b.dataset.e, si = +b.dataset.s;
