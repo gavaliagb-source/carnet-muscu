@@ -372,7 +372,11 @@ class WatchActivity : Activity() {
             else { set(it, "♥ –"); it.setTextColor(Color.WHITE) }
         }
         val km = c.optDouble("km", 0.0)
-        tvD?.let { val pace = if (km > 0.05) { val pm = ms / 60000.0 / km; String.format("%d:%02d", pm.toInt(), ((pm - pm.toInt()) * 60).toInt()) } else "–"; set(it, String.format(java.util.Locale.FRANCE, "%.2f km · %s /km", km, pace)) }
+        tvD?.let {
+            val txt = if (c.optInt("sp", 0) == 1) String.format(java.util.Locale.FRANCE, "%.2f km · %.1f km/h", km, if (km > 0.05) km / (ms / 3600000.0) else 0.0)
+            else { val pace = if (km > 0.05) { val pm = ms / 60000.0 / km; String.format("%d:%02d", pm.toInt(), ((pm - pm.toInt()) * 60).toInt()) } else "–"; String.format(java.util.Locale.FRANCE, "%.2f km · %s /km", km, pace) }
+            set(it, txt)
+        }
         tvK?.let { set(it, "${c.optInt("kc", 0)} kcal") }
     }
     private fun clView(c: org.json.JSONObject) {
