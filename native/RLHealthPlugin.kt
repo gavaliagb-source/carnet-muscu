@@ -8,6 +8,7 @@ import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.request.ReadRecordsRequest
@@ -37,7 +38,9 @@ class RLHealthPlugin : Plugin() {
     private val pKcal = HealthPermission.getWritePermission(ActiveCaloriesBurnedRecord::class)
     private val pWeight = HealthPermission.getReadPermission(WeightRecord::class)
     private val pHr = HealthPermission.getReadPermission(HeartRateRecord::class)
-    private val perms = setOf(pWorkout, pKcal, pWeight, pHr)
+    private val pHrW = HealthPermission.getWritePermission(HeartRateRecord::class)
+    private val pTcal = HealthPermission.getWritePermission(TotalCaloriesBurnedRecord::class)
+    private val perms = setOf(pWorkout, pKcal, pWeight, pHr, pHrW, pTcal)
 
     private fun sdk() = HealthConnectClient.getSdkStatus(context)
     private fun client() = HealthConnectClient.getOrCreate(context)
@@ -55,6 +58,8 @@ class RLHealthPlugin : Plugin() {
         if (pKcal in g) a.put("calories")
         if (pWeight in g) a.put("weight")
         if (pHr in g) a.put("heart")
+        if (pHrW in g) a.put("heartw")
+        if (pTcal in g) a.put("tcal")
         return a
     }
 
@@ -63,7 +68,7 @@ class RLHealthPlugin : Plugin() {
         val s = sdk()
         val r = JSObject()
         r.put("available", s == HealthConnectClient.SDK_AVAILABLE)
-        r.put("ver", 2) // 2 = séances envoyées comme musculation
+        r.put("ver", 3) // 3 = + pouls et calories totales
         r.put("reason", when (s) {
             HealthConnectClient.SDK_AVAILABLE -> "ok"
             HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> "update"
@@ -98,6 +103,7 @@ class RLHealthPlugin : Plugin() {
         if (!end.isAfter(start)) end = start.plusSeconds(60)
         val title = call.getString("title")
         val kcal = call.getDouble("kcal") ?: 0.0
+        val bpm = call.getArray("bpm") // [[secondes depuis le début, bpm], ...] mesurés par la montre
         call.safe {
             val c = client()
             val g = c.permissionController.getGrantedPermissions()
@@ -114,6 +120,25 @@ class RLHealthPlugin : Plugin() {
                 startTime = start, startZoneOffset = so, endTime = end, endZoneOffset = eo,
                 energy = Energy.kilocalories(kcal),
                 metadata = Metadata.manualEntry(clientRecordId = "rl-c-$id", clientRecordVersion = 2L)))
+            if (kcal > 0 && pTcal in g) recs.add(TotalCaloriesBurnedRecord(
+                startTime = start, startZoneOffset = so, endTime = end, endZoneOffset = eo,
+                energy = Energy.kilocalories(kcal),
+                metadata = Metadata.manualEntry(clientRecordId = "rl-t-$id", clientRecordVersion = 2L)))
+            if (bpm != null && bpm.length() > 0 && pHrW in g) {
+                val samples = mutableListOf<HeartRateRecord.Sample>()
+                for (i in 0 until bpm.length()) {
+                    try {
+                        val p = bpm.getJSONArray(i)
+                        val t = start.plusSeconds(p.getLong(0)); val b = p.getLong(1)
+                        if (b in 26..249 && !t.isAfter(end) && !t.isBefore(start)) samples.add(HeartRateRecord.Sample(time = t, beatsPerMinute = b))
+                    } catch (x: Exception) {}
+                }
+                if (samples.isNotEmpty()) recs.add(HeartRateRecord(
+                    startTime = samples.first().time, startZoneOffset = so,
+                    endTime = samples.last().time.plusSeconds(1), endZoneOffset = eo,
+                    samples = samples.take(2500),
+                    metadata = Metadata.manualEntry(clientRecordId = "rl-h-$id", clientRecordVersion = 2L)))
+            }
             if (recs.isEmpty()) { reject("no_permission"); return@safe }
             c.insertRecords(recs)
             resolve(JSObject().put("ok", true).put("count", recs.size))
