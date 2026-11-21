@@ -6567,9 +6567,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.88.7'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.88.8'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.88.8', d: '2026-11-21', fr: ['Profil : on entre maintenant sa date de naissance au lieu de son âge. L\'âge se met à jour tout seul le jour de ta fête (calories, zones de cardio).'], en: ['Profile: enter your birth date instead of your age. Your age updates by itself on your birthday (calories, cardio zones).']},
   {v: '9.88.7', d: '2026-11-21', fr: ['Corps et progrès : la liste déroulante (poids, tour de taille…) est remplacée par des boutons qu\'on fait défiler. Un seul toucher pour changer de courbe.'], en: ['Body & progress: the dropdown (weight, waist…) is replaced by scrollable buttons. One tap to switch charts.']},
   {v: '9.88.6', d: '2026-11-21', fr: ['Corps et progrès : « Nouvelle mesure » n\'a plus de flèche en double avec le +.'], en: ['Body & progress: “New measurement” no longer shows an arrow next to the +.']},
   {v: '9.88.5', d: '2026-11-21', fr: ['Armurerie : le bouton « Essayer » n\'apparaît plus sur les auras et victoires pas encore débloquées.'], en: ['Armory: the “Try it” button no longer shows on locked auras and victories.']},
@@ -7372,7 +7373,7 @@ const kmU = () => S.settings.dist || 'km';
 function ME() { // une seule source : le profil (accueil / « Mes infos »), avec l'ancien carnet cardio en secours
   const st = S.settings, m = st.me || {};
   if (!st.sex && m.sex) st.sex = m.sex; if (!st.ht && m.h) st.ht = m.h; if (!st.by && m.age) st.by = new Date().getFullYear() - m.age;
-  return {h: st.ht || m.h, age: st.by ? new Date().getFullYear() - st.by : m.age, sex: st.sex || m.sex};
+  return {h: st.ht || m.h, age: ageOf() || m.age, sex: st.sex || m.sex};
 }
 const meH = () => +ME().h || (ME().sex === 'f' ? 163 : 176); // taille en cm
 const meAge = () => +ME().age || 30, meF = () => ME().sex === 'f';
@@ -7585,7 +7586,7 @@ function openMe() {
     <p class="muted small">${T('Servent à calculer tes calories, la longueur de ton pas et tes pas équivalents. Elles restent privées.', 'Used to compute your calories, stride length and equivalent steps. They stay on your phone.')}</p>
     <label>${T('Poids', 'Weight')} (${U()})</label><input id="me_w" inputmode="decimal" value="${S.body.some(b => b.w != null) ? wv : ''}" placeholder="${wv}">
     <label>${T('Grandeur', 'Height')}</label>${lb ? `<div class="grid2"><div><input id="me_ft" inputmode="numeric" value="${ft}" placeholder="pi (ex. 5)"></div><div><input id="me_in" inputmode="numeric" value="${inch}" placeholder="po (ex. 10)"></div></div>` : `<input id="me_cm" inputmode="numeric" value="${m.h || ''}" placeholder="cm (ex. 176)">`}
-    <label>${T('Âge', 'Age')}</label><input id="me_age" inputmode="numeric" value="${m.age || ''}">
+    <label>${T('Date de naissance', 'Birth date')}</label>${dobInput('me_dob', S.settings.dob)}${!S.settings.dob && m.age ? `<p class="muted small" style="margin:4px 0 0">${T('Âge actuel : ' + m.age + ' ans. Mets ta date pour qu\'il change tout seul à ta fête.', 'Current age: ' + m.age + '. Add your date so it updates on your birthday.')}</p>` : ''}
     <label>${T('Sexe', 'Sex')}</label><div class="seg"><button class="btn ${m.sex === 'm' ? 'primary' : ''}" data-act="me-sex" data-s="m">${T('Homme', 'Male')}</button><button class="btn ${m.sex === 'f' ? 'primary' : ''}" data-act="me-sex" data-s="f">${T('Femme', 'Female')}</button></div>
     <button class="btn primary block" data-act="me-ok" style="margin-top:14px">${T('Enregistrer', 'Save')}</button>`);
   window._meSex = m.sex || '';
@@ -7594,7 +7595,7 @@ function saveMe() {
   const num = id => { const el = $('#' + id); const v = el ? (el.value || '').replace(',', '.').trim() : ''; return v !== '' && !isNaN(v) ? +v : null; };
   const me = S.settings.me = S.settings.me || {};
   const cm = U() === 'kg' ? num('me_cm') : (num('me_ft') != null ? Math.round(((num('me_ft') || 0) * 12 + (num('me_in') || 0)) * 2.54) : null);
-  if (cm) me.h = cm; const a = num('me_age'); if (a) me.age = a; if (window._meSex) me.sex = window._meSex;
+  if (cm) me.h = cm; const db = ($('#me_dob') || {}).value || ''; if (dobAge(db)) { S.settings.dob = db; S.settings.by = +db.slice(0, 4); delete me.age; } if (window._meSex) me.sex = window._meSex;
   const w = num('me_w'); if (w) { const d = dkey(new Date()); let e = S.body.find(x => x.d === d); if (!e) { e = {id: uid(), d, w: null, m: {}}; S.body.push(e); } e.w = w; }
   save(); closeAll(); render(); toast(T('✅ Infos enregistrées', '✅ Info saved'));
 }
@@ -10953,7 +10954,9 @@ try { const sc = sessionStorage.getItem('cm-scroll'); sessionStorage.removeItem(
 /* ===================== Accueil : connexion Google + création du profil ===================== */
 const OB_GOALS = () => [['muscle', '💪', T('Prendre du muscle', 'Build muscle'), T('8 à 12 reps', '8 to 12 reps')], ['force', '⚡', T('Gagner en force', 'Get stronger'), T('4 à 6 reps, charges lourdes', '4 to 6 reps, heavy weights')], ['fat', '🔥', T('Perdre du gras', 'Lose fat'), T('10 à 15 reps et cardio', '10 to 15 reps and cardio')], ['fit', '❤️', T('Rester en forme', 'Stay fit'), T('Équilibré', 'Balanced')]];
 const defReps = () => ({force: '4-6', fat: '10-15'})[S.settings.obj] || '8-12';
-const ageOf = () => S.settings.by ? new Date().getFullYear() - S.settings.by : null;
+const dobAge = dob => { if (!/^\d{4}-\d{2}-\d{2}$/.test(dob || '')) return null; const [y, m, d] = dob.split('-').map(Number), n = new Date(); let a = n.getFullYear() - y; if (n.getMonth() + 1 < m || (n.getMonth() + 1 === m && n.getDate() < d)) a--; return a > 0 && a < 120 ? a : null; };
+const ageOf = () => dobAge(S.settings.dob) || (S.settings.by ? new Date().getFullYear() - S.settings.by : null);
+const dobInput = (id, v) => `<input id="${id}" type="date" value="${esc(v || '')}" min="1920-01-01" max="${dkey(new Date())}" style="color-scheme:dark">`;
 /* ===================== Supprimer mon compte (exigé par Google Play et l'App Store) ===================== */
 function openDelAccount() {
   const u = fbMe();
@@ -11261,7 +11264,7 @@ function obEl() { let o = document.getElementById('ob'); if (!o) { o = document.
 function openOnboard(mode = 'new') {
   const st = S.settings, lastW = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)).pop();
   obSt = {mode, i: 0, steps: mode === 'edit' ? ['toi', 'obj'] : ['home', 'prof', 'toi', 'obj', 'style', 'cls'], u: null,
-    d: {name: st.name || '', avatar: st.avatar || '', unit: U(), sex: st.sex || '', age: ageOf() || '', ht: st.ht || '', w: lastW ? lastW.w : '', obj: st.obj || 'muscle', days: +st.goal || 4, game: st.game !== false, exp: st.exp || 'int'}};
+    d: {name: st.name || '', avatar: st.avatar || '', unit: U(), sex: st.sex || '', age: ageOf() || '', dob: st.dob || '', ht: st.ht || '', w: lastW ? lastW.w : '', obj: st.obj || 'muscle', days: +st.goal || 4, game: st.game !== false, exp: st.exp || 'int'}};
   if (mode === 'new') fbLoad().catch(() => {}); // prêt pour que la fenêtre Google s'ouvre tout de suite au toucher
   obRender();
 }
@@ -11296,7 +11299,7 @@ function obRender() {
     if (ftIn[1] === 12) { ftIn[0]++; ftIn[1] = 0; }
     h = `${obDots()}<h2 class="ob-h2">${T('Parle-nous de toi', 'Tell us about you')}</h2><p class="muted">${T('Pour tes calories et tes besoins. Reste privé.', 'For your calories and needs. Stays private.')}</p>
     <label>${T('Sexe', 'Sex')}</label>${obSeg('sex', [['m', T('Homme', 'Male')], ['f', T('Femme', 'Female')], ['x', T('Autre', 'Other')]])}
-    <div class="grid2"><div><label>${T('Âge', 'Age')}</label><input id="ob_age" inputmode="numeric" value="${esc(d.age)}" placeholder="${T('ans', 'years')}"></div>
+    <div class="grid2"><div><label>${T('Date de naissance', 'Birth date')}</label>${dobInput('ob_dob', d.dob)}</div>
     <div><label>${T('Taille', 'Height')} (${d.unit === 'kg' ? 'cm' : T('pi / po', 'ft / in')})</label>${d.unit === 'kg' ? `<input id="ob_cm" inputmode="numeric" value="${d.ht ? Math.round(d.ht) : ''}" placeholder="cm">` : `<div class="row" style="gap:6px"><input id="ob_ft" inputmode="numeric" value="${ftIn[0]}" placeholder="${T('pi', 'ft')}"><input id="ob_in" inputmode="numeric" value="${ftIn[1]}" placeholder="${T('po', 'in')}"></div>`}</div></div>
     <label>${T('Poids', 'Weight')} (${d.unit})</label><input id="ob_w" inputmode="decimal" value="${esc(d.w)}" placeholder="${d.unit}">
     <div class="ob-note">🔒 ${T('Tes amis ne voient jamais ton âge, ta taille ni ton poids.', 'Your friends never see your age, height or weight.')}</div>
@@ -11321,7 +11324,7 @@ function obRender() {
 function obCollect() {
   const d = obSt.d, v = id => { const e = document.getElementById(id); return e ? e.value.replace(',', '.').trim() : null; };
   const n = v('ob_name'); if (n != null) d.name = n;
-  const a = v('ob_age'); if (a != null) d.age = a && +a > 0 && +a < 110 ? Math.round(+a) : '';
+  const db = v('ob_dob'); if (db != null) { d.dob = dobAge(db) ? db : ''; d.age = dobAge(db) || ''; }
   const cm = v('ob_cm'); if (cm != null) d.ht = +cm > 50 && +cm < 260 ? +cm : '';
   const ft = v('ob_ft'), inch = v('ob_in'); if (ft != null) { const t = (+ft || 0) * 30.48 + (+inch || 0) * 2.54; d.ht = t > 50 && t < 260 ? Math.round(t * 10) / 10 : ''; }
   const w = v('ob_w'); if (w != null) d.w = +w > 0 ? +w : '';
@@ -11330,7 +11333,7 @@ function obCollect() {
 function obApply() {
   const d = obSt.d, st = S.settings;
   if (obSt.mode === 'new') { if (d.name.trim()) st.name = d.name.trim(); if (d.avatar) st.avatar = d.avatar; st.unit = d.unit; st.game = !!d.game; st.exp = d.exp; }
-  if (d.sex) st.sex = d.sex; if (d.age) st.by = new Date().getFullYear() - d.age; if (d.ht) st.ht = d.ht;
+  if (d.sex) st.sex = d.sex; if (d.dob) { st.dob = d.dob; st.by = +d.dob.slice(0, 4); } else if (d.age) st.by = new Date().getFullYear() - d.age; if (d.ht) st.ht = d.ht;
   st.obj = d.obj; st.goal = +d.days;
   if (d.w) { const k = dkey(new Date()), lastW = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)).pop(); if (!lastW || +lastW.w !== +d.w) { let e = S.body.find(x => x.d === k); if (!e) { e = {id: uid(), d: k, w: null, m: {}}; S.body.push(e); } e.w = +d.w; } }
 }
