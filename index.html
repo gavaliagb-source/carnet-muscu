@@ -6536,9 +6536,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.87.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.87.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.87.2', d: '2026-11-21', fr: ['Montre : le cardio a deux pages, comme Samsung Santé : métriques (chrono, pouls et zone, distance, calories) puis commandes (Pause, Terminer, Abandonner). Nouvelle APK montre requise.'], en: ['Watch: cardio has two pages, like Samsung Health: metrics (timer, heart rate and zone, distance, calories) then controls (Pause, Finish, Discard). New watch APK required.']},
   {v: '9.87.1', d: '2026-11-21', fr: ['Montre : la séance cardio en direct a son propre écran (gros chrono, pouls et zone en couleur, distance, allure, calories, Pause et Terminer). Nouvelle APK montre requise.'], en: ['Watch: live cardio has its own screen (big timer, colored heart rate and zone, distance, pace, calories, Pause and Finish). New watch APK required.']},
   {v: '9.87.0', d: '2026-11-21', fr: ['Cardio en direct : dans l\'onglet Cardio, lance une vraie séance (marche, course, vélo…) avec chrono, pouls et zone en temps réel depuis ta montre, distance et allure par GPS (dehors) et calories. La séance s\'enregistre dans ton historique. Pour le GPS, il faut la nouvelle APK téléphone (autorisation de localisation).'], en: ['Live cardio: in the Cardio tab, start a real session (walk, run, bike…) with timer, live heart rate and zone from your watch, GPS distance and pace (outdoors) and calories. It is saved to your history. GPS needs the new phone APK (location permission).']},
   {v: '9.86.7', d: '2026-11-21', fr: ['Profil et Guilde : comme dans Samsung Santé, garde le doigt appuyé sur une section pour entrer en mode édition, puis glisse la poignée ≡ pour la déplacer, touche − pour la masquer et ＋ pour la remettre. (Bouton « Personnaliser » aussi.)'], en: ['Profile and Guild: like Samsung Health, long-press a section to enter edit mode, then drag the ≡ handle to move it, tap − to hide and ＋ to bring it back. ("Customize" button too.)']},
@@ -7899,7 +7900,7 @@ function wearCmd(d) {
   if (d.a === 'start-cancel') { if (A && +d.t && A.wst === +d.t && !A.exercises.some(e => e.sets.some(x => x.done))) { S.active = null; save(); stopTimer(); setRoot('train'); render(); } wearPush(true); return; }
   if (d.a === 'hello' || !A) { wearPush(true); return; }
   const yes = f => { const c0 = window.confirm; window.confirm = () => true; try { f(); } finally { window.confirm = c0; } };
-  if (d.a === 'cancel') { yes(() => fakeAct('cancel-workout', {})); wearPush(true); return; }
+  if (d.a === 'cancel') { yes(() => fakeAct('cancel-workout', {})); if (!S.active) clStop(); wearPush(true); return; }
   if (d.a === 'clpause') { fakeAct('cl-pause', {}); wearPush(true); return; }
   if (d.a === 'clfinish') { if (A.cl) { clFinish(); } wearPush(true); return; }
   if (d.a === 'swap') { const e = A.exercises[+d.e]; if (e && d.n) replaceExercise(+d.e, {name: String(d.n), lib: d.l || undefined}); wearPush(true); return; }
