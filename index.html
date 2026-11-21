@@ -5409,10 +5409,10 @@ function monthBoss0() {
   const now = new Date(), k = now.getFullYear() + '-' + pad2(now.getMonth() + 1), ms = new Date(now.getFullYear(), now.getMonth(), 1);
   let b = S.boss && S.boss.k === k && S.boss.v === 2 && !(S.bossLog || {})[k] ? S.boss : S.boss && S.boss.k === k && (S.bossLog || {})[k] ? S.boss : null;
   if (!b) {
-    const past = S.history.filter(x => +new Date(x.date) < +ms && +new Date(x.date) > +ms - 90 * 864e5), cnt = new Map(), best = new Map();
+    let past = S.history.filter(x => +new Date(x.date) < +ms && +new Date(x.date) > +ms - 90 * 864e5); if (past.length < 3) past = S.history.filter(x => +new Date(x.date) > +ms - 90 * 864e5); const cnt = new Map(), best = new Map();
     past.forEach(x => x.exercises.forEach(e => { if (isCardio(e)) return; const ws = work(e.sets).filter(s => s.u !== 's' && +s.w > 0 && +s.r > 0 && +s.r <= 12); if (!ws.length) return; const nn = norm(e.name); cnt.set(nn, (cnt.get(nn) || 0) + 1); const v = Math.max(...ws.map(s => e1rm(s.w, s.r))); const o = best.get(nn); if (!o || v > o.v) best.set(nn, {v, name: e.name}); }));
     const isBig = nn => MR_STD.some(r => r[0](nn) && !r[3]) || /presse|leg press|hip thrust|rowing|row\b|developpe|press/.test(nn) && !/lateral|elevation|curl|extension|oiseau|fly|ecarte|mollet|calf/.test(nn);
-    const cands = [...cnt.entries()].filter(([nn, n]) => n >= 3);
+    let cands = [...cnt.entries()].filter(([nn, n]) => n >= 3); if (!cands.length) cands = [...cnt.entries()].filter(([nn, n]) => n >= 2); if (!cands.length) cands = [...cnt.entries()];
     const top = cands.filter(([nn]) => MR_STD.some(r => r[0](nn) && !r[3])).sort((a, b) => b[1] - a[1])[0] || cands.filter(([nn]) => isBig(nn)).sort((a, b) => best.get(b[0]).v - best.get(a[0]).v)[0] || cands.sort((a, b) => best.get(b[0]).v - best.get(a[0]).v)[0];
     if (!top) return null;
     const bb = best.get(top[0]), step = U() === 'kg' ? 2.5 : 5;
@@ -6431,9 +6431,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.85.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.85.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.85.3', d: '2026-11-21', fr: ['Boss du mois : les nouveaux utilisateurs (peu de séances) ont maintenant un boss dès leurs premières séances, au lieu de n\'en avoir aucun.'], en: ['Monthly boss: new users (few workouts) now get a boss from their first sessions instead of none.']},
   {v: '9.85.2', d: '2026-11-21', fr: ['Amis : ton boss du mois (et sa vie restante) est maintenant visible sur ta fiche chez tes amis. Il apparaîtra chez eux après ta prochaine synchronisation.'], en: ['Friends: your monthly boss (and its remaining HP) is now visible on your profile for your friends. It shows up for them after your next sync.']},
   {v: '9.85.1', d: '2026-11-21', fr: ['Bilan de l\'année : tu peux maintenant partager une image au format story (bouton « Partager mon bilan »), ou copier le texte.'], en: ['Year review: you can now share a story-format image ("Share my review" button), or copy the text.']},
   {v: '9.85.0', d: '2026-11-21', fr: ['Armurerie et Médailles : 6 éléments par page avec flèches ‹ ›. Guilde : « Ma guilde » et « Raid de guilde » sont fusionnés, et tu peux choisir l\'ordre et l\'affichage des sections (bouton « Personnaliser les sections » en bas). Profil : ta statistique choisie (réps, volume…) est retenue.'], en: ['Armory and Medals: 6 items per page with ‹ › arrows. Guild: “My guild” and “Guild raid” are merged, and you can choose the order and visibility of sections (“Customize sections” at the bottom). Profile: your chosen stat (reps, volume…) is remembered.']},
