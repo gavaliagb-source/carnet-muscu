@@ -5582,6 +5582,20 @@ const GAME = () => S.settings.game !== false;
 const PGS = {}, PG_N = 6;
 const pgSlice = (key, arr) => { const np = Math.max(1, Math.ceil(arr.length / PG_N)); PGS[key] = Math.max(0, Math.min(PGS[key] || 0, np - 1)); return arr.slice(PGS[key] * PG_N, PGS[key] * PG_N + PG_N); };
 const pgBar = (key, n) => { const np = Math.ceil(n / PG_N); if (np < 2) return ''; const p = PGS[key] || 0; return `<div class="pgbar"><button class="btn sm" data-act="pg" data-k="${key}" data-d="-1" ${p ? '' : 'disabled'}>‹</button><span class="small muted">${p + 1} / ${np}</span><button class="btn sm" data-act="pg" data-k="${key}" data-d="1" ${p < np - 1 ? '' : 'disabled'}>›</button></div>`; };
+/* Glisser à gauche / à droite pour changer de page (armurerie, médailles) */
+(function () {
+  let x0 = 0, y0 = 0, t0 = null, ok = false;
+  const hScroller = el => { for (let n = el; n && n !== document.body; n = n.parentElement) { if (n.scrollWidth > n.clientWidth + 4) { const o = getComputedStyle(n).overflowX; if (o === 'auto' || o === 'scroll') return true; } } return false; };
+  document.addEventListener('touchstart', e => { if (e.touches.length !== 1) { ok = false; return; } const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; t0 = e.target; ok = !hScroller(t0); }, {passive: true});
+  document.addEventListener('touchend', e => {
+    if (!ok || !t0 || !e.changedTouches.length) return; ok = false;
+    const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0; if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    for (let n = t0; n && n !== document.body; n = n.parentElement) {
+      const bar = n.querySelector && n.querySelector('.pgbar'); if (!bar) continue;
+      const b = bar.querySelectorAll('button')[dx < 0 ? 1 : 0]; if (b && !b.disabled) b.click(); return;
+    }
+  }, {passive: true});
+})();
 function vMedals() {
   const me = medalsEarned(), {got: got0, st, defs: defs0} = me, hu = hunter(me);
   const defs = GAME() ? defs0 : defs0.filter(d => d.cat !== 'sys'), got = GAME() ? got0 : Object.fromEntries(Object.entries(got0).filter(([k]) => defs.some(d => d.id === k)));
@@ -6450,9 +6464,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.86.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.86.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.86.1', d: '2026-11-21', fr: ['Armurerie et Médailles : tu peux maintenant glisser à gauche ou à droite pour changer de page (les flèches ‹ › restent).'], en: ['Armory and Medals: you can now swipe left or right to change page (the ‹ › arrows stay).']},
   {v: '9.86.0', d: '2026-11-21', fr: ['Guilde simplifiée : une carte « Aujourd\'hui » (coffre, événement, quêtes, donjon, boss) puis quelques sections repliées : Ma guilde, Saison, Collection (armurerie, médailles, bestiaire, arsenal, rangs par muscle) et Amis et classement.'], en: ['Simplified Guild: one "Today" card (chest, event, quests, dungeon, boss) then a few collapsed sections: My guild, Season, Collection (armory, medals, bestiary, arsenal, muscle ranks) and Friends & ranking.']},
   {v: '9.85.9', d: '2026-11-21', fr: ['Samsung Health / Health Connect : en plus de l\'entraînement, la fréquence cardiaque mesurée par ta montre et les calories totales sont maintenant envoyées (nouvelle APK téléphone requise, puis « Autoriser les accès manquants » dans Réglages → Santé Android). Les séances des 30 derniers jours sont renvoyées une fois.'], en: ['Samsung Health / Health Connect: besides the workout, the heart rate measured by your watch and total calories are now sent too (new phone APK required, then "Allow missing access" in Settings → Android health). The last 30 days of workouts are re-sent once.']},
   {v: '9.85.8', d: '2026-11-21', fr: ['Téléphone : le geste « retour » (glisser depuis le côté) fait maintenant exactement comme la flèche ← : il ferme la fenêtre ouverte ou revient à la page d\'avant, et ne quitte l\'appli que depuis un écran principal. Montre : le bouton « Chrono sur le téléphone » (nouvelle APK montre).'], en: ['Phone: the back gesture (swipe from the side) now does exactly what the ← arrow does: it closes the open window or goes to the previous page, and only leaves the app from a main screen. Watch: new "Timer on phone" button (new watch APK).']},
