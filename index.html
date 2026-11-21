@@ -5928,7 +5928,28 @@ function vYear() {
     ${st.gain && st.gain.pc > 0 ? `<div class="card"><span class="muted small">🚀 ${T('Ton plus gros progrès', 'Your biggest progress')}</span><h3 style="margin:4px 0">${esc(st.gain.name)}</h3><span class="small" style="color:var(--ok)">+${Math.round(st.gain.pc)} % ${T('sur ton 1RM estimé', 'on your estimated 1RM')}</span></div>` : ''}
     <div class="card"><span class="muted small">🗓️ ${T('Ton meilleur mois', 'Your best month')}</span><h3 style="margin:4px 0;text-transform:capitalize">${mName}</h3><span class="small muted">${T(`${st.months[st.bestM]} séances`, `${st.months[st.bestM]} workouts`)} · 🏅 ${T(`${st.medals} médailles gagnées cette année`, `${st.medals} medals earned this year`)}</span>
       <div class="ymonths">${st.months.map((v, i) => `<div title="${v}"><span style="height:${Math.round(v / Math.max(1, ...st.months) * 100)}%"></span><i>${new Date(y, i, 1).toLocaleDateString(LOC(), {month: 'narrow'})}</i></div>`).join('')}</div></div>
-    <button class="btn block" data-act="yr-share" data-y="${y}">📤 ${T('Partager mon bilan', 'Share my review')}</button>`;
+    <button class="btn primary block" data-act="yr-share" data-y="${y}">${T('Partager mon bilan (image)', 'Share my review (image)')}</button><button class="linkbtn" style="display:block;margin:10px auto 0" data-act="yr-text" data-y="${y}">${T('Copier en texte', 'Copy as text')}</button>`;
+}
+async function shareYearImage(y) {
+  const st = yearStats(y), W = 1080, H = 1920, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  const bg = cssv('--bg', '#0d0f12'), card = cssv('--card', '#181b21'), txt = cssv('--text', '#fff'), mut = cssv('--muted', '#9aa3ad'), acc = cssv('--accent', '#c6f135');
+  const F = (w, z) => `${w} ${z}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`, rr = (x, yy, w, h, r) => { g.beginPath(); g.roundRect ? g.roundRect(x, yy, w, h, r) : g.rect(x, yy, w, h); };
+  g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  const gr = g.createRadialGradient(W / 2, 260, 60, W / 2, 260, 900); gr.addColorStop(0, acc + '55'); gr.addColorStop(1, 'transparent'); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  g.textAlign = 'center'; g.fillStyle = acc; g.font = F(800, 44); try { g.letterSpacing = '8px'; } catch (e) {} g.fillText('RUNELIFT', W / 2, 130); try { g.letterSpacing = '0px'; } catch (e) {}
+  g.fillStyle = txt; g.font = F(900, 150); g.fillText(String(y), W / 2, 330); g.fillStyle = mut; g.font = F(600, 44); g.fillText(T('Mon année en muscu', 'My year in the gym'), W / 2, 400);
+  const tiles = [[st.n, T('séances', 'workouts')], [hm(st.dur), T('d\'entraînement', 'of training')], [Math.round(st.vol).toLocaleString(LOC()), U() + ' ' + T('soulevées', 'lifted')], [st.days.size, T('jours actifs', 'active days')], [st.prs, T('records battus', 'records broken')], [st.wk, T('semaines de suite', 'weeks in a row')]];
+  tiles.forEach(([v, l], i) => { const x = 70 + (i % 2) * 480, yy = 470 + Math.floor(i / 2) * 230; g.fillStyle = card; rr(x, yy, 460, 200, 32); g.fill(); g.fillStyle = i % 3 === 0 ? acc : txt; g.font = F(900, 80); g.fillText(String(v), x + 230, yy + 105); g.fillStyle = mut; g.font = F(500, 34); g.fillText(l, x + 230, yy + 158); });
+  let yy = 1190;
+  if (st.fav) { g.fillStyle = card; rr(70, yy, 940, 150, 32); g.fill(); g.fillStyle = mut; g.font = F(500, 32); g.fillText(T('Exercice préféré', 'Favorite exercise'), W / 2, yy + 52); g.fillStyle = txt; g.font = F(800, 46); g.fillText(st.fav.name.length > 30 ? st.fav.name.slice(0, 29) + '…' : st.fav.name, W / 2, yy + 112); yy += 175; }
+  if (st.gain && st.gain.pc > 0) { g.fillStyle = card; rr(70, yy, 940, 150, 32); g.fill(); g.fillStyle = mut; g.font = F(500, 32); g.fillText(T('Plus gros progrès', 'Biggest progress'), W / 2, yy + 52); g.fillStyle = txt; g.font = F(800, 46); g.fillText(`${st.gain.name.length > 22 ? st.gain.name.slice(0, 21) + '…' : st.gain.name}  +${Math.round(st.gain.pc)} %`, W / 2, yy + 112); yy += 175; }
+  const mn = st.n ? new Date(y, st.bestM, 1).toLocaleDateString(LOC(), {month: 'long'}) : '';
+  if (mn) { g.fillStyle = card; rr(70, yy, 940, 150, 32); g.fill(); g.fillStyle = mut; g.font = F(500, 32); g.fillText(T('Meilleur mois', 'Best month'), W / 2, yy + 52); g.fillStyle = txt; g.font = F(800, 46); g.fillText(mn.charAt(0).toUpperCase() + mn.slice(1) + ' · ' + st.months[st.bestM] + ' ' + T('séances', 'workouts'), W / 2, yy + 112); }
+  try { const hu = GAME() ? hunter() : null, nm = (S.settings.name || '').trim().split(' ')[0].slice(0, 16); g.fillStyle = txt; g.font = F(800, 44); g.fillText([nm, hu ? T(`Niv. ${hu.lvl} · Rang ${hu.rk}`, `Lv. ${hu.lvl} · Rank ${hu.rk}`) : ''].filter(Boolean).join('  ·  '), W / 2, H - 110); } catch (e) {}
+  g.fillStyle = mut; g.font = F(500, 28); g.fillText(T('Ton entraînement devient une aventure', 'Turn your workouts into an adventure'), W / 2, H - 60);
+  const blob = await new Promise(r => c.toBlob(r, 'image/png')), file = new File([blob], 'bilan-' + y + '.png', {type: 'image/png'});
+  try { if (navigator.canShare && navigator.canShare({files: [file]})) { await navigator.share({files: [file]}); return; } } catch (e) { if (e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast(T('Image enregistrée', 'Image saved'));
 }
 function yearText(y) {
   const st = yearStats(y);
@@ -6408,9 +6429,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.85.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.85.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.85.1', d: '2026-11-21', fr: ['Bilan de l\'année : tu peux maintenant partager une image au format story (bouton « Partager mon bilan »), ou copier le texte.'], en: ['Year review: you can now share a story-format image ("Share my review" button), or copy the text.']},
   {v: '9.85.0', d: '2026-11-21', fr: ['Armurerie et Médailles : 6 éléments par page avec flèches ‹ ›. Guilde : « Ma guilde » et « Raid de guilde » sont fusionnés, et tu peux choisir l\'ordre et l\'affichage des sections (bouton « Personnaliser les sections » en bas). Profil : ta statistique choisie (réps, volume…) est retenue.'], en: ['Armory and Medals: 6 items per page with ‹ › arrows. Guild: “My guild” and “Guild raid” are merged, and you can choose the order and visibility of sections (“Customize sections” at the bottom). Profile: your chosen stat (reps, volume…) is remembered.']},
   {v: '9.84.1', d: '2026-11-21', fr: ['Le coffre de fin de séance ne ferme plus l\'écran de résumé (tu peux encore prendre ta photo) ; la page garde sa position quand tu reviens en arrière ; sur l\'accueil, toucher Quête / Donjon / Boss ou ton niveau ouvre la bonne section de la Guilde ; toucher FOR / END / CON / MÉD explique la statistique.'], en: ['The end-of-workout chest no longer closes the summary (you can still add a photo); pages keep their scroll position when going back; on Home, tapping Quest / Dungeon / Boss or your level opens the right Guild section; tapping STR / END / CON / MED explains the stat.']},
   {v: '9.84.0', d: '2026-11-21', fr: ['Corrections : « Nouvelle mesure » est repliable et se referme après l\'ajout ; ajouter un warm-up ne compte plus comme une modification de la routine ; le doublon « Séances récentes » du profil est retiré ; « Mes infos » n\'apparaît plus dans Cardio quand ton profil est rempli ; changer de classe demande une confirmation.'], en: ['Fixes: “New measurement” is collapsible and closes after saving; adding a warm-up no longer counts as a routine change; duplicate recent workouts removed from profile; “My info” hidden in Cardio when profile is complete; class change asks for confirmation.']},
@@ -10477,7 +10499,8 @@ document.addEventListener('click', e => {
     case 'prog-add': addProgram(b.dataset.k); break;
     case 'yr': yrSel = +b.dataset.y; render(); break;
     case 'go-year': yrSel = +b.dataset.y; go('year'); break;
-    case 'yr-share': shareText(yearText(+b.dataset.y)); break;
+    case 'yr-share': shareYearImage(+b.dataset.y); break;
+    case 'yr-text': shareText(yearText(+b.dataset.y)); break;
     case 'hist-share': { if ($('#shmenu')) closeModal(); const hh = S.history.find(x => x.id === b.dataset.hid); if (hh) shareText(workoutText(hh)); break; }
     case 'hist-new': openNewPast(); break;
     case 'hist-ph': addSessionPhoto(b.dataset.hid); break;
