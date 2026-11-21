@@ -71,6 +71,12 @@ html.lux .btn{border-radius:12px;font-weight:650;letter-spacing:.01em;transition
 html.lux .btn:active{transform:scale(.97)}
 html.lux .btn.primary{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 88%,#fff),var(--accent));box-shadow:0 8px 20px -10px var(--accent),inset 0 1px 0 rgba(255,255,255,.28)}
 html.lux .btn.on{box-shadow:0 0 0 1px var(--accent) inset}
+html.lux .sheet{background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 93%,#fff),var(--bg));border-color:color-mix(in srgb,var(--line) 70%,transparent);box-shadow:0 -24px 60px -24px rgba(0,0,0,.85)}
+html.lux .sheet h2{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-weight:600;font-size:21px;letter-spacing:.01em}
+html.lux .stat{background:linear-gradient(165deg,color-mix(in srgb,var(--card2) 90%,#fff),var(--card2));border:1px solid color-mix(in srgb,var(--line) 55%,transparent);border-radius:14px}
+html.lux .stat b{font-size:20px;letter-spacing:-.01em}
+html.lux .lvup{box-shadow:0 0 30px -8px var(--accent),inset 0 1px 0 rgba(255,255,255,.08)}
+html.lux .empty{padding:48px 22px;font-size:15px}
 html.lux nav{border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
 html.lux nav button.on{text-shadow:0 0 14px color-mix(in srgb,var(--accent) 55%,transparent)}
 html.lux input,html.lux select,html.lux textarea{border-radius:12px}
@@ -6555,9 +6561,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.88.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.88.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.88.1', d: '2026-11-21', fr: ['Style premium : fenêtres, tuiles de stats et écrans vides plus soignés ; les croix et coches deviennent de vraies icônes ; quelques derniers emojis remplacés.'], en: ['Premium style: sheets, stat tiles and empty screens refined; crosses and ticks are now real icons; a few last emojis replaced.']},
   {v: '9.88.0', d: '2026-11-21', fr: ['Style premium activé pour tout le monde (désactivable dans Réglages → Apparence). Cartes en relief, titres plus soignés, boutons raffinés, chiffres alignés. Marche avec tous les thèmes et se coupe d\'un bouton.'], en: ['Premium style now on for everyone (can be turned off in Settings → Appearance). Raised cards, refined titles and buttons, aligned numbers. Works with every theme and can be turned off.']},
   {v: '9.87.4', d: '2026-11-21', fr: ['Cardio en direct : le GPS marche aussi pour le vélo (dehors), avec distance et vitesse en km/h. Le vélo extérieur s\'enregistre comme « Vélo extérieur ».'], en: ['Live cardio: GPS now works for cycling too (outdoors), with distance and speed in km/h. Outdoor rides are saved as "Vélo extérieur".']},
   {v: '9.87.3', d: '2026-11-21', fr: ['Cardio : l\'activité de « Cardio en direct » est maintenant indépendante du convertisseur, et l\'option GPS est un bouton clair (fini la case mal alignée).'], en: ['Cardio: the "Live cardio" activity is now independent from the converter, and the GPS option is a clear button (no more misaligned checkbox).']},
@@ -10017,6 +10024,13 @@ const EMO_ALL = {'📒': ['book'], '✅': ['ccheck', 'var(--ok)'], '☑': ['chec
   '🛠': ['wrench'], '🔧': ['wrench'], '🕓': ['clock'], '🕐': ['clock'], '🚀': ['rocket'], '📏': ['ruler'], '📐': ['ruler'], '📎': ['paperclip'], '🧭': ['compass'], '🔢': ['hash'],
   '🏁': ['flag'], '😄': ['smile'], '🎓': ['cap'], '🎯': ['target'], '🕸': ['radar'], '🛏': ['bed'], '📩': ['mail'], '⏸': ['pause'], '▶': ['play'], '🔎': ['search'], '🔍': ['search'],
   '👁': ['eye'], '🧹': ['eraser'], '🛡': ['shield'], '👑': ['crown', '#f5c542'], '🧗': ['pullup'], '⚔': ['swords'], '☠': ['skull', '#fb7185'], '🤝': ['users'], '❤️‍🔥': ['flame', '#ff8a3d'], '💬': ['chat'], '💎': ['gem', '#67e8f9'], '🐉': ['dragon', '#ef4444'], '⭐': ['star', '#f5c542'], '📌': ['pin'], '🎪': ['tent', '#f5c542'], '🟢': ['dot', 'var(--ok)'], '⛶': ['focus'], '🗡': ['swords']};
+ICP.x = '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>';
+ICP.check = '<path d="M20 6 9 17l-5-5"/>';
+ICP.cloud = ICP.cloud || '<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>';
+ICP.tag = '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>';
+ICP.flask = '<path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/>';
+ICP.map = '<path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/>';
+Object.assign(EMO_ALL, {'✕': ['x'], '✓': ['check'], '✔': ['check'], '🧪': ['flask'], '🏷': ['tag'], '🗺': ['map'], '📨': ['mail'], '♥': ['heart', '#ff5a5f'], '✦': ['spark'], '♾': ['repeat'], '🥈': ['medal', '#c0c7d1'], '🥉': ['medal', '#cd7f32'], '💀': ['skull', '#fb7185'], '🗂': ['folder']});
 const EMO_RE = new RegExp('(' + Object.keys(EMO_ALL).sort((a, b) => b.length - a.length).join('|') + ')[\\uFE0F\\u200D]*', 'gu');
 const EMO_SKIP = 'select,option,textarea,input,script,style,title,canvas,[data-noic]';
 function iconizeAll(root) {
