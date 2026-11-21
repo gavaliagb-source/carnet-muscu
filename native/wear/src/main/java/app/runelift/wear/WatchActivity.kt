@@ -155,7 +155,8 @@ class WatchActivity : Activity() {
                 if (e1 == null || !WS.on() || dragging || askAb || swapFor >= 0) return false
                 val dx = e2.x - e1.x; val dy = e2.y - e1.y
                 if (abs(dx) < dp(45f) || abs(dx) < abs(dy) * 1.4f) return false
-                val np = if (dx < 0) (page + 1).coerceAtMost(2) else (page - 1).coerceAtLeast(0)
+                val lo = if (WS.cl() != null) 1 else 0
+                val np = if (dx < 0) (page + 1).coerceAtMost(2) else (page - 1).coerceAtLeast(lo)
                 if (np != page) { page = np; scroll.scrollTo(0, 0); scroll.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK); paint() }
                 return true
             }
@@ -319,7 +320,7 @@ class WatchActivity : Activity() {
         if (askAb) { col.gravity = Gravity.CENTER; abandonView(); return }
         if (swapFor >= 0) { swapView(swapFor); return }
         val cl = WS.cl()
-        if (cl != null) { col.gravity = Gravity.CENTER; col.setPadding((sw * 0.07).toInt(), (shh * 0.05).toInt(), (sw * 0.07).toInt(), (shh * 0.05).toInt()); scroll.locked = true; clView(cl); return }
+        if (cl != null) { if (page < 1) page = 1; col.gravity = Gravity.CENTER; col.setPadding((sw * 0.07).toInt(), (shh * 0.05).toInt(), (sw * 0.07).toInt(), (shh * 0.05).toInt()); scroll.locked = true; clDots(); if (page == 2) clControls(cl) else clView(cl); return }
         dots()
         when (page) {
             0 -> overview()
@@ -350,6 +351,19 @@ class WatchActivity : Activity() {
             else -> "Z1" to Color.parseColor("#7dd3fc")
         }
     }
+
+    private fun clDots() {
+        val r = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER }
+        for (i in 1..2) r.addView(View(this).apply { background = bg(if (i == page) Color.WHITE else Color.parseColor("#4A515C"), 10f) }, LinearLayout.LayoutParams(dp(6f), dp(6f)).apply { setMargins(dp(3f), 0, dp(3f), 0) })
+        col.addView(r, lp(-2, -2, 0f))
+    }
+    /* Page « commandes » : Pause / Reprendre, Terminer, Abandonner */
+    private fun clControls(c: org.json.JSONObject) {
+        val paused = c.optLong("pat") > 0
+        col.addView(pill(if (paused) WS.t("Reprendre", "Resume") else "Pause", CARD, Color.WHITE, 15f, 10f) { WS.clPause(this) }, lp(-2, -2, 0.03f))
+        col.addView(pill(if (armed("clfin")) WS.t("Confirmer", "Confirm") else WS.t("Terminer", "Finish"), ACC, ON_ACC, 15f, 10f) { confirmOr("clfin") { WS.clFinish(this) } }, lp(-2, -2, 0.025f))
+        col.addView(pill(WS.t("Abandonner", "Discard"), CARD, RED, 13f, 9f) { askAb = true; paint() }, lp(-2, -2, 0.025f))
+    }
     private fun clUpdate(c: org.json.JSONObject) {
         val ms = clMs(c); val now = System.currentTimeMillis()
         tvCl?.let { set(it, clock(ms)) }
@@ -367,14 +381,7 @@ class WatchActivity : Activity() {
         tvZ = tp("♥ –", 0.10f, Color.WHITE, true).also { col.addView(it, lp(-2, -2, 0.01f)) }
         if (c.optInt("g", 0) == 1) tvD = tp("", 0.05f, Color.WHITE, false).also { col.addView(it, lp(-2, -2, 0.012f)) }
         tvK = tp("", 0.05f, MUTED, false).also { col.addView(it, lp(-2, -2, 0.008f)) }
-        val bh = (W * 0.14f).toInt()
-        col.addView(LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER
-            addView(tp(if (paused) WS.t("Reprendre", "Resume") else "Pause", 0.05f, Color.WHITE, true).apply { background = bg(CARD, 40f); gravity = Gravity.CENTER; isClickable = true
-                setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); WS.clPause(this@WatchActivity) } }, LinearLayout.LayoutParams((W * 0.34f).toInt(), bh).apply { rightMargin = (W * 0.02f).toInt() })
-            addView(tp(if (armed("clfin")) WS.t("Confirmer", "Confirm") else WS.t("Terminer", "Finish"), 0.05f, ON_ACC, true).apply { background = bg(ACC, 40f); gravity = Gravity.CENTER; isClickable = true
-                setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); confirmOr("clfin") { WS.clFinish(this@WatchActivity) } } }, LinearLayout.LayoutParams((W * 0.34f).toInt(), bh).apply { leftMargin = (W * 0.02f).toInt() })
-        }, lp(-2, -2, 0.03f))
+        col.addView(tp(WS.t("‹ glisse : commandes", "‹ swipe: controls"), 0.04f, MUTED, false), lp(-2, -2, 0.03f))
         clUpdate(c)
     }
 
