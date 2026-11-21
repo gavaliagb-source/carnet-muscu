@@ -875,6 +875,8 @@ html.moving .dghero{animation-play-state:paused}
 :is(.pfhead,.frhero,.gldhead).bn{aspect-ratio:2.4/1;align-content:center}
 .emb img,.cosem img,.gldcrest img,.gldpick img{display:block;height:100%;width:auto;max-width:100%;object-fit:contain}.cosem:has(img){width:54px!important;height:54px}.emb:has(img){height:1.55em;vertical-align:-.45em}.gldpick button img{height:34px}
 .setpc .armprev{width:100%;overflow:hidden}.setpc .cosbn{width:100%;min-width:0;height:36px}
+.pgbar{display:flex;align-items:center;justify-content:center;gap:14px;margin:12px 0 4px}.pgbar .btn{min-width:46px}.pgbar .btn:disabled{opacity:.3}
+.gsep{height:1px;background:var(--line);margin:14px 0 0}
 </style>
 </head>
 <body>
@@ -4053,7 +4055,7 @@ function saveRoutineDraft() {
 }
 
 /* ---------- Profil ---------- */
-let pfMetric = 'act', pfWeeks = 12, pfSel = null;
+let pfMetric = (() => { try { return JSON.parse(localStorage.getItem('cm-pfm')) || 'act'; } catch (e) { return 'act'; } })(), pfWeeks = 12, pfSel = null;
 function weekly(n) {
   const ws = weekStart(new Date()), out = [];
   for (let i = n - 1; i >= 0; i--) { const s = new Date(ws); s.setDate(s.getDate() - 7 * i); const e = new Date(s); e.setDate(e.getDate() + 7); out.push({s, e, dur: 0, vol: 0, reps: 0, n: 0}); }
@@ -5556,6 +5558,10 @@ function vMuscleRanks() {
 let medFilter = 'all';
 /* Mode jeu (XP, niveaux, rangs, quêtes, donjons, boss, classes, ombres) : au choix. Tout continue de se calculer en arrière-plan. */
 const GAME = () => S.settings.game !== false;
+/* Pagination simple : 6 éléments par page */
+const PGS = {}, PG_N = 6;
+const pgSlice = (key, arr) => { const np = Math.max(1, Math.ceil(arr.length / PG_N)); PGS[key] = Math.max(0, Math.min(PGS[key] || 0, np - 1)); return arr.slice(PGS[key] * PG_N, PGS[key] * PG_N + PG_N); };
+const pgBar = (key, n) => { const np = Math.ceil(n / PG_N); if (np < 2) return ''; const p = PGS[key] || 0; return `<div class="pgbar"><button class="btn sm" data-act="pg" data-k="${key}" data-d="-1" ${p ? '' : 'disabled'}>‹</button><span class="small muted">${p + 1} / ${np}</span><button class="btn sm" data-act="pg" data-k="${key}" data-d="1" ${p < np - 1 ? '' : 'disabled'}>›</button></div>`; };
 function vMedals() {
   const me = medalsEarned(), {got: got0, st, defs: defs0} = me, hu = hunter(me);
   const defs = GAME() ? defs0 : defs0.filter(d => d.cat !== 'sys'), got = GAME() ? got0 : Object.fromEntries(Object.entries(got0).filter(([k]) => defs.some(d => d.id === k)));
@@ -5568,7 +5574,7 @@ function vMedals() {
   return `${true ? `<div class="card"><div class="row between" style="align-items:center"><div><span class="muted small">${T('Médailles gagnées', 'Medals earned')}</span><br><b style="font-size:22px">${n}</b> <span class="muted">/ ${defs.length}</span></div><button class="btn sm" data-act="go" data-v="murank">🎯 ${T('Rangs par muscle', 'Muscle ranks')}</button></div></div>` : ''}
     <div class="seg" style="margin:14px 0 4px"><button class="${medFilter === 'all' ? 'on' : ''}" data-act="med-f" data-f="all">${T('Toutes', 'All')}</button><button class="${medFilter === 'ok' ? 'on' : ''}" data-act="med-f" data-f="ok">${T('Gagnées', 'Earned')} (${n})</button><button class="${medFilter === 'todo' ? 'on' : ''}" data-act="med-f" data-f="todo">${T('À débloquer', 'Locked')} (${defs.length - n})</button></div>
     ${MCATS.filter(([c]) => GAME() || c !== 'sys').map(([c, nmC]) => { const L = list.filter(d => d.cat === c); if (!L.length) return ''; const gotC = defs.filter(d => d.cat === c && got[d.id]).length, totC = defs.filter(d => d.cat === c).length;
-      const op = (S.settings.medOpen || {})[c]; return `<details class="mcatd" data-c="${c}"${op ? ' open' : ''}><summary class="mcat"><span>${T(nmC[0], nmC[1])}</span> <span class="muted small">${gotC} / ${totC}</span><span class="mbar"><i style="width:${Math.round(gotC / totC * 100)}%"></i></span></summary><div class="grid2" style="margin-top:10px">${L.map(card).join('')}</div></details>`; }).join('')}`;
+      const op = (S.settings.medOpen || {})[c]; return `<details class="mcatd" data-c="${c}"${op ? ' open' : ''}><summary class="mcat"><span>${T(nmC[0], nmC[1])}</span> <span class="muted small">${gotC} / ${totC}</span><span class="mbar"><i style="width:${Math.round(gotC / totC * 100)}%"></i></span></summary><div class="grid2" style="margin-top:10px">${pgSlice('med:' + c, L).map(card).join('')}</div>${pgBar('med:' + c, L.length)}</details>`; }).join('')}`;
 }
 
 /* ===================== Système : quêtes, donjons, titres, armée des ombres ===================== */
@@ -6402,9 +6408,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.84.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.85.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.85.0', d: '2026-11-21', fr: ['Armurerie et Médailles : 6 éléments par page avec flèches ‹ ›. Guilde : « Ma guilde » et « Raid de guilde » sont fusionnés, et tu peux choisir l\'ordre et l\'affichage des sections (bouton « Personnaliser les sections » en bas). Profil : ta statistique choisie (réps, volume…) est retenue.'], en: ['Armory and Medals: 6 items per page with ‹ › arrows. Guild: “My guild” and “Guild raid” are merged, and you can choose the order and visibility of sections (“Customize sections” at the bottom). Profile: your chosen stat (reps, volume…) is remembered.']},
   {v: '9.84.1', d: '2026-11-21', fr: ['Le coffre de fin de séance ne ferme plus l\'écran de résumé (tu peux encore prendre ta photo) ; la page garde sa position quand tu reviens en arrière ; sur l\'accueil, toucher Quête / Donjon / Boss ou ton niveau ouvre la bonne section de la Guilde ; toucher FOR / END / CON / MÉD explique la statistique.'], en: ['The end-of-workout chest no longer closes the summary (you can still add a photo); pages keep their scroll position when going back; on Home, tapping Quest / Dungeon / Boss or your level opens the right Guild section; tapping STR / END / CON / MED explains the stat.']},
   {v: '9.84.0', d: '2026-11-21', fr: ['Corrections : « Nouvelle mesure » est repliable et se referme après l\'ajout ; ajouter un warm-up ne compte plus comme une modification de la routine ; le doublon « Séances récentes » du profil est retiré ; « Mes infos » n\'apparaît plus dans Cardio quand ton profil est rempli ; changer de classe demande une confirmation.'], en: ['Fixes: “New measurement” is collapsible and closes after saving; adding a warm-up no longer counts as a routine change; duplicate recent workouts removed from profile; “My info” hidden in Cardio when profile is complete; class change asks for confirmation.']},
   {v: '9.83.5', d: '2026-11-18', fr: ['Boss : les restes de fond blanc autour de la Liche des marais et de la Sorcière de jade sont retirés.'], en: ['Bosses: leftover white background removed around the Swamp Lich and the Jade Witch.']},
@@ -8876,7 +8883,7 @@ function armoryBody(onlyContent) {
     <div class="small muted">${sec && sec.ok ? `👑 ${T('Collection complète! Récompense secrète débloquée', 'Collection complete! Secret reward unlocked')} : <b>${esc(T(sec.x.n[0], sec.x.n[1]))}</b>` : `🔒 ${T('Complète-la pour débloquer une <b>récompense secrète mythique</b>.', 'Complete it to unlock a <b>secret mythic reward</b>.')}`}</div></div>`;
   const tr = ['fx', 'cele'].includes(kind) ? `<button class="btn sm" style="margin-top:10px" data-act="cos-try" data-k="${kind}">▶ ${T('Essayer', 'Try it')}</button>` : '';
   clearTimeout(armSeenT); armSeenT = setTimeout(() => { let ch = false; L.forEach(({x, ok}) => { if (ok && x.id && !sn[kind + ':' + x.id]) { sn[kind + ':' + x.id] = 1; ch = true; } }); if (ch) saveLocal(); }, 2500);
-  const content = armTab === 'chest' ? armoryBody(true) : armTab === 'sets' ? setsBody() : `<p class="small muted" style="margin:8px 0">${hint}</p>${coll}<div class="armgrid">${items.join('')}</div>${tr}`;
+  const content = armTab === 'chest' ? armoryBody(true) : armTab === 'sets' ? setsBody() : `<p class="small muted" style="margin:8px 0">${hint}</p>${coll}<div class="armgrid">${pgSlice('arm:' + kind, items).join('')}</div>${pgBar('arm:' + kind, items.length)}${tr}`;
   const fp = heroCard();
   if (onlyContent) return content;
   const nw = k => k === 'chest' ? FRAG_REW.some(([kk, id]) => !sn[kk + ':' + id] && cosReq((rwList(kk).find(y => y.id === id) || {}).r || {}).ok) : RW_KINDS.includes(k) && rwList(k).some(x => x.id && !sn[k + ':' + x.id] && cosReq(x.r).ok);
@@ -9251,6 +9258,14 @@ function blKill(k, i) {
     <p class="small muted" style="margin:0 0 14px">${T('Aperçu du mode développeur.', 'Developer mode preview.')}</p><button class="btn primary block" data-act="close">${T('Fermer', 'Close')}</button></div>`);
 }
 
+const G_IDS = ['myguild', 'next', 'quests', 'season', 'arm'], G_NAMES = {myguild: ['Ma guilde et raid', 'My guild & raid'], next: ['Objectifs', 'Goals'], quests: ['Quêtes', 'Quests'], season: ['Saison', 'Season'], arm: ['Armurerie', 'Armory']};
+function gSecOrder() { const o = (S.settings.gOrder || []).filter(x => G_IDS.includes(x)); G_IDS.forEach(x => { if (!o.includes(x)) o.push(x); }); return o; }
+function gCustom() {
+  const o = gSecOrder(), hid = S.settings.gHide || [];
+  modal(`<div class="row between"><h2 style="margin:0">${T('Sections de la Guilde', 'Guild sections')}</h2><button class="btn sm" data-act="close">✕</button></div><p class="small muted">${T('Choisis ce que tu veux voir et dans quel ordre.', 'Choose what you want to see and in which order.')}</p>
+  ${o.map((id, i) => `<div class="row between" style="padding:8px 0;border-top:1px solid var(--line);gap:8px"><label style="display:flex;gap:10px;align-items:center;flex:1;margin:0"><input type="checkbox" data-act="gc-vis" data-id="${id}" ${hid.includes(id) ? '' : 'checked'}> ${esc(T(G_NAMES[id][0], G_NAMES[id][1]))}</label><button class="btn sm" data-act="gc-mv" data-id="${id}" data-d="-1" ${i ? '' : 'disabled'}>↑</button><button class="btn sm" data-act="gc-mv" data-id="${id}" data-d="1" ${i < o.length - 1 ? '' : 'disabled'}>↓</button></div>`).join('')}
+  <button class="btn primary block" style="margin-top:12px" data-act="close">OK</button>`);
+}
 function vGuild() {
   if (!GAME()) { setRoot('train'); return vTrain(); }
   if (!S.history.length) return `<div class="empty">${T('Ta première séance t\'inscrit à la Guilde : niveau, rang, quêtes et boss commencent ici.', 'Your first workout signs you up to the Guild: level, rank, quests and bosses start here.')}<br><button class="btn primary sm" data-tab="train" style="margin-top:12px">${T('Démarrer une séance', 'Start a workout')}</button></div>`;
@@ -9264,11 +9279,14 @@ function vGuild() {
   setTimeout(() => { gldSync(); revealCheck(); }, 500);
   const gS = S.guild, gSub = gS ? `${esc(gS.name || '')} · ${T('niv.', 'lv.')} ${gS.lvl || 1}` : T('Crée ou rejoins une guilde', 'Create or join a guild');
   const bWon = new Set(Object.keys(S.bossLog || {}).map(mk => (+mk.slice(0, 4) * 12 + +mk.slice(5, 7) - 1) % BOSSES.length)).size;
-  return `${statusCard()}${compCard()}${chestPendBtn()}${pclCard()}${eventCard()}<div class="glist">${gSec('myguild', '🛡️', T('Ma guilde', 'My guild'), gSub, () => gldBody())}${nextRewardsCard()}
-    ${gSec('quests', '🏆', T('Quêtes', 'Quests'), `${nd} / ${bo ? 3 : 2} ${T('accomplies aujourd\'hui', 'complete today')}`, () => questCard('inner'))}
-    ${gSec('raid', '🛡️', T('Raid de guilde', 'Guild raid'), raidSub, () => fr || S.guild ? raidCard() : noFr)}
-    ${gSec('season', '👑', T('Saison', 'Season'), seaSub, () => fr ? seasonCard() || `<p class="small muted" style="margin:0">${T('La saison commence dès qu\'un ami a l\'appli à jour.', 'The season starts as soon as a friend has the app up to date.')}</p>` : noFr)}
-    ${gSec('arm', '⚔️', T('Armurerie', 'Armory'), `${aOk} / ${aTot} ${T('récompenses débloquées', 'rewards unlocked')}`, () => `<div class="armbody">${armoryBody()}</div>`)}
+  const GSECS = {
+    myguild: () => gSec('myguild', '🛡️', T('Ma guilde', 'My guild'), (fr || S.guild) && raidSub !== T('Avec tes amis', 'With your friends') && raidSub !== T('Avec ta guilde', 'With your guild') ? `${gSub} · ${raidSub}` : gSub, () => gldBody() + (fr || S.guild ? `<div class="gsep"></div><div class="sysh" style="margin:14px 0 8px">[ ${T('RAID DE GUILDE', 'GUILD RAID')} ]</div>${raidCard()}` : '')),
+    next: () => nextRewardsCard(),
+    quests: () => gSec('quests', '🏆', T('Quêtes', 'Quests'), `${nd} / ${bo ? 3 : 2} ${T('accomplies aujourd\'hui', 'complete today')}`, () => questCard('inner')),
+    season: () => gSec('season', '👑', T('Saison', 'Season'), seaSub, () => fr ? seasonCard() || `<p class="small muted" style="margin:0">${T('La saison commence dès qu\'un ami a l\'appli à jour.', 'The season starts as soon as a friend has the app up to date.')}</p>` : noFr),
+    arm: () => gSec('arm', '⚔️', T('Armurerie', 'Armory'), `${aOk} / ${aTot} ${T('récompenses débloquées', 'rewards unlocked')}`, () => `<div class="armbody">${armoryBody()}</div>`)};
+  const gOrd = gSecOrder();
+  return `${statusCard()}${compCard()}${chestPendBtn()}${pclCard()}${eventCard()}<div class="glist">${gOrd.filter(id => !(S.settings.gHide || []).includes(id)).map(id => GSECS[id]()).join('')}<button class="linkbtn" style="margin:2px auto 0;display:block" data-act="gcust">${T('Personnaliser les sections', 'Customize sections')}</button>
     </div><div class="grid2 gtiles">${gLink('shadows', '🗡', T('Arsenal', 'Arsenal'), `${sh} ${T(sh > 1 ? 'armes forgées' : 'arme forgée', sh > 1 ? 'weapons forged' : 'weapon forged')}`)}
     ${gLink('murank', '🎯', T('Rangs par muscle', 'Muscle ranks'), T('Tes points forts et faibles', 'Your strong and weak points'))}
     ${gLink('bestiary', '🐉', T('Bestiaire', 'Bestiary'), `${bWon} / ${BOSSES.length} ${T('boss vaincus', 'bosses beaten')}`)}
@@ -10072,7 +10090,11 @@ document.addEventListener('click', e => {
     case 'chr-lap': { const t = chrNow(), prev = chr.laps.length ? chr.laps[chr.laps.length - 1].t : 0; chr.laps.push({t, d: t - prev}); chrSave(); haptic(15); chrDraw(true); break; }
     case 'chr-reset': chr = {acc: 0, start: null, laps: []}; chrSave(); chrDraw(true); break;
     case 'cpick': openColorPicker(b.dataset.k); break;
-    case 'med-f': medFilter = b.dataset.f; render(); break;
+    case 'pg': { PGS[b.dataset.k] = (PGS[b.dataset.k] || 0) + +b.dataset.d; if (b.dataset.k.startsWith('arm:')) armRefresh(true); else { const y = scrollY; render(); window.scrollTo(0, y); } break; }
+    case 'gcust': gCustom(); break;
+    case 'gc-vis': { const h = S.settings.gHide = (S.settings.gHide || []).filter(x => x !== b.dataset.id); if (!b.checked) h.push(b.dataset.id); save(); render(); break; }
+    case 'gc-mv': { const o = gSecOrder(), i = o.indexOf(b.dataset.id), j = i + +b.dataset.d; if (j >= 0 && j < o.length) { [o[i], o[j]] = [o[j], o[i]]; S.settings.gOrder = o; save(); closeModal(); render(); gCustom(); } break; }
+    case 'med-f': medFilter = b.dataset.f; Object.keys(PGS).forEach(k => { if (k.startsWith('med:')) PGS[k] = 0; }); render(); break;
     case 'focus-tog': focusOn = !focusOn; focusKeep(); focusEx = null; focusWakeSet(focusOn); render(); window.scrollTo(0, 0); break;
     case 'f-nav': { const A2 = S.active; if (!A2) break; const c0 = focusEx != null ? focusEx : Math.max(0, curEx()); focusEx = Math.max(0, Math.min(A2.exercises.length - 1, c0 + +b.dataset.d)); render(); break; }
     case 'boss-fill': { const A3 = S.active, e3 = A3 && A3.exercises[+b.dataset.e]; if (!e3) break;
@@ -10259,7 +10281,7 @@ document.addEventListener('click', e => {
     case 'rename-folder': renameFolder(b.dataset.f); break;
     case 'del-folder': deleteFolder(b.dataset.f); break;
     case 'save-as-routine': saveAsRoutine(b.dataset.hid); break;
-    case 'pf-metric': pfMetric = b.dataset.m; animNext = true; render(); break;
+    case 'pf-metric': pfMetric = b.dataset.m; try { localStorage.setItem('cm-pfm', JSON.stringify(pfMetric)); } catch (e) {} animNext = true; render(); break;
     case 'bar': {
       const i = +b.dataset.i; pfSel = pfSel === i ? null : i;
       document.querySelectorAll('#chs [data-act="bar"] rect:last-child').forEach((r, j) => r.style.opacity = pfSel == null || pfSel === j ? 1 : 0.45);
