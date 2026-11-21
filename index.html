@@ -6464,9 +6464,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.86.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.86.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.86.2', d: '2026-11-21', fr: ['Guilde : « Amis et défis » et « Classement mondial » sont de retour en bas, en tuiles grises.'], en: ['Guild: "Friends & challenges" and "World ranking" are back at the bottom as grey tiles.']},
   {v: '9.86.1', d: '2026-11-21', fr: ['Armurerie et Médailles : tu peux maintenant glisser à gauche ou à droite pour changer de page (les flèches ‹ › restent).'], en: ['Armory and Medals: you can now swipe left or right to change page (the ‹ › arrows stay).']},
   {v: '9.86.0', d: '2026-11-21', fr: ['Guilde simplifiée : une carte « Aujourd\'hui » (coffre, événement, quêtes, donjon, boss) puis quelques sections repliées : Ma guilde, Saison, Collection (armurerie, médailles, bestiaire, arsenal, rangs par muscle) et Amis et classement.'], en: ['Simplified Guild: one "Today" card (chest, event, quests, dungeon, boss) then a few collapsed sections: My guild, Season, Collection (armory, medals, bestiary, arsenal, muscle ranks) and Friends & ranking.']},
   {v: '9.85.9', d: '2026-11-21', fr: ['Samsung Health / Health Connect : en plus de l\'entraînement, la fréquence cardiaque mesurée par ta montre et les calories totales sont maintenant envoyées (nouvelle APK téléphone requise, puis « Autoriser les accès manquants » dans Réglages → Santé Android). Les séances des 30 derniers jours sont renvoyées une fois.'], en: ['Samsung Health / Health Connect: besides the workout, the heart rate measured by your watch and total calories are now sent too (new phone APK required, then "Allow missing access" in Settings → Android health). The last 30 days of workouts are re-sent once.']},
@@ -9375,8 +9376,8 @@ function vGuild() {
   return `${statusCard()}${compCard()}<div class="card sysw gwin"><div class="sysh">[ ${T('AUJOURD\'HUI', 'TODAY')} ]</div>${chestPendBtn()}${eventCard()}${questCard('inner')}</div>
     <div class="glist">${gOrd.filter(id => !(S.settings.gHide || []).includes(id)).map(id => GSECS[id]()).join('')}
     ${gSec('coll', '🗂', T('Collection', 'Collection'), `${T('Armurerie', 'Armory')} ${aOk}/${aTot} · ${T('médailles, bestiaire…', 'medals, bestiary…')}`, () => `<div class="armbody">${armoryBody()}</div>${coll()}`)}
-    ${gSec('soc', '👥', T('Amis et classement', 'Friends & ranking'), fr ? `${fr} ${T(fr > 1 ? 'amis' : 'ami', fr > 1 ? 'friends' : 'friend')}` : T('Ajoute tes chums', 'Add your buddies'), () => `<div class="glist2">${row('go', 'friends', T('Amis et défis', 'Friends & challenges'), fr ? `${fr}` : T('Ajoute tes chums', 'Add your buddies'))}${row('go', 'world', T('Classement mondial', 'World ranking'), S.settings.lbOn ? T('Ta position', 'Your rank') : T('Compare-toi à tous', 'Compare with everyone'))}</div>`)}
-    </div>`;
+    </div><div class="grid2 gtiles">${gLink('friends', '👥', T('Amis et défis', 'Friends & challenges'), fr ? `${fr} ${T(fr > 1 ? 'amis' : 'ami', fr > 1 ? 'friends' : 'friend')}` : T('Ajoute tes chums', 'Add your buddies'))}
+    ${gLink('world', '🌍', T('Classement mondial', 'World ranking'), S.settings.lbOn ? T('Ta position', 'Your rank') : T('Compare-toi à tous', 'Compare with everyone'))}</div>`;
 }
 /* Bande compacte dans Entraînement : un coup d'œil, et on touche pour ouvrir la Guilde */
 function guildStrip() {
