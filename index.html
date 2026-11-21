@@ -6449,9 +6449,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.85.8'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.85.9'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.85.9', d: '2026-11-21', fr: ['Samsung Health / Health Connect : en plus de l\'entraînement, la fréquence cardiaque mesurée par ta montre et les calories totales sont maintenant envoyées (nouvelle APK téléphone requise, puis « Autoriser les accès manquants » dans Réglages → Santé Android). Les séances des 30 derniers jours sont renvoyées une fois.'], en: ['Samsung Health / Health Connect: besides the workout, the heart rate measured by your watch and total calories are now sent too (new phone APK required, then "Allow missing access" in Settings → Android health). The last 30 days of workouts are re-sent once.']},
   {v: '9.85.8', d: '2026-11-21', fr: ['Téléphone : le geste « retour » (glisser depuis le côté) fait maintenant exactement comme la flèche ← : il ferme la fenêtre ouverte ou revient à la page d\'avant, et ne quitte l\'appli que depuis un écran principal. Montre : le bouton « Chrono sur le téléphone » (nouvelle APK montre).'], en: ['Phone: the back gesture (swipe from the side) now does exactly what the ← arrow does: it closes the open window or goes to the previous page, and only leaves the app from a main screen. Watch: new "Timer on phone" button (new watch APK).']},
   {v: '9.85.7', d: '2026-11-21', fr: ['Les onglets du bas retiennent ta position : en revenant sur Muscu, Cardio, Profil, etc., tu retrouves où tu étais. Toucher l\'onglet actif remonte en haut.'], en: ['Bottom tabs now remember your scroll position: coming back to Train, Cardio, Profile, etc. puts you where you were. Tapping the active tab scrolls to top.']},
   {v: '9.85.6', d: '2026-11-21', fr: ['Guilde : ta classe est maintenant dans la carte Statut (plus de carte séparée).'], en: ['Guild: your class is now inside the Status card (no more separate card).']},
@@ -7637,18 +7638,18 @@ let hcP = null;
 /* Une seule vérification à la fois : pendant qu'elle tourne, tout le monde attend la même réponse (avant : réponse vide tout de suite → les Réglages se redessinaient sans fin) */
 function hcStatus() { if (!HC()) return Promise.resolve(hcSt); if (hcP) return hcP; hcBusy = true; hcP = HC().status().then(r => { hcSt = r; }, () => { hcSt = {available: false, reason: 'missing', granted: []}; }).then(() => { hcBusy = false; hcP = null; return hcSt; }); return hcP; }
 function hcKcal(h) { return Math.round(5 * bodyKg() * Math.max(1, +h.duration || 1) / 60); }
-function hcSave(h) { const a = new Date(h.date), b = new Date(a.getTime() + Math.max(1, +h.duration || 1) * 60000); return HC().saveWorkout({id: String(h.id), start: a.toISOString(), end: b.toISOString(), title: h.routineName || 'Runelift', kcal: hcKcal(h)}); }
+function hcSave(h) { const a = new Date(h.date), b = new Date(a.getTime() + Math.max(1, +h.duration || 1) * 60000); return HC().saveWorkout({id: String(h.id), start: a.toISOString(), end: b.toISOString(), title: h.routineName || 'Runelift', kcal: hcKcal(h), bpm: (h.hr && h.hr.pts) || []}); }
 function hcPush(h) { if (!hcOn() || !h) return; hcSave(h).then(() => { h.hcOk = 1; S.settings.hcLast = new Date().toISOString(); saveLocal(); }, e => console.warn('hc', e)); }
 /* Rattrapage : à chaque ouverture, les séances des 14 derniers jours pas encore arrivées dans Health Connect y sont envoyées
    (l'envoi au moment de « Terminer » peut rater). Avec la nouvelle appli (ver 2), les séances récentes sont renvoyées une fois comme « musculation ». */
 async function hcCatchUp() {
   try {
     if (!hcOn() || S.active) return; if (!hcSt) await hcStatus(); if (!hcSt || !hcSt.available) return;
-    const retype = (hcSt.ver || 0) >= 2 && S.settings.hcType !== 2, lim = Date.now() - (retype ? 30 : 14) * 864e5; let n = 0;
+    const retype = (hcSt.ver || 0) >= 3 && S.settings.hcType !== 3, lim = Date.now() - (retype ? 30 : 14) * 864e5; let n = 0;
     for (const h of S.history.filter(x => new Date(x.date).getTime() > lim && (retype || !x.hcOk))) {
       try { await hcSave(h); h.hcOk = 1; n++; } catch (e) { if (/no_permission|unavailable/.test(String(e && e.message || e))) return; }
     }
-    if (retype) S.settings.hcType = 2; if (n || retype) { S.settings.hcLast = new Date().toISOString(); saveLocal(); }
+    if (retype) S.settings.hcType = 3; if (n || retype) { S.settings.hcLast = new Date().toISOString(); saveLocal(); }
   } catch (e) {}
 }
 setTimeout(hcCatchUp, 9000);
@@ -7926,7 +7927,7 @@ function hrBlock(h) {
 function hcBody() {
   const st = hcSt; if (!st) { if (!hcBody.wait) { hcBody.wait = 1; hcStatus().then(() => { hcBody.wait = 0; if (hcSt) render(); }); } return `<p class="muted small">${T('Vérification de Health Connect…', 'Checking Health Connect…')}</p>`; }
   if (!st.available) return `<p class="muted small" style="margin:4px 0 10px">${st.reason === 'update' ? T('Health Connect doit être mis à jour pour fonctionner avec Runelift.', 'Health Connect needs an update to work with Runelift.') : T('Health Connect n\'est pas installé sur ce téléphone. Installe « Health Connect » depuis le Play Store, puis reviens ici.', 'Health Connect isn\'t installed on this phone. Install "Health Connect" from the Play Store, then come back here.')}</p><button class="btn block" data-act="hc-settings">${T('Ouvrir Health Connect', 'Open Health Connect')}</button>`;
-  const g = st.granted || [], miss = [['workout', T('séances', 'workouts')], ['calories', T('calories', 'calories')], ['weight', T('poids', 'weight')], ['heart', T('fréquence cardiaque', 'heart rate')]].filter(([k]) => !g.includes(k)).map(x => x[1]);
+  const g = st.granted || [], miss = [['workout', T('séances', 'workouts')], ['calories', T('calories', 'calories')], ['weight', T('poids', 'weight')], ['heart', T('fréquence cardiaque', 'heart rate')], ['heartw', T('écriture du pouls', 'writing heart rate')], ['tcal', T('calories totales', 'total calories')]].filter(([k]) => !g.includes(k)).map(x => x[1]);
   return `<p class="muted small" style="margin:4px 0 10px">${T('Chaque séance terminée est envoyée à Health Connect (heure, durée, nom et calories estimées). Samsung Health et ta Galaxy Watch peuvent la voir. Ton poids noté dans Samsung Health ou une balance connectée arrive dans tes Mesures. La fréquence cardiaque mesurée par ta montre pendant la séance s\'affiche dans ton historique (moyenne, max et graphique). Pour une mesure précise, lance aussi un entraînement « Musculation » sur la montre.', 'Each finished workout is sent to Health Connect (time, duration, name and estimated calories). Samsung Health and your Galaxy Watch can see it. Your weight logged in Samsung Health or a smart scale shows up in your Measures. The heart rate your watch measures during the workout shows in your history (average, max and chart). For an accurate reading, also start a "Weight training" workout on the watch.')}</p>
     ${hcOn() ? `${miss.length ? `<p class="small" style="color:var(--warn,#e0b341);margin:0 0 8px">${T('Accès manquant : ', 'Missing access: ')}${miss.join(', ')}</p><button class="btn sm block" data-act="hc-on" style="margin-bottom:8px">${T('Autoriser les accès manquants', 'Allow missing access')}</button>` : ''}
       <div class="grid2"><button class="btn sm" data-act="hc-sync">${T('Envoyer les 30 derniers jours', 'Send the last 30 days')}</button><button class="btn sm" data-act="hc-settings">${T('Gérer les accès', 'Manage access')}</button></div>
