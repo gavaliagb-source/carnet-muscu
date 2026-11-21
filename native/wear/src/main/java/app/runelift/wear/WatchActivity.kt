@@ -222,11 +222,16 @@ class WatchActivity : Activity() {
         return super.onGenericMotionEvent(ev)
     }
 
+    /* Flèches ‹ › : série précédente / suivante (pas l'exercice entier). */
     private fun move(d: Int) {
         val n = WS.nEx(); if (n == 0) return
-        var e = WS.cur()?.first ?: 0
-        for (i in 1..n) { e = ((e + d) % n + n) % n; if ((0 until WS.nSets(e)).any { !WS.isDone(e, it) }) break }
-        WS.exSel = e; field = 0; paint()
+        val all = ArrayList<Pair<Int, Int>>()
+        for (e in 0 until n) for (s in 0 until WS.nSets(e)) if (!WS.isDone(e, s)) all.add(e to s)
+        if (all.isEmpty()) return
+        val c = WS.cur() ?: all[0]
+        val i = all.indexOf(c).let { if (it < 0) 0 else it }
+        val t = all[((i + d) % all.size + all.size) % all.size]
+        WS.exSel = t.first; WS.selE = t.first; WS.selS = t.second; field = 0; paint()
     }
 
     private fun perms() {
@@ -385,7 +390,7 @@ class WatchActivity : Activity() {
                 background = bg(CARD, 22f, if (e == cur) ACC else 0)
                 setPadding(dp(8f), dp(7f), dp(12f), dp(7f))
                 isClickable = true
-                setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); WS.exSel = e; field = 0; page = 1; scroll.scrollTo(0, 0); paint() }
+                setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); WS.exSel = e; WS.selE = -1; field = 0; page = 1; scroll.scrollTo(0, 0); paint() }
             }
             val txt = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL
                 addView(tv(x.optString("n"), 13f, Color.WHITE, true).apply { gravity = Gravity.START; maxLines = 2 })
@@ -413,6 +418,7 @@ class WatchActivity : Activity() {
             addView(tp(WS.t("Passer", "Skip"), 0.055f, ON_ACC, true).apply { background = bg(ACC, 40f); gravity = Gravity.CENTER; isClickable = true
                 setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); WS.restSkip(this@WatchActivity) } }, LinearLayout.LayoutParams((W * 0.30f).toInt(), bh).apply { leftMargin = (W * 0.025f).toInt() })
         }, lp(-2, -2, 0.04f))
+        if (WS.phoneMode()) col.addView(pill(WS.t("Chrono sur le téléphone", "Timer on phone"), CARD, Color.WHITE, 11f, 6f) { WS.bigTimer(this) }, lp(-2, -2, 0.02f))
     }
 
     private fun allDone() {
@@ -538,7 +544,7 @@ class WatchActivity : Activity() {
             val row = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
                 background = bg(CARD, 22f); setPadding(dp(6f), dp(5f), dp(12f), dp(5f)); isClickable = true
-                setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); WS.swap(this@WatchActivity, e, n, l, i); swapFor = -1; page = 1; WS.exSel = e; paint() }
+                setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); WS.swap(this@WatchActivity, e, n, l, i); swapFor = -1; page = 1; WS.exSel = e; WS.selE = -1; paint() }
             }
             row.addView(withImg(i, n, tv(n, 12f, Color.WHITE, true).apply { gravity = Gravity.START; maxLines = 2 }, 36f), LinearLayout.LayoutParams(-1, -2))
             add(row, 6f)

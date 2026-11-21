@@ -49,6 +49,8 @@ class WatchListener : WearableListenerService() {
                 .setContentTitle("Runelift")
                 .setContentText(WS.t("Séance lancée · touche pour ouvrir", "Workout started · tap to open"))
                 .setContentIntent(pi)
+                .setFullScreenIntent(pi, true) // ouvre l'appli tout seule, comme Hevy (sinon : la notification)
+                .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .build()

@@ -26,6 +26,7 @@ object WS {
     var bpm = 0
     var bpmT = 0L
     var exSel = -1
+    var selE = -1; var selS = -1 // série choisie avec les flèches (prioritaire tant que non cochée)
     val edits = HashMap<String, DoubleArray>()
     var lastState = 0L
     @Volatile var ver = 0          // change à chaque modification de la séance (évite de tout recalculer)
@@ -121,6 +122,7 @@ object WS {
     /* Série en cours : la première non cochée, en partant de l'exercice choisi. */
     fun cur(): Pair<Int, Int>? {
         val n = nEx(); if (n == 0) return null
+        if (selE == exSel && exSel in 0 until n && selS in 0 until nSets(exSel) && !isDone(exSel, selS)) return exSel to selS
         val order = if (exSel in 0 until n) (exSel until n) + (0 until exSel) else (0 until n)
         for (e in order) for (s in 0 until nSets(e)) if (!isDone(e, s)) return e to s
         return null
@@ -351,6 +353,9 @@ object WS {
         if (restEnd > now) { restEnd += 30000; restTot += 30; if (local == null) send(ctx, JSONObject().put("a", "rest").put("add", 30)) }
         changed()
     }
+
+    fun phoneMode() = local == null
+    fun bigTimer(ctx: Context) { send(ctx, JSONObject().put("a", "bigtimer")) }
 
     fun restSkip(ctx: Context) {
         restEnd = 0
