@@ -482,6 +482,12 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .sectop{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 2px;background:var(--bg,#0d0f12)}
 .sechid{margin:10px 0;padding:10px;border:1px dashed var(--line);border-radius:12px}.sechid .btn{margin:0 6px 6px 0}
 .secw{-webkit-touch-callout:none}
+.clcard{padding:18px 16px}.clbig{font-size:64px;font-weight:800;text-align:center;letter-spacing:1px;font-variant-numeric:tabular-nums;line-height:1.1;margin:6px 0 10px}
+.clhr{display:flex;align-items:center;justify-content:center;gap:10px}.clbpm{font-size:48px;font-variant-numeric:tabular-nums}.clheart{color:#ef5a6f;display:inline-flex}
+.clzb{height:10px;border-radius:6px;background:linear-gradient(90deg,#7dd3fc 0 60%,#4ade80 60% 70%,#facc15 70% 80%,#fb923c 80% 90%,#ef4444 90%);position:relative;margin:0 4px;opacity:.85}
+.clzb i{position:absolute;top:-4px;left:var(--zp,0%);width:4px;height:18px;border-radius:2px;background:#fff;transform:translateX(-2px);transition:left .4s}
+.clzl{display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin:4px 4px 0}
+.clgrid{display:flex;gap:10px;margin-top:16px}.clst{flex:1;text-align:center;background:var(--card2);border-radius:12px;padding:10px 4px}.clst b{display:block;font-size:26px;font-variant-numeric:tabular-nums}.clst i{font-style:normal;opacity:.6;font-size:12px}
 .glist2{display:flex;flex-direction:column;gap:8px;margin-top:10px}.grow{display:flex!important;justify-content:space-between;align-items:center;text-align:left}.grow i{font-style:normal;opacity:.6;font-size:20px}
 .bossrow .bmini{display:flex;gap:10px;align-items:center}.bossrow .bmini .bart{width:56px;height:56px}
 .bossrow.dead{border-color:color-mix(in srgb,var(--ok) 60%,transparent);background:color-mix(in srgb,var(--ok) 8%,transparent)}
@@ -6530,9 +6536,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.86.7'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.87.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.87.0', d: '2026-11-21', fr: ['Cardio en direct : dans l\'onglet Cardio, lance une vraie séance (marche, course, vélo…) avec chrono, pouls et zone en temps réel depuis ta montre, distance et allure par GPS (dehors) et calories. La séance s\'enregistre dans ton historique. Pour le GPS, il faut la nouvelle APK téléphone (autorisation de localisation).'], en: ['Live cardio: in the Cardio tab, start a real session (walk, run, bike…) with timer, live heart rate and zone from your watch, GPS distance and pace (outdoors) and calories. It is saved to your history. GPS needs the new phone APK (location permission).']},
   {v: '9.86.7', d: '2026-11-21', fr: ['Profil et Guilde : comme dans Samsung Santé, garde le doigt appuyé sur une section pour entrer en mode édition, puis glisse la poignée ≡ pour la déplacer, touche − pour la masquer et ＋ pour la remettre. (Bouton « Personnaliser » aussi.)'], en: ['Profile and Guild: like Samsung Health, long-press a section to enter edit mode, then drag the ≡ handle to move it, tap − to hide and ＋ to bring it back. ("Customize" button too.)']},
   {v: '9.86.6', d: '2026-11-21', fr: ['Profil : bouton « Personnaliser le profil » en bas pour choisir ce que tu veux voir (poids et photos, amis, bilan, graphique, tuiles) et dans quel ordre.'], en: ['Profile: "Customize profile" button at the bottom to choose what you see (weight & photos, friends, year review, chart, tiles) and in which order.']},
   {v: '9.86.5', d: '2026-11-21', fr: ['Classe : changer de classe ouvre maintenant une fenêtre d\'avertissement claire (« tu ne pourras plus changer pendant 7 jours »). Le blocage dure vraiment 7 jours (avant : jusqu\'au lundi) et la date du prochain changement est affichée.'], en: ['Class: changing class now opens a clear warning ("you won\'t be able to change for 7 days"). The lock really lasts 7 days (before: until Monday) and the date of the next change is shown.']},
@@ -7573,9 +7580,79 @@ function cvWeek() {
   S.history.filter(h => new Date(h.date) >= t0).forEach(h => h.exercises.forEach(e => e.sets.forEach(s => { if (s.u === 'c') { min += +s.r || 0; kc += +s.kc || 0; st += +s.st || 0; } })));
   return min ? `<div class="card"><span class="muted small" style="display:inline-flex;align-items:center;gap:5px">${IC('calendar', '📅', 15)} ${T('Cardio des 7 derniers jours', 'Cardio, last 7 days')}</span><div class="row" style="justify-content:space-around;margin-top:8px"><div class="cvsm"><b>${Math.round(min)}</b><small>min</small></div><div class="cvsm"><b>${Math.round(kc)}</b><small>kcal</small></div><div class="cvsm"><b>${(Math.round(st / 10) * 10).toLocaleString(LOC())}</b><small>${T('pas éq.', 'eq. steps')}</small></div></div></div>` : '';
 }
+
+/* ===================== Cardio en direct : chrono, pouls et zone (montre), distance GPS, calories ===================== */
+const CL_NAMES = {walk: ['Tapis roulant (marche)', 'Marche extérieure'], run: ['Tapis roulant (course)', 'Course'], bike: ['Vélo stationnaire'], ell: ['Elliptique'], stair: ['Escaliers (StairMaster)'], row: ['Rameur'], rope: ['Corde à sauter']};
+const CL_ZONES = [['#7dd3fc', 'Z1', 0, 'Très léger', 'Very light'], ['#4ade80', 'Z2', .6, 'Endurance', 'Endurance'], ['#facc15', 'Z3', .7, 'Tempo', 'Tempo'], ['#fb923c', 'Z4', .8, 'Seuil', 'Threshold'], ['#ef4444', 'Z5', .9, 'Maximal', 'Maximum']];
+let clTi = null, clW = null, clLast = null, clGpsOn = true;
+const clMaxHr = () => { const a = ME().age; return a ? 220 - a : 190; };
+const clMs = () => { const a = S.active, c = a && a.cl; return c ? Math.max(0, (c.pat || Date.now()) - c.t0 - (c.pms || 0)) : 0; };
+const clKm = () => { const c = S.active && S.active.cl; return c ? (c.m || 0) / 1000 / (kmU() === 'mi' ? 1.609 : 1) : 0; };
+function clZone(b) { const f = b / clMaxHr(); let z = CL_ZONES[0]; CL_ZONES.forEach(x => { if (f >= x[2]) z = x; }); return z; }
+function clHav(a, b) { const R = 6371000, r = Math.PI / 180, dLa = (b.lat - a.lat) * r, dLo = (b.lon - a.lon) * r, h = Math.sin(dLa / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLo / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); }
+function clGps() {
+  const c = S.active && S.active.cl; if (!c || !c.gps || clW != null || !navigator.geolocation) return;
+  try { clW = navigator.geolocation.watchPosition(pos => {
+    const cc = S.active && S.active.cl; if (!cc) return; cc.gpsOk = 1; if (cc.pat) { clLast = null; return; }
+    const q = pos.coords; if (q.accuracy > 35) return;
+    const n = {lat: q.latitude, lon: q.longitude, t: pos.timestamp}, L = clLast; clLast = n;
+    if (L) { const d = clHav(L, n), dt = Math.max(1, (n.t - L.t) / 1000); if (d >= 3 && d / dt < 12) cc.m = (cc.m || 0) + d; }
+  }, () => { const cc = S.active && S.active.cl; if (cc) cc.gpsErr = 1; }, {enableHighAccuracy: true, maximumAge: 2000, timeout: 25000}); } catch (e) {}
+}
+function clStop() { if (clW != null) { try { navigator.geolocation.clearWatch(clW); } catch (e) {} clW = null; } clLast = null; clearInterval(clTi); clTi = null; }
+function clStart(k, gps) {
+  if (S.active && !S.active.cl && !confirm(T('Une séance est déjà en cours. La remplacer?', 'A workout is already in progress. Replace it?'))) { openWorkout(); return; }
+  const nm = (CL_NAMES[k] || CL_NAMES.run), name = (k === 'walk' || k === 'run') ? nm[gps ? 1 : 0] : nm[0];
+  S.active = {routineId: null, routineName: 'Cardio', start: new Date().toISOString(), exercises: [{name, sets: [{w: '', r: '', done: false}]}], cl: {k, t0: Date.now(), pms: 0, pat: 0, m: 0, gps: gps && (k === 'walk' || k === 'run') ? 1 : 0}};
+  save(); clLast = null; setRoot('cardio'); go('clive'); clGps();
+}
+function clTick() {
+  if (cur().v !== 'clive' || !document.getElementById('cl-t')) { clearInterval(clTi); clTi = null; return; }
+  const a = S.active, c = a && a.cl; if (!c) return;
+  const ms = clMs(), min = ms / 60000, km = clKm(), set = (id, v) => { const e = document.getElementById(id); if (e && e.innerHTML !== v) e.innerHTML = v; };
+  { const t = Math.floor(ms / 1000), h = Math.floor(t / 3600); set('cl-t', (h ? h + ':' + String(Math.floor(t / 60) % 60).padStart(2, '0') : Math.floor(t / 60)) + ':' + String(t % 60).padStart(2, '0')); }
+  const live = wearBpm && Date.now() - wearBpmT < 20000, z = live ? clZone(wearBpm) : null;
+  set('cl-b', live ? `<span style="color:${z[0]}">${wearBpm}</span>` : '<span class="muted">–</span>');
+  set('cl-z', live ? `<b style="color:${z[0]}">${z[1]}</b> · ${T(z[3], z[4])}` : T('Pouls de la montre : en attente', 'Watch heart rate: waiting'));
+  const zb = document.getElementById('cl-zb'); if (zb) zb.style.setProperty('--zp', live ? Math.min(100, Math.round(wearBpm / clMaxHr() * 100)) + '%' : '0%');
+  if (c.gps) { set('cl-km', km.toFixed(2)); set('cl-p', km > .05 ? (() => { const pm = min / km; return Math.floor(pm) + ':' + String(Math.round((pm % 1) * 60) % 60).padStart(2, '0'); })() : '–'); }
+  const cc = cardioCalc(CARDIO_KIND(a.exercises[0].name), Math.max(1, Math.round(min)), c.gps ? Math.round(km * 100) / 100 : '', '', bodyKg()); set('cl-c', cc ? cc.kcal + '' : '–');
+  const pb = document.getElementById('cl-pause'); if (pb) { const t = c.pat ? T('Reprendre', 'Resume') : T('Pause', 'Pause'); if (pb.textContent !== t) pb.textContent = t; }
+  if (!(Math.floor(ms / 1000) % 10)) saveLocal();
+}
+function vCLive() {
+  const a = S.active, c = a && a.cl; if (!c) { setTimeout(() => { if (stack.length > 1) back(); else render(); }, 0); return ''; }
+  clGps(); clearInterval(clTi); clTi = setInterval(clTick, 1000); setTimeout(clTick, 30);
+  const st = (id, lab, unit) => `<div class="clst"><span class="muted small">${lab}</span><b id="${id}">–</b><i>${unit}</i></div>`;
+  return `<div class="card clcard"><div class="muted small" style="text-align:center">${esc(a.exercises[0].name)}</div>
+    <div id="cl-t" class="clbig">0:00</div>
+    <div class="clhr"><span class="clheart">${IC('heart', '♥', 30)}</span><b id="cl-b" class="clbpm">–</b><span class="muted">bpm</span></div>
+    <div id="cl-z" class="small" style="text-align:center;margin:2px 0 8px"></div><div class="clzb" id="cl-zb"><i></i></div>
+    <div class="clzl">${CL_ZONES.map(z => `<span style="color:${z[0]}">${z[1]}</span>`).join('')}</div>
+    <div class="clgrid">${c.gps ? st('cl-km', T('Distance', 'Distance'), kmU()) + st('cl-p', T('Allure', 'Pace'), '/' + kmU()) : ''}${st('cl-c', 'Calories', 'kcal')}</div>
+    ${c.gps && c.gpsErr ? `<p class="small" style="color:var(--warm);text-align:center">${T('GPS indisponible : autorise la localisation pour Runelift.', 'GPS unavailable: allow location for Runelift.')}</p>` : ''}
+    <p class="muted small" style="text-align:center;margin:8px 0 0">${T('Pouls et zone viennent de ta montre (zones selon une fréquence max estimée à', 'Heart rate and zone come from your watch (zones from an estimated max rate of')} ${clMaxHr()}${T(' bpm).', ' bpm).')}</p>
+    <div class="row" style="gap:8px;margin-top:14px"><button class="btn" id="cl-pause" style="flex:1" data-act="cl-pause">${T('Pause', 'Pause')}</button><button class="btn primary" style="flex:1.4" data-act="cl-finish">${T('Terminer', 'Finish')}</button></div>
+    <button class="linkbtn" style="margin:10px auto 0;display:block;color:var(--bad)" data-act="cl-cancel">${T('Abandonner', 'Discard')}</button></div>`;
+}
+function clFinish() {
+  const a = S.active, c = a && a.cl; if (!c) return;
+  const min = Math.max(1, Math.round(clMs() / 60000)), km = Math.round(clKm() * 100) / 100;
+  a.exercises[0].sets = [{w: '', r: min, done: true, ...(c.gps && km > 0 ? {km} : {})}]; delete a.cl; clStop(); save();
+  fakeAct('finish', {});
+}
+function cardioLiveCard() {
+  const a = S.active;
+  if (a && a.cl) return `<div class="card sysw"><div class="sysh" style="margin:0 0 8px">[ ${T('CARDIO EN DIRECT', 'LIVE CARDIO')} ]</div><p class="small muted" style="margin:0 0 10px">${T('Une séance cardio est en cours.', 'A cardio session is in progress.')}</p><button class="btn primary block" data-act="go" data-v="clive">${T('Reprendre', 'Resume')}</button></div>`;
+  return `<div class="card"><h3 style="margin:0 0 4px">${IC('heartp', '❤️', 20)} ${T('Cardio en direct', 'Live cardio')}</h3>
+    <p class="muted small" style="margin:0 0 10px">${T('Lance une séance : chrono, pouls et zone de ta montre, distance (GPS) et calories.', 'Start a session: timer, heart rate and zone from your watch, distance (GPS) and calories.')}</p>
+    <div class="cvkinds">${CV_KINDS.map(([k, emo, n, ik]) => `<button class="cvk ${cv.k === k ? 'on' : ''}" data-act="cl-kind" data-k="${k}"><span>${IC(ik, emo, 26)}</span>${T(n[0], n[1])}</button>`).join('')}</div>
+    ${['walk', 'run'].includes(cv.k) ? `<label style="display:flex;gap:10px;align-items:center;margin:10px 0 0"><input type="checkbox" id="cl-gps" ${clGpsOn ? 'checked' : ''} data-act="cl-gpsopt"> ${T('Dehors : mesurer la distance avec le GPS', 'Outdoors: measure distance with GPS')}</label>` : ''}
+    <button class="btn primary block" data-act="cl-start" style="margin-top:12px">${T('Démarrer', 'Start')}</button></div>`;
+}
 function vCardio() {
   const _m = ME();
-  return `${_m.h && _m.age && _m.sex ? '' : meLine()}
+  return `${_m.h && _m.age && _m.sex ? '' : meLine()}${cardioLiveCard()}
     <div class="card"><h3 style="margin:0 0 10px;display:flex;align-items:center;gap:8px">${IC('heartp', '👣', 20)} ${T('Convertisseur', 'Converter')}</h3>
       <div class="cvkinds">${CV_KINDS.map(([k, emo, n, ik]) => `<button class="cvk ${cv.k === k ? 'on' : ''}" data-act="cv-kind" data-k="${k}"><span>${IC(ik, emo, 26)}</span>${T(n[0], n[1])}</button>`).join('')}</div>
       <div id="cvin">${cvInputs()}</div>
@@ -9602,7 +9679,7 @@ const VIEWS = {
   stats: ['Statistiques', () => vStats()], 'st-vol': ['Séries par muscle', () => vVolume()], 'st-radar': ['Répartition musculaire', () => vRadar()],
   'st-body': ['Carte des muscles', () => vBodyMap()], 'st-top': ['Principaux exercices', () => vTopEx()], 'st-rec': ['Records personnels', () => vRecords()],
   'st-month': ['Rapport mensuel', () => vMonth()], exercises: ['Exercices', () => vExList()], exdetail: ['Exercice', () => vExDetail()],
-  measures: ['Corps et progrès', () => vBody()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], friends: ['Amis', () => vFriends()], notifs: ['Notifications', () => vNotifs()], world: ['Classement mondial', () => vWorld()], cardio: ['Cardio', () => vCardio()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], murank: ['Rangs par muscle', () => vMuscleRanks()], shadows: ['Arsenal', () => vShadows()], compare: ['Comparer deux périodes', () => vCompare()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()], guild: ['Guilde', () => vGuild()]
+  measures: ['Corps et progrès', () => vBody()], clive: ['Cardio en direct', () => vCLive()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], friends: ['Amis', () => vFriends()], notifs: ['Notifications', () => vNotifs()], world: ['Classement mondial', () => vWorld()], cardio: ['Cardio', () => vCardio()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], murank: ['Rangs par muscle', () => vMuscleRanks()], shadows: ['Arsenal', () => vShadows()], compare: ['Comparer deux périodes', () => vCompare()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()], guild: ['Guilde', () => vGuild()]
 };
 function headerRight(v) {
   if (['train', 'friends', 'guild'].includes(v)) return bellBtn();
@@ -10247,6 +10324,12 @@ document.addEventListener('click', e => {
     case 'chr-reset': chr = {acc: 0, start: null, laps: []}; chrSave(); chrDraw(true); break;
     case 'cpick': openColorPicker(b.dataset.k); break;
     case 'pg': { PGS[b.dataset.k] = (PGS[b.dataset.k] || 0) + +b.dataset.d; if (b.dataset.k.startsWith('arm:')) armRefresh(true); else { const y = scrollY; render(); window.scrollTo(0, y); } break; }
+    case 'cl-kind': cv.k = b.dataset.k; { const y = scrollY; render(); window.scrollTo(0, y); } break;
+    case 'cl-gpsopt': clGpsOn = b.checked; break;
+    case 'cl-start': clStart(cv.k, clGpsOn); break;
+    case 'cl-pause': { const c = S.active && S.active.cl; if (!c) break; if (c.pat) { c.pms = (c.pms || 0) + Date.now() - c.pat; c.pat = 0; clLast = null; } else c.pat = Date.now(); save(); clTick(); break; }
+    case 'cl-finish': if (confirm(T('Terminer la séance cardio?', 'Finish the cardio session?'))) clFinish(); break;
+    case 'cl-cancel': if (confirm(T('Abandonner cette séance cardio? Rien ne sera enregistré.', 'Discard this cardio session? Nothing will be saved.'))) { S.active = null; clStop(); save(); stopTimer(); setRoot('cardio'); render(); } break;
     case 'gcust': secEdit = 'g'; { const y = scrollY; render(); window.scrollTo(0, y); } break;
     case 'pfcust': secEdit = 'pf'; { const y = scrollY; render(); window.scrollTo(0, y); } break;
     case 'sec-done': secEdit = null; { const y = scrollY; render(); window.scrollTo(0, y); } break;
