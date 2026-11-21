@@ -59,6 +59,23 @@ nav button{flex:1;background:none;border:0;color:var(--muted);padding:10px 0 12p
 nav button .ic{font-size:20px;line-height:1}
 nav button.on{color:var(--accent)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+/* Style Premium (optionnel) */
+html.lux{--radius:18px}
+html.lux body{-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1,"lnum" 1}
+html.lux header h1{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-weight:600;letter-spacing:.02em}
+html.lux h2{font-weight:750;letter-spacing:-.01em}
+html.lux h3{font-weight:700;letter-spacing:-.005em}
+html.lux label{text-transform:uppercase;letter-spacing:.09em;font-size:11px;font-weight:650}
+html.lux .card{background:linear-gradient(165deg,color-mix(in srgb,var(--card) 92%,#fff) 0%,var(--card) 55%);border:1px solid color-mix(in srgb,var(--line) 75%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 12px 30px -16px rgba(0,0,0,.7);margin-bottom:14px}
+html.lux .btn{border-radius:12px;font-weight:650;letter-spacing:.01em;transition:transform .12s,filter .12s,box-shadow .12s}
+html.lux .btn:active{transform:scale(.97)}
+html.lux .btn.primary{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 88%,#fff),var(--accent));box-shadow:0 8px 20px -10px var(--accent),inset 0 1px 0 rgba(255,255,255,.28)}
+html.lux .btn.on{box-shadow:0 0 0 1px var(--accent) inset}
+html.lux nav{border-top:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+html.lux nav button.on{text-shadow:0 0 14px color-mix(in srgb,var(--accent) 55%,transparent)}
+html.lux input,html.lux select,html.lux textarea{border-radius:12px}
+html.lux .chip{transition:transform .12s}
+@media (prefers-reduced-motion:reduce){html.lux .btn{transition:none}}
 .card.ss{border-left:4px solid var(--ss)}
 .row{display:flex;align-items:center;gap:8px}
 .between{justify-content:space-between}
@@ -1362,6 +1379,7 @@ function applyTheme() {
   if (t === 'auto') t = matchMedia('(prefers-color-scheme: light)').matches ? 'clair' : 'noir';
   const de = document.documentElement;
   de.dataset.theme = t;
+  de.classList.toggle('lux', !!S.settings.lux);
   const a = S.settings.accent;
   if (a && /^#[0-9a-f]{6}$/i.test(a)) {
     const n = parseInt(a.slice(1), 16), lum = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
@@ -2879,6 +2897,7 @@ function vSettings() {
       <p class="muted small" style="margin:8px 0 0">${T('C\'est le téléphone qui choisit le moment exact, environ une fois par jour, même quand l\'appli est fermée. Ça demande que l\'appli soit installée (Chrome ⋮ → Installer l\'appli). Si tu t\'es entraîné aujourd\'hui, aucun rappel.', 'The phone picks the exact time, about once a day, even when the app is closed. The app must be installed (Chrome ⋮ → Install app). If you trained today, no reminder.')}</p>` : ''}`) +
   setSec('look', 'palette', '🎨', T('Apparence', 'Appearance'), T('Thème, couleurs, fond, icônes', 'Theme, colors, background, icons'), `<p class="muted small" style="margin:4px 0 0">Thèmes prêts à utiliser :</p>
       <div class="grid2" style="margin-top:10px">${THEMES.map(([k, l, c]) => `<button class="btn sm ${(S.settings.theme || 'noir') === k ? 'on' : ''}" style="text-align:left" data-act="theme" data-t="${k}"><span class="sw" style="background:${c}"></span>${l}</button>`).join('')}</div>
+      <button class="btn block ${S.settings.lux ? 'on' : ''}" style="margin-top:12px;text-align:left" data-act="lux">${T('Style premium : ' + (S.settings.lux ? 'activé' : 'désactivé'), 'Premium style: ' + (S.settings.lux ? 'on' : 'off'))}<span class="muted small" style="display:block;font-weight:500">${T('Cartes en relief, titres soignés, boutons raffinés. Marche avec tous les thèmes.', 'Raised cards, refined titles and buttons. Works with every theme.')}</span></button>
       ${myThemesHtml()}
       <label style="margin-top:16px">Couleur des boutons (personnalisée)</label>
       <div class="chips">${ACCENTS.map(c => `<button class="chip" data-act="accent-pick" data-c="${c}" style="background:${c};border-color:${S.settings.accent === c ? 'var(--text)' : c};width:34px;height:34px;padding:0" aria-label="Couleur ${c}"></button>`).join('')}</div>
@@ -6536,9 +6555,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.87.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.88.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.88.0', d: '2026-11-21', fr: ['Nouveau : « Style premium » (Réglages → Apparence). Cartes en relief, titres plus soignés, boutons raffinés, chiffres alignés. Marche avec tous les thèmes et se coupe d\'un bouton.'], en: ['New: “Premium style” (Settings → Appearance). Raised cards, refined titles and buttons, aligned numbers. Works with every theme and can be turned off.']},
   {v: '9.87.4', d: '2026-11-21', fr: ['Cardio en direct : le GPS marche aussi pour le vélo (dehors), avec distance et vitesse en km/h. Le vélo extérieur s\'enregistre comme « Vélo extérieur ».'], en: ['Live cardio: GPS now works for cycling too (outdoors), with distance and speed in km/h. Outdoor rides are saved as "Vélo extérieur".']},
   {v: '9.87.3', d: '2026-11-21', fr: ['Cardio : l\'activité de « Cardio en direct » est maintenant indépendante du convertisseur, et l\'option GPS est un bouton clair (fini la case mal alignée).'], en: ['Cardio: the "Live cardio" activity is now independent from the converter, and the GPS option is a clear button (no more misaligned checkbox).']},
   {v: '9.87.2', d: '2026-11-21', fr: ['Montre : le cardio a deux pages, comme Samsung Santé : métriques (chrono, pouls et zone, distance, calories) puis commandes (Pause, Terminer, Abandonner). Nouvelle APK montre requise.'], en: ['Watch: cardio has two pages, like Samsung Health: metrics (timer, heart rate and zone, distance, calories) then controls (Pause, Finish, Discard). New watch APK required.']},
@@ -10747,6 +10767,7 @@ document.addEventListener('click', e => {
 
     /* progrès */
     case 'prog-tab': progTab = b.dataset.p; render(); break;
+    case 'lux': S.settings.lux = !S.settings.lux; save(); applyTheme(); render(); break;
     case 'theme': S.settings.theme = b.dataset.t; save(); applyTheme(); render(); break;
     case 'rec-sort': recSort = b.dataset.s; render(); break;
     case 'apply-sug': {
