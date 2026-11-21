@@ -1,0 +1,74 @@
+écran 454 454 Physical density: 320
+Performing Streamed Install
+Success
+
+appli prête après 0 s
+capture routines
+capture routines_bas
+toucher 'Épaule bras'
+appli prête après 0 s
+capture detail_routine
+capture detail_bas
+toucher 'Commencer'
+appli prête après 0 s
+capture serie
+toucher '✓'
+appli prête après 0 s
+capture repos
+toucher '+30'
+appli prête après 0 s
+capture repos_plus30
+toucher 'Passer'
+appli prête après 0 s
+capture serie_2
+capture roue_charge_lent
+capture roue_charge_coup_fort
+capture roue_reps_baisse
+lunette : Unknown command: rotaryencoder
+capture lunette
+toucher 'Série suivante'
+appli prête après 0 s
+capture fleche_suivante
+toucher 'Série précédente'
+appli prête après 0 s
+capture fleche_precedente
+capture liste_exos
+capture liste_exos_bas
+capture options
+toucher 'Remplacer'
+appli prête après 0 s
+capture remplacer
+capture remplacer_bas
+capture retour_options
+toucher 'Type'
+appli prête après 0 s
+capture type_change
+toucher 'Ajouter une série'
+appli prête après 0 s
+toucher 'Abandonner'
+appli prête après 0 s
+capture confirmer_abandon
+toucher 'Non'
+appli prête après 0 s
+capture apres_non
+fluidité Total frames rendered: 2194
+fluidité Janky frames: 2038 (92.89%)
+fluidité Janky frames (legacy): 2021 (92.11%)
+fluidité 50th percentile: 20ms
+fluidité 90th percentile: 21ms
+fluidité 95th percentile: 22ms
+fluidité 99th percentile: 24ms
+fluidité Number Slow UI thread: 19
+fluidité Number Slow bitmap uploads: 0
+fluidité Number Slow issue draw commands: 2033
+fluidité Number Frame deadline missed: 2038
+fluidité Number Frame deadline missed (legacy): 2
+fluidité 50th gpu percentile: 14ms
+fluidité 90th gpu percentile: 14ms
+fluidité 95th gpu percentile: 15ms
+fluidité 99th gpu percentile: 16ms
+appli pas prête
+capture serie_texte_grand
+capture liste_texte_grand
+capture reprise_apres_relance
+PLANTAGES : aucun
