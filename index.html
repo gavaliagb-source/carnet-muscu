@@ -6536,9 +6536,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.87.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.87.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.87.3', d: '2026-11-21', fr: ['Cardio : l\'activité de « Cardio en direct » est maintenant indépendante du convertisseur, et l\'option GPS est un bouton clair (fini la case mal alignée).'], en: ['Cardio: the "Live cardio" activity is now independent from the converter, and the GPS option is a clear button (no more misaligned checkbox).']},
   {v: '9.87.2', d: '2026-11-21', fr: ['Montre : le cardio a deux pages, comme Samsung Santé : métriques (chrono, pouls et zone, distance, calories) puis commandes (Pause, Terminer, Abandonner). Nouvelle APK montre requise.'], en: ['Watch: cardio has two pages, like Samsung Health: metrics (timer, heart rate and zone, distance, calories) then controls (Pause, Finish, Discard). New watch APK required.']},
   {v: '9.87.1', d: '2026-11-21', fr: ['Montre : la séance cardio en direct a son propre écran (gros chrono, pouls et zone en couleur, distance, allure, calories, Pause et Terminer). Nouvelle APK montre requise.'], en: ['Watch: live cardio has its own screen (big timer, colored heart rate and zone, distance, pace, calories, Pause and Finish). New watch APK required.']},
   {v: '9.87.0', d: '2026-11-21', fr: ['Cardio en direct : dans l\'onglet Cardio, lance une vraie séance (marche, course, vélo…) avec chrono, pouls et zone en temps réel depuis ta montre, distance et allure par GPS (dehors) et calories. La séance s\'enregistre dans ton historique. Pour le GPS, il faut la nouvelle APK téléphone (autorisation de localisation).'], en: ['Live cardio: in the Cardio tab, start a real session (walk, run, bike…) with timer, live heart rate and zone from your watch, GPS distance and pace (outdoors) and calories. It is saved to your history. GPS needs the new phone APK (location permission).']},
@@ -7586,7 +7587,7 @@ function cvWeek() {
 /* ===================== Cardio en direct : chrono, pouls et zone (montre), distance GPS, calories ===================== */
 const CL_NAMES = {walk: ['Tapis roulant (marche)', 'Marche extérieure'], run: ['Tapis roulant (course)', 'Course'], bike: ['Vélo stationnaire'], ell: ['Elliptique'], stair: ['Escaliers (StairMaster)'], row: ['Rameur'], rope: ['Corde à sauter']};
 const CL_ZONES = [['#7dd3fc', 'Z1', 0, 'Très léger', 'Very light'], ['#4ade80', 'Z2', .6, 'Endurance', 'Endurance'], ['#facc15', 'Z3', .7, 'Tempo', 'Tempo'], ['#fb923c', 'Z4', .8, 'Seuil', 'Threshold'], ['#ef4444', 'Z5', .9, 'Maximal', 'Maximum']];
-let clTi = null, clW = null, clLast = null, clGpsOn = true;
+let clTi = null, clW = null, clLast = null, clGpsOn = true, clK = 'run';
 const clMaxHr = () => { const a = ME().age; return a ? 220 - a : 190; };
 const clMs = () => { const a = S.active, c = a && a.cl; return c ? Math.max(0, (c.pat || Date.now()) - c.t0 - (c.pms || 0)) : 0; };
 const clKm = () => { const c = S.active && S.active.cl; return c ? (c.m || 0) / 1000 / (kmU() === 'mi' ? 1.609 : 1) : 0; };
@@ -7647,10 +7648,10 @@ function clFinish() {
 function cardioLiveCard() {
   const a = S.active;
   if (a && a.cl) return `<div class="card sysw"><div class="sysh" style="margin:0 0 8px">[ ${T('CARDIO EN DIRECT', 'LIVE CARDIO')} ]</div><p class="small muted" style="margin:0 0 10px">${T('Une séance cardio est en cours.', 'A cardio session is in progress.')}</p><button class="btn primary block" data-act="go" data-v="clive">${T('Reprendre', 'Resume')}</button></div>`;
-  return `<div class="card"><h3 style="margin:0 0 4px">${IC('heartp', '❤️', 20)} ${T('Cardio en direct', 'Live cardio')}</h3>
+  return `<div class="card"><h3 style="margin:0 0 4px">${IC('heart', '❤️', 20)} ${T('Cardio en direct', 'Live cardio')}</h3>
     <p class="muted small" style="margin:0 0 10px">${T('Lance une séance : chrono, pouls et zone de ta montre, distance (GPS) et calories.', 'Start a session: timer, heart rate and zone from your watch, distance (GPS) and calories.')}</p>
-    <div class="cvkinds">${CV_KINDS.map(([k, emo, n, ik]) => `<button class="cvk ${cv.k === k ? 'on' : ''}" data-act="cl-kind" data-k="${k}"><span>${IC(ik, emo, 26)}</span>${T(n[0], n[1])}</button>`).join('')}</div>
-    ${['walk', 'run'].includes(cv.k) ? `<label style="display:flex;gap:10px;align-items:center;margin:10px 0 0"><input type="checkbox" id="cl-gps" ${clGpsOn ? 'checked' : ''} data-act="cl-gpsopt"> ${T('Dehors : mesurer la distance avec le GPS', 'Outdoors: measure distance with GPS')}</label>` : ''}
+    <div class="cvkinds">${CV_KINDS.map(([k, emo, n, ik]) => `<button class="cvk ${clK === k ? 'on' : ''}" data-act="cl-kind" data-k="${k}"><span>${IC(ik, emo, 26)}</span>${T(n[0], n[1])}</button>`).join('')}</div>
+    ${['walk', 'run'].includes(clK) ? `<button class="btn sm block" data-act="cl-gpsopt" style="margin-top:10px;${clGpsOn ? 'border-color:var(--accent);color:var(--accent)' : ''}">${clGpsOn ? T('GPS dehors : activé (distance et allure)', 'Outdoor GPS: on (distance and pace)') : T('GPS dehors : désactivé (tapis / intérieur)', 'Outdoor GPS: off (treadmill / indoors)')}</button>` : `<p class="muted small" style="margin:10px 0 0">${T('Pas de GPS pour cette activité : durée, pouls et calories.', 'No GPS for this activity: time, heart rate and calories.')}</p>`}
     <button class="btn primary block" data-act="cl-start" style="margin-top:12px">${T('Démarrer', 'Start')}</button></div>`;
 }
 function vCardio() {
@@ -10330,9 +10331,9 @@ document.addEventListener('click', e => {
     case 'chr-reset': chr = {acc: 0, start: null, laps: []}; chrSave(); chrDraw(true); break;
     case 'cpick': openColorPicker(b.dataset.k); break;
     case 'pg': { PGS[b.dataset.k] = (PGS[b.dataset.k] || 0) + +b.dataset.d; if (b.dataset.k.startsWith('arm:')) armRefresh(true); else { const y = scrollY; render(); window.scrollTo(0, y); } break; }
-    case 'cl-kind': cv.k = b.dataset.k; { const y = scrollY; render(); window.scrollTo(0, y); } break;
-    case 'cl-gpsopt': clGpsOn = b.checked; break;
-    case 'cl-start': clStart(cv.k, clGpsOn); break;
+    case 'cl-kind': clK = b.dataset.k; { const y = scrollY; render(); window.scrollTo(0, y); } break;
+    case 'cl-gpsopt': clGpsOn = !clGpsOn; { const y = scrollY; render(); window.scrollTo(0, y); } break;
+    case 'cl-start': clStart(clK, clGpsOn); break;
     case 'cl-pause': { const c = S.active && S.active.cl; if (!c) break; if (c.pat) { c.pms = (c.pms || 0) + Date.now() - c.pat; c.pat = 0; clLast = null; } else c.pat = Date.now(); save(); clTick(); break; }
     case 'cl-finish': if (confirm(T('Terminer la séance cardio?', 'Finish the cardio session?'))) clFinish(); break;
     case 'cl-cancel': if (confirm(T('Abandonner cette séance cardio? Rien ne sera enregistré.', 'Discard this cardio session? Nothing will be saved.'))) { S.active = null; clStop(); save(); stopTimer(); setRoot('cardio'); render(); } break;
