@@ -160,7 +160,7 @@ body.wob #timer{bottom:calc(140px + var(--nb))}body.wob main{padding-bottom:150p
 canvas{width:100%;height:210px;display:block}
 .stat{flex:1;background:var(--card2);border-radius:10px;padding:10px;text-align:center}
 .stat b{display:block;font-size:20px}
-.hist summary{list-style:none;cursor:pointer}
+.hist summary,summary.nomark{list-style:none;cursor:pointer}summary.nomark::-webkit-details-marker{display:none}
 .hist summary::-webkit-details-marker{display:none}
 .empty{position:relative;text-align:center;color:var(--muted);padding:30px 16px;line-height:1.45}.empty::before{content:'';display:block;width:64px;height:64px;margin:0 auto 12px;border-radius:50%;background:color-mix(in srgb,var(--accent) 14%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 30%,transparent)}.empty::after{content:'';position:absolute;top:47px;left:50%;width:30px;height:30px;transform:translateX(-50%);background:var(--accent);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.4 14.4 9.6 9.6'/%3E%3Cpath d='M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z'/%3E%3Cpath d='m21.5 21.5-1.4-1.4'/%3E%3Cpath d='M3.9 3.9 2.5 2.5'/%3E%3Cpath d='M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.4 14.4 9.6 9.6'/%3E%3Cpath d='M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z'/%3E%3Cpath d='m21.5 21.5-1.4-1.4'/%3E%3Cpath d='M3.9 3.9 2.5 2.5'/%3E%3Cpath d='M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z'/%3E%3C/svg%3E") center/contain no-repeat}
 .gap{height:8px}
@@ -2771,7 +2771,7 @@ function vBody() {
   return meCard() + photosCard() + stats + wGoalCard(ws) + (nut ? `<div class="row" style="margin-bottom:12px;align-items:stretch">${nut}</div>` : '') + `
     <select id="bodySel">${opts.map(([k, l]) => `<option value="${k}" ${k === bodyMetric ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
     <div class="card" style="margin-top:12px">${pts.length ? `<canvas id="chart"></canvas>${NUTRI.some(x => x[0] === bodyMetric) ? '' : predictHtml(pts.map(p => ({d: p.d + 'T12:00', v: +p.v})), bodyMetric === 'w' ? 'body' : 'cm')}` : '<div class="empty">Aucune donnée pour cette mesure.</div>'}</div>
-    <details class="card" id="bodyNew"><summary style="cursor:pointer;font-weight:800;font-size:16px">＋ Nouvelle mesure</summary>
+    <details class="card" id="bodyNew"><summary class="nomark" style="cursor:pointer;font-weight:800;font-size:16px">＋ Nouvelle mesure</summary>
       <label>Date</label><input type="date" id="bd" value="${today}">
       <label>Poids (${U()})</label><input id="bw" inputmode="decimal" placeholder="${lastEntry && lastEntry.w != null ? esc(lastEntry.w) : ''}">
       <p class="muted small" style="margin:10px 0 0">Mensurations (${MU()}), facultatif :</p>
@@ -6566,9 +6566,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.88.5'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.88.6'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.88.6', d: '2026-11-21', fr: ['Corps et progrès : « Nouvelle mesure » n\'a plus de flèche en double avec le +.'], en: ['Body & progress: “New measurement” no longer shows an arrow next to the +.']},
   {v: '9.88.5', d: '2026-11-21', fr: ['Armurerie : le bouton « Essayer » n\'apparaît plus sur les auras et victoires pas encore débloquées.'], en: ['Armory: the “Try it” button no longer shows on locked auras and victories.']},
   {v: '9.88.4', d: '2026-11-21', fr: ['Le thème par défaut est maintenant « Noir OLED » (noir pur et lime). Si tu avais déjà choisi un thème, il ne change pas.'], en: ['The default theme is now “OLED black”. If you already picked a theme, it stays.']},
   {v: '9.88.3', d: '2026-11-21', fr: ['Le style premium est maintenant le style de l\'appli : le bouton pour le couper est retiré.'], en: ['Premium style is now the app\'s style: the toggle is removed.']},
