@@ -161,7 +161,7 @@ canvas{width:100%;height:210px;display:block}
 .stat{flex:1;background:var(--card2);border-radius:10px;padding:10px;text-align:center}
 .stat b{display:block;font-size:20px}
 .phfull{position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center}.phfull img{max-width:100%;max-height:100%;object-fit:contain}
-@keyframes gflash{0%,100%{box-shadow:0 0 0 0 transparent}30%{box-shadow:0 0 0 2px var(--accent),0 0 22px -4px var(--accent)}}.gflash{animation:gflash 1.6s ease 2;border-radius:12px}
+@keyframes gflash{0%,100%{box-shadow:0 0 0 0 transparent}30%{box-shadow:0 0 0 2px var(--accent),0 0 22px -4px var(--accent)}}.gflash{animation:gflash 1.6s ease 2;border-radius:12px}.gstrip .gshead{padding:6px 0;margin:-6px 0 0}
 .bmrow{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px}.bmrow::-webkit-scrollbar{display:none}.bmrow .btn{flex:none;white-space:nowrap}
 .hist summary,summary.nomark{list-style:none;cursor:pointer}summary.nomark::-webkit-details-marker{display:none}
 .hist summary::-webkit-details-marker{display:none}
@@ -6569,9 +6569,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.89.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.89.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.89.1', d: '2026-11-21', fr: ['Bande Guilde : toute la ligne du haut (« GUILDE … Niv. ») t\'amène sur ton statut, qui s\'illumine. Avant, il fallait viser le petit « Niv. » exactement.'], en: ['Guild strip: the whole top line now takes you to your status, highlighted.']},
   {v: '9.89.0', d: '2026-11-21', fr: ['Entraînement : dans la bande Guilde, toucher Quête, Donjon ou Boss t\'amène directement au bon endroit dans la Guilde, qui s\'illumine un instant.'], en: ['Workout: in the Guild strip, tapping Quest, Dungeon or Boss takes you straight to that spot in the Guild, briefly highlighted.']},
   {v: '9.88.9', d: '2026-11-21', fr: ['Photos de progrès : la photo tient dans l\'écran avec ses boutons (comparer, supprimer, partager) visibles sans défiler. Touche la photo pour la voir en plein écran.'], en: ['Progress photos: the photo fits on screen with its buttons visible. Tap it to see it full screen.']},
   {v: '9.88.8', d: '2026-11-21', fr: ['Profil : on entre maintenant sa date de naissance au lieu de son âge. L\'âge se met à jour tout seul le jour de ta fête (calories, zones de cardio).'], en: ['Profile: enter your birth date instead of your age. Your age updates by itself on your birthday (calories, cardio zones).']},
@@ -9586,7 +9587,7 @@ function guildStrip() {
   const q = dailyQuest(), dg = weekDungeon(), bo = monthBoss(), ev = evNow(), hu = hunter();
   const pc = (a, b) => Math.min(100, Math.round(a / Math.max(1, b) * 100));
   const chip = (ic, label, pct, done, g) => `<span class="qchip ${done ? 'ok' : ''}" data-gsec="${g}"><span class="qci">${ic}</span><span>${label}</span><i><b style="width:${done ? 100 : pct}%"></b></i></span>`;
-  return `<div class="card sysw qcard qmin gstrip" data-tab="guild" role="button"><div class="gshead"><span class="sysh" style="margin:0">[ ${T('GUILDE', 'GUILD')} ]</span><span class="small muted gslv" data-gsec="status">${T('Niv.', 'Lv.')} ${hu.lvl} ›</span></div>
+  return `<div class="card sysw qcard qmin gstrip" data-tab="guild" role="button"><div class="gshead" data-gsec="status"><span class="sysh" style="margin:0">[ ${T('GUILDE', 'GUILD')} ]</span><span class="small muted gslv">${T('Niv.', 'Lv.')} ${hu.lvl} ›</span></div>
     <div class="qchips">${q.rest ? chip('🌙', T('Repos', 'Rest'), 100, true, 'q') : chip(q.ic, T('Quête', 'Quest'), pc(q.cur, q.goal), q.done, 'q')}${chip(rkBadge(dg.rk, 'mrk lvrk'), T('Donjon', 'Dungeon'), pc(dg.cur, dg.goal), dg.done, 'd')}${bo ? chip('☠️', 'Boss', pc(bo.cur - bo.from * .85, bo.target - bo.from * .85), bo.done, 'b') : ''}</div>
     ${ev ? `<div class="small" style="margin-top:8px;color:#f5c542">🎪 ${esc(T(ev.n[0], ev.n[1]))} ${T('en cours', 'live')}</div>` : questPenalty() && !q.rest ? `<div class="small" style="margin-top:8px;color:var(--warm)">⚠️ ${T('Quête d\'hier ratée : −' + qfXP(qFail()[dkey(new Date(Date.now() - 864e5))]) + ' XP.', 'Yesterday\'s quest failed: −' + qfXP(qFail()[dkey(new Date(Date.now() - 864e5))]) + ' XP.')}</div>` : ''}</div>`;
 }
@@ -10148,7 +10149,7 @@ document.addEventListener('focusin', e => {
 /* ===================== Événements ===================== */
 document.addEventListener('click', e => {
   const gs = e.target.closest('[data-gsec]');
-  if (gs && e.target.closest('.gstrip')) { const sec = gs.dataset.gsec, gq = ['q', 'd', 'b'].includes(sec); if (sec !== 'status' && !gq) { S.settings.gOpen = S.settings.gOpen || {}; S.settings.gOpen[sec] = true; save(); } navAnim = false; setRoot('guild'); render(); window.scrollTo(0, 0); setTimeout(() => { const t = sec === 'status' ? document.getElementById('gstatus') : gq ? document.querySelector('#app [data-gq="' + sec + '"]') : document.querySelector('[data-gid="' + sec + '"]'); if (t && gq) { t.classList.remove('gflash'); void t.offsetWidth; t.classList.add('gflash'); } if (t) t.scrollIntoView({block: gq ? 'center' : 'start'}); }, 80); return; }
+  if (gs && e.target.closest('.gstrip')) { const sec = gs.dataset.gsec, gq = ['q', 'd', 'b'].includes(sec); if (sec !== 'status' && !gq) { S.settings.gOpen = S.settings.gOpen || {}; S.settings.gOpen[sec] = true; save(); } navAnim = false; setRoot('guild'); render(); window.scrollTo(0, 0); setTimeout(() => { const t = sec === 'status' ? document.getElementById('gstatus') : gq ? document.querySelector('#app [data-gq="' + sec + '"]') : document.querySelector('[data-gid="' + sec + '"]'); if (t && (gq || sec === 'status')) { t.classList.remove('gflash'); void t.offsetWidth; t.classList.add('gflash'); } if (t) t.scrollIntoView({block: gq ? 'center' : 'start'}); }, 80); return; }
   const n = e.target.closest('[data-tab]');
   if (n) { const ti = ROOT_TABS.indexOf(n.dataset.tab), fi = ROOT_TABS.indexOf(stack[0].v); navAnim = false; const t0 = n.dataset.tab, same = stack.length === 1 && stack[0].v === t0; if (stack.length === 1) TABY[stack[0].v] = Math.round(scrollY); setRoot(t0); render(); const y0 = same ? 0 : (TABY[t0] || 0); window.scrollTo(0, y0); if (y0) setTimeout(() => window.scrollTo(0, y0), 60); return; } // onglets du bas : affichage net immédiat, sans fondu
   const b = e.target.closest('[data-act]'); if (!b) return;
