@@ -1358,7 +1358,7 @@ let S = load();
 } catch (e) {} })();
 /* ---------- Mes thèmes (préréglages de couleurs créés par l'utilisateur) ---------- */
 const myThemes = () => (S.settings.myThemes = S.settings.myThemes || []);
-const thmNow = () => ({theme: S.settings.theme || 'noir', accent: S.settings.accent || '', bg: S.settings.bg || ''});
+const thmNow = () => ({theme: S.settings.theme || 'oled', accent: S.settings.accent || '', bg: S.settings.bg || ''});
 const thmIsOn = t => { const n = thmNow(); return t.theme === n.theme && (t.accent || '') === n.accent && (t.bg || '') === n.bg; };
 function thmSwatch() {
   const de = getComputedStyle(document.documentElement);
@@ -1381,7 +1381,7 @@ const THEMES = [['noir', 'Noir & lime', '#c6f135'], ['oled', 'Noir OLED', '#c6f1
   ['hevy', 'Bleu électrique', '#1e88ff'], ['rouge', 'Rouge', '#ff5a5f'], ['violet', 'Violet', '#b388ff'], ['orange', 'Orange', '#ff9f1c'], ['rose', 'Rose', '#ff6fae'], ['menthe', 'Menthe', '#3ee6b0'], ['or', 'Or', '#f5c542'], ['foret', 'Forêt', '#7bc96f'], ['auto', 'Auto (système)', 'linear-gradient(90deg,#f3f4f6 50%,#0f1114 50%)']];
 function applyTheme() {
   try { document.body.style.zoom = {sm: '0.9', lg: '1.15', xl: '1.3'}[S.settings.fontScale] || ''; } catch (e) {}
-  let t = S.settings.theme || 'noir';
+  let t = S.settings.theme || 'oled';
   if (t === 'auto') t = matchMedia('(prefers-color-scheme: light)').matches ? 'clair' : 'noir';
   const de = document.documentElement;
   de.dataset.theme = t;
@@ -2908,7 +2908,7 @@ function vSettings() {
       <button class="btn sm" data-act="remind-test" style="margin-top:10px">🔔 ${T('Tester le rappel', 'Test the reminder')}</button>
       <p class="muted small" style="margin:8px 0 0">${T('C\'est le téléphone qui choisit le moment exact, environ une fois par jour, même quand l\'appli est fermée. Ça demande que l\'appli soit installée (Chrome ⋮ → Installer l\'appli). Si tu t\'es entraîné aujourd\'hui, aucun rappel.', 'The phone picks the exact time, about once a day, even when the app is closed. The app must be installed (Chrome ⋮ → Install app). If you trained today, no reminder.')}</p>` : ''}`) +
   setSec('look', 'palette', '🎨', T('Apparence', 'Appearance'), T('Thème, couleurs, fond, icônes', 'Theme, colors, background, icons'), `<p class="muted small" style="margin:4px 0 0">Thèmes prêts à utiliser :</p>
-      <div class="grid2" style="margin-top:10px">${THEMES.map(([k, l, c]) => `<button class="btn sm ${(S.settings.theme || 'noir') === k ? 'on' : ''}" style="text-align:left" data-act="theme" data-t="${k}"><span class="sw" style="background:${c}"></span>${l}</button>`).join('')}</div>
+      <div class="grid2" style="margin-top:10px">${THEMES.map(([k, l, c]) => `<button class="btn sm ${(S.settings.theme || 'oled') === k ? 'on' : ''}" style="text-align:left" data-act="theme" data-t="${k}"><span class="sw" style="background:${c}"></span>${l}</button>`).join('')}</div>
       ${myThemesHtml()}
       <label style="margin-top:16px">Couleur des boutons (personnalisée)</label>
       <div class="chips">${ACCENTS.map(c => `<button class="chip" data-act="accent-pick" data-c="${c}" style="background:${c};border-color:${S.settings.accent === c ? 'var(--text)' : c};width:34px;height:34px;padding:0" aria-label="Couleur ${c}"></button>`).join('')}</div>
@@ -6566,9 +6566,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.88.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.88.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.88.4', d: '2026-11-21', fr: ['Le thème par défaut est maintenant « Noir OLED » (noir pur et lime). Si tu avais déjà choisi un thème, il ne change pas.'], en: ['The default theme is now “OLED black”. If you already picked a theme, it stays.']},
   {v: '9.88.3', d: '2026-11-21', fr: ['Le style premium est maintenant le style de l\'appli : le bouton pour le couper est retiré.'], en: ['Premium style is now the app\'s style: the toggle is removed.']},
   {v: '9.88.2', d: '2026-11-21', fr: ['Records : le cardio affiche maintenant ta plus longue durée et ta plus longue distance (au lieu de « reps »).', 'Les décimales s\'écrivent avec une virgule en français partout (records, arsenal, poids, rapport du mois).', 'Récupération : « Cardio » n\'apparaît plus comme un muscle.', 'Historique : « 1 exo » au lieu de « 1 exos ».', 'Comparer : une progression de 0 % s\'affiche « = » en gris au lieu d\'une flèche verte.', 'Séance : le bouton pour retirer une série est compact, sur la même ligne que les autres.', 'Style : les cases à cocher des réglages ne passent plus en majuscules.', 'Anglais : plus d\'espace avant les deux-points.'], en: ['Records: cardio now shows your longest time and distance (instead of “reps”).', 'Recovery: “Cardio” no longer shows as a muscle.', 'History: “1 exercise” instead of “1 exercises”.', 'Compare: a 0% change shows a grey “=” instead of a green arrow.', 'Workout: the remove-set button is compact, on the same row.', 'English: no more space before colons; decimals use a dot.']},
   {v: '9.88.1', d: '2026-11-21', fr: ['Style premium : fenêtres, tuiles de stats et écrans vides plus soignés ; les croix et coches deviennent de vraies icônes ; quelques derniers emojis remplacés.'], en: ['Premium style: sheets, stat tiles and empty screens refined; crosses and ticks are now real icons; a few last emojis replaced.']},
