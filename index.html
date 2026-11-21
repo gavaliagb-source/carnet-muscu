@@ -473,6 +473,7 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .clsrow{display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:8px 10px;border-radius:12px;border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);background:color-mix(in srgb,var(--accent) 6%,transparent);color:var(--text);font:inherit;font-size:20px;text-align:left;cursor:pointer}.clsrow>span{font-size:14px;line-height:1.25}
 .awcls{font-size:64px;line-height:1;margin:6px 0 12px;color:var(--rc);animation:awPop 1.1s cubic-bezier(.2,1.6,.4,1) .25s both;filter:drop-shadow(0 0 12px var(--rc))}
 .bossrow{margin-top:14px;padding:12px;border-radius:12px;border:1.5px solid color-mix(in srgb,#f43f5e 60%,transparent);background:color-mix(in srgb,#f43f5e 8%,transparent)}
+.glist2{display:flex;flex-direction:column;gap:8px;margin-top:10px}.grow{display:flex!important;justify-content:space-between;align-items:center;text-align:left}.grow i{font-style:normal;opacity:.6;font-size:20px}
 .bossrow .bmini{display:flex;gap:10px;align-items:center}.bossrow .bmini .bart{width:56px;height:56px}
 .bossrow.dead{border-color:color-mix(in srgb,var(--ok) 60%,transparent);background:color-mix(in srgb,var(--ok) 8%,transparent)}
 .bossh{font-size:12px;letter-spacing:2px;font-weight:800;color:#fb7185}.bossrow.dead .bossh{color:var(--ok)}
@@ -6449,9 +6450,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.85.9'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.86.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.86.0', d: '2026-11-21', fr: ['Guilde simplifiée : une carte « Aujourd\'hui » (coffre, événement, quêtes, donjon, boss) puis quelques sections repliées : Ma guilde, Saison, Collection (armurerie, médailles, bestiaire, arsenal, rangs par muscle) et Amis et classement.'], en: ['Simplified Guild: one "Today" card (chest, event, quests, dungeon, boss) then a few collapsed sections: My guild, Season, Collection (armory, medals, bestiary, arsenal, muscle ranks) and Friends & ranking.']},
   {v: '9.85.9', d: '2026-11-21', fr: ['Samsung Health / Health Connect : en plus de l\'entraînement, la fréquence cardiaque mesurée par ta montre et les calories totales sont maintenant envoyées (nouvelle APK téléphone requise, puis « Autoriser les accès manquants » dans Réglages → Santé Android). Les séances des 30 derniers jours sont renvoyées une fois.'], en: ['Samsung Health / Health Connect: besides the workout, the heart rate measured by your watch and total calories are now sent too (new phone APK required, then "Allow missing access" in Settings → Android health). The last 30 days of workouts are re-sent once.']},
   {v: '9.85.8', d: '2026-11-21', fr: ['Téléphone : le geste « retour » (glisser depuis le côté) fait maintenant exactement comme la flèche ← : il ferme la fenêtre ouverte ou revient à la page d\'avant, et ne quitte l\'appli que depuis un écran principal. Montre : le bouton « Chrono sur le téléphone » (nouvelle APK montre).'], en: ['Phone: the back gesture (swipe from the side) now does exactly what the ← arrow does: it closes the open window or goes to the previous page, and only leaves the app from a main screen. Watch: new "Timer on phone" button (new watch APK).']},
   {v: '9.85.7', d: '2026-11-21', fr: ['Les onglets du bas retiennent ta position : en revenant sur Muscu, Cardio, Profil, etc., tu retrouves où tu étais. Toucher l\'onglet actif remonte en haut.'], en: ['Bottom tabs now remember your scroll position: coming back to Train, Cardio, Profile, etc. puts you where you were. Tapping the active tab scrolls to top.']},
@@ -9352,15 +9354,14 @@ function vGuild() {
     quests: () => gSec('quests', '🏆', T('Quêtes', 'Quests'), `${nd} / ${bo ? 3 : 2} ${T('accomplies aujourd\'hui', 'complete today')}`, () => questCard('inner')),
     season: () => gSec('season', '👑', T('Saison', 'Season'), seaSub, () => fr ? seasonCard() || `<p class="small muted" style="margin:0">${T('La saison commence dès qu\'un ami a l\'appli à jour.', 'The season starts as soon as a friend has the app up to date.')}</p>` : noFr),
     arm: () => gSec('arm', '⚔️', T('Armurerie', 'Armory'), `${aOk} / ${aTot} ${T('récompenses débloquées', 'rewards unlocked')}`, () => `<div class="armbody">${armoryBody()}</div>`)};
-  const gOrd = gSecOrder();
-  return `${statusCard()}${compCard()}${chestPendBtn()}${eventCard()}<div class="glist">${gOrd.filter(id => !(S.settings.gHide || []).includes(id)).map(id => GSECS[id]()).join('')}<button class="linkbtn" style="margin:2px auto 0;display:block" data-act="gcust">${T('Personnaliser les sections', 'Customize sections')}</button>
-    </div><div class="grid2 gtiles">${gLink('shadows', '🗡', T('Arsenal', 'Arsenal'), `${sh} ${T(sh > 1 ? 'armes forgées' : 'arme forgée', sh > 1 ? 'weapons forged' : 'weapon forged')}`)}
-    ${gLink('murank', '🎯', T('Rangs par muscle', 'Muscle ranks'), T('Tes points forts et faibles', 'Your strong and weak points'))}
-    ${gLink('bestiary', '🐉', T('Bestiaire', 'Bestiary'), `${bWon} / ${BOSSES.length} ${T('boss vaincus', 'bosses beaten')}`)}
-    ${gLink('medals', '🏅', T('Médailles', 'Medals'), `${Object.keys(medalsEarned().got).length} / ${medalsEarned().defs.length}`)}
-    ${gLink('friends', '👥', T('Amis et défis', 'Friends & challenges'), fr ? `${fr} ${T(fr > 1 ? 'amis' : 'ami', fr > 1 ? 'friends' : 'friend')}` : T('Ajoute tes chums', 'Add your buddies'))}
-    ${gLink('world', '🌍', T('Classement mondial', 'World ranking'), S.settings.lbOn ? T('Ta position', 'Your rank') : T('Compare-toi à tous', 'Compare with everyone'))}</div>`;
-
+  const gOrd = gSecOrder().filter(id => !['quests', 'next', 'arm'].includes(id));
+  const row = (act, v, title, sub) => `<button class="btn tile gtile grow" data-act="${act}" data-v="${v}"><span><b>${title}</b><small>${sub}</small></span><i>›</i></button>`;
+  const coll = () => `<div class="glist2">${row('go', 'medals', T('Médailles', 'Medals'), `${Object.keys(medalsEarned().got).length} / ${medalsEarned().defs.length}`)}${row('go', 'bestiary', T('Bestiaire', 'Bestiary'), `${bWon} / ${BOSSES.length} ${T('boss vaincus', 'bosses beaten')}`)}${row('go', 'shadows', T('Arsenal', 'Arsenal'), `${sh} ${T(sh > 1 ? 'armes forgées' : 'arme forgée', sh > 1 ? 'weapons forged' : 'weapon forged')}`)}${row('go', 'murank', T('Rangs par muscle', 'Muscle ranks'), T('Tes points forts et faibles', 'Your strong and weak points'))}</div>`;
+  return `${statusCard()}${compCard()}<div class="card sysw gwin"><div class="sysh">[ ${T('AUJOURD\'HUI', 'TODAY')} ]</div>${chestPendBtn()}${eventCard()}${questCard('inner')}</div>
+    <div class="glist">${gOrd.filter(id => !(S.settings.gHide || []).includes(id)).map(id => GSECS[id]()).join('')}
+    ${gSec('coll', '🗂', T('Collection', 'Collection'), `${T('Armurerie', 'Armory')} ${aOk}/${aTot} · ${T('médailles, bestiaire…', 'medals, bestiary…')}`, () => `<div class="armbody">${armoryBody()}</div>${coll()}`)}
+    ${gSec('soc', '👥', T('Amis et classement', 'Friends & ranking'), fr ? `${fr} ${T(fr > 1 ? 'amis' : 'ami', fr > 1 ? 'friends' : 'friend')}` : T('Ajoute tes chums', 'Add your buddies'), () => `<div class="glist2">${row('go', 'friends', T('Amis et défis', 'Friends & challenges'), fr ? `${fr}` : T('Ajoute tes chums', 'Add your buddies'))}${row('go', 'world', T('Classement mondial', 'World ranking'), S.settings.lbOn ? T('Ta position', 'Your rank') : T('Compare-toi à tous', 'Compare with everyone'))}</div>`)}
+    </div>`;
 }
 /* Bande compacte dans Entraînement : un coup d'œil, et on touche pour ouvrir la Guilde */
 function guildStrip() {
