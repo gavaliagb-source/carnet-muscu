@@ -6431,9 +6431,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.85.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.85.5'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.85.5', d: '2026-11-21', fr: ['Photos de progrès : quand une photo prise sur un autre appareil est vide, l\'appli va maintenant la chercher dans ta sauvegarde en ouvrant « Mesures et photos » (elle doit d\'abord avoir été sauvegardée depuis l\'autre appareil).'], en: ['Progress photos: when a photo taken on another device is blank, the app now fetches it from your backup when you open "Measures & photos" (it must first have been backed up from the other device).']},
   {v: '9.85.4', d: '2026-11-21', fr: ['Les photos prises pendant une séance apparaissent maintenant aussi dans « Photos de progrès » (Mesures et photos), avec comparaison avant/après et partage aux amis.'], en: ['Photos taken during a workout now also appear in "Progress photos" (Measures & photos), with before/after comparison and friend sharing.']},
   {v: '9.85.3', d: '2026-11-21', fr: ['Boss du mois : les nouveaux utilisateurs (peu de séances) ont maintenant un boss dès leurs premières séances, au lieu de n\'en avoir aucun.'], en: ['Monthly boss: new users (few workouts) now get a boss from their first sessions instead of none.']},
   {v: '9.85.2', d: '2026-11-21', fr: ['Amis : ton boss du mois (et sa vie restante) est maintenant visible sur ta fiche chez tes amis. Il apparaîtra chez eux après ta prochaine synchronisation.'], en: ['Friends: your monthly boss (and its remaining HP) is now visible on your profile for your friends. It shows up for them after your next sync.']},
@@ -7371,9 +7372,11 @@ function photoCompare(a) {
     const wa = wOf(pa), wb = wOf(pb); $('#phcd').textContent = `${days} ${T('jours d\'écart', 'days apart')}${wa != null && wb != null ? ` · ${wb - wa > 0 ? '+' : ''}${dec1(wb - wa)} ${U()}` : ''}`; };
   document.querySelectorAll('[data-phc]').forEach(s => s.addEventListener('change', upd)); upd();
 }
+let phPullT = 0;
 function photosCard() {
   const L = allPh().sort((a, b) => b.d.localeCompare(a.d));
   setTimeout(phFill, 0);
+  if (Date.now() - phPullT > 60e3) { phPullT = Date.now(); cpMissing().then(m => { if (m.length) cpPull(true); }).catch(() => {}); }
   return `<div class="card"><div class="row between"><h3 style="margin:0">📸 ${T('Photos de progrès', 'Progress photos')}</h3>${L.length > 1 ? `<button class="btn sm" data-act="ph-cmp">⇄ ${T('Comparer', 'Compare')}</button>` : ''}</div>
     ${L.length ? `<div class="phgrid">${L.map(p => `<button class="phth" data-act="ph-view" data-id="${p.id}"><img data-ph="${p.id}" alt="">${frPhShared(p.id) ? '<i class="phsh">👥</i>' : ''}<span>${new Date(p.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'short'})}</span></button>`).join('')}</div>` : `<p class="muted small" style="margin:6px 0 0">${T('Prends une photo toutes les 2 à 4 semaines, même pose et même lumière : c\'est la meilleure façon de voir tes progrès.', 'Take a photo every 2–4 weeks, same pose and lighting: it\'s the best way to see your progress.')}</p>`}
     <button class="btn primary block" data-act="ph-add" style="margin-top:10px">📸 ${T('Ajouter une photo', 'Add a photo')}</button>
@@ -8158,11 +8161,12 @@ async function cpSync() {
   cpBusy = false; saveLocal(); cpRetireDrive();
 }
 /* Nouveau téléphone (ou après une restauration) : les photos qui manquent ici reviennent de la sauvegarde */
-async function cpPull() {
+async function cpPull(force) {
   if (!cbOn() || !navigator.onLine) return 0;
   const base = await cpBase(); if (!base) return 0; const c = CB(); let n = 0;
   try {
     await cpInit(base, c);
+    if (force) { const m = await base.get(); if (m.exists) c.phUp = [...new Set([...(m.data().phs || []), ...(c.phUp || [])])]; }
     for (const id of phIds()) { if (!c.phUp.includes(id) || await phSrc(id)) continue; const d = await base.collection('b').doc('ph-' + id).get(); const v = d.exists && d.data().d; if (v) { await phPut(id, v); phCache[id] = v; n++; } }
   } catch (e) {}
   cpPulled = true; if (n) { render(); toast(T(`📸 ${n} photo${n > 1 ? 's' : ''} récupérée${n > 1 ? 's' : ''}`, `📸 ${n} photo${n > 1 ? 's' : ''} restored`)); }
