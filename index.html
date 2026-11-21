@@ -6536,9 +6536,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.87.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.87.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.87.1', d: '2026-11-21', fr: ['Montre : la séance cardio en direct a son propre écran (gros chrono, pouls et zone en couleur, distance, allure, calories, Pause et Terminer). Nouvelle APK montre requise.'], en: ['Watch: live cardio has its own screen (big timer, colored heart rate and zone, distance, pace, calories, Pause and Finish). New watch APK required.']},
   {v: '9.87.0', d: '2026-11-21', fr: ['Cardio en direct : dans l\'onglet Cardio, lance une vraie séance (marche, course, vélo…) avec chrono, pouls et zone en temps réel depuis ta montre, distance et allure par GPS (dehors) et calories. La séance s\'enregistre dans ton historique. Pour le GPS, il faut la nouvelle APK téléphone (autorisation de localisation).'], en: ['Live cardio: in the Cardio tab, start a real session (walk, run, bike…) with timer, live heart rate and zone from your watch, GPS distance and pace (outdoors) and calories. It is saved to your history. GPS needs the new phone APK (location permission).']},
   {v: '9.86.7', d: '2026-11-21', fr: ['Profil et Guilde : comme dans Samsung Santé, garde le doigt appuyé sur une section pour entrer en mode édition, puis glisse la poignée ≡ pour la déplacer, touche − pour la masquer et ＋ pour la remettre. (Bouton « Personnaliser » aussi.)'], en: ['Profile and Guild: like Samsung Health, long-press a section to enter edit mode, then drag the ≡ handle to move it, tap − to hide and ＋ to bring it back. ("Customize" button too.)']},
   {v: '9.86.6', d: '2026-11-21', fr: ['Profil : bouton « Personnaliser le profil » en bas pour choisir ce que tu veux voir (poids et photos, amis, bilan, graphique, tuiles) et dans quel ordre.'], en: ['Profile: "Customize profile" button at the bottom to choose what you see (weight & photos, friends, year review, chart, tiles) and in which order.']},
@@ -7619,6 +7620,7 @@ function clTick() {
   const cc = cardioCalc(CARDIO_KIND(a.exercises[0].name), Math.max(1, Math.round(min)), c.gps ? Math.round(km * 100) / 100 : '', '', bodyKg()); set('cl-c', cc ? cc.kcal + '' : '–');
   const pb = document.getElementById('cl-pause'); if (pb) { const t = c.pat ? T('Reprendre', 'Resume') : T('Pause', 'Pause'); if (pb.textContent !== t) pb.textContent = t; }
   if (!(Math.floor(ms / 1000) % 10)) saveLocal();
+  if (!(Math.floor(ms / 1000) % 5)) wearPush();
 }
 function vCLive() {
   const a = S.active, c = a && a.cl; if (!c) { setTimeout(() => { if (stack.length > 1) back(); else render(); }, 0); return ''; }
@@ -7862,7 +7864,8 @@ function wearState() {
       return {n: e.name, i: wearImg(e.name), alt: wearAlt(e.name, 6), s: sl.length || +e.sets || 0, rest: +e.rest === -1 ? 0 : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)), c: isCardio(e) || isTimed(e) ? 1 : 0, sl}; };
     return {on: 0, lang, acc, u: U(), kg: Math.round(bodyKg()), rw: +S.settings.restWarm > 0 ? +S.settings.restWarm : 45, rd: +S.settings.restDrop > 0 ? +S.settings.restDrop : 0, mine: wearMine(), rts: L.map(r => ({id: r.id, n: r.name, td: r.id === td ? 1 : 0, ex: (r.exercises || []).map(exOf)}))};
   }
-  return {on: 1, id: A.start, st: A.start, n: A.routineName || '', u: U(), lang, acc, kg: Math.round(bodyKg()), rw: +S.settings.restWarm > 0 ? +S.settings.restWarm : 45, rd: +S.settings.restDrop > 0 ? +S.settings.restDrop : 0, mine: wearMine(), re: timerEnd > Date.now() ? timerEnd : 0, rt: timerTot || 0,
+  const clS = A.cl ? (() => { const km = clKm(), min = Math.max(1, Math.round(clMs() / 60000)), cc = cardioCalc(CARDIO_KIND(A.exercises[0].name), min, A.cl.gps ? Math.round(km * 100) / 100 : '', '', bodyKg()); return {t0: A.cl.t0, pms: A.cl.pms || 0, pat: A.cl.pat || 0, g: A.cl.gps ? 1 : 0, km: Math.round(km * 100) / 100, kc: cc ? cc.kcal : 0, mx: clMaxHr()}; })() : null;
+  return {...(clS ? {cl: clS} : {}), on: 1, id: A.start, st: A.start, n: A.routineName || '', u: U(), lang, acc, kg: Math.round(bodyKg()), rw: +S.settings.restWarm > 0 ? +S.settings.restWarm : 45, rd: +S.settings.restDrop > 0 ? +S.settings.restDrop : 0, mine: wearMine(), re: timerEnd > Date.now() ? timerEnd : 0, rt: timerTot || 0,
     ex: A.exercises.map(e => ({n: e.name, i: wearImg(e.name), alt: wearAlt(e.name), rest: +e.rest === -1 ? 0 : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)), c: isCardio(e) || isTimed(e) ? 1 : 0,
       s: e.sets.map((x, si) => ({w: x.w === '' || x.w == null ? '' : +x.w, r: x.r !== '' && x.r != null ? +x.r : (+x.ph || 0), d: x.done ? 1 : 0, t: x.t || '', p: wearPrev(e, x, si)}))}))};
 }
@@ -7897,6 +7900,8 @@ function wearCmd(d) {
   if (d.a === 'hello' || !A) { wearPush(true); return; }
   const yes = f => { const c0 = window.confirm; window.confirm = () => true; try { f(); } finally { window.confirm = c0; } };
   if (d.a === 'cancel') { yes(() => fakeAct('cancel-workout', {})); wearPush(true); return; }
+  if (d.a === 'clpause') { fakeAct('cl-pause', {}); wearPush(true); return; }
+  if (d.a === 'clfinish') { if (A.cl) { clFinish(); } wearPush(true); return; }
   if (d.a === 'swap') { const e = A.exercises[+d.e]; if (e && d.n) replaceExercise(+d.e, {name: String(d.n), lib: d.l || undefined}); wearPush(true); return; }
   if (d.a === 'add-set') { const e = A.exercises[+d.e]; if (e) fakeAct('add-set', {e: +d.e}); wearPush(true); return; }
   if (d.a === 'del-set') { const e = A.exercises[+d.e]; if (e && e.sets[+d.s] && e.sets.length > 1) { e.sets.splice(+d.s, 1); save(); render(); } wearPush(true); return; }
