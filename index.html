@@ -1501,7 +1501,7 @@ function undoToast(msg) {
   const t = $('#toast'); t.innerHTML = `<span>${esc(msg)}</span> <button class="btn sm" data-act="undo" style="margin-left:10px">↩ ${T('Annuler', 'Undo')}</button>`;
   t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => { t.classList.remove('show'); undoSnap = null; }, 5000);
 }
-function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2400); }
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), Math.min(7000, Math.max(2400, String(msg).length * 55))); }
 const modals = []; let exoTimer = null;
 function modal(html, opts = {}) {
   const m = document.createElement('div'); m.className = 'modal';
@@ -6569,9 +6569,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.89.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.89.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.89.3', d: '2026-11-21', fr: ['Défis entre amis : le message de victoire dit maintenant contre qui, le type de défi et les deux scores (ex. « Défi gagné contre Tania (le plus de volume) : 12 400 lb contre 9 800 lb. +300 XP »).'], en: ['Friend challenges: the win message now shows who you beat, the challenge type and both scores.']},
   {v: '9.89.2', d: '2026-11-21', fr: ['Bande Guilde : la carte de statut s\'affiche en entier (elle n\'est plus coupée sous le titre), et Quête, Donjon et Boss ne passent plus sous la barre du haut.'], en: ['Guild strip: the status card now shows in full, and Quest, Dungeon and Boss no longer slide under the top bar.']},
   {v: '9.89.1', d: '2026-11-21', fr: ['Bande Guilde : toute la ligne du haut (« GUILDE … Niv. ») t\'amène sur ton statut, qui s\'illumine. Avant, il fallait viser le petit « Niv. » exactement.'], en: ['Guild strip: the whole top line now takes you to your status, highlighted.']},
   {v: '9.89.0', d: '2026-11-21', fr: ['Entraînement : dans la bande Guilde, toucher Quête, Donjon ou Boss t\'amène directement au bon endroit dans la Guilde, qui s\'illumine un instant.'], en: ['Workout: in the Guild strip, tapping Quest, Dungeon or Boss takes you straight to that spot in the Guild, briefly highlighted.']},
@@ -8901,7 +8902,8 @@ const chTheirs = c => { const d = frData[c.other] && frData[c.other].d; return d
 const chFmt = (c, v) => v == null ? '—' : c.k === 'vol' ? `${Math.round(U() === 'kg' ? v : v * 2.20462).toLocaleString(LOC())} ${U()}` : c.k === 'sess' ? `${v} ${T('séance' + (v > 1 ? 's' : ''), 'workout' + (v !== 1 ? 's' : ''))}` : `${v.toLocaleString(LOC())} reps`;
 function chCheck() {
   chList().forEach(c => { if (c.st !== 'on' || Date.now() < +new Date(c.until)) return; const me = chMine(c), th = chTheirs(c); if (th == null) return;
-    if (me > th) giveXp('ch', c.id, CH_XP, T(`🏆 Défi gagné! +${CH_XP} XP`, `🏆 Challenge won! +${CH_XP} XP`)); });
+    if (me > th) { const f = FRS().list.find(x => x.c === c.other), nm = (frData[c.other] && frData[c.other].d && frData[c.other].d.name) || (f && f.n && f.n !== '…' ? f.n : '') || T('ton ami', 'your friend'), kn = T(CH_KINDS[c.k][0][0], CH_KINDS[c.k][0][1]).toLowerCase();
+      giveXp('ch', c.id, CH_XP, T(`🏆 Défi gagné contre ${nm} (${kn}) : ${chFmt(c, me)} contre ${chFmt(c, th)}. +${CH_XP} XP`, `🏆 Challenge won vs ${nm} (${kn}): ${chFmt(c, me)} vs ${chFmt(c, th)}. +${CH_XP} XP`)); } });
 }
 function chCard() {
   const fr = FRS(); if (!fr.list.length) return '';
