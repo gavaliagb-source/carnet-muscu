@@ -5244,7 +5244,7 @@ function pclSuggest() {
   if (!H.length && !st) return null;
   let heavy = 0, cm = 0; const days = new Set(), ex = new Set();
   H.forEach(h => { days.add(dkey(new Date(h.date))); h.exercises.forEach(e => { ex.add(norm(e.name)); e.sets.forEach(x => { if (x.t === 'W') return; if (x.u === 'c') cm += +x.r || 0; else if (x.u !== 's' && +x.w > 0 && +x.r > 0 && +x.r <= 8) heavy++; }); }); });
-  const sc = {g: heavy / 40, r: cm / 150, m: days.size / 26, s: st / 8 * .7 + ex.size / 25 * .3};
+  const sc = {g: heavy / 90, r: cm / 150, m: days.size / 20, s: st / 8 * .7 + ex.size / 25 * .3};
   const k = PCL_K.slice().sort((a, b) => sc[b] - sc[a])[0];
   const why = {g: T(`${heavy} séries lourdes (8 reps ou moins) en 4 semaines`, `${heavy} heavy sets (8 reps or fewer) in 4 weeks`), r: T(`${Math.round(cm)} min de cardio en 4 semaines`, `${Math.round(cm)} min of cardio in 4 weeks`),
     m: T(`${days.size} jours d'entraînement en 4 semaines`, `${days.size} training days in 4 weeks`), s: T(`${st} séance${st > 1 ? 's' : ''} d'étirements et ${ex.size} exercices différents`, `${st} stretching session${st > 1 ? 's' : ''} and ${ex.size} different exercises`)};
@@ -6464,10 +6464,11 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.86.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.86.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
-  {v: '9.86.3', d: '2026-11-21', fr: ['Classe conseillée : le Moine n\'est plus proposé à tout le monde. Le Guerrier (séries lourdes) passe en premier pour qui soulève lourd ; le Moine est conseillé seulement pour une régularité quasi quotidienne.'], en: ['Suggested class: the Monk is no longer suggested to everyone. The Warrior (heavy sets) now comes first for heavy lifters; the Monk is only suggested for near-daily consistency.']},
+  {v: '9.86.4', d: '2026-11-21', fr: ['Classe conseillée : réglage plus équilibré entre Guerrier, Coureur, Moine et Sage selon ton entraînement des 4 dernières semaines.'], en: ['Suggested class: better balance between Warrior, Runner, Monk and Sage based on your last 4 weeks.']},
+  {v: '9.86.3', d: '2026-11-21', fr: ['Classe conseillée : le Moine n\'est plus proposé à tout le monde. Le Guerrier passe en premier pour qui soulève lourd ; le Moine est conseillé pour qui s\'entraîne presque tous les jours avec peu de séries lourdes.'], en: ['Suggested class: the Monk is no longer suggested to everyone. The Warrior (heavy sets) now comes first for heavy lifters; the Monk is suggested for near-daily training with few heavy sets.']},
   {v: '9.86.2', d: '2026-11-21', fr: ['Guilde : « Amis et défis » et « Classement mondial » sont de retour en bas, en tuiles grises.'], en: ['Guild: "Friends & challenges" and "World ranking" are back at the bottom as grey tiles.']},
   {v: '9.86.1', d: '2026-11-21', fr: ['Armurerie et Médailles : tu peux maintenant glisser à gauche ou à droite pour changer de page (les flèches ‹ › restent).'], en: ['Armory and Medals: you can now swipe left or right to change page (the ‹ › arrows stay).']},
   {v: '9.86.0', d: '2026-11-21', fr: ['Guilde simplifiée : une carte « Aujourd\'hui » (coffre, événement, quêtes, donjon, boss) puis quelques sections repliées : Ma guilde, Saison, Collection (armurerie, médailles, bestiaire, arsenal, rangs par muscle) et Amis et classement.'], en: ['Simplified Guild: one "Today" card (chest, event, quests, dungeon, boss) then a few collapsed sections: My guild, Season, Collection (armory, medals, bestiary, arsenal, muscle ranks) and Friends & ranking.']},
