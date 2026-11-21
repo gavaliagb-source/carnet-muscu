@@ -65,7 +65,7 @@ html.lux body{-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1,
 html.lux header h1{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-weight:600;letter-spacing:.02em}
 html.lux h2{font-weight:750;letter-spacing:-.01em}
 html.lux h3{font-weight:700;letter-spacing:-.005em}
-html.lux label{text-transform:uppercase;letter-spacing:.09em;font-size:11px;font-weight:650}
+html.lux label:not(.row){font-weight:600;letter-spacing:.01em}
 html.lux .card{background:linear-gradient(165deg,color-mix(in srgb,var(--card) 92%,#fff) 0%,var(--card) 55%);border:1px solid color-mix(in srgb,var(--line) 75%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 12px 30px -16px rgba(0,0,0,.7);margin-bottom:14px}
 html.lux .btn{border-radius:12px;font-weight:650;letter-spacing:.01em;transition:transform .12s,filter .12s,box-shadow .12s}
 html.lux .btn:active{transform:scale(.97)}
@@ -1517,7 +1517,9 @@ function closeAll() { while (modals.length) closeModal(); }
 /* ---------- Utilitaires séries ---------- */
 const U = () => S.settings.unit;
 const MU = () => U() === 'lb' ? 'po' : 'cm';
-const fmtW = w => (w === '' || w == null) ? BWL() : `${w} ${U()}`;
+const CLN = () => isEN() ? ':' : ' :';
+const DN = v => (v === '' || v == null || isNaN(+v)) ? v : (+v).toLocaleString(LOC(), {maximumFractionDigits: 2});
+const fmtW = w => (w === '' || w == null) ? BWL() : `${DN(w)} ${U()}`;
 const tagW = w => (w === '' || w == null) ? '' : ` · ${w} ${U()}`;
 const isW = s => s.t === 'W';
 const fmtRest = v => v < 0 ? 'Désactivé' : v >= 60 ? `${Math.floor(v / 60)} min${v % 60 ? ' ' + (v % 60) + ' s' : ''}` : `${v} s`;
@@ -1546,7 +1548,7 @@ const isTimed = e => e.timed === false || (e.target && e.target.timed === false)
 function fmtSet(s, short) {
   if (s.u === 'c') return [s.r ? s.r + ' min' : '', s.km ? dec1(s.km) + ' ' + kmU() : '', s.inc ? s.inc + (short ? '' : ' %') : '', !short && s.kc ? '≈' + s.kc + ' kcal' : ''].filter(Boolean).join(' · ');
   const bw = s.w === '' || s.w == null || +s.w === 0;
-  let x = s.u === 's' ? (bw ? fmtSec(s.r) : `${s.w}×${fmtSec(s.r)}`) : `${bw ? BWL() : s.w}×${s.r}`;
+  let x = s.u === 's' ? (bw ? fmtSec(s.r) : `${DN(s.w)}×${fmtSec(s.r)}`) : `${bw ? BWL() : DN(s.w)}×${s.r}`;
   if (s.rir != null && s.rir !== '') x += ` RIR ${s.rir}`;
   if (s.t === 'W') x += short ? ' (É)' : ' (échauffement)';
   else if (s.t === 'D') x += short ? ' (D)' : ' (dropset)';
@@ -1968,7 +1970,7 @@ function suggestFor(e) {
   const work0 = e.sets.filter(s => s.t !== 'W' && !s.done);
   if (!work0.length || work0.every((s, k) => +s.w === next[Math.min(k, next.length - 1)].w)) return null;
   return {next, lo, hi, top: Math.max(...next.map(x => x.w)), bw: last.sets.every(s => s.w === '' || s.w == null || +s.w === 0),
-    from: last.sets.map(s => `${s.w === '' || s.w == null ? BWL() : s.w}×${s.r}`).join(', ')};
+    from: last.sets.map(s => `${s.w === '' || s.w == null ? BWL() : DN(s.w)}×${s.r}`).join(', ')};
 }
 /* Échauffement automatique */
 const WARM = [['Léger', [[0.6, 6]]], ['Standard', [[0.55, 8], [0.75, 4]]], ['Complet', [[0.5, 8], [0.7, 5], [0.85, 2]]]];
@@ -2209,7 +2211,7 @@ function openGen(keep) {
     <p class="muted small" style="margin:8px 0">${T('Choisie pour toi selon tes muscles reposés et ce que tu as moins travaillé cette semaine.', 'Picked for you from your rested muscles and what you trained less this week.')}</p>
     <div class="seg" style="margin-bottom:10px">${seg}</div>
     ${L.length ? L.map(x => `<div class="row between" style="padding:8px 0;border-bottom:1px solid var(--line);gap:8px"><span style="min-width:0"><b>${esc(x.e.name)}</b><br><span class="muted small">${x.mus.map(musN).join(', ')}</span></span><span class="muted small" style="white-space:nowrap">${x.e.sets} × ${esc(String(x.e.reps || ''))}</span></div>`).join('') : `<p class="center muted" style="margin:18px 0">${T('Tous tes muscles sont encore fatigués. Une journée de repos ou des étirements seraient mieux aujourd\'hui.', 'All your muscles are still tired. A rest day or some stretching would be better today.')}</p>`}
-    ${genSt.tired.length && L.length ? `<p class="muted small" style="margin:10px 0 0">${T('Laissés au repos', 'Left to rest')} : ${genSt.tired.map(musN).join(', ')}</p>` : ''}
+    ${genSt.tired.length && L.length ? `<p class="muted small" style="margin:10px 0 0">${T('Laissés au repos', 'Left to rest')}${CLN()} ${genSt.tired.map(musN).join(', ')}</p>` : ''}
     ${L.length ? `<button class="btn primary block" data-act="gen-go" style="margin-top:12px">${T('Démarrer cette séance', 'Start this workout')}</button><button class="btn block" data-act="gen-other" style="margin-top:8px">${T('Autre proposition', 'Another suggestion')}</button>` : ''}`, {id: 'gensheet'});
 }
 function genStart() {
@@ -2250,7 +2252,7 @@ function finishWorkout() {
     if (!prevSets.length) return;
     const nb = bestOf(ws), pb = bestOf(prevSets);
     const nv = e1rm(nb.w, nb.r), pv = e1rm(pb.w, pb.r);
-    if (nv > 0 && pv > 0 && nv > pv) prs.push({name: e.name, from: `${pb.w}×${pb.r}`, to: `${nb.w}×${nb.r}`});
+    if (nv > 0 && pv > 0 && nv > pv) prs.push({name: e.name, from: `${DN(pb.w)}×${pb.r}`, to: `${DN(nb.w)}×${nb.r}`});
     else if (nv === 0 && pv === 0) { const nr = Math.max(...ws.map(s => +s.r)), pr = Math.max(...prevSets.map(s => +s.r)); if (nr > pr) prs.push({name: e.name, from: pr + ' reps', to: nr + ' reps'}); }
   });
   const meBefore = medalsEarned(), medBefore = meBefore.got, huBefore = hunter(meBefore);
@@ -2276,14 +2278,14 @@ function finishWorkout() {
       return `<div class="card" style="margin:8px 0"><b>Par rapport au ${dateFr(prevH.date)}</b>${row('Volume', sessVol(nh), sessVol(prevH), v => Math.round(v).toLocaleString(LOC()) + ' ' + U())}${row('Réps', sessReps(nh), sessReps(prevH), v => v)}${prevH.duration ? row('Durée', nh.duration, prevH.duration, v => hm(v)) : ''}</div>`; })()}
     ${GAME() ? `<div class="card lvup" style="--rc:${huAfter.col}"><div class="sysh">[ ${T('GUILDE', 'GUILD')} ]</div>
       ${huAfter.lvl > huBefore.lvl ? `<b style="font-size:18px;letter-spacing:1px">${T('NIVEAU SUPÉRIEUR!', 'LEVEL UP!')}</b><div style="margin:4px 0">${T('Niveau', 'Level')} ${huBefore.lvl} → <b style="color:var(--rc);font-size:20px">${huAfter.lvl}</b></div>` : `<div>${T('Niveau', 'Level')} <b>${huAfter.lvl}</b></div>`}
-      ${huAfter.rk !== huBefore.rk ? `<div style="margin:6px 0">${T('Nouveau rang', 'New rank')} : ${rkBadge(huAfter.rk, 'mrk lvrk')} <b style="color:var(--rc)">${esc(huAfter.title)}</b></div>` : ''}
+      ${huAfter.rk !== huBefore.rk ? `<div style="margin:6px 0">${T('Nouveau rang', 'New rank')}${CLN()} ${rkBadge(huAfter.rk, 'mrk lvrk')} <b style="color:var(--rc)">${esc(huAfter.title)}</b></div>` : ''}
       ${evX2 ? `<div style="margin:6px 0">🎪 ${T('Bonus d\'événement (double XP)', 'Event bonus (double XP)')} <b>+${evX2} XP</b></div>` : ''}
       ${sysNew.quest ? `<div style="margin:6px 0">✨ ${T('Quête quotidienne accomplie', 'Daily quest complete')} <b>+150 XP</b></div>` : ''}
       ${sysNew.dungeon ? `<div style="margin:6px 0">⚔️ ${T('Donjon nettoyé', 'Dungeon cleared')} <b>+500 XP</b></div>` : ''}
       ${sysNew.boss ? `<div style="margin:8px 0;font-size:17px">☠️ <b>${T('BOSS VAINCU!', 'BOSS DEFEATED!')}</b> ${esc(sysNew.boss.name)} <b>+1 000 XP</b></div>` : ''}
       ${chest ? `<button class="btn block chbtn" style="--cc:${CHR[chest.rar][2]}" data-act="chest-open" data-id="${chest.id}">🎁 ${T('Ouvrir ton coffre', 'Open your chest')} <b>${esc(T(CHR[chest.rar][0], CHR[chest.rar][1]))}</b></button>` : ''}
       ${cpEvo ? `<button class="btn block chbtn" style="--cc:${cpA.col}" data-act="comp-evo">${cpB.st < 0 ? '🥚 ' + T('Ton œuf éclot !', 'Your egg is hatching!') : '✨ ' + T('Ton compagnon évolue !', 'Your companion evolves!')} <b>${T('Voir', 'See')}</b></button>` : ''}
-      ${prs.length ? `<div class="small" style="margin:6px 0;color:var(--accent)">⚔️ ${prs.length > 1 ? T(`${prs.length} armes améliorées !`, `${prs.length} weapons upgraded!`) : T('Arme améliorée !', 'Weapon upgraded!')} : ${prs.map(r => esc(r.name)).join(', ')}</div>` : ''}
+      ${prs.length ? `<div class="small" style="margin:6px 0;color:var(--accent)">⚔️ ${prs.length > 1 ? T(`${prs.length} armes améliorées !`, `${prs.length} weapons upgraded!`) : T('Arme améliorée !', 'Weapon upgraded!')}${CLN()} ${prs.map(r => esc(r.name)).join(', ')}</div>` : ''}
       <div class="finxp"><div class="row between small"><span id="finlv">${T('Niv.', 'Lv.')} ${huBefore.lvl}</span><b id="finxpn" data-cnt="${huAfter.xp - huBefore.xp}" data-pre="+" data-suf=" XP">+${(huAfter.xp - huBefore.xp).toLocaleString(LOC())} XP</b></div><div class="xpbar"><div id="finbar" style="width:${Math.round(huBefore.cur / huBefore.need * 100)}%"></div></div></div></div>` : ''}
     ${medNew.length ? `<div class="card" style="border-color:var(--accent);margin:8px 0"><b>🏅 ${T(medNew.length > 1 ? 'Nouvelles médailles!' : 'Nouvelle médaille!', medNew.length > 1 ? 'New medals!' : 'New medal!')}</b>${medNew.map(d => `<div style="margin-top:6px;display:flex;align-items:center;gap:8px">${rkBadge(d.rk, 'mrk lvrk')} ${d.ic} ${esc(d.t)}</div>`).join('')}</div>` : ''}
     ${rtCh.length ? `<div class="card" id="rtupd" style="border-color:var(--accent);margin:8px 0"><b>✏️ ${T('Tu as modifié cette séance', 'You changed this workout')}</b>
@@ -2496,7 +2498,7 @@ function prevCell(prev, s, k) {
   if (!prev) return '—';
   const list = s.t === 'W' ? prev.filter(x => x.t === 'W') : prev.filter(x => x.t !== 'W');
   const p = list[k]; if (!p) return '—';
-  return p.u === 's' ? fmtSec(p.r) : `${p.w === '' || p.w == null ? BWL() : p.w}×${p.r}`;
+  return p.u === 's' ? fmtSec(p.r) : `${p.w === '' || p.w == null ? BWL() : DN(p.w)}×${p.r}`;
 }
 function vWorkout() {
   const a = S.active;
@@ -2518,7 +2520,7 @@ function vWorkout() {
       ${!last ? '<div class="last">Première fois</div>' : ''}
       ${stagBtn(e.name, ei)}
       ${bossLine(e.name, ei)}
-      ${e.mach ? `<div class="last">⚖️ ${T('Machine', 'Machine')} : ${dec1(e.mach.v)} ${e.mach.u} = ${dec1(e.mach.u === 'kg' ? e.mach.v * KG : e.mach.v / KG)} ${U()}</div>` : ''}
+      ${e.mach ? `<div class="last">⚖️ ${T('Machine', 'Machine')}${CLN()} ${dec1(e.mach.v)} ${e.mach.u} = ${dec1(e.mach.u === 'kg' ? e.mach.v * KG : e.mach.v / KG)} ${U()}</div>` : ''}
       ${(() => { const sg = suggestFor(e); return sg ? `<div class="sug"><span>💡 Haut de la fourchette atteint (${esc(sg.from)}). Essaie <b>${dec1(sg.top)} ${U()}${sg.bw ? ' de lest' : ''}</b>.${(() => { const lw = Math.max(...e.sets.filter(s => s.t !== 'W').map(s => +s.w || 0)); return lw > 0 && (sg.top - lw) / lw > 0.1 ? `<br><span class="small muted">${T('Gros saut : vise d\'abord le bas de ta plage de reps avec la nouvelle charge.', 'Big jump: aim for the bottom of your rep range with the new weight first.')}</span>` : ''; })()}</span><span class="row" style="gap:4px;flex-direction:column"><button class="btn primary sm" data-act="apply-sug" data-e="${ei}">Appliquer</button><button class="linkbtn small" data-act="inc-menu" data-e="${ei}">${isDB(e.name) && +S.settings.dbStep > 0 ? T('haltères ', 'dumbbells ') + dec1(+S.settings.dbStep) : '+' + dec1(incFor(e.name))} ${U()} ⚙️</button></span></div>` : ''; })()}
       <div class="colhead w5"><span>#</span><span>${S.settings.prevMode === 'best' ? T('Meilleur', 'Best') : 'Précédent'}</span><span>${U()}</span><span>${tm ? 'Sec' : 'Reps'}</span><span></span></div>
       ${e.sets.map((s, si) => {
@@ -2537,7 +2539,7 @@ function vWorkout() {
         <button class="btn sm" data-act="add-set" data-e="${ei}">＋ Série</button>
         <button class="btn sm" data-act="add-warm" data-e="${ei}">＋ Échauf.</button>
         <button class="btn sm" data-act="warm-auto" data-e="${ei}">🔥 Auto</button>
-        ${e.sets.length > 1 ? `<button class="btn sm" data-act="rm-set" data-e="${ei}">− Série</button>` : ''}
+        ${e.sets.length > 1 ? `<button class="btn sm" data-act="rm-set" data-e="${ei}" aria-label="${T('Retirer une série', 'Remove a set')}" title="${T('Retirer une série', 'Remove a set')}" style="margin-left:auto;min-width:40px">−</button>` : ''}
       </div>
     </div>`;
   }).join('') + `
@@ -2557,7 +2559,7 @@ function cardioCard(e, ei, last, mates) {
     ${mates.length ? `<div class="sshead"><span class="sspill">Superset</span><span class="muted small">${T('avec', 'with')} ${mates.map(x => esc(x.name)).join(', ')}</span></div>` : ''}
     <div class="row between"><div class="row" style="gap:10px;min-width:0">${thumb(e.name, 40)}<div style="min-width:0"><h3>${exl(e.name)}</h3><span class="tag">🏃 Cardio</span></div></div><button class="btn sm" data-act="ex-menu" data-e="${ei}" aria-label="Options">⋯</button></div>
     ${exNote(e.name) ? `<div class="last">📌 ${esc(exNote(e.name))}</div>` : ''}
-    ${last ? `<div class="last">${T('Dernière fois', 'Last time')} : ${last.sets.map(s => fmtSet(s)).join(' · ')}</div>` : ''}
+    ${last ? `<div class="last">${T('Dernière fois', 'Last time')}${CLN()} ${last.sets.map(s => fmtSet(s)).join(' · ')}</div>` : ''}
     <div class="colhead w5"><span>#</span><span>Min</span><span>${kmU()}</span><span>${incL}</span><span></span></div>
     ${e.sets.map((s, si) => { const ls = last && last.sets[si]; return `<div class="setrow w5 ${s.done ? 'done' : ''}">
       <button class="nb" data-act="set-menu" data-e="${ei}" data-s="${si}">${si + 1}</button>
@@ -2566,7 +2568,7 @@ function cardioCard(e, ei, last, mates) {
       <input inputmode="decimal" value="${esc(s.inc || '')}" placeholder="${ls && ls.inc ? esc(ls.inc) : '—'}" data-in="inc" data-e="${ei}" data-s="${si}" aria-label="${incL}">
       <button class="check ${justChk === ei + '-' + si ? 'pop' : ''}" data-act="done" data-e="${ei}" data-s="${si}" aria-label="${T('Valider', 'Done')}">✓</button>
     </div><div class="last" id="cl${ei}_${si}">${cardioLine(e, s)}</div>`; }).join('')}
-    ${tot.kcal ? `<div class="sug"><span>🔥 ${T('Total', 'Total')} : ≈ <b>${tot.kcal} kcal</b> · 👣 ≈ <b>${tot.steps.toLocaleString(LOC())}</b> ${T('pas', 'steps')}</span></div>` : ''}
+    ${tot.kcal ? `<div class="sug"><span>🔥 ${T('Total', 'Total')}${CLN()} ≈ <b>${tot.kcal} kcal</b> · 👣 ≈ <b>${tot.steps.toLocaleString(LOC())}</b> ${T('pas', 'steps')}</span></div>` : ''}
     <div class="row wrap" style="margin-top:8px"><button class="btn sm" data-act="add-set" data-e="${ei}">＋ ${T('Intervalle', 'Interval')}</button>${e.sets.length > 1 ? `<button class="btn sm" data-act="rm-set" data-e="${ei}">− ${T('Intervalle', 'Interval')}</button>` : ''}<button class="btn sm" data-act="cardio-calc">👣 ${T('Convertir', 'Convert')}</button></div>
   </div>`;
 }
@@ -2576,7 +2578,7 @@ function histCard(h, open) {
   if (h.ph) setTimeout(phFill, 0);
   if (selH) return `<div class="card rcard selc ${selH.has(h.id) ? 'on' : ''}" data-act="selh-t" data-hid="${h.id}"><div class="row" style="gap:10px;width:100%"><span class="selbox ${selH.has(h.id) ? 'on' : ''}">${selH.has(h.id) ? '✓' : ''}</span><div style="flex:1;min-width:0"><h3 style="margin:0">${esc(h.routineName)}</h3><span class="muted small">${new Date(h.date).toLocaleDateString(LOC(), {weekday: 'short', day: 'numeric', month: 'short'})} · ${h.exercises.length} exos</span></div></div></div>`;
   return `<details class="card hist" data-hid="${h.id}" ${open ? 'open' : ''}><summary>
-      <div class="row between"><div><h3>${esc(h.routineName)}</h3><span class="muted small">${new Date(h.date).toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long'})} · ${hm(h.duration)}${h.hr ? ` · ${IC('heart', '♥', 12)} ${h.hr.avg}` : ''}</span></div><span class="tag">${h.exercises.length} exos ▾</span></div>
+      <div class="row between"><div><h3>${esc(h.routineName)}</h3><span class="muted small">${new Date(h.date).toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long'})} · ${hm(h.duration)}${h.hr ? ` · ${IC('heart', '♥', 12)} ${h.hr.avg}` : ''}</span></div><span class="tag">${h.exercises.length} ${h.exercises.length > 1 ? T('exos', 'exercises') : T('exo', 'exercise')} ▾</span></div>
     </summary>
     <ul class="exlist">${h.exercises.map(e => `<li><span class="row" style="gap:8px;align-items:flex-start">${thumb(e.name, 28)}<span>${exl(e.name)}${e.ss ? ` <span class="sspill sm" ${ssSty(e)}>Superset</span>` : ''}${e.note ? `<br><span class="small muted">📝 ${esc(e.note)}</span>` : ''}${e.sets.map((s, i) => s.n ? `<br><span class="small muted">Série ${i + 1} : ${esc(s.n)}</span>` : '').join('')}</span></span><span class="tag">${e.sets.map(s => fmtSet(s, true)).join(', ')}</span></li>`).join('')}</ul>
     ${hrBlock(h)}${h.ph ? `<img data-ph="${h.ph}" alt="" data-act="hist-phbig" data-hid="${h.id}" style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;display:block;margin:4px 0 10px;background:var(--card2);min-height:100px;cursor:zoom-in">` : ''}
@@ -2663,9 +2665,9 @@ function vExProgress() {
     <select id="exSel">${names.map(n => `<option ${n === progEx ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select>
     <div style="margin:8px 0"><span class="exlink small" data-act="exo" data-n="${esc(progEx)}">🎞 Voir l'exercice</span></div>
     <div class="row" style="margin:12px 0">
-      <div class="stat"><span class="muted small">Record</span><b class="pr">${bw ? `${pr.w}×${pr.r}` : `${pr.maxR} reps`}</b></div>
+      <div class="stat"><span class="muted small">Record</span><b class="pr">${bw ? `${DN(pr.w)}×${pr.r}` : `${pr.maxR} reps`}</b></div>
       <div class="stat"><span class="muted small">${bw ? '1RM estimé' : 'Séances'}</span><b>${bw ? Math.round(pr.v) + ' ' + U() : pts.length}</b></div>
-      <div class="stat"><span class="muted small">Dernière</span><b>${bw ? `${lastP.w}×${lastP.r}` : lastP.maxR}</b></div>
+      <div class="stat"><span class="muted small">Dernière</span><b>${bw ? `${DN(lastP.w)}×${lastP.r}` : lastP.maxR}</b></div>
     </div>
     <div class="card"><canvas id="chart"></canvas>
       <p class="muted small" style="margin:6px 0 0">${bw ? '1RM estimé par séance (meilleure série de travail)' : 'Reps max par séance'} — ${pts.length} séance${pts.length > 1 ? 's' : ''}</p></div>`;
@@ -2679,6 +2681,7 @@ function computeRecords() {
     let r = map.get(k); if (!r) { r = {name: e.name, best: null, heavy: null, reps: null, count: 0}; map.set(k, r); }
     r.count++; r.name = e.name;
     ws.forEach(s => {
+      if (s.u === 'c') { r.cardio = true; const m = +s.r || 0, k = +s.km || 0; if (m > (r.cmin || 0)) r.cmin = m; if (k > (r.ckm || 0)) r.ckm = k; if (!r.reps || m > r.reps.r) r.reps = {r: m, date: h.date}; return; }
       const tm = s.u === 's', v = tm ? 0 : e1rm(s.w, s.r), w = tm ? 0 : (+s.w || 0), n = +s.r || 0; if (tm) r.timed = true;
       if (v > 0 && (!r.best || v > r.best.v)) r.best = {w, r: n, v, date: h.date};
       if (w > 0 && (!r.heavy || w > r.heavy.w)) r.heavy = {w, r: n, date: h.date};
@@ -2698,9 +2701,12 @@ function vRecords() {
     recs.map(r => `<div class="card">
       <div class="row between"><h3>${exl(r.name)}${recent(r.date) ? ' <span class="chip main" style="font-size:11px;padding:2px 8px">Nouveau</span>' : ''}</h3><span class="tag">${new Date(r.date).toLocaleDateString(LOC(), {day: 'numeric', month: 'short', year: 'numeric'})}</span></div>
       <div class="row" style="margin-top:8px;align-items:stretch">${r.best ? `
-        <div class="stat"><span class="muted small">Top série</span><b class="pr">${r.best.w}×${r.best.r}</b></div>
+        <div class="stat"><span class="muted small">${T('Top série', 'Top set')}</span><b class="pr">${DN(r.best.w)}×${r.best.r}</b></div>
         <div class="stat"><span class="muted small">1RM estimé</span><b>${Math.round(r.best.v)}</b></div>
-        <div class="stat"><span class="muted small">Charge max</span><b>${r.heavy ? r.heavy.w + '×' + r.heavy.r : '—'}</b></div>` : `
+        <div class="stat"><span class="muted small">Charge max</span><b>${r.heavy ? DN(r.heavy.w) + '×' + r.heavy.r : '—'}</b></div>` : r.cardio ? `
+        <div class="stat"><span class="muted small">${T('Durée max', 'Longest')}</span><b class="pr">${hm(r.cmin)}</b></div>
+        ${r.ckm ? `<div class="stat"><span class="muted small">${T('Distance max', 'Longest distance')}</span><b>${DN(r.ckm)} km</b></div>` : ''}
+        <div class="stat"><span class="muted small">${T('Séances', 'Sessions')}</span><b>${r.count}</b></div>` : `
         <div class="stat"><span class="muted small">${r.timed ? 'Durée max' : 'Reps max'}</span><b class="pr">${r.timed ? fmtSec(r.reps.r) : r.reps.r}</b></div>
         <div class="stat"><span class="muted small">Séances</span><b>${r.count}</b></div>`}
       </div></div>`).join('');
@@ -2753,9 +2759,9 @@ function vBody() {
     const prev = ws.length > 1 ? ws[ws.length - 2] : null;
     const delta = prev ? +lastE.v - +prev.v : null;
     stats = `<div class="row" style="margin-bottom:12px">
-      <div class="stat"><span class="muted small">Dernier poids</span><b>${lastE.v} ${U()}</b></div>
+      <div class="stat"><span class="muted small">Dernier poids</span><b>${DN(lastE.v)} ${U()}</b></div>
       <div class="stat"><span class="muted small">Moy. 7 jours</span><b>${dec1(avg)}</b></div>
-      <div class="stat"><span class="muted small">Vs précédent</span><b>${delta == null ? '—' : (delta > 0 ? '+' : '') + (Math.round(delta * 10) / 10).toString().replace('.', ',')}</b></div></div>`;
+      <div class="stat"><span class="muted small">Vs précédent</span><b>${delta == null ? '—' : (delta > 0 ? '+' : '') + DN(Math.round(delta * 10) / 10)}</b></div></div>`;
   }
   const opts = [['w', 'Poids (' + U() + ')'], ...MEAS.map(([k, l]) => [k, l + ' (' + MU() + ')']), ...NUTRI.map(([k, l, u]) => [k, l + ' (' + u + ')'])];
   const pts = bodySeries(bodyMetric);
@@ -2774,7 +2780,7 @@ function vBody() {
       <div class="grid2">${NUTRI.map(([k, l, u]) => `<div><label>${k === 'steps' ? l : `${l} (${u})`}</label><input id="bn_${k}" inputmode="numeric"></div>`).join('')}</div>
       <div class="gap"></div><button class="btn primary block" data-act="body-save">Enregistrer</button>
     </details>
-    ${S.body.length ? `<div class="card"><h3>Historique</h3><ul class="exlist">${S.body.slice().sort((a, b) => b.d.localeCompare(a.d)).slice(0, 30).map(e => `<li><span>${new Date(e.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'short', year: 'numeric'})}</span><span class="row"><span class="tag" style="white-space:normal;text-align:right">${[e.w != null ? e.w + ' ' + U() : '', ...MEAS.filter(([k]) => e.m && e.m[k] != null).map(([k, l]) => `${l.toLowerCase()} ${e.m[k]}`), ...NUTRI.filter(([k]) => e.n && e.n[k] != null).map(([k, l, u]) => `${Math.round(e.n[k]).toLocaleString(LOC())} ${u}`)].filter(Boolean).join(' · ')}</span><button class="btn danger sm" data-act="body-del" data-id="${e.id}">✕</button></span></li>`).join('')}</ul></div>` : ''}`;
+    ${S.body.length ? `<div class="card"><h3>Historique</h3><ul class="exlist">${S.body.slice().sort((a, b) => b.d.localeCompare(a.d)).slice(0, 30).map(e => `<li><span>${new Date(e.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'short', year: 'numeric'})}</span><span class="row"><span class="tag" style="white-space:normal;text-align:right">${[e.w != null ? DN(e.w) + ' ' + U() : '', ...MEAS.filter(([k]) => e.m && e.m[k] != null).map(([k, l]) => `${l.toLowerCase()} ${DN(e.m[k])}`), ...NUTRI.filter(([k]) => e.n && e.n[k] != null).map(([k, l, u]) => `${Math.round(e.n[k]).toLocaleString(LOC())} ${u}`)].filter(Boolean).join(' · ')}</span><button class="btn danger sm" data-act="body-del" data-id="${e.id}">✕</button></span></li>`).join('')}</ul></div>` : ''}`;
 }
 /* Objectif de poids : une cible, une barre de progression et une date estimée d'après la tendance. */
 function wGoal() { const g = S.settings.wGoal; if (!g || !(+g.v > 0)) return null; const k = g.u === U() ? 1 : U() === 'kg' ? 1 / 2.20462 : 2.20462; return {v: Math.round(g.v * k * 10) / 10, from: Math.round(g.from * k * 10) / 10}; }
@@ -2788,14 +2794,14 @@ function wGoalCard(ws) {
   if (hit) eta = T('Objectif atteint, bravo!', 'Goal reached, well done!');
   else if (pr && Math.abs(pr.slope * 7) >= .1 && (g.v - cur) * pr.slope > 0) { const d = (g.v - pr.at(0)) / pr.slope; eta = d > 0 && d < 730 ? T(`À ce rythme : vers le <b>${fmtDay(d)}</b>`, `At this pace: around <b>${fmtDay(d)}</b>`) : T('À ce rythme, c\'est dans plus de 2 ans.', 'At this pace, it is more than 2 years away.'); }
   else eta = pr ? T('Ta tendance actuelle ne va pas vers ton objectif.', 'Your current trend is not heading toward your goal.') : T('La date estimée apparaîtra après quelques pesées.', 'The estimated date will appear after a few weigh-ins.');
-  return `<div class="card" style="margin-bottom:12px"><div class="row between"><b>🎯 ${T('Objectif', 'Goal')} : ${g.v} ${U()}</b><button class="linkbtn" data-act="wg-open">${T('Modifier', 'Edit')}</button></div>
+  return `<div class="card" style="margin-bottom:12px"><div class="row between"><b>🎯 ${T('Objectif', 'Goal')}${CLN()} ${g.v} ${U()}</b><button class="linkbtn" data-act="wg-open">${T('Modifier', 'Edit')}</button></div>
     <div class="pbar" style="margin:8px 0 6px"><div style="width:${Math.round(done * 100)}%"></div></div>
     <div class="row between small muted"><span>${g.from} ${U()}</span><span>${hit ? '' : T(`encore ${left} ${U()}`, `${left} ${U()} to go`)}</span><span>${g.v} ${U()}</span></div>
     <p class="small" style="margin:8px 0 0">${eta}</p></div>`;
 }
 function wGoalOpen() {
   const g = wGoal(), ws = bodySeries('w'), cur = ws.length ? ws[ws.length - 1].v : '';
-  modal(`<h2>🎯 ${T('Objectif de poids', 'Weight goal')}</h2><p class="muted small">${T('Ton poids actuel', 'Your current weight')} : ${cur} ${U()}</p>
+  modal(`<h2>🎯 ${T('Objectif de poids', 'Weight goal')}</h2><p class="muted small">${T('Ton poids actuel', 'Your current weight')}${CLN()} ${cur} ${U()}</p>
     <label>${T('Poids visé', 'Target weight')} (${U()})</label><input id="wgv" inputmode="decimal" value="${g ? g.v : ''}" placeholder="${cur}">
     <button class="btn primary block" data-act="wg-save" style="margin-top:12px">${T('Enregistrer', 'Save')}</button>
     ${g ? `<button class="btn block" data-act="wg-del" style="margin-top:8px">${T('Retirer l\'objectif', 'Remove the goal')}</button>` : ''}`);
@@ -2885,7 +2891,7 @@ function vSettings() {
         <li>${T('Pas de mode <b>Ne pas déranger</b> ni de mode Sommeil sur la montre ou le cell.', 'No <b>Do not disturb</b> or Sleep mode on the watch or phone.')}</li></ol></details>` : ''}
       <label>${T('Son du bip', 'Beep sound')}</label>
       <select data-set="beepSnd">${Object.entries(SOUNDS).map(([k, s]) => `<option value="${k}" ${(S.settings.beepSnd || 'classique') === k ? 'selected' : ''}>${T(s.fr, s.en)}</option>`).join('')}</select>
-      <label>${T('Volume du bip', 'Beep volume')} : <b id="bvl">${S.settings.beepVol ?? 70} %</b></label>
+      <label>${T('Volume du bip', 'Beep volume')}${CLN()} <b id="bvl">${S.settings.beepVol ?? 70} %</b></label>
       <input type="range" min="0" max="100" step="5" value="${S.settings.beepVol ?? 70}" data-bvol="1" style="--p:${S.settings.beepVol ?? 70}%">
       <p class="muted small" style="margin:2px 0 0">${T('Le volume dépend aussi du volume « média » de ton téléphone.', 'Volume also depends on your phone’s media volume.')}</p>
       <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="haptic" ${S.settings.haptic !== false ? 'checked' : ''}> ${T('📳 Petite vibration quand je coche une série', '📳 Small vibration when I check a set')}</label>
@@ -4256,11 +4262,11 @@ function predictHtml(pts, kind) {
   const r = v => (kind === 'pct' || kind === 'cm' ? dec1(v) : Math.round(v)) + u, wk = p.slope * 7, H = p.h, inW = T(`dans ${H / 7} semaines`, `in ${H / 7} weeks`);
   if (kind === 'body' || kind === 'pct' || kind === 'cm') {
     if (Math.abs(wk) < (kind === 'body' ? .1 : .05)) return `<p class="small" style="margin:8px 0 0">📈 ${T('Tendance : stable ces 3 derniers mois.', 'Trend: steady over the last 3 months.')}</p>`;
-    return `<p class="small" style="margin:8px 0 0">📈 ${T('Tendance', 'Trend')} : <b>${wk > 0 ? '+' : '−'}${r(Math.abs(wk))}</b> / ${T('sem.', 'wk')} → ${T('environ', 'about')} <b>${r(p.at(H))}</b> ${inW} (${fmtDay(H)}).</p>`;
+    return `<p class="small" style="margin:8px 0 0">📈 ${T('Tendance', 'Trend')}${CLN()} <b>${wk > 0 ? '+' : '−'}${r(Math.abs(wk))}</b> / ${T('sem.', 'wk')} → ${T('environ', 'about')} <b>${r(p.at(H))}</b> ${inW} (${fmtDay(H)}).</p>`;
   }
   if (p.slope <= 0) return `<p class="small" style="margin:8px 0 0">📈 ${T('Pas de hausse ces 3 derniers mois. Essaie d\'ajouter une rep ou un peu de poids à la prochaine séance.', 'No increase over the last 3 months. Try adding a rep or a bit of weight next session.')}</p>`;
   const best = Math.max(...pts.map(x => +x.v)), stp = kind === 'reps' ? 5 : U() === 'kg' ? 10 : 25, goal = Math.floor(Math.max(best, p.at(0)) / stp + 1) * stp, dG = (goal - p.v0) / p.slope;
-  return `<p class="small" style="margin:8px 0 0">📈 ${T('À ce rythme', 'At this pace')} : <b>${r(p.at(H))}</b> ${inW} (${fmtDay(H)})${dG > 0 && dG < 365 ? `. ${T('Prochain cap', 'Next milestone')} : <b>${r(goal)}</b> ${T('vers le', 'around')} <b>${fmtDay(dG)}</b>` : ''}</p>`;
+  return `<p class="small" style="margin:8px 0 0">📈 ${T('À ce rythme', 'At this pace')}${CLN()} <b>${r(p.at(H))}</b> ${inW} (${fmtDay(H)})${dG > 0 && dG < 365 ? `. ${T('Prochain cap', 'Next milestone')}${CLN()} <b>${r(goal)}</b> ${T('vers le', 'around')} <b>${fmtDay(dG)}</b>` : ''}</p>`;
 }
 function projPts(pts) { const p = predict(pts); return p && pts.length ? [{d: new Date(Date.now() + p.h * 864e5).toISOString(), v: p.at(p.h)}] : []; }
 /* ===================== Événements (mode jeu) ===================== */
@@ -4313,7 +4319,7 @@ function evAnnounce() {
   const fmt = v => e.q.k === 'vol' ? `${Math.round(U() === 'kg' ? v : v * 2.20462).toLocaleString(LOC())} ${U()}` : e.q.k === 'car' ? `${v} min` : v.toLocaleString(LOC());
   setTimeout(() => { if (modals.length || S.active || S.evSeen[e.id]) return; S.evSeen[e.id] = 1; save(); modal(`<div style="text-align:center"><div class="sysh" style="color:#f5c542">[ ${T('NOUVEL ÉVÉNEMENT', 'NEW EVENT')} ]</div><div style="font-size:46px;margin:8px 0">🎪</div>
     <h2 style="margin:0 0 6px">${esc(T(e.n[0], e.n[1]))}</h2><p style="margin:0 0 8px">${esc(T(e.d[0], e.d[1])).replace('{g}', e.q ? fmt(e.q.g) : '')}</p>
-    ${e.x2 ? `<div class="evx2">2× XP</div>` : `<b style="color:var(--ok)">${T('Récompense', 'Reward')} : +${e.q.xp} XP</b>`}
+    ${e.x2 ? `<div class="evx2">2× XP</div>` : `<b style="color:var(--ok)">${T('Récompense', 'Reward')}${CLN()} +${e.q.xp} XP</b>`}
     <p class="small muted" style="margin:10px 0 0">${T('Jusqu\'au', 'Until')} ${end}. ${T('Tu suis ta progression dans l\'onglet Entraînement.', 'Track your progress in the Workout tab.')}</p>
     <button class="btn primary block" style="margin-top:14px" data-act="close">${T('C\'est parti!', 'Let\'s go!')}</button></div>`); }, 900);
 }
@@ -4331,7 +4337,7 @@ function evDoubleXp(h) { // appelée à la fin d'une séance
 function eventCard() {
   if (!GAME()) return '';
   const now = new Date(), e = evNow(now);
-  if (!e) { const nx = eventsAround(now).find(x => x.a > now); if (!nx) return ''; const dd = Math.ceil((nx.a - now) / 864e5); return dd <= 7 ? `<div class="evsoon small">🎪 ${T('Prochain événement', 'Next event')} : <b>${esc(T(nx.n[0], nx.n[1]))}</b> ${T(`dans ${dd} j`, `in ${dd} d`)}</div>` : ''; }
+  if (!e) { const nx = eventsAround(now).find(x => x.a > now); if (!nx) return ''; const dd = Math.ceil((nx.a - now) / 864e5); return dd <= 7 ? `<div class="evsoon small">🎪 ${T('Prochain événement', 'Next event')}${CLN()} <b>${esc(T(nx.n[0], nx.n[1]))}</b> ${T(`dans ${dd} j`, `in ${dd} d`)}</div>` : ''; }
   const left = Math.ceil((e.b - now) / 864e5), pr = e.q ? evProg(e) : 0, done = e.q && pr >= e.q.g;
   const fmt = v => e.q.k === 'vol' ? `${Math.round(U() === 'kg' ? v : v * 2.20462).toLocaleString(LOC())} ${U()}` : e.q.k === 'car' ? `${v} min` : v.toLocaleString(LOC());
   return `<div class="card evcard"><div class="row between"><div class="sysh">[ ${T('ÉVÉNEMENT', 'EVENT')} ]</div><span class="small muted">${left} ${T(left > 1 ? 'jours restants' : 'jour restant', left > 1 ? 'days left' : 'day left')}</span></div>
@@ -4607,7 +4613,7 @@ function vMonth() {
   return `<div class="row between" style="margin-bottom:12px"><button class="btn sm" data-act="month-prev" aria-label="Mois précédent">‹</button><h3 style="text-transform:capitalize">${esc(title)}</h3><button class="btn sm" data-act="month-next" aria-label="Mois suivant">›</button></div>
     ${a.n ? `<div class="grid2">${tile('Séances', a.n, dl(a.n, b.n))}${tile('Durée totale', hm(a.dur), dl(a.dur, b.dur))}${tile('Volume', Math.round(a.vol).toLocaleString(LOC()) + ' ' + U(), dl(a.vol, b.vol))}${tile('Séries', a.sets, dl(a.sets, b.sets))}${tile('Réps', a.reps.toLocaleString(LOC()), dl(a.reps, b.reps))}${tile('Jours actifs', a.days.size, '')}</div>
     <p class="muted small">Les flèches comparent avec le mois précédent.</p>
-    <div class="card"><h3>🏆 Records du mois (${prs.length})</h3>${prs.length ? prs.map(e => `<div class="row between" style="padding:5px 0"><span>${esc(e.name)}</span><span class="pr">${e.s.w}×${e.s.r}</span></div>`).join('') : '<p class="muted small">Aucun record ce mois-ci.</p>'}</div>
+    <div class="card"><h3>🏆 Records du mois (${prs.length})</h3>${prs.length ? prs.map(e => `<div class="row between" style="padding:5px 0"><span>${esc(e.name)}</span><span class="pr">${DN(e.s.w)}×${e.s.r}</span></div>`).join('') : '<p class="muted small">Aucun record ce mois-ci.</p>'}</div>
     <div class="card"><h3>Exercices les plus travaillés</h3>${top.map(t => `<div class="row between" style="padding:5px 0"><span class="row" style="gap:8px">${thumb(t.name, 28)}${esc(t.name)}</span><span class="muted small">${t.sets} séries</span></div>`).join('')}</div>
     <div class="card"><h3>Muscles</h3>${mus.map(([m, v]) => `<div class="bar"><span>${esc(musN(m))}</span><div class="track"><div class="fill" style="width:${Math.max(3, v / mmax * 100)}%"></div></div><b>${f1c(v)}</b></div>`).join('')}</div>`
     : '<div class="empty">Aucune séance ce mois-ci.</div>'}`;
@@ -4651,7 +4657,7 @@ function vExDetail() {
       <h2 style="margin-top:8px">${esc(name)}</h2>
       ${L ? `<div class="chips" style="justify-content:center">${L.p.map(m => `<span class="chip main">${esc(musN(m))}</span>`).join('')}${L.s.map(m => `<span class="chip">${esc(musN(m))}</span>`).join('')}</div>` : ''}
       <button class="btn sm" data-act="exo" data-n="${esc(name)}">📖 Instructions et lien</button></div>
-    ${rec ? `<div class="row" style="align-items:stretch;margin-bottom:12px">${rec.best ? `<div class="stat"><span class="muted small">Top série</span><b class="pr">${rec.best.w}×${rec.best.r}</b></div><div class="stat"><span class="muted small">1RM estimé</span><b>${Math.round(rec.best.v)}</b></div><div class="stat"><span class="muted small">Charge max</span><b>${rec.heavy ? rec.heavy.w : '—'}</b></div>` : `<div class="stat"><span class="muted small">Réps max</span><b class="pr">${rec.reps.r}</b></div><div class="stat"><span class="muted small">Séances</span><b>${rec.count}</b></div>`}</div>` : ''}
+    ${rec ? `<div class="row" style="align-items:stretch;margin-bottom:12px">${rec.best ? `<div class="stat"><span class="muted small">Top série</span><b class="pr">${DN(rec.best.w)}×${rec.best.r}</b></div><div class="stat"><span class="muted small">1RM estimé</span><b>${Math.round(rec.best.v)}</b></div><div class="stat"><span class="muted small">Charge max</span><b>${rec.heavy ? rec.heavy.w : '—'}</b></div>` : `<div class="stat"><span class="muted small">Réps max</span><b class="pr">${rec.reps.r}</b></div><div class="stat"><span class="muted small">Séances</span><b>${rec.count}</b></div>`}</div>` : ''}
     ${stagBtn(name)}
     <div class="card">${pts.length ? '<canvas id="chart"></canvas>' : '<div class="empty">Pas encore de données pour ce graphique.</div>'}${exMetric === 'vol' ? '' : predictHtml(pts, exMetric === 'reps' ? 'reps' : 'w')}<div class="chips" style="margin-bottom:0">${chips}</div></div>
     ${maxTable(rec)}
@@ -4692,7 +4698,7 @@ function stagnation(name) {
   const k = ss.length - 1 - lastProg, days = (now - new Date(ss[lastProg].h.date)) / 864e5;
   if (k < STAG_N || days < STAG_DAYS) return null;
   const b = ss[lastProg].e, bs = work(b.sets).filter(s => s.u !== 's').reduce((m, s) => (e1rm(s.w, s.r) || (+s.r / 1000)) > (e1rm(m.w, m.r) || (+m.r / 1000)) ? s : m);
-  return {k, wk: Math.floor(days / 7), date: ss[lastProg].h.date, best: `${bs.w === '' || bs.w == null ? BWL() : bs.w}×${bs.r}`, last: ss.slice(lastProg).slice(-7)};
+  return {k, wk: Math.floor(days / 7), date: ss[lastProg].h.date, best: `${bs.w === '' || bs.w == null ? BWL() : DN(bs.w)}×${bs.r}`, last: ss.slice(lastProg).slice(-7)};
 }
 function stagBtn(name, ei) {
   const st = stagnation(name); if (!st) return '';
@@ -4704,7 +4710,7 @@ function openStag(name, ei) {
   const rr = re ? String(re.reps || '') : '';
   const m = rr.match(/(\d+)\s*-\s*(\d+)/), lo = m ? +m[1] : 8;
   const alt = lo <= 8 ? '10-15' : '5-8';
-  const hist = st.last.map(({h: hh, e}) => `${dateFr(hh.date)} : ${work(e.sets).map(s => `${s.w === '' || s.w == null ? BWL() : s.w}×${s.r}`).join(', ')}`).join('<br>');
+  const hist = st.last.map(({h: hh, e}) => `${dateFr(hh.date)} : ${work(e.sets).map(s => `${s.w === '' || s.w == null ? BWL() : DN(s.w)}×${s.r}`).join(', ')}`).join('<br>');
   modal(`<div class="row between"><h2>⚠️ ${esc(name)}</h2><button class="btn sm" data-act="close">✕</button></div>
     <p class="muted small">${T(`Ta dernière progression date du <b>${dateFr(st.date)}</b> (${st.best}). Depuis, <b>${st.k} séances</b> en ${st.wk} semaines sans faire mieux : ni plus de charge, ni plus de reps à la même charge.`, `Your last progress was on <b>${dateFr(st.date)}</b> (${st.best}). Since then, <b>${st.k} workouts</b> over ${st.wk} weeks without doing better: no more weight, no more reps at the same weight.`)}</p>
     <div class="card small">${hist}</div>
@@ -4755,7 +4761,7 @@ function maxTable(rec) {
   const one = rec.best.v, inc = incr(), rnd = v => Math.round(v / inc) * inc;
   const rows = [1, 2, 3, 5, 6, 8, 10, 12, 15].map(r => { const w = r === 1 ? one : one / (1 + r / 30); return `<tr><td>${r}</td><td><b>${rnd(w)} ${U()}</b></td><td class="muted">${Math.round(w / one * 100)} %</td></tr>`; }).join('');
   return `<div class="card"><h3>📐 ${T('Tes maximums estimés', 'Your estimated maxes')}</h3>
-    <p class="muted small" style="margin:2px 0 8px">${T(`Calculé à partir de ta meilleure série (${rec.best.w}×${rec.best.r}). Pratique quand l'IA te donne une nouvelle plage de reps.`, `Based on your best set (${rec.best.w}×${rec.best.r}). Handy when the AI gives you a new rep range.`)}</p>
+    <p class="muted small" style="margin:2px 0 8px">${T(`Calculé à partir de ta meilleure série (${DN(rec.best.w)}×${rec.best.r}). Pratique quand l'IA te donne une nouvelle plage de reps.`, `Based on your best set (${DN(rec.best.w)}×${rec.best.r}). Handy when the AI gives you a new rep range.`)}</p>
     <table class="stbl mxt"><thead><tr><th>${T('RÉPS', 'REPS')}</th><th>${T('CHARGE', 'WEIGHT')}</th><th>% 1RM</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
@@ -4786,7 +4792,7 @@ function recovSVG(shapes, f, dx) {
 }
 function vRecovery() {
   const {f, last} = recovery();
-  const rows = Object.entries(f).sort((a, b) => b[1] - a[1]);
+  const rows = Object.entries(f).filter(([m]) => !/^cardio$/i.test(m)).sort((a, b) => b[1] - a[1]);
   const fresh = rows.filter(([m, v]) => v < 0.25).length;
   return `<p class="muted small" style="margin:0 0 10px">${T(`Estimation selon tes séries des 4 derniers jours : à ton niveau (${EXP_NAME(expLv()).toLowerCase()}), les gros muscles récupèrent en ~${Math.round(72 * expRecov())} h, les petits en ~${Math.round(48 * expRecov())} h. Vert = prêt, rouge = encore fatigué.`, `Estimate based on your sets from the last 4 days: at your level (${EXP_NAME(expLv()).toLowerCase()}), big muscles recover in ~${Math.round(72 * expRecov())} h, small ones in ~${Math.round(48 * expRecov())} h. Green = ready, red = still tired.`)}</p>
     <div class="card"><svg viewBox="0 0 300 312" width="100%" role="img" aria-label="${T('Récupération des muscles', 'Muscle recovery')}">${recovSVG(BODY_F, f, 0)}${recovSVG(BODY_B, f, 160)}
@@ -5102,7 +5108,7 @@ function sessPRs(h) {
       const isBw = cur.b > 0 && pv.b > 0 && cur.b > pv.b;
       if (!(cur.v > pv.v && cur.v > 0) && rk == null && !isBw) { prs.push({name: e.name, set: `${T('volume', 'volume')} ${Math.round(cur.vol.v > 0 ? cur.vol.v : cur.vol.b)}${cur.vol.v > 0 ? ' ' + U() : ' reps'} (${cur.vol.n} ${T('séries', 'sets')})`}); return; }
       const b = cur.v > pv.v && cur.v > 0 ? ws.reduce((m, s) => e1rm(s.w, s.r) > e1rm(m.w, m.r) ? s : m) : rk != null ? {w: rk, r: cur.wr[rk].r} : ws.reduce((m, s) => (+s.r || 0) > (+m.r || 0) && !(+s.w > 0) ? s : m);
-      prs.push({name: e.name, set: +b.w > 0 ? `${b.w}×${b.r}` : `${b.r} reps`}); }
+      prs.push({name: e.name, set: +b.w > 0 ? `${DN(b.w)}×${b.r}` : `${b.r} reps`}); }
   });
   return prs;
 }
@@ -5586,10 +5592,10 @@ function bossRow() {
   const base = b.from * .85, hp = b.done ? 0 : Math.max(0, Math.min(100, Math.round((b.target - b.cur) / Math.max(1, b.target - base) * 100))), hpP = bossHpPts(b, b.cur), ph = bossPhase(hpP);
   return `<div class="bossrow ${b.done ? 'dead' : ''}"><div class="row between" style="align-items:center;gap:8px;flex-wrap:wrap"><span class="bossh">☠ ${T('BOSS DU MOIS', 'BOSS OF THE MONTH')}</span><span class="small muted" style="margin-left:auto">${b.done ? `<b style="color:var(--ok)">${T('VAINCU', 'DEFEATED')}</b>` : `${b.left} ${T('j restants', 'days left')} · +1 000 XP`}</span></div>
     <div class="bossmain">${bossArt(bossIdxOf(b.nm), ph)}<div style="flex:1;min-width:0"><b class="bossn">${esc(b.name)}</b>${ph && ph !== 'dead' ? `<span class="bphase">${bossPhaseTxt(ph)}</span>` : ''}
-    <div class="small">${T('Pour le vaincre : un 1RM estimé de', 'To defeat it: an estimated 1RM of')} <b>${b.target} ${U()}</b> ${T('au', 'on')} <b>${esc(b.ex)}</b> <span class="muted">(${T('ton meilleur avant ce mois', 'your best before this month')} : ${b.from}${b.done ? ` · ${T('ce mois-ci', 'this month')} : ${Math.round(b.cur)}` : ''})</span></div></div></div>
+    <div class="small">${T('Pour le vaincre : un 1RM estimé de', 'To defeat it: an estimated 1RM of')} <b>${b.target} ${U()}</b> ${T('au', 'on')} <b>${esc(b.ex)}</b> <span class="muted">(${T('ton meilleur avant ce mois', 'your best before this month')}${CLN()} ${b.from}${b.done ? ` · ${T('ce mois-ci', 'this month')}${CLN()} ${Math.round(b.cur)}` : ''})</span></div></div></div>
     ${b.done ? '' : (() => { const st = U() === 'kg' ? 2.5 : 5; const w3 = Math.ceil(b.target / 1.1 / st) * st; const ex = [3, 5, 8].map((r, k) => `<div>• ${k ? T('ou ', 'or ') : ''}<b>${Math.ceil(b.target / (1 + r / 30) / st) * st} ${U()}</b> ${T('pour', 'for')} <b>${r} reps</b></div>`).join(''); return `<details class="small bosshow"><summary>⚔️ <b>${T('Comment le battre', 'How to beat it')}</b> <span class="muted">${T('(touche pour voir)', '(tap to see)')}</span></summary>${T('Fais', 'Do')} <b>${T('UNE seule série', 'ONE single set')}</b> ${T('au', 'of')} ${esc(b.ex)}. ${T('Choisis une de ces options :', 'Pick one of these options:')}${ex}<span class="muted">${T(`Ex. : ${w3} ${U()} pour 3 reps = tu soulèves ${w3} ${U()} 3 fois de suite, une seule fois. Plus lourd ou plus de reps, ça marche aussi. Le boss tombe dès que la série est enregistrée.`, `E.g. ${w3} ${U()} for 3 reps = you lift ${w3} ${U()} 3 times in a row, once. Heavier or more reps also works. The boss falls as soon as the set is logged.`)}</span></details>`; })()}
     <div class="goal bossbar"><div style="width:${hp}%"></div></div>
-    <div class="row between small muted"><span>${T('PV', 'HP')} <b>${hpP}</b> / 1 000</span><span>${b.done ? T('0 PV', '0 HP') : `${T('ce mois-ci', 'this month')} : ${Math.round(b.cur)} / ${b.target} ${U()}`}</span></div></div>`;
+    <div class="row between small muted"><span>${T('PV', 'HP')} <b>${hpP}</b> / 1 000</span><span>${b.done ? T('0 PV', '0 HP') : `${T('ce mois-ci', 'this month')}${CLN()} ${Math.round(b.cur)} / ${b.target} ${U()}`}</span></div></div>`;
 }
 
 function hunter(me) {
@@ -5659,8 +5665,8 @@ function vMuscleRanks() {
   const sel = mrSel && res[mrSel];
   return `<div class="card sysw"><div class="sysh">[ ${T('RANGS PAR MUSCLE', 'MUSCLE RANKS')} ]</div>
       <div class="row" style="gap:12px;align-items:center;margin-bottom:8px">${rkBadge(ov, 'rkbig')}<div style="flex:1;min-width:0"><div class="muted small">${T('Rang global du corps', 'Overall body rank')}</div>
-        ${best ? `<div class="small" style="margin-top:4px">💪 ${T('Point fort', 'Strongest')} : <b>${esc(musN(best.m))}</b> (${best.rk})</div>` : ''}
-        <div class="small" style="margin-top:2px">⚠️ ${T('Points faibles', 'Weak points')} : <b>${weak.map(r => esc(musN(r.m)) + ' (' + (r.rk || T('pas travaillé', 'not trained')) + ')').join(', ')}</b></div></div></div>
+        ${best ? `<div class="small" style="margin-top:4px">💪 ${T('Point fort', 'Strongest')}${CLN()} <b>${esc(musN(best.m))}</b> (${best.rk})</div>` : ''}
+        <div class="small" style="margin-top:2px">⚠️ ${T('Points faibles', 'Weak points')}${CLN()} <b>${weak.map(r => esc(musN(r.m)) + ' (' + (r.rk || T('pas travaillé', 'not trained')) + ')').join(', ')}</b></div></div></div>
       <svg viewBox="0 0 300 312" width="100%" role="img" aria-label="${T('Rang de chaque muscle', 'Rank of each muscle')}">${mrSVG(BODY_F, res, 0, mrSel)}${mrSVG(BODY_B, res, 160, mrSel)}
         <text x="70" y="308" text-anchor="middle" style="fill:var(--muted);font-size:12px">${T('Avant', 'Front')}</text><text x="230" y="308" text-anchor="middle" style="fill:var(--muted);font-size:12px">${T('Arrière', 'Back')}</text></svg>
       <div class="row" style="justify-content:center;gap:6px;flex-wrap:wrap;margin-top:6px">${RKS.slice().reverse().map(r => rkBadge(r, 'mrk lvrk')).join('')}<span class="small muted" style="align-self:center">${T('Touche un muscle', 'Tap a muscle')}</span></div>
@@ -5731,7 +5737,7 @@ function woQuest(a) {
     const live = {date: new Date().toISOString(), routineName: a.routineName, duration: Math.max(0, Math.round((Date.now() - new Date(a.start)) / 60000)), exercises: a.exercises.map(e => ({...e, sets: e.sets.filter(s => s.done)}))};
     const q = dailyQuest(new Date(), [live]); if (q.rest) return '';
     const pc = Math.min(100, Math.round(q.cur / Math.max(1, q.goal) * 100)), fmt = v => Math.round(v).toLocaleString(LOC());
-    return `<div class="row between small" style="margin-top:6px;gap:8px"><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.done ? '✅' : '✨'} ${T('Quête', 'Quest')} : ${esc(q.text)}</span><b style="flex:none;color:${q.done ? 'var(--ok)' : 'var(--text)'}">${q.done ? T('Réussie! +150 XP', 'Done! +150 XP') : fmt(q.cur) + ' / ' + fmt(q.goal)}</b></div>${q.done ? '' : `<div class="pbar" style="height:4px;margin-top:4px"><div style="width:${pc}%;background:var(--ok)"></div></div>`}`;
+    return `<div class="row between small" style="margin-top:6px;gap:8px"><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.done ? '✅' : '✨'} ${T('Quête', 'Quest')}${CLN()} ${esc(q.text)}</span><b style="flex:none;color:${q.done ? 'var(--ok)' : 'var(--text)'}">${q.done ? T('Réussie! +150 XP', 'Done! +150 XP') : fmt(q.cur) + ' / ' + fmt(q.goal)}</b></div>${q.done ? '' : `<div class="pbar" style="height:4px;margin-top:4px"><div style="width:${pc}%;background:var(--ok)"></div></div>`}`;
   } catch (e) { return ''; }
 }
 function dailyQuest(d, extra) { // version mémorisée pendant un affichage (appelée souvent)
@@ -5884,7 +5890,7 @@ function prExplain() {
     const inR = cand.filter(c => c.r <= hi).sort((a, b) => a.pri - b.pri), outR = cand.filter(c => c.r > hi).sort((a, b) => a.r - b.r);
     const goals = (inR.length ? inR : outR).slice(0, 3).map(c => c.txt);
     const goal = goals.length ? `<div class="small prgoal">🎯 ${T('Prochaine fois, fais', 'Next time, do')} <b>${esc(goals[0])}</b>${goals.length > 1 ? ` <span class="muted">(${T('ou', 'or')} ${goals.slice(1).map(esc).join(` ${T('ou', 'or')} `)})</span>` : ''}</div>` : '';
-    rows.push(`<div class="prx ${ok ? 'ok' : ''}"><b>${ok ? '🏆' : '·'} ${esc(e.name)}</b>${goal}<div class="small muted" style="margin-top:4px">${T('Détail', 'Details')} : ${esc(why)}</div></div>`);
+    rows.push(`<div class="prx ${ok ? 'ok' : ''}"><b>${ok ? '🏆' : '·'} ${esc(e.name)}</b>${goal}<div class="small muted" style="margin-top:4px">${T('Détail', 'Details')}${CLN()} ${esc(why)}</div></div>`);
   }));
   return rows.join('');
 }
@@ -5930,7 +5936,7 @@ function vShadows() {
       <div style="text-align:center"><div class="lvl">${L.length}</div><div class="muted small">${T(L.length > 1 ? 'armes forgées' : 'arme forgée', L.length > 1 ? 'weapons forged' : 'weapon forged')}</div>
       <div class="row" style="justify-content:center;gap:6px;margin-top:10px;flex-wrap:wrap">${cnt.map(([r, n]) => `<span class="row" style="gap:4px">${rkBadge(r, 'mrk lvrk')}<b class="small">${n}</b></span>`).join('')}</div></div>
       <p class="small muted" style="margin:12px 0 0">${T('Chaque exercice où tu bats un record devient une arme de ton arsenal. Plus tu bats de records sur cet exercice, plus ton arme monte en rang : 1 record = E, 5 = D, 10 = C, 20 = B, 35 = A, 50 = S.', 'Every exercise where you break a record becomes a weapon. The more records on it, the higher its rank: 1 record = E, 5 = D, 10 = C, 20 = B, 35 = A, 50 = S.')}</p></div>
-    ${L.length ? L.map(r => `<button class="card shrow" data-act="exo" data-n="${esc(r.name)}" style="--rc:${RKC[r.rk]}">${rkBadge(r.rk, 'mrk lvrk')}${thumb(r.name, 40)}<span style="flex:1;min-width:0;text-align:left"><b>${T('Arme', 'Weapon')} · ${esc(r.name)}</b><br><span class="small muted">${r.set ? `${r.set.w || BWL()}×${r.set.r}` : ''} · ${T('1RM estimé', 'est. 1RM')} ${Math.round(r.best)} ${U()} · ${r.prs} ${T('record' + (r.prs > 1 ? 's' : ''), 'record' + (r.prs > 1 ? 's' : ''))}</span></span></button>`).join('')
+    ${L.length ? L.map(r => `<button class="card shrow" data-act="exo" data-n="${esc(r.name)}" style="--rc:${RKC[r.rk]}">${rkBadge(r.rk, 'mrk lvrk')}${thumb(r.name, 40)}<span style="flex:1;min-width:0;text-align:left"><b>${T('Arme', 'Weapon')} · ${esc(r.name)}</b><br><span class="small muted">${r.set ? `${r.set.w ? DN(r.set.w) : BWL()}×${r.set.r}` : ''} · ${T('1RM estimé', 'est. 1RM')} ${Math.round(r.best)} ${U()} · ${r.prs} ${T('record' + (r.prs > 1 ? 's' : ''), 'record' + (r.prs > 1 ? 's' : ''))}</span></span></button>`).join('')
       : `<div class="empty">${T('Aucune arme pour l\'instant. Bats ton premier record pour forger la première.', 'No weapons yet. Break your first record to forge your first one.')}</div>`}`;
 }
 /* ----- Écran « Rang supérieur » (changement de rang) ----- */
@@ -5971,7 +5977,7 @@ function vFocus() {
       <button class="btn fnav" data-act="f-nav" data-d="1" ${ei >= A.exercises.length - 1 ? 'disabled' : ''} aria-label="${T('Exercice suivant', 'Next exercise')}">›</button></div>
     <div class="fset">${allDone ? `✅ ${T('Exercice terminé', 'Exercise done')}` : s.t === 'W' ? T('Échauffement', 'Warm-up') : `${T('Série', 'Set')} ${k} / ${works.length}`}</div>
     <div class="fdots">${e.sets.map((x, i) => `<i class="${x.done ? 'on' : ''} ${i === si && !allDone ? 'cur' : ''} ${x.t === 'W' ? 'w' : ''}"></i>`).join('')}</div>
-    <div class="small muted" style="text-align:center;margin-bottom:10px">${pv ? `${T('Dernière fois', 'Last time')} : ${pv.w === '' || pv.w == null || +pv.w === 0 ? BWL() : pv.w}×${pv.r}${tm ? ' s' : ''}` : T('Première fois', 'First time')}</div>
+    <div class="small muted" style="text-align:center;margin-bottom:10px">${pv ? `${T('Dernière fois', 'Last time')}${CLN()} ${pv.w === '' || pv.w == null || +pv.w === 0 ? BWL() : DN(pv.w)}×${pv.r}${tm ? ' s' : ''}` : T('Première fois', 'First time')}</div>
     ${!allDone && s.t !== 'W' && !resting ? bossLine(e.name, ei) : ''}
     ${resting ? `<div class="frest"><span class="small muted">${T('Repos', 'Rest')}</span><b id="ftv" data-act="bigtimer">${Math.floor(left / 60)}:${pad2(left % 60)}</b><div class="row" style="gap:8px;justify-content:center"><button class="btn sm" data-act="timer-sub">−15 s</button><button class="btn sm" data-act="timer-add">+30 s</button><button class="btn sm primary" data-act="timer-stop">${T('Passer', 'Skip')}</button></div></div>` : ''}
     ${allDone ? '' : `<div class="fgrid">
@@ -5989,10 +5995,10 @@ function vCompare() {
   const A = S.history.filter(x => inR(x, aStart, aEnd)), B = S.history.filter(x => inR(x, bStart, now + D));
   const seg = `<div class="seg" style="margin-bottom:12px">${[1, 3, 6, 12].map(m => `<button class="${m === cmpM ? 'on' : ''}" data-act="cmp-m" data-m="${m}">${m} ${T('mois', 'mo')}</button>`).join('')}</div>`;
   const lbl = ms => new Date(ms).toLocaleDateString(LOC(), {day: 'numeric', month: 'short', year: 'numeric'});
-  const head = `<p class="small muted" style="margin:0 0 10px">${T('Avant', 'Before')} : ${lbl(aStart)} – ${lbl(aEnd)}<br>${T('Maintenant', 'Now')} : ${T('30 derniers jours', 'last 30 days')}</p>`;
+  const head = `<p class="small muted" style="margin:0 0 10px">${T('Avant', 'Before')}${CLN()} ${lbl(aStart)} – ${lbl(aEnd)}<br>${T('Maintenant', 'Now')}${CLN()} ${T('30 derniers jours', 'last 30 days')}</p>`;
   if (!A.length) return seg + head + `<div class="empty">${T(`Pas de séance il y a ${cmpM} mois. Choisis une autre période.`, `No workouts ${cmpM} months ago. Pick another period.`)}</div>`;
   const pc = (a, b) => a > 0 ? Math.round((b - a) / a * 100) : null;
-  const delta = (a, b) => { const v = pc(a, b); return v == null ? '' : `<span class="small" style="color:${v >= 0 ? 'var(--ok)' : 'var(--danger)'}">${v >= 0 ? '▲' : '▼'}&nbsp;${Math.abs(v)}&nbsp;%</span>`; };
+  const delta = (a, b) => { const v = pc(a, b); return v == null ? '' : `<span class="small" style="color:${v > 0 ? 'var(--ok)' : v < 0 ? 'var(--danger)' : 'var(--muted)'}">${v > 0 ? '▲' : v < 0 ? '▼' : '='}&nbsp;${Math.abs(v)}&nbsp;%</span>`; };
   const row = (l, a, b, f) => `<div class="row between" style="padding:7px 0;border-bottom:1px solid var(--line)"><span class="muted">${l}</span><span>${f(a)} → <b>${f(b)}</b> ${delta(a, b)}</span></div>`;
   const nf = v => Math.round(v).toLocaleString(LOC());
   const best = hs => { const m = new Map(); hs.forEach(x => x.exercises.forEach(e => { const ws = work(e.sets).filter(s => s.u !== 's'); if (!ws.length) return; const v = Math.max(...ws.map(s => e1rm(s.w, s.r))); if (v <= 0) return; const k = norm(e.name); const r = m.get(k); if (!r || v > r.v) m.set(k, {name: e.name, v}); })); return m; };
@@ -6303,7 +6309,7 @@ function tmCard(t) {
   return `<div class="card tmcard" data-lp="t" data-id="${t.id}"><div class="row between" style="align-items:flex-start"><h3 style="margin:0;flex:1;min-width:0">${esc(tmN(t))}</h3><b class="muted" style="margin-left:10px">${mmss(tmTotal(t))}${tmHasReps(t) ? '+' : ''}</b></div>
     <div class="tmstrip">${tmBlocks(t).map(b => (+b.reps > 1 ? `<div class="tmx">${b.reps}×</div>` : '') + b.steps.map(s => s.mode === 'reps' ? `<div class="tmb" style="background:${s.c};flex:1.2"><span>${esc(tmN(s))}</span><b>${s.reps} ${T('réps', 'reps')}</b></div>` : blk(tmN(s), s.sec, s.c, 1.2)).join('')).join('')}</div>
     <div class="row between" style="margin-top:6px"><span class="row" style="gap:4px"><button class="btn sm ghost" data-act="tm-menu" data-id="${t.id}" aria-label="Options">⋯</button><button class="btn sm ghost" data-act="tm-share" data-id="${t.id}" aria-label="${T('Partager', 'Share')}">${IC('share', '📤', 18)}</button>${own ? '' : `<span class="tag" style="align-self:center">${T('prêt', 'preset')}</span>`}</span>
-    <button class="btn primary" data-act="tm-go" data-id="${t.id}">▶ ${T('COMMENCER', 'START')}</button></div></div>`;
+    <button class="btn primary" data-act="tm-go" data-id="${t.id}">▶ ${T('Commencer', 'Start')}</button></div></div>`;
 }
 function vTimers() {
   return `${selX ? '' : chrCard()}<div class="row between" style="margin:0 0 10px"><p class="muted" style="margin:0">${T('Minuteurs d\'intervalles : travail, repos, tempo, tabata…', 'Interval timers: work, rest, tempo, tabata…')}</p><span class="row" style="gap:6px"><button class="btn sm" data-act="pcode" data-k="t">📥 ${T('Coller', 'Paste')}</button><button class="btn sm" data-act="tm-new">＋ ${T('Créer', 'Create')}</button></span></div>
@@ -6342,7 +6348,7 @@ function renderTmEdit() {
       <div class="tmsteps" data-b="${bi}">${b.steps.map((s, i) => tmStepCard(s, bi, i)).join('')}</div>
       <div class="tmbf"><span class="small muted">${b.skipLast && b.steps.length > 1 && b.reps > 0 ? T('Sans la dernière étape à la fin', 'Without the last step at the end') : ''}</span><button class="tmadd" data-act="tm-add" data-b="${bi}" aria-label="${T('Ajouter une étape', 'Add a step')}">＋</button><b>${mmss(blkTotal(b))}${b.steps.some(s => s.mode === 'reps') ? '+' : ''}</b></div></div>`).join('')}
     <button class="btn block" data-act="tm-addblock" style="margin-top:12px">＋ ${T('Ajouter un bloc (répétitions)', 'Add a block (repetitions)')}</button>
-    <p class="muted" style="margin:14px 0 4px">${T('Durée totale', 'Total time')} : <b style="color:var(--text)" id="tmtot">${mmss(tmTotal(d))}${tmHasReps(d) ? ' + ' + T('étapes en réps', 'rep steps') : ''}</b></p>
+    <p class="muted" style="margin:14px 0 4px">${T('Durée totale', 'Total time')}${CLN()} <b style="color:var(--text)" id="tmtot">${mmss(tmTotal(d))}${tmHasReps(d) ? ' + ' + T('étapes en réps', 'rep steps') : ''}</b></p>
     <p class="muted small">${T('Astuce : touche le temps pour l\'écrire. Une étape en RÉPS attend que tu touches « Fait » pendant le minuteur.', 'Tip: tap the time to type it. A REPS step waits for you to tap “Done” during the timer.')}</p>`;
   box.querySelectorAll('.tmsteps').forEach(el => { const bi = +el.dataset.b; makeSortable(el, sc, order => { d.blocks[bi].steps = order.map(i => d.blocks[bi].steps[i]); renderTmEdit(); }); });
   if (sc) sc.scrollTop = y;
@@ -6561,9 +6567,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.88.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.88.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.88.2', d: '2026-11-21', fr: ['Records : le cardio affiche maintenant ta plus longue durée et ta plus longue distance (au lieu de « reps »).', 'Les décimales s\'écrivent avec une virgule en français partout (records, arsenal, poids, rapport du mois).', 'Récupération : « Cardio » n\'apparaît plus comme un muscle.', 'Historique : « 1 exo » au lieu de « 1 exos ».', 'Comparer : une progression de 0 % s\'affiche « = » en gris au lieu d\'une flèche verte.', 'Séance : le bouton pour retirer une série est compact, sur la même ligne que les autres.', 'Style : les cases à cocher des réglages ne passent plus en majuscules.', 'Anglais : plus d\'espace avant les deux-points.'], en: ['Records: cardio now shows your longest time and distance (instead of “reps”).', 'Recovery: “Cardio” no longer shows as a muscle.', 'History: “1 exercise” instead of “1 exercises”.', 'Compare: a 0% change shows a grey “=” instead of a green arrow.', 'Workout: the remove-set button is compact, on the same row.', 'English: no more space before colons; decimals use a dot.']},
   {v: '9.88.1', d: '2026-11-21', fr: ['Style premium : fenêtres, tuiles de stats et écrans vides plus soignés ; les croix et coches deviennent de vraies icônes ; quelques derniers emojis remplacés.'], en: ['Premium style: sheets, stat tiles and empty screens refined; crosses and ticks are now real icons; a few last emojis replaced.']},
   {v: '9.88.0', d: '2026-11-21', fr: ['Style premium activé pour tout le monde (désactivable dans Réglages → Apparence). Cartes en relief, titres plus soignés, boutons raffinés, chiffres alignés. Marche avec tous les thèmes et se coupe d\'un bouton.'], en: ['Premium style now on for everyone (can be turned off in Settings → Appearance). Raised cards, refined titles and buttons, aligned numbers. Works with every theme and can be turned off.']},
   {v: '9.87.4', d: '2026-11-21', fr: ['Cardio en direct : le GPS marche aussi pour le vélo (dehors), avec distance et vitesse en km/h. Le vélo extérieur s\'enregistre comme « Vélo extérieur ».'], en: ['Live cardio: GPS now works for cycling too (outdoors), with distance and speed in km/h. Outdoor rides are saved as "Vélo extérieur".']},
@@ -8486,7 +8493,7 @@ function vWorld() {
   if (!lbData) return tabs + `<p class="muted center" style="margin:30px 0">⏳ ${T('Chargement…', 'Loading…')}</p>`;
   if (lbData.err) return tabs + `<p class="muted center" style="margin:30px 0">⚠️ ${esc(lbData.err)}</p>`;
   const meI = lbData.findIndex(x => x.id === me);
-  return tabs + `${meI < 0 ? `<p class="small muted center">${T('Tu n\'es pas encore dans le top 50', 'You\'re not in the top 50 yet')}</p>` : `<p class="small center"><b>${T('Ta position', 'Your rank')} : #${meI + 1}</b></p>`}<div class="row between small muted" style="margin:-4px 0 8px"><span>${T('Mis à jour', 'Updated')} ${ago(new Date(lbAt).toISOString())}</span><button class="btn sm ghost" data-act="lb-refresh">↻ ${T('Actualiser', 'Refresh')}</button></div>
+  return tabs + `${meI < 0 ? `<p class="small muted center">${T('Tu n\'es pas encore dans le top 50', 'You\'re not in the top 50 yet')}</p>` : `<p class="small center"><b>${T('Ta position', 'Your rank')}${CLN()} #${meI + 1}</b></p>`}<div class="row between small muted" style="margin:-4px 0 8px"><span>${T('Mis à jour', 'Updated')} ${ago(new Date(lbAt).toISOString())}</span><button class="btn sm ghost" data-act="lb-refresh">↻ ${T('Actualiser', 'Refresh')}</button></div>
     <div class="card" style="padding:4px 12px">${lbData.map((x, i) => `<div class="row lbrow${x.id === me ? ' me' : ''}"><b class="lbn">${i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1)}</b>${rkBadge(x.rk || 'E', 'mrk')}<span style="flex:1;min-width:0"><b>${esc(x.n || '')}</b>${x.e ? ' <span class="emb">' + embSvg(x.e) + '</span>' : ''}<br><span class="muted small">${T('Niv.', 'Lv.')} ${x.l}${x.p ? ' 🌟' + x.p : ''}</span></span><b>${lbTab === 'xp' ? Math.round(x.xp).toLocaleString(LOC()) + ' XP' : x.w + ' ' + T('séances', 'workouts')}</b></div>`).join('')}</div>
     <button class="btn sm ghost block" data-act="lb-off" style="margin-top:10px">${T('Ne plus participer', 'Leave the ranking')}</button>`;
 }
@@ -8717,7 +8724,7 @@ function fragPanel() { // progression des 4 collections de coffre
   return `<div class="card" style="padding:12px"><b class="small">${T('Fragments de coffre', 'Chest fragments')}</b><p class="muted small" style="margin:2px 0 8px">${T('Chaque coffre donne des fragments d\'un monstre au hasard. Chaque monstre a sa propre collection exclusive.', 'Each chest gives fragments of a random monster. Each monster has its own exclusive collection.')}</p>
     ${FRAG_K.map(t => { const f = FRAG_T[t], n = frN(t), L = FRAG_REW.filter(r => r[3] === t), nx = L.find(r => r[2] > n), done = L.filter(r => r[2] <= n).length;
       return `<div class="row" style="gap:10px;margin-top:8px">${fragSvg(t, 26)}<div style="flex:1;min-width:0"><div class="row between small"><b>${T(f.n[0], f.n[1])}</b><span class="muted">${done}/${L.length} · ${n} ${T('fragments', 'fragments')}</span></div>
-        <div class="goal sysbar" style="margin:4px 0 2px"><div style="width:${nx ? Math.round(n / nx[2] * 100) : 100}%;background:${f.c}!important"></div></div>${nx ? `<div class="muted" style="font-size:11px">${T('Prochain', 'Next')} : ${esc(rwName(nx[0], nx[1]))} (${n}/${nx[2]})</div>` : `<div class="muted" style="font-size:11px">${T('Collection terminée!', 'Collection complete!')}</div>`}</div></div>`; }).join('')}</div>`;
+        <div class="goal sysbar" style="margin:4px 0 2px"><div style="width:${nx ? Math.round(n / nx[2] * 100) : 100}%;background:${f.c}!important"></div></div>${nx ? `<div class="muted" style="font-size:11px">${T('Prochain', 'Next')}${CLN()} ${esc(rwName(nx[0], nx[1]))} (${n}/${nx[2]})</div>` : `<div class="muted" style="font-size:11px">${T('Collection terminée!', 'Collection complete!')}</div>`}</div></div>`; }).join('')}</div>`;
 }
 function rwName(k, id) { const x = rwList(k).find(y => y.id === id); return x ? T(x.n[0], x.n[1]) : ''; }
 function chestRoll(id, exs, nPr) {
@@ -8746,7 +8753,7 @@ function chestOpen(id, fake) {
       return `<div class="chit"><span>${fragSvg(t)}</span><div style="flex:1"><b>+${k} ${T('fragment' + (k > 1 ? 's' : '') + ' de ' + f.n[0], f.n[1] + ' fragment' + (k > 1 ? 's' : ''))}</b>${nx ? `<div class="goal sysbar" style="margin:5px 0 3px"><div style="width:${Math.round(after / nx[2] * 100)}%;background:${f.c}!important"></div></div><div class="small muted">${after} / ${nx[2]} · ${esc(rwName(nx[0], nx[1]))}</div>` : `<div class="small muted">${T('Collection terminée!', 'Collection complete!')}</div>`}</div></div>`; }).join('');
     o.querySelector('.chrew').innerHTML = `<div class="chit gold"><span>✨</span><div><b>+${c.xp} XP</b><div class="small muted">${T('Bonus du coffre', 'Chest bonus')}</div></div></div>
       ${fragRows}
-      ${got.map(([k, id2]) => `<div class="chit gold"><span>🔓</span><div><b>${T('Débloqué', 'Unlocked')} : ${esc(rwName(k, id2))}</b><div class="small muted">${T('Exclusif aux coffres · dans l\'Armurerie', 'Chest exclusive · in the Armory')}</div></div></div>`).join('')}
+      ${got.map(([k, id2]) => `<div class="chit gold"><span>🔓</span><div><b>${T('Débloqué', 'Unlocked')}${CLN()} ${esc(rwName(k, id2))}</b><div class="small muted">${T('Exclusif aux coffres · dans l\'Armurerie', 'Chest exclusive · in the Armory')}</div></div></div>`).join('')}
       <button class="btn primary" data-act="chest-close" style="margin-top:14px;min-width:200px">${T('Super!', 'Great!')}</button>${chestsPending().length ? `<button class="btn" data-act="chest-next" style="margin-top:8px;min-width:200px">🎁 ${T('Coffre suivant', 'Next chest')} (${chestsPending().length})</button>` : ''}`;
     o.querySelector('.chrew').classList.add('in');
   };
@@ -8890,14 +8897,14 @@ function chCard() {
   const row = c => {
     const d = frData[c.other] && frData[c.other].d, nm = d ? d.name : (fr.list.find(f => f.c === c.other) || {}).n || '?';
     const kn = `${CH_KINDS[c.k][1]} ${T(CH_KINDS[c.k][0][0], CH_KINDS[c.k][0][1])}`;
-    if (c.st === 'wait' && c.by !== 'me') return `<div class="chrow"><div class="small"><b>${esc(nm)}</b> ${T('te lance un défi', 'challenges you')} : <b>${kn}</b> ${T('pendant 7 jours', 'for 7 days')}${GAME() ? ` · +${CH_XP} XP` : ''}</div><div class="row" style="gap:8px;margin-top:8px"><button class="btn primary sm" style="flex:1" data-act="ch-ok" data-id="${c.id}">${T('Accepter', 'Accept')}</button><button class="btn sm" style="flex:1" data-act="ch-no" data-id="${c.id}">${T('Refuser', 'Decline')}</button></div></div>`;
+    if (c.st === 'wait' && c.by !== 'me') return `<div class="chrow"><div class="small"><b>${esc(nm)}</b> ${T('te lance un défi', 'challenges you')}${CLN()} <b>${kn}</b> ${T('pendant 7 jours', 'for 7 days')}${GAME() ? ` · +${CH_XP} XP` : ''}</div><div class="row" style="gap:8px;margin-top:8px"><button class="btn primary sm" style="flex:1" data-act="ch-ok" data-id="${c.id}">${T('Accepter', 'Accept')}</button><button class="btn sm" style="flex:1" data-act="ch-no" data-id="${c.id}">${T('Refuser', 'Decline')}</button></div></div>`;
     if (c.st !== 'on') return `<div class="chrow"><div class="row between small"><b>${kn}</b><span class="muted">${c.st === 'wait' ? `⏳ ${T('En attente de', 'Waiting for')} ${esc(nm)}` : c.st === 'no' ? `${esc(nm)} ${T('a refusé', 'declined')}` : T('Expiré (pas de réponse)', 'Expired (no answer)')}</span></div></div>`;
     const me = chMine(c), th = chTheirs(c), over = Date.now() >= +new Date(c.until), left = Math.max(0, Math.ceil((+new Date(c.until) - Date.now()) / 864e5));
     const lead = th == null ? '' : me > th ? (over ? `<b style="color:var(--ok)">${T('Gagné! 🏆', 'Won! 🏆')}</b>` : `<span style="color:var(--ok)">${T('Tu mènes', 'You lead')}</span>`) : me < th ? (over ? T('Perdu', 'Lost') : `<span style="color:var(--warm)">${esc(nm)} ${T('mène', 'leads')}</span>`) : T('Égalité', 'Tie');
     const tot = Math.max(1, me + (th || 0));
     return `<div class="chrow"><div class="row between small"><b>${kn}</b><span class="muted">${over ? T('terminé', 'over') : `${left} ${T('j', 'd')}`}</span></div>
       <div class="chbar"><div style="width:${Math.round(me / tot * 100)}%"></div></div>
-      <div class="row between small"><span>${T('Moi', 'Me')} : <b>${chFmt(c, me)}</b></span><span>${esc(nm)} : <b>${chFmt(c, th)}</b></span></div>
+      <div class="row between small"><span>${T('Moi', 'Me')}${CLN()} <b>${chFmt(c, me)}</b></span><span>${esc(nm)} : <b>${chFmt(c, th)}</b></span></div>
       <div class="row between small" style="margin-top:2px"><span>${lead}</span>${c.by !== 'me' && !over ? `<button class="linkbtn small" data-act="ch-no" data-id="${c.id}">${T('Refuser', 'Decline')}</button>` : ''}</div></div>`;
   };
   return `<div class="card" style="margin:0 0 12px"><div class="row between"><b>⚔️ ${T('Défis', 'Challenges')}</b><button class="btn sm primary" data-act="ch-new">＋ ${T('Lancer un défi', 'Start a challenge')}</button></div>
@@ -9141,7 +9148,7 @@ function armoryBody(onlyContent) {
   const items = L.slice().sort((a, b) => (!a.x.id) - (!b.x.id) ? (!b.x.id) - (!a.x.id) : (b.ok - a.ok) || ((a.x.secret || 0) - (b.x.secret || 0)) || (a.x.rar - b.x.rar)).map(({x, ok, why}) => armItem({on: rwOn(kind, x), ok, why, rar: x.rar, prev: rwPrev(kind, x), name: T(x.n[0], x.n[1]), act: RW_ACT[kind] || 'cos-set', k: kind, id: x.id, kind, prog: ok ? null : cosProg(x.r), secret: x.secret, isNew: ok && x.id && !sn[kind + ':' + x.id]}));
   const [a, b] = setCount(kind), sec = L.find(y => y.x.secret);
   const coll = `<div class="armcoll"><div class="row between small"><b>${ic('bookopen', 15)} ${T('Collection', 'Collection')}</b><span><b>${a}</b> / ${b}</span></div><div class="goal sysbar" style="margin:6px 0"><div style="width:${Math.round(a / Math.max(1, b) * 100)}%"></div></div>
-    <div class="small muted">${sec && sec.ok ? `👑 ${T('Collection complète! Récompense secrète débloquée', 'Collection complete! Secret reward unlocked')} : <b>${esc(T(sec.x.n[0], sec.x.n[1]))}</b>` : `🔒 ${T('Complète-la pour débloquer une <b>récompense secrète mythique</b>.', 'Complete it to unlock a <b>secret mythic reward</b>.')}`}</div></div>`;
+    <div class="small muted">${sec && sec.ok ? `👑 ${T('Collection complète! Récompense secrète débloquée', 'Collection complete! Secret reward unlocked')}${CLN()} <b>${esc(T(sec.x.n[0], sec.x.n[1]))}</b>` : `🔒 ${T('Complète-la pour débloquer une <b>récompense secrète mythique</b>.', 'Complete it to unlock a <b>secret mythic reward</b>.')}`}</div></div>`;
   const tr = ['fx', 'cele'].includes(kind) ? `<button class="btn sm" style="margin-top:10px" data-act="cos-try" data-k="${kind}">▶ ${T('Essayer', 'Try it')}</button>` : '';
   clearTimeout(armSeenT); armSeenT = setTimeout(() => { let ch = false; L.forEach(({x, ok}) => { if (ok && x.id && !sn[kind + ':' + x.id]) { sn[kind + ':' + x.id] = 1; ch = true; } }); if (ch) saveLocal(); }, 2500);
   const content = armTab === 'chest' ? armoryBody(true) : armTab === 'sets' ? setsBody() : `<p class="small muted" style="margin:8px 0">${hint}</p>${coll}<div class="armgrid">${pgSlice('arm:' + kind, items).join('')}</div>${pgBar('arm:' + kind, items.length)}${tr}`;
@@ -9177,7 +9184,7 @@ function cosPreview(kind, id) {
     <div class="pvbig${x.rar >= 3 ? ' pvglow' : ''}">${hid ? '<span class="armmyst big">?</span>' : rwPrev(kind, x, true)}</div>
     <h2 style="text-align:center;margin:6px 0">${hid ? '???' : esc(T(x.n[0], x.n[1]))}</h2>
     ${q.ok ? `<p class="small" style="text-align:center;color:var(--ok)">✅ ${rwOn(kind, x) ? T('Équipé · débloqué', 'Equipped · unlocked') : T('Débloqué', 'Unlocked')}${when ? ' ' + T('le', 'on') + ' ' + when : ''}</p><p class="small" style="text-align:center">🏅 ${T('Comment tu l\'as eu', 'How you got it')} : <b>${esc(x.r.set ? T('Collection complète', 'Full collection') : q.why)}</b></p>${!x.r.set && q.how ? `<p class="small muted" style="text-align:center;margin-top:-4px">${esc(q.how)}</p>` : ''}`
-      : `<p class="small" style="text-align:center">🔒 ${T('Pour le débloquer', 'To unlock it')} : <b>${esc(hid ? T('Complète toute la collection', 'Complete the whole collection') : q.why)}</b></p>${!hid && q.how ? `<p class="small muted" style="text-align:center;margin-top:-4px">${esc(q.how)}</p>` : ''}${bars}`}
+      : `<p class="small" style="text-align:center">🔒 ${T('Pour le débloquer', 'To unlock it')}${CLN()} <b>${esc(hid ? T('Complète toute la collection', 'Complete the whole collection') : q.why)}</b></p>${!hid && q.how ? `<p class="small muted" style="text-align:center;margin-top:-4px">${esc(q.how)}</p>` : ''}${bars}`}
     ${q.ok && rwOn(kind, x) ? '' : `<div class="row" style="gap:8px;margin-top:12px">${['fx', 'cele'].includes(kind) && !hid ? `<button class="btn block" data-act="cos-try2" data-k="${kind}" data-id="${esc(id)}">▶ ${T('Essayer', 'Try it')}</button>` : ''}${q.ok ? (rwOn(kind, x) ? `<button class="btn block" data-act="close">✓ ${T('Équipé', 'Equipped')}</button>` : `<button class="btn primary block" data-act="cos-eq" data-kind="${kind}" data-id="${esc(id)}">${T('Équiper', 'Equip')}</button>`) : `<button class="btn primary block" data-act="close">OK</button>`}</div>`}</div>`);
 }
 /* Rafraîchit seulement le contenu de l'Armurerie (sans recharger la page ni remettre les onglets au début) */
@@ -9782,7 +9789,7 @@ function foldSide() {
   const tabs = A.exercises.length > 1 ? `<div class="fdtabs">${A.exercises.map((x, i) => `<button class="${i === ei ? 'on' : ''}" data-act="fold-ex" data-e="${i}" title="${esc(x.name)}">${thumb(x.name, 30)}</button>`).join('')}</div>` : '';
   return `${top}${tabs}
     <div class="fdcard"><div class="row" style="gap:10px;align-items:center">${thumb(e.name, 44)}<div style="min-width:0;flex:1"><b>${esc(e.name)}</b><div class="small muted">${T('Exercice', 'Exercise')} ${ei + 1} / ${A.exercises.length}</div></div><button class="btn sm" data-act="exo" data-n="${esc(e.name)}" aria-label="${T('Instructions', 'Instructions')}">📖</button></div>
-      ${rec && rec.best ? `<div class="row" style="gap:8px;margin-top:10px"><div class="stat"><span class="muted small">${T('Top série', 'Top set')}</span><b class="pr">${rec.best.w}×${rec.best.r}</b></div><div class="stat"><span class="muted small">${T('1RM estimé', 'Est. 1RM')}</span><b>${Math.round(rec.best.v)} ${U()}</b></div></div>` : ''}
+      ${rec && rec.best ? `<div class="row" style="gap:8px;margin-top:10px"><div class="stat"><span class="muted small">${T('Top série', 'Top set')}</span><b class="pr">${DN(rec.best.w)}×${rec.best.r}</b></div><div class="stat"><span class="muted small">${T('1RM estimé', 'Est. 1RM')}</span><b>${Math.round(rec.best.v)} ${U()}</b></div></div>` : ''}
       ${foldSpark(e.name)}</div>
     <p class="muted small" style="margin:14px 0 6px">${T('Dernières fois', 'Previous times')}</p>
     ${ss.length ? ss.map(({h: hs, e: ex}) => { let n = 0; return `<div class="fdcard fdh"><div class="row between"><b class="small">${esc(hs.routineName || '')}</b><span class="tag">${new Date(hs.date).toLocaleDateString(LOC(), {day: 'numeric', month: 'short'})}</span></div>${ex.sets.map(s => `<div class="row between small" style="padding:1px 0"><span class="muted">${s.t === 'W' ? T('Échauff.', 'Warm-up') : T('Série', 'Set') + ' ' + (++n)}</span><span>${fmtSet(s, true)}</span></div>`).join('')}</div>`; }).join('')
@@ -10416,7 +10423,7 @@ document.addEventListener('click', e => {
         <p class="small" style="margin:12px 0 6px"><b>${T('Les classes', 'The classes')}</b></p>
         ${['war', 'tank', 'asn', 'mage', 'ftr'].map(c => `<div class="small" style="margin:6px 0">${clsIc(c)} <b>${esc(clsName(c))}</b> — <span class="muted">${esc(clsDesc(c))}</span></div>`).join('')}
         <p class="small muted" style="margin-top:12px">${T('Au niveau 10 tu deviens Initié. Au niveau 40, la Guilde choisit ta classe d\'après ton style, et elle peut changer si ton entraînement change. Au niveau 100 : Légende de la Guilde.', 'At level 10 you become an Initiate. At level 40, the Guild picks your class from your style, and it can change if your training changes. At level 100: Guild Legend.')}</p>
-        ${s ? `<p class="small muted">${T('Ton style', 'Your style')} : ${s.reps.toFixed(1)} ${T('reps par série', 'reps per set')} · ${Math.round(s.sets)} ${T('séries par séance', 'sets per workout')} · ${Math.round(s.cardio * 100)} % ${T('de séances avec cardio', 'of workouts with cardio')} · ${s.ex} ${T('exercices différents', 'different exercises')}</p>` : ''}
+        ${s ? `<p class="small muted">${T('Ton style', 'Your style')}${CLN()} ${s.reps.toFixed(1)} ${T('reps par série', 'reps per set')} · ${Math.round(s.sets)} ${T('séries par séance', 'sets per workout')} · ${Math.round(s.cardio * 100)} % ${T('de séances avec cardio', 'of workouts with cardio')} · ${s.ex} ${T('exercices différents', 'different exercises')}</p>` : ''}
         <button class="btn block" data-act="close">${T('Fermer', 'Close')}</button>`); break; }
     case 'fold-ex': foldEx = +b.dataset.e; foldPaint(); { const t = document.getElementById('wex' + foldEx); if (t) t.scrollIntoView({block: 'start', behavior: 'smooth'}); } break;
     case 'remind-test': remindTest(); break;
@@ -11203,7 +11210,7 @@ function vNotifs() {
   const fr = FRS(), ins = fr.reqIn || [], outs = fr.reqOut || [], list = NOTIFS().filter(n => !(n.type === 'req' && !n.done && ins.some(r => r.uid === n.uid)) && !(n.type === 'ch' && !n.done) && !(n.type === 'gi' && !n.done)), gis = NOTIFS().filter(n => n.type === 'gi' && !n.done);
   setTimeout(() => { let ch = false; NOTIFS().forEach(n => { if (!n.read && !((n.type === 'req' || n.type === 'ch' || n.type === 'gi') && !n.done)) { n.read = true; ch = true; } }); if (ch) { saveLocal(); } }, 1500);
   const chi = (() => { try { return chInvites(); } catch (e) { return []; } })();
-  return `${gis.length ? `<div class="sec-t">${T('INVITATIONS DE GUILDE', 'GUILD INVITES')}</div>${gis.map(n => `<div class="ntf unread"><span class="frav sm">${esc((n.name || '?')[0].toUpperCase())}</span><div style="flex:1;min-width:0" class="small"><b>${esc(n.name || '')}</b> ${T('t\'invite dans la guilde', 'invites you to the guild')} <b>« ${esc(n.gn || '')} »</b></div></div><div class="row" style="gap:8px;margin:-2px 0 10px"><button class="btn primary sm" style="flex:1" data-act="gi-ok" data-id="${esc(n.id)}">${T('Accepter', 'Accept')}</button><button class="btn sm" style="flex:1" data-act="gi-no" data-id="${esc(n.id)}">${T('Refuser', 'Decline')}</button></div>`).join('')}` : ''}${ins.length ? `<div class="sec-t">${T('DEMANDES D\'AMI', 'FRIEND REQUESTS')}</div>${ins.map(reqRow).join('')}` : ''}${chi.length ? `<div class="sec-t">${T('DÉFIS', 'CHALLENGES')}</div>${chi.map(c => { const d = frData[c.other] && frData[c.other].d; return `<div class="ntf unread"><span class="frav sm">⚔️</span><div style="flex:1;min-width:0" class="small"><b>${esc(d ? d.name : '?')}</b> ${T('te lance un défi', 'challenges you')} : <b>${T(CH_KINDS[c.k][0][0], CH_KINDS[c.k][0][1])}</b> (7 ${T('jours', 'days')})</div></div><div class="row" style="gap:8px;margin:-2px 0 10px"><button class="btn primary sm" style="flex:1" data-act="ch-ok" data-id="${c.id}">${T('Accepter', 'Accept')}</button><button class="btn sm" style="flex:1" data-act="ch-no" data-id="${c.id}">${T('Refuser', 'Decline')}</button></div>`; }).join('')}` : ''}
+  return `${gis.length ? `<div class="sec-t">${T('INVITATIONS DE GUILDE', 'GUILD INVITES')}</div>${gis.map(n => `<div class="ntf unread"><span class="frav sm">${esc((n.name || '?')[0].toUpperCase())}</span><div style="flex:1;min-width:0" class="small"><b>${esc(n.name || '')}</b> ${T('t\'invite dans la guilde', 'invites you to the guild')} <b>« ${esc(n.gn || '')} »</b></div></div><div class="row" style="gap:8px;margin:-2px 0 10px"><button class="btn primary sm" style="flex:1" data-act="gi-ok" data-id="${esc(n.id)}">${T('Accepter', 'Accept')}</button><button class="btn sm" style="flex:1" data-act="gi-no" data-id="${esc(n.id)}">${T('Refuser', 'Decline')}</button></div>`).join('')}` : ''}${ins.length ? `<div class="sec-t">${T('DEMANDES D\'AMI', 'FRIEND REQUESTS')}</div>${ins.map(reqRow).join('')}` : ''}${chi.length ? `<div class="sec-t">${T('DÉFIS', 'CHALLENGES')}</div>${chi.map(c => { const d = frData[c.other] && frData[c.other].d; return `<div class="ntf unread"><span class="frav sm">⚔️</span><div style="flex:1;min-width:0" class="small"><b>${esc(d ? d.name : '?')}</b> ${T('te lance un défi', 'challenges you')}${CLN()} <b>${T(CH_KINDS[c.k][0][0], CH_KINDS[c.k][0][1])}</b> (7 ${T('jours', 'days')})</div></div><div class="row" style="gap:8px;margin:-2px 0 10px"><button class="btn primary sm" style="flex:1" data-act="ch-ok" data-id="${c.id}">${T('Accepter', 'Accept')}</button><button class="btn sm" style="flex:1" data-act="ch-no" data-id="${c.id}">${T('Refuser', 'Decline')}</button></div>`; }).join('')}` : ''}
     <div class="sec-t">${T('RÉCENT', 'RECENT')}</div>${list.length ? list.map(notifLine).join('') : `<p class="muted center" style="margin:30px 0">${T('Rien de nouveau pour l\'instant.', 'Nothing new yet.')}</p>`}
     ${outs.length ? `<details class="card" style="margin-top:14px"><summary class="small"><b>${ic('mail', 15)} ${T('Demandes envoyées', 'Sent requests')} (${outs.length})</b></summary>${outs.map(r => `<div class="row between small" style="margin-top:8px"><span><b>${esc(r.name || '')}</b> ${r.h ? `<span class="muted">@${esc(r.h)}</span>` : ''}</span><span class="muted">⏳ ${frAgo(r.t)}</span></div>`).join('')}</details>` : ''}`;
 }
@@ -11241,7 +11248,7 @@ function openFrAdd() {
     <div class="hin-wrap"><span>🔍</span><input id="frsq" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="${T('@pseudo, nom ou code ami', '@username, name or friend code')}"></div><input id="frin" type="hidden">
     <div id="frsr" style="margin-top:10px"></div>
     <div class="row" style="gap:8px;margin-top:12px"><button class="btn sm" style="flex:1" data-act="fr-paste">📋 ${T('Coller un code', 'Paste a code')}</button><button class="btn sm" style="flex:1" data-act="fr-share">📤 ${T('Partager mon profil', 'Share my profile')}</button></div>
-    ${myH() ? `<p class="muted small center" style="margin:10px 0 0">${T('Ton pseudo', 'Your username')} : <b>@${esc(myH())}</b></p>` : ''}`, {id: 'fradd'});
+    ${myH() ? `<p class="muted small center" style="margin:10px 0 0">${T('Ton pseudo', 'Your username')}${CLN()} <b>@${esc(myH())}</b></p>` : ''}`, {id: 'fradd'});
   setTimeout(() => { const i = $('#frsq'); if (i) i.focus(); }, 80);
 }
 var obSt = null;
@@ -11423,9 +11430,9 @@ function meCard() {
     <div class="row" style="margin:10px 0 4px;align-items:stretch">
       <div class="stat"><span class="muted small">${T('Âge', 'Age')}</span><b>${age || '—'}</b></div><div class="stat"><span class="muted small">${T('Taille', 'Height')}</span><b>${htTxt}</b></div>
       <div class="stat"><span class="muted small">${T('IMC', 'BMI')}</span><b>${bmi ? dec1(bmi) : '—'}</b></div></div>
-    ${(() => { const nx = expNext(); return `<p class="small" style="margin:8px 0 0">🎓 ${T('Niveau', 'Level')} : <b>${EXP_NAME(expLv())}</b>${nx ? ` <span class="muted">· ${T('prochain', 'next')} : ${EXP_NAME(nx.k)} (${nx.dn}/${nx.n} ${T('séances', 'workouts')}, ${nx.dmo}/${nx.mo} ${T('mois', 'months')})</span>` : ''}</p>`; })()}
-    ${g ? `<p class="small" style="margin:8px 0 0">${g[1]} ${T('Objectif', 'Goal')} : <b>${g[2]}</b> · ${+st.goal || '—'} ${T('séances/sem.', 'workouts/wk')}</p>` : ''}
-    ${nk ? `<p class="small" style="margin:6px 0 0">${ic('flame', 15)} ${T('Besoins estimés', 'Estimated needs')} : <b>≈ ${nk.target.toLocaleString(LOC())} kcal</b>/${T('jour', 'day')}${nk.target !== nk.tdee ? ` <span class="muted">(${T('maintien', 'maintenance')} ${nk.tdee.toLocaleString(LOC())})</span>` : ''} · ${T('protéines', 'protein')} <b>≈ ${nk.prot} g</b></p>` : ''}
+    ${(() => { const nx = expNext(); return `<p class="small" style="margin:8px 0 0">🎓 ${T('Niveau', 'Level')}${CLN()} <b>${EXP_NAME(expLv())}</b>${nx ? ` <span class="muted">· ${T('prochain', 'next')}${CLN()} ${EXP_NAME(nx.k)} (${nx.dn}/${nx.n} ${T('séances', 'workouts')}, ${nx.dmo}/${nx.mo} ${T('mois', 'months')})</span>` : ''}</p>`; })()}
+    ${g ? `<p class="small" style="margin:8px 0 0">${g[1]} ${T('Objectif', 'Goal')}${CLN()} <b>${g[2]}</b> · ${+st.goal || '—'} ${T('séances/sem.', 'workouts/wk')}</p>` : ''}
+    ${nk ? `<p class="small" style="margin:6px 0 0">${ic('flame', 15)} ${T('Besoins estimés', 'Estimated needs')}${CLN()} <b>≈ ${nk.target.toLocaleString(LOC())} kcal</b>/${T('jour', 'day')}${nk.target !== nk.tdee ? ` <span class="muted">(${T('maintien', 'maintenance')} ${nk.tdee.toLocaleString(LOC())})</span>` : ''} · ${T('protéines', 'protein')} <b>≈ ${nk.prot} g</b></p>` : ''}
 
   </div>`;
 }
