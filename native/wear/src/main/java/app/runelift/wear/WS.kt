@@ -198,6 +198,10 @@ object WS {
     }
     fun onAcc(): Int { val c = acc(); val l = 0.299 * android.graphics.Color.red(c) + 0.587 * android.graphics.Color.green(c) + 0.114 * android.graphics.Color.blue(c); return if (l > 150) android.graphics.Color.BLACK else android.graphics.Color.WHITE }
     fun startMs(): Long = try { java.time.Instant.parse(st?.optString("st")).toEpochMilli() } catch (e: Exception) { System.currentTimeMillis() }
+    /* Séance cardio en direct lancée depuis le téléphone (null sinon) */
+    fun cl(): JSONObject? = if (local == null) phone?.optJSONObject("cl") else null
+    fun clPause(ctx: Context) { send(ctx, JSONObject().put("a", "clpause")) }
+    fun clFinish(ctx: Context) { send(ctx, JSONObject().put("a", "clfinish")) }
     fun elapsedMs(): Long = System.currentTimeMillis() - startMs()
     fun kcal(): Int = (5.0 * (st?.optInt("kg", 75) ?: 75) * elapsedMs() / 3600000.0).toInt()
 

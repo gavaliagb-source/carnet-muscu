@@ -54,6 +54,7 @@ class WatchActivity : Activity() {
     private var armT = 0L
     private var sig = ""
     private var tvClock: TextView? = null
+    private var tvCl: TextView? = null; private var tvZ: TextView? = null; private var tvD: TextView? = null; private var tvK: TextView? = null
     private var tvHr: TextView? = null
     private var tvBig: TextView? = null
     private var rotAcc = 0f
@@ -287,6 +288,7 @@ class WatchActivity : Activity() {
     private fun paintLight() {
         if (WS.on() != lastOn) { paint(); return }
         if (!WS.on()) return
+        WS.cl()?.let { clUpdate(it) }
         tvClock?.let { set(it, clock(WS.elapsedMs())) }
         tvHr?.let { set(it, hrPrefix + hrLine()) }
         val now = System.currentTimeMillis()
@@ -304,10 +306,10 @@ class WatchActivity : Activity() {
         val now = System.currentTimeMillis()
         val c = WS.cur()
         val resting = on && WS.restEnd > now
-        val ns = listOf(on, page, detail, if (resting) "|rest|" else "|set|", c, field, WS.ver, WS.pending.keys.sorted(), WS.edits.entries.joinToString { it.key + it.value.joinToString() }, if (armed(arm)) arm else "", WS.exSel, Img.version, WS.isLocal(), askAb, swapFor).joinToString("#")
+        val ns = listOf(on, page, detail, WS.cl()?.optLong("pat") ?: -1L, WS.cl() != null, if (resting) "|rest|" else "|set|", c, field, WS.ver, WS.pending.keys.sorted(), WS.edits.entries.joinToString { it.key + it.value.joinToString() }, if (armed(arm)) arm else "", WS.exSel, Img.version, WS.isLocal(), askAb, swapFor).joinToString("#")
         if (ns == sig) { paintLight(); return }
         sig = ns
-        col.removeAllViews(); tvClock = null; tvHr = null; tvBig = null; hrPrefix = ""
+        col.removeAllViews(); tvClock = null; tvHr = null; tvBig = null; tvCl = null; tvZ = null; tvD = null; tvK = null; hrPrefix = ""
         col.gravity = if (on && page == 1) Gravity.CENTER else Gravity.CENTER_HORIZONTAL
         val sw = resources.displayMetrics.widthPixels; val shh = resources.displayMetrics.heightPixels
         if (on && page == 1 && !askAb && swapFor < 0) col.setPadding((sw * 0.07).toInt(), (shh * 0.04).toInt(), (sw * 0.07).toInt(), (shh * 0.04).toInt())
@@ -316,6 +318,8 @@ class WatchActivity : Activity() {
         if (!on) { if (detail != null) routineDetail(detail!!) else idle(); return }
         if (askAb) { col.gravity = Gravity.CENTER; abandonView(); return }
         if (swapFor >= 0) { swapView(swapFor); return }
+        val cl = WS.cl()
+        if (cl != null) { col.gravity = Gravity.CENTER; col.setPadding((sw * 0.07).toInt(), (shh * 0.05).toInt(), (sw * 0.07).toInt(), (shh * 0.05).toInt()); scroll.locked = true; clView(cl); return }
         dots()
         when (page) {
             0 -> overview()
@@ -328,6 +332,50 @@ class WatchActivity : Activity() {
         val r = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER }
         for (i in 0..2) r.addView(View(this).apply { background = bg(if (i == page) Color.WHITE else Color.parseColor("#4A515C"), 10f) }, LinearLayout.LayoutParams(dp(6f), dp(6f)).apply { setMargins(dp(3f), 0, dp(3f), 0) })
         add(r, 0f)
+    }
+
+
+    /* ---------- Cardio en direct (lancé depuis le téléphone) ---------- */
+    private fun clMs(c: org.json.JSONObject): Long {
+        val pat = c.optLong("pat"); val end = if (pat > 0) pat else System.currentTimeMillis()
+        return (end - c.optLong("t0") - c.optLong("pms")).coerceAtLeast(0)
+    }
+    private fun clZone(b: Int, mx: Int): Pair<String, Int> {
+        val f = b.toFloat() / mx.coerceAtLeast(100)
+        return when {
+            f >= .9f -> "Z5" to Color.parseColor("#ef4444")
+            f >= .8f -> "Z4" to Color.parseColor("#fb923c")
+            f >= .7f -> "Z3" to Color.parseColor("#facc15")
+            f >= .6f -> "Z2" to Color.parseColor("#4ade80")
+            else -> "Z1" to Color.parseColor("#7dd3fc")
+        }
+    }
+    private fun clUpdate(c: org.json.JSONObject) {
+        val ms = clMs(c); val now = System.currentTimeMillis()
+        tvCl?.let { set(it, clock(ms)) }
+        tvZ?.let {
+            if (WS.bpm > 0 && now - WS.bpmT < 20000) { val z = clZone(WS.bpm, c.optInt("mx", 190)); set(it, "♥ ${WS.bpm}  ${z.first}"); it.setTextColor(z.second) }
+            else { set(it, "♥ –"); it.setTextColor(Color.WHITE) }
+        }
+        val km = c.optDouble("km", 0.0)
+        tvD?.let { val pace = if (km > 0.05) { val pm = ms / 60000.0 / km; String.format("%d:%02d", pm.toInt(), ((pm - pm.toInt()) * 60).toInt()) } else "–"; set(it, String.format(java.util.Locale.FRANCE, "%.2f km · %s /km", km, pace)) }
+        tvK?.let { set(it, "${c.optInt("kc", 0)} kcal") }
+    }
+    private fun clView(c: org.json.JSONObject) {
+        val paused = c.optLong("pat") > 0
+        tvCl = tp(clock(clMs(c)), 0.19f, if (paused) MUTED else Color.WHITE, true).also { col.addView(it, lp(-2, -2, 0f)) }
+        tvZ = tp("♥ –", 0.10f, Color.WHITE, true).also { col.addView(it, lp(-2, -2, 0.01f)) }
+        if (c.optInt("g", 0) == 1) tvD = tp("", 0.05f, Color.WHITE, false).also { col.addView(it, lp(-2, -2, 0.012f)) }
+        tvK = tp("", 0.05f, MUTED, false).also { col.addView(it, lp(-2, -2, 0.008f)) }
+        val bh = (W * 0.14f).toInt()
+        col.addView(LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER
+            addView(tp(if (paused) WS.t("Reprendre", "Resume") else "Pause", 0.05f, Color.WHITE, true).apply { background = bg(CARD, 40f); gravity = Gravity.CENTER; isClickable = true
+                setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); WS.clPause(this@WatchActivity) } }, LinearLayout.LayoutParams((W * 0.34f).toInt(), bh).apply { rightMargin = (W * 0.02f).toInt() })
+            addView(tp(if (armed("clfin")) WS.t("Confirmer", "Confirm") else WS.t("Terminer", "Finish"), 0.05f, ON_ACC, true).apply { background = bg(ACC, 40f); gravity = Gravity.CENTER; isClickable = true
+                setOnClickListener { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); confirmOr("clfin") { WS.clFinish(this@WatchActivity) } } }, LinearLayout.LayoutParams((W * 0.34f).toInt(), bh).apply { leftMargin = (W * 0.02f).toInt() })
+        }, lp(-2, -2, 0.03f))
+        clUpdate(c)
     }
 
     /* ---------- Hors séance : routines ---------- */
