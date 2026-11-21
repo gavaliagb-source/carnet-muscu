@@ -6431,9 +6431,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.85.5'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.85.6'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.85.6', d: '2026-11-21', fr: ['Guilde : ta classe est maintenant dans la carte Statut (plus de carte séparée).'], en: ['Guild: your class is now inside the Status card (no more separate card).']},
   {v: '9.85.5', d: '2026-11-21', fr: ['Photos de progrès : quand une photo prise sur un autre appareil est vide, l\'appli va maintenant la chercher dans ta sauvegarde en ouvrant « Mesures et photos » (elle doit d\'abord avoir été sauvegardée depuis l\'autre appareil).'], en: ['Progress photos: when a photo taken on another device is blank, the app now fetches it from your backup when you open "Measures & photos" (it must first have been backed up from the other device).']},
   {v: '9.85.4', d: '2026-11-21', fr: ['Les photos prises pendant une séance apparaissent maintenant aussi dans « Photos de progrès » (Mesures et photos), avec comparaison avant/après et partage aux amis.'], en: ['Photos taken during a workout now also appear in "Progress photos" (Measures & photos), with before/after comparison and friend sharing.']},
   {v: '9.85.3', d: '2026-11-21', fr: ['Boss du mois : les nouveaux utilisateurs (peu de séances) ont maintenant un boss dès leurs premières séances, au lieu de n\'en avoir aucun.'], en: ['Monthly boss: new users (few workouts) now get a boss from their first sessions instead of none.']},
@@ -8979,6 +8980,13 @@ function rewardsCard() {
   const nn = rwNew(); return gFold('arm', T('ARMURERIE', 'ARMORY'), `${ok} / ${tot} ${T('débloqués', 'unlocked')}${nn ? ` · ✨ ${nn} ${T(nn > 1 ? 'nouveaux' : 'nouveau', 'new')}` : ''}`, armoryBody);
 }
 /* ===================== Onglet Guilde (mode jeu) : tout ce qui touche au jeu au même endroit ===================== */
+function pclRow() {
+  if (!GAME()) return '';
+  const p = S.pcl;
+  if (!p || !p.k) { const sg = pclSuggest(); return `<div class="pclrow row" style="gap:10px;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--line, #ffffff18)">${sg ? pclImg(sg.k, 44) : ''}<div style="flex:1;min-width:0"><div class="small muted">${T('Classe', 'Class')}</div>${sg ? `<b>${esc(pclName(sg.k))}</b> <span class="muted small">${T('conseillée', 'suggested')}</span>` : `<span class="small muted">${T('Choisis ton style', 'Pick your style')}</span>`}</div>${sg ? `<button class="btn sm primary" data-act="pcl-set" data-k="${sg.k}">${T('Accepter', 'Accept')}</button>` : ''}<button class="btn sm" data-act="pcl-pick">${sg ? T('Autre', 'Other') : T('Choisir', 'Choose')}</button></div>`; }
+  const m = pclMast(p.k);
+  return `<div class="pclrow" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line, #ffffff18)"><div class="row" style="gap:10px;align-items:center">${pclImg(p.k, 52)}<div style="flex:1;min-width:0"><div class="small muted">${T('Classe', 'Class')} · ${T('Maîtrise', 'Mastery')} ${m.lv + 1}</div><b>${esc(pclName(p.k))} ${esc(m.title)}</b><div class="small muted">${m.nx ? T('Prochain titre dans', 'Next title in') + ' ' + (m.nx - m.d) + ' ' + T(m.nx - m.d > 1 ? 'jours' : 'jour', m.nx - m.d > 1 ? 'days' : 'day') : T('Maîtrise maximale', 'Maximum mastery')}</div></div><button class="btn sm" data-act="pcl-pick">${T('Changer', 'Change')}</button></div>${m.nx ? `<div class="goal sysbar" style="margin:8px 0 0"><div style="width:${m.pct}%"></div></div>` : ''}</div>`;
+}
 function statusCard() {
   const me = medalsEarned(), {st, defs} = me, n = Object.keys(me.got).length, hu = hunter(me), fmtN = v => Math.round(v).toLocaleString(LOC()), pct = Math.min(100, Math.round(hu.cur / hu.need * 100));
   return `<div class="card sysw gwin" id="gstatus" style="--rc:${hu.col}">
@@ -8989,6 +8997,7 @@ function statusCard() {
       <div class="row between small muted"><span>${fmtN(hu.cur)} / ${fmtN(hu.need)} XP ⓘ</span><span>${hu.nextRank ? T(`Rang ${hu.nextRank.rk} au niveau ${hu.nextRank.lvl}`, `Rank ${hu.nextRank.rk} at level ${hu.nextRank.lvl}`) : T('Rang maximal atteint', 'Max rank reached')}</span></div></button>
       ${hu.lvl >= 100 ? `<button class="btn primary block" data-act="prestige" style="margin-top:10px">🌟 ${T('Passer le Prestige', 'Go Prestige')} ${hu.p + 1}</button>` : ''}
       <div class="sysstats"><div data-act="stat-info" data-k="for"><span>${T('FOR', 'STR')}</span><b>${fmtN(st.b3)}</b><i>${U()}</i></div><div data-act="stat-info" data-k="end"><span>${T('END', 'END')}</span><b>${fmtN(st.hr)}</b><i>h</i></div><div data-act="stat-info" data-k="con"><span>${T('CON', 'CON')}</span><b>${st.wk}</b><i>${T('sem.', 'wk')}</i></div><div data-act="stat-info" data-k="med"><span>${T('MÉD', 'MED')}</span><b>${n}</b><i>/ ${defs.length}</i></div></div>
+      ${pclRow()}
     </div>`;
 }
 /* Section de la Guilde : une ligne façon menu de jeu, qui s'ouvre en douceur (sans recharger la page) */
@@ -9321,7 +9330,7 @@ function vGuild() {
     season: () => gSec('season', '👑', T('Saison', 'Season'), seaSub, () => fr ? seasonCard() || `<p class="small muted" style="margin:0">${T('La saison commence dès qu\'un ami a l\'appli à jour.', 'The season starts as soon as a friend has the app up to date.')}</p>` : noFr),
     arm: () => gSec('arm', '⚔️', T('Armurerie', 'Armory'), `${aOk} / ${aTot} ${T('récompenses débloquées', 'rewards unlocked')}`, () => `<div class="armbody">${armoryBody()}</div>`)};
   const gOrd = gSecOrder();
-  return `${statusCard()}${compCard()}${chestPendBtn()}${pclCard()}${eventCard()}<div class="glist">${gOrd.filter(id => !(S.settings.gHide || []).includes(id)).map(id => GSECS[id]()).join('')}<button class="linkbtn" style="margin:2px auto 0;display:block" data-act="gcust">${T('Personnaliser les sections', 'Customize sections')}</button>
+  return `${statusCard()}${compCard()}${chestPendBtn()}${eventCard()}<div class="glist">${gOrd.filter(id => !(S.settings.gHide || []).includes(id)).map(id => GSECS[id]()).join('')}<button class="linkbtn" style="margin:2px auto 0;display:block" data-act="gcust">${T('Personnaliser les sections', 'Customize sections')}</button>
     </div><div class="grid2 gtiles">${gLink('shadows', '🗡', T('Arsenal', 'Arsenal'), `${sh} ${T(sh > 1 ? 'armes forgées' : 'arme forgée', sh > 1 ? 'weapons forged' : 'weapon forged')}`)}
     ${gLink('murank', '🎯', T('Rangs par muscle', 'Muscle ranks'), T('Tes points forts et faibles', 'Your strong and weak points'))}
     ${gLink('bestiary', '🐉', T('Bestiaire', 'Bestiary'), `${bWon} / ${BOSSES.length} ${T('boss vaincus', 'bosses beaten')}`)}
