@@ -4318,6 +4318,14 @@ function restDays() {
   last.setHours(0, 0, 0, 0); t.setHours(0, 0, 0, 0);
   return Math.max(0, Math.round((t - last) / 864e5));
 }
+const PF_IDS = ['body', 'friends', 'year', 'stag', 'chart', 'tiles'], PF_NAMES = {body: ['Poids et photos', 'Weight & photos'], friends: ['Amis', 'Friends'], year: ['Bilan de l\'année', 'Year review'], stag: ['Rappel de stagnation', 'Plateau reminder'], chart: ['Graphique d\'activité', 'Activity chart'], tiles: ['Tableau de bord (tuiles)', 'Dashboard (tiles)']};
+function pfOrder() { const o = (S.settings.pfOrder || []).filter(x => PF_IDS.includes(x)); PF_IDS.forEach(x => { if (!o.includes(x)) o.push(x); }); return o; }
+function pfCustom() {
+  const o = pfOrder(), hid = S.settings.pfHide || [];
+  modal(`<div class="row between"><h2 style="margin:0">${T('Sections du profil', 'Profile sections')}</h2><button class="btn sm" data-act="close">✕</button></div><p class="small muted">${T('Choisis ce que tu veux voir et dans quel ordre.', 'Choose what you want to see and in which order.')}</p>
+  ${o.map((id, i) => `<div class="row between" style="padding:8px 0;border-top:1px solid var(--line);gap:8px"><label style="display:flex;gap:10px;align-items:center;flex:1;margin:0"><input type="checkbox" data-act="pf-vis" data-id="${id}" ${hid.includes(id) ? '' : 'checked'}> ${esc(T(PF_NAMES[id][0], PF_NAMES[id][1]))}</label><button class="btn sm" data-act="pf-mv" data-id="${id}" data-d="-1" ${i ? '' : 'disabled'}>↑</button><button class="btn sm" data-act="pf-mv" data-id="${id}" data-d="1" ${i < o.length - 1 ? '' : 'disabled'}>↓</button></div>`).join('')}
+  <button class="btn primary block" style="margin-top:12px" data-act="close">OK</button>`);
+}
 function vProfile() {
   const nm = S.settings.name || 'Mon profil';
   const nW = pfWeeks || Math.max(12, allWeeks());
@@ -4335,14 +4343,12 @@ function vProfile() {
     : pfMetric === 'vol' ? `<b>${Math.round(last.vol).toLocaleString(LOC())} ${U()}</b> <span class="muted">cette semaine</span>` : `<b>${last.reps} réps</b> <span class="muted">cette semaine</span>`;
   const n0 = new Date();
   const month = S.history.filter(h => { const d = new Date(h.date); return d.getMonth() === n0.getMonth() && d.getFullYear() === n0.getFullYear(); }).length;
-  return `<div class="row pfhead${bannerCls(myCos('banner'))}" style="gap:14px;margin-bottom:16px"><button class="avatar${S.history.length ? rkFrame(GAME() ? hunter().rk : '', myFrame()) : ''}" data-act="avatar" aria-label="${T('Photo de profil', 'Profile photo')}">${S.settings.avatar ? `<img src="${S.settings.avatar}" alt="">` : esc((nm.trim()[0] || '?').toUpperCase())}<span class="cam">📷</span></button>
-      <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0${mySet() ? ';text-shadow:0 0 12px ' + mySet().c : ''}">${esc(nm)} ${emblemOf(myCos('emblem'))}</h2>${mySet() ? `<div class="small" style="color:${mySet().c};font-weight:800">${T('Ensemble', 'Set')} ${esc(T(mySet().n[0], mySet().n[1]))}</div>` : ''}${(() => { if (!S.history.length || !GAME()) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${S.pcl && S.pcl.k ? esc(pclName(S.pcl.k)) : esc(hu.title)}</button><div class="small pftitle" style="--rc:${hu.col}">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div>`; })()}
-      <div class="pfstats"><div><span class="muted small">${T('Séances', 'Workouts')}</span><br><b>${S.history.length}</b></div><div><span class="muted small">${T('Série', 'Streak')}</span><br><b>🔥 ${streakWeeks()} sem.</b></div><div><span class="muted small">Ce mois</span><br><b>${month}</b></div></div></div></div>
-    ${bodyCard()}${friendsCard()}${yearBanner()}${stagCard()}
-    ${!S.history.length ? '' : `<div class="card pfchart"><div class="seg" style="margin:0 0 12px">${[['act', T('Activité', 'Activity')], ['dur', T('Durée', 'Time')], ['vol', 'Volume'], ['reps', T('Réps', 'Reps')]].map(([k, l]) => `<button class="${pfMetric === k ? 'on' : ''}" data-act="pf-metric" data-m="${k}">${l}</button>`).join('')}</div>
+  const PFS = {
+    body: () => bodyCard(), friends: () => friendsCard(), year: () => yearBanner(), stag: () => stagCard(),
+    chart: () => `${!S.history.length ? '' : `<div class="card pfchart"><div class="seg" style="margin:0 0 12px">${[['act', T('Activité', 'Activity')], ['dur', T('Durée', 'Time')], ['vol', 'Volume'], ['reps', T('Réps', 'Reps')]].map(([k, l]) => `<button class="${pfMetric === k ? 'on' : ''}" data-act="pf-metric" data-m="${k}">${l}</button>`).join('')}</div>
     ${pfMetric === 'act' ? actGrid(true) : `<div class="row between"><span>${headline}</span><select style="width:auto" data-pf="range"><option value="12" ${pfWeeks === 12 ? 'selected' : ''}>3 derniers mois</option><option value="26" ${pfWeeks === 26 ? 'selected' : ''}>6 mois</option><option value="52" ${pfWeeks === 52 ? 'selected' : ''}>1 an</option><option value="0" ${pfWeeks === 0 ? 'selected' : ''}>Tout</option></select></div>
-    <div style="margin-top:8px">${barsSVG(vals, labels, fmtV, window._chtips, pfSel)}<div class="chtip" id="chtip">${pfSel != null ? window._chtips[pfSel] : T('Touche une barre pour voir le détail · glisse pour voir avant', 'Tap a bar for details · swipe to see earlier weeks')}</div></div>`}</div>`}
-    <p class="muted" style="margin:16px 0 8px">Tableau de bord</p>
+    <div style="margin-top:8px">${barsSVG(vals, labels, fmtV, window._chtips, pfSel)}<div class="chtip" id="chtip">${pfSel != null ? window._chtips[pfSel] : T('Touche une barre pour voir le détail · glisse pour voir avant', 'Tap a bar for details · swipe to see earlier weeks')}</div></div>`}</div>`}`,
+    tiles: () => `<p class="muted" style="margin:16px 0 8px">Tableau de bord</p>
     <div class="grid2">
       <button class="btn tile" data-act="go" data-v="stats">${IC('chart', '📈')} ${T('Statistiques', 'Statistics')}</button>
       <button class="btn tile" data-act="go" data-v="exercises">${IC('dumbbell', '🏋️')} ${T('Exercices', 'Exercises')}</button>
@@ -4350,7 +4356,11 @@ function vProfile() {
       <button class="btn tile" data-act="go" data-v="calendar">${IC('calendar', '📅')} ${T('Calendrier', 'Calendar')}</button>
       <button class="btn tile" data-act="go" data-v="medals">${IC('medal', '🏅')} ${T('Médailles', 'Medals')}</button>
       <button class="btn tile" data-act="go" data-v="recov">${IC('pulse', '💪')} ${T('Récupération', 'Recovery')}</button>
-    </div>`;
+    </div>`};
+  return `<div class="row pfhead${bannerCls(myCos('banner'))}" style="gap:14px;margin-bottom:16px"><button class="avatar${S.history.length ? rkFrame(GAME() ? hunter().rk : '', myFrame()) : ''}" data-act="avatar" aria-label="${T('Photo de profil', 'Profile photo')}">${S.settings.avatar ? `<img src="${S.settings.avatar}" alt="">` : esc((nm.trim()[0] || '?').toUpperCase())}<span class="cam">📷</span></button>
+      <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0${mySet() ? ';text-shadow:0 0 12px ' + mySet().c : ''}">${esc(nm)} ${emblemOf(myCos('emblem'))}</h2>${mySet() ? `<div class="small" style="color:${mySet().c};font-weight:800">${T('Ensemble', 'Set')} ${esc(T(mySet().n[0], mySet().n[1]))}</div>` : ''}${(() => { if (!S.history.length || !GAME()) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${S.pcl && S.pcl.k ? esc(pclName(S.pcl.k)) : esc(hu.title)}</button><div class="small pftitle" style="--rc:${hu.col}">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div>`; })()}
+      <div class="pfstats"><div><span class="muted small">${T('Séances', 'Workouts')}</span><br><b>${S.history.length}</b></div><div><span class="muted small">${T('Série', 'Streak')}</span><br><b>🔥 ${streakWeeks()} sem.</b></div><div><span class="muted small">Ce mois</span><br><b>${month}</b></div></div></div></div>${pfOrder().filter(id => !(S.settings.pfHide || []).includes(id)).map(id => PFS[id]()).join('')}
+    <button class="linkbtn" style="margin:14px auto 0;display:block" data-act="pfcust">${T('Personnaliser le profil', 'Customize profile')}</button>`;
 }
 let histLim = 40;
 function vHistAll() {
@@ -6464,9 +6474,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.86.5'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.86.6'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.86.6', d: '2026-11-21', fr: ['Profil : bouton « Personnaliser le profil » en bas pour choisir ce que tu veux voir (poids et photos, amis, bilan, graphique, tuiles) et dans quel ordre.'], en: ['Profile: "Customize profile" button at the bottom to choose what you see (weight & photos, friends, year review, chart, tiles) and in which order.']},
   {v: '9.86.5', d: '2026-11-21', fr: ['Classe : changer de classe ouvre maintenant une fenêtre d\'avertissement claire (« tu ne pourras plus changer pendant 7 jours »). Le blocage dure vraiment 7 jours (avant : jusqu\'au lundi) et la date du prochain changement est affichée.'], en: ['Class: changing class now opens a clear warning ("you won\'t be able to change for 7 days"). The lock really lasts 7 days (before: until Monday) and the date of the next change is shown.']},
   {v: '9.86.4', d: '2026-11-21', fr: ['Classe conseillée : réglage plus équilibré entre Guerrier, Coureur, Moine et Sage selon ton entraînement des 4 dernières semaines.'], en: ['Suggested class: better balance between Warrior, Runner, Monk and Sage based on your last 4 weeks.']},
   {v: '9.86.3', d: '2026-11-21', fr: ['Classe conseillée : le Moine n\'est plus proposé à tout le monde. Le Guerrier passe en premier pour qui soulève lourd ; le Moine est conseillé pour qui s\'entraîne presque tous les jours avec peu de séries lourdes.'], en: ['Suggested class: the Monk is no longer suggested to everyone. The Warrior (heavy sets) now comes first for heavy lifters; the Monk is suggested for near-daily training with few heavy sets.']},
@@ -10180,6 +10191,9 @@ document.addEventListener('click', e => {
     case 'cpick': openColorPicker(b.dataset.k); break;
     case 'pg': { PGS[b.dataset.k] = (PGS[b.dataset.k] || 0) + +b.dataset.d; if (b.dataset.k.startsWith('arm:')) armRefresh(true); else { const y = scrollY; render(); window.scrollTo(0, y); } break; }
     case 'gcust': gCustom(); break;
+    case 'pfcust': pfCustom(); break;
+    case 'pf-vis': { const h = S.settings.pfHide = (S.settings.pfHide || []).filter(x => x !== b.dataset.id); if (!b.checked) h.push(b.dataset.id); save(); render(); break; }
+    case 'pf-mv': { const o = pfOrder(), i = o.indexOf(b.dataset.id), j = i + +b.dataset.d; if (j >= 0 && j < o.length) { [o[i], o[j]] = [o[j], o[i]]; S.settings.pfOrder = o; save(); closeModal(); render(); pfCustom(); } break; }
     case 'gc-vis': { const h = S.settings.gHide = (S.settings.gHide || []).filter(x => x !== b.dataset.id); if (!b.checked) h.push(b.dataset.id); save(); render(); break; }
     case 'gc-mv': { const o = gSecOrder(), i = o.indexOf(b.dataset.id), j = i + +b.dataset.d; if (j >= 0 && j < o.length) { [o[i], o[j]] = [o[j], o[i]]; S.settings.gOrder = o; save(); closeModal(); render(); gCustom(); } break; }
     case 'med-f': medFilter = b.dataset.f; Object.keys(PGS).forEach(k => { if (k.startsWith('med:')) PGS[k] = 0; }); render(); break;
