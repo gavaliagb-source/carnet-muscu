@@ -1419,7 +1419,7 @@ let stack = S.active ? [{v: 'train'}, {v: 'workout'}] : [{v: lastTab()}];
 addEventListener('pagehide', () => { try { if (stack.length === 1) sessionStorage.setItem('cm-scroll', stack[0].v + ':' + Math.round(scrollY)); else sessionStorage.removeItem('cm-scroll'); } catch (e) {} });
 const cur = () => stack[stack.length - 1];
 let woY = 0;
-function go(v, p = {}) { navAnim = 'fwd'; if (cur().v === 'workout') woY = scrollY; cur().y = Math.round(scrollY); stack.push({v, ...p}); try { history.pushState({d: stack.length}, ''); } catch (e) {} render(); window.scrollTo(0, 0); }
+function go(v, p = {}) { navAnim = 'fwd'; if (cur().v === 'workout') woY = scrollY; cur().y = Math.round(scrollY); stack.push({v, ...p}); render(); window.scrollTo(0, 0); hSync(); }
 function back() {
   if (stack.length < 2) return;
   if (cur().v === 'redit' && rdirty && !confirm('Quitter sans enregistrer les modifications?')) return;
@@ -1428,7 +1428,24 @@ function back() {
 }
 const TABY = {};
 function setRoot(v) { stack = [{v}]; }
-window.addEventListener('popstate', () => { if (modals.length) { closeModal(); return; } back(); });
+/* Geste « retour » du téléphone : une seule entrée d'historique « sentinelle », armée seulement quand il y a quelque chose à fermer
+   (fenêtre ouverte ou sous-page). Le geste fait alors exactement comme la flèche ←; sinon il quitte l'appli. */
+let hArmed = false, hIgnore = false;
+const hNeed = () => modals.length > 0 || stack.length > 1;
+function hSync() {
+  if (hIgnore) return;
+  try {
+    if (hNeed() && !hArmed) { history.pushState({rl: 1}, ''); hArmed = true; }
+    else if (!hNeed() && hArmed) { hIgnore = true; hArmed = false; history.back(); }
+  } catch (e) {}
+}
+window.addEventListener('popstate', () => {
+  hArmed = false;
+  if (hIgnore) { hIgnore = false; hSync(); return; }
+  if (modals.length) closeModal(); else if (stack.length > 1) back();
+  hSync();
+});
+setInterval(hSync, 250);
 let histMode = 'list', progTab = 'ex', volPeriod = 'cur', bodyMetric = 'w', progEx = null;
 const now0 = new Date();
 let cal = {y: now0.getFullYear(), m: now0.getMonth(), sel: null};
@@ -1941,7 +1958,7 @@ function startWorkout(rid) {
     exercises: r.exercises.map(e => { const sets = mkSetsFromRoutine(e, lastFor(e.name)); return {name: e.name, orig: e.name, n0: sets.length, n0w: sets.filter(s => s.t !== 'W').length, ss: e.ss, rest: e.rest, note: '', target: {...e}, sets}; })};
   save(); openWorkout();
 }
-function openWorkout() { stack = [{v: 'train'}, {v: 'workout'}]; try { history.pushState({}, ''); } catch (e) {} render(); window.scrollTo(0, 0); setTimeout(scrollCur, 30); }
+function openWorkout() { stack = [{v: 'train'}, {v: 'workout'}]; render(); window.scrollTo(0, 0); setTimeout(scrollCur, 30); hSync(); }
 /* Exercice en cours = premier exercice avec une série non cochée */
 let justChk = null;
 let celeForce = null;
@@ -6432,9 +6449,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.85.7'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.85.8'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.85.8', d: '2026-11-21', fr: ['Téléphone : le geste « retour » (glisser depuis le côté) fait maintenant exactement comme la flèche ← : il ferme la fenêtre ouverte ou revient à la page d\'avant, et ne quitte l\'appli que depuis un écran principal. Montre : le bouton « Chrono sur le téléphone » (nouvelle APK montre).'], en: ['Phone: the back gesture (swipe from the side) now does exactly what the ← arrow does: it closes the open window or goes to the previous page, and only leaves the app from a main screen. Watch: new "Timer on phone" button (new watch APK).']},
   {v: '9.85.7', d: '2026-11-21', fr: ['Les onglets du bas retiennent ta position : en revenant sur Muscu, Cardio, Profil, etc., tu retrouves où tu étais. Toucher l\'onglet actif remonte en haut.'], en: ['Bottom tabs now remember your scroll position: coming back to Train, Cardio, Profile, etc. puts you where you were. Tapping the active tab scrolls to top.']},
   {v: '9.85.6', d: '2026-11-21', fr: ['Guilde : ta classe est maintenant dans la carte Statut (plus de carte séparée).'], en: ['Guild: your class is now inside the Status card (no more separate card).']},
   {v: '9.85.5', d: '2026-11-21', fr: ['Photos de progrès : quand une photo prise sur un autre appareil est vide, l\'appli va maintenant la chercher dans ta sauvegarde en ouvrant « Mesures et photos » (elle doit d\'abord avoir été sauvegardée depuis l\'autre appareil).'], en: ['Progress photos: when a photo taken on another device is blank, the app now fetches it from your backup when you open "Measures & photos" (it must first have been backed up from the other device).']},
@@ -7724,6 +7742,8 @@ function wearCmd(d) {
       if (d.r != null && +d.r > 0) x.r = String(Math.round(+d.r));
       fakeAct('done', {e: +d.e, s: +d.s});
     }
+  } else if (d.a === 'bigtimer') {
+    if (timerEnd > Date.now()) bigTimerOpen();
   } else if (d.a === 'rest') {
     if (d.skip) stopTimer(); else if (+d.add && timerEnd > Date.now()) fakeAct('timer-add', {});
   } else if (d.a === 'hr') {
