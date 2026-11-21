@@ -160,6 +160,7 @@ body.wob #timer{bottom:calc(140px + var(--nb))}body.wob main{padding-bottom:150p
 canvas{width:100%;height:210px;display:block}
 .stat{flex:1;background:var(--card2);border-radius:10px;padding:10px;text-align:center}
 .stat b{display:block;font-size:20px}
+.phfull{position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center}.phfull img{max-width:100%;max-height:100%;object-fit:contain}
 .bmrow{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px}.bmrow::-webkit-scrollbar{display:none}.bmrow .btn{flex:none;white-space:nowrap}
 .hist summary,summary.nomark{list-style:none;cursor:pointer}summary.nomark::-webkit-details-marker{display:none}
 .hist summary::-webkit-details-marker{display:none}
@@ -6567,9 +6568,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.88.8'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.88.9'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.88.9', d: '2026-11-21', fr: ['Photos de progrès : la photo tient dans l\'écran avec ses boutons (comparer, supprimer, partager) visibles sans défiler. Touche la photo pour la voir en plein écran.'], en: ['Progress photos: the photo fits on screen with its buttons visible. Tap it to see it full screen.']},
   {v: '9.88.8', d: '2026-11-21', fr: ['Profil : on entre maintenant sa date de naissance au lieu de son âge. L\'âge se met à jour tout seul le jour de ta fête (calories, zones de cardio).'], en: ['Profile: enter your birth date instead of your age. Your age updates by itself on your birthday (calories, cardio zones).']},
   {v: '9.88.7', d: '2026-11-21', fr: ['Corps et progrès : la liste déroulante (poids, tour de taille…) est remplacée par des boutons qu\'on fait défiler. Un seul toucher pour changer de courbe.'], en: ['Body & progress: the dropdown (weight, waist…) is replaced by scrollable buttons. One tap to switch charts.']},
   {v: '9.88.6', d: '2026-11-21', fr: ['Corps et progrès : « Nouvelle mesure » n\'a plus de flèche en double avec le +.'], en: ['Body & progress: “New measurement” no longer shows an arrow next to the +.']},
@@ -7511,8 +7513,8 @@ const allPh = () => { const L = (S.photos || []).slice(), have = new Set(L.map(x
 function photoView(id) {
   const p = allPh().find(x => x.id === id); if (!p) return;
   const w = S.body.filter(b => b.w != null && b.d <= p.d).sort((a, b) => a.d.localeCompare(b.d)).pop();
-  modal(`<div class="row between"><b>${new Date(p.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'long', year: 'numeric'})}${w ? ` · ${w.w} ${U()}` : ''}</b><button class="btn sm" data-act="close">✕</button></div>
-    <img data-ph="${id}" alt="" style="width:100%;border-radius:14px;margin-top:10px;display:block;background:var(--card2);min-height:200px">
+  modal(`<div class="row between"><b>${new Date(p.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'long', year: 'numeric'})}${w ? ` · ${DN(w.w)} ${U()}` : ''}</b><button class="btn sm" data-act="close">✕</button></div>
+    <img data-ph="${id}" alt="" data-act="ph-full" style="width:100%;height:52vh;object-fit:contain;border-radius:14px;margin-top:10px;display:block;background:var(--card2);cursor:zoom-in">
     <label>${T('Date', 'Date')}</label><input type="date" value="${p.d}" data-phd="${id}">
     <div class="row" style="margin-top:10px"><button class="btn" style="flex:1" data-act="ph-cmp" data-id="${id}">⇄ ${T('Comparer', 'Compare')}</button><button class="btn danger" style="flex:1" data-act="ph-del" data-id="${id}">🗑 ${T('Supprimer', 'Delete')}</button></div>
     ${frPhShared(id) ? `<button class="btn block" data-act="ph-share" data-id="${id}" style="margin-top:8px">🔒 ${T('Ne plus partager avec mes amis', 'Stop sharing with my friends')}</button><p class="muted small center" style="margin:6px 0 0">👥 ${T('Tes amis voient cette photo', 'Your friends see this photo')}</p>`
@@ -10794,6 +10796,7 @@ document.addEventListener('click', e => {
 
     /* progrès */
     case 'prog-tab': progTab = b.dataset.p; render(); break;
+    case 'ph-full': { const src = b.currentSrc || b.src; if (!src) break; const o = document.createElement('div'); o.className = 'phfull'; o.innerHTML = `<img src="${src}" alt="">`; o.onclick = () => o.remove(); document.body.appendChild(o); break; }
     case 'bm-pick': bodyMetric = b.dataset.k; render(); break;
     case 'theme': S.settings.theme = b.dataset.t; save(); applyTheme(); render(); break;
     case 'rec-sort': recSort = b.dataset.s; render(); break;
