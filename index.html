@@ -5250,10 +5250,10 @@ function pclSuggest() {
     m: T(`${days.size} jours d'entraînement en 4 semaines`, `${days.size} training days in 4 weeks`), s: T(`${st} séance${st > 1 ? 's' : ''} d'étirements et ${ex.size} exercices différents`, `${st} stretching session${st > 1 ? 's' : ''} and ${ex.size} different exercises`)};
   return {k, why: why[k]};
 }
-const pclCan = () => !S.pcl || !S.pcl.k || !S.pcl.lc || +new Date(S.pcl.lc) < +weekStart(new Date());
+const pclCan = () => !S.pcl || !S.pcl.k || !S.pcl.lc || Date.now() - +new Date(S.pcl.lc) >= 7 * 864e5;
+const pclNext = () => new Date(+new Date(S.pcl.lc) + 7 * 864e5).toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long'});
 function pclSet(k) {
   if (!PCL[k]) return; const p = S.pcl, now = Date.now(), tot = (p && p.tot) || {};
-  if (p && p.k && p.k !== k && !confirm(T(`Passer à « ${pclName(k)} » ? Tu ne pourras pas la changer pendant 7 jours.`, `Switch to “${pclName(k)}”? You won't be able to change it for 7 days.`))) return;
   if (p && p.k) tot[p.k] = (tot[p.k] || 0) + now - +new Date(p.since);
   S.pcl = {k, since: new Date(now).toISOString(), lc: p && p.k ? new Date(now).toISOString() : '', tot}; save();
 }
@@ -5281,7 +5281,7 @@ function pclPick() {
     ${sg ? `<p class="small muted" style="margin:8px 0 0">${T('Conseillée d\'après tes 4 dernières semaines', 'Suggested from your last 4 weeks')} : <b>${esc(pclName(sg.k))}</b> (${esc(sg.why)}).</p>` : ''}
     <div class="row" style="gap:6px;margin-top:10px;align-items:center"><span class="small muted">${T('Apparence', 'Look')}</span>${['m', 'f'].map(l => `<button class="btn sm ${pclLook() === l ? 'primary' : ''}" data-act="pcl-look" data-v="${l}">${l === 'm' ? T('Homme', 'Male') : T('Femme', 'Female')}</button>`).join('')}</div>
     <div class="menu" style="margin-top:10px">${PCL_K.map(k => { const on = p && p.k === k, x = PCL[k]; return `<button class="btn block" style="text-align:left;${on ? 'border-color:var(--accent)' : ''}" data-act="pcl-set" data-k="${k}"><span style="display:inline-flex;vertical-align:middle;margin-right:8px">${pclImg(k, 44)}</span><b>${esc(pclName(k))}</b>${sg && sg.k === k ? ` <span class="small" style="color:var(--accent)">${T('conseillée', 'suggested')}</span>` : ''}${on ? ` <span class="small muted">${T('actuelle', 'current')}</span>` : ''}<div class="small muted" style="margin-top:2px;font-weight:400">${esc(T(x[2][0], x[2][1]))}</div></button>`; }).join('')}</div>
-    <p class="small muted" style="margin:10px 0 0">${can ? T('Tu peux changer de classe une fois par semaine. Chaque classe garde sa maîtrise.', 'You can change class once a week. Each class keeps its mastery.') : T('Tu as déjà changé de classe cette semaine : prochain changement le ', 'You already changed class this week: next change on ') + new Date(+weekStart(new Date()) + 7 * 864e5).toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long'})}</p>`);
+    <p class="small muted" style="margin:10px 0 0">${can ? T('Tu peux changer de classe une fois par semaine. Chaque classe garde sa maîtrise.', 'You can change class once a week. Each class keeps its mastery.') : T('Tu as déjà changé de classe cette semaine : prochain changement le ', 'You already changed class this week: next change on ') + pclNext()}</p>`);
 }
 const clsName = c => { const x = HCLASSES[c] || HCLASSES.none; return T(x[1][0], x[1][1]); };
 const clsIc = c => (HCLASSES[c] || HCLASSES.none)[0];
@@ -6464,9 +6464,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.86.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.86.5'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.86.5', d: '2026-11-21', fr: ['Classe : changer de classe ouvre maintenant une fenêtre d\'avertissement claire (« tu ne pourras plus changer pendant 7 jours »). Le blocage dure vraiment 7 jours (avant : jusqu\'au lundi) et la date du prochain changement est affichée.'], en: ['Class: changing class now opens a clear warning ("you won\'t be able to change for 7 days"). The lock really lasts 7 days (before: until Monday) and the date of the next change is shown.']},
   {v: '9.86.4', d: '2026-11-21', fr: ['Classe conseillée : réglage plus équilibré entre Guerrier, Coureur, Moine et Sage selon ton entraînement des 4 dernières semaines.'], en: ['Suggested class: better balance between Warrior, Runner, Monk and Sage based on your last 4 weeks.']},
   {v: '9.86.3', d: '2026-11-21', fr: ['Classe conseillée : le Moine n\'est plus proposé à tout le monde. Le Guerrier passe en premier pour qui soulève lourd ; le Moine est conseillé pour qui s\'entraîne presque tous les jours avec peu de séries lourdes.'], en: ['Suggested class: the Monk is no longer suggested to everyone. The Warrior (heavy sets) now comes first for heavy lifters; the Monk is suggested for near-daily training with few heavy sets.']},
   {v: '9.86.2', d: '2026-11-21', fr: ['Guilde : « Amis et défis » et « Classement mondial » sont de retour en bas, en tuiles grises.'], en: ['Guild: "Friends & challenges" and "World ranking" are back at the bottom as grey tiles.']},
@@ -10096,9 +10097,10 @@ document.addEventListener('click', e => {
     case 'chest-open': chestOpen(b.dataset.id); break;
     case 'pcl-pick': pclPick(); break;
     case 'pcl-look': S.settings.look = b.dataset.v === 'f' ? 'f' : 'm'; save(); closeAll(); render(); pclPick(); break;
+    case 'pcl-yes': { const k = b.dataset.k; if (!PCL[k] || !pclCan()) { closeAll(); break; } pclSet(k); closeAll(); render(); toast(T(`${pclName(k)} : classe choisie`, `${pclName(k)}: class chosen`)); break; }
     case 'pcl-set': { const k = b.dataset.k; if (!PCL[k]) break; if (S.pcl && S.pcl.k === k) { closeAll(); break; }
-      if (!pclCan()) { toast(T('Tu as déjà changé de classe cette semaine.', 'You already changed class this week.')); break; }
-      if (S.pcl && S.pcl.k && !confirm(T(`Passer à ${pclName(k)}? Tu ne pourras plus changer avant lundi.`, `Switch to ${pclName(k)}? You won't be able to change again until Monday.`))) break;
+      if (!pclCan()) { toast(T('Tu as déjà changé de classe : prochain changement le ', 'You already changed class: next change on ') + pclNext()); break; }
+      if (S.pcl && S.pcl.k) { modal(`<h2 style="margin:0 0 8px">${T('Changer de classe ?', 'Change class?')}</h2><p style="margin:0 0 10px">${T('Tu passes à', 'You are switching to')} <b>${esc(pclName(k))}</b>.</p><p class="small" style="margin:0 0 14px;color:var(--warm)">${T('⚠ Tu ne pourras plus changer de classe pendant 7 jours.', '⚠ You won\'t be able to change class again for 7 days.')}</p><div class="row" style="gap:8px"><button class="btn" style="flex:1" data-act="close">${T('Annuler', 'Cancel')}</button><button class="btn primary" style="flex:1" data-act="pcl-yes" data-k="${k}">${T('Confirmer', 'Confirm')}</button></div>`); break; }
       pclSet(k); closeAll(); render(); toast(T(`${pclName(k)} : classe choisie`, `${pclName(k)}: class chosen`)); break; }
     case 'chest-next': { const o = document.getElementById('chesto'); if (o) o.remove(); const c = chestsPending()[0]; if (c) chestOpen(c.id); break; }
     case 'chest-close': { const o = document.getElementById('chesto'); if (o) o.remove(); RC = {}; render(); break; }
