@@ -6431,9 +6431,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.85.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.85.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.85.4', d: '2026-11-21', fr: ['Les photos prises pendant une séance apparaissent maintenant aussi dans « Photos de progrès » (Mesures et photos), avec comparaison avant/après et partage aux amis.'], en: ['Photos taken during a workout now also appear in "Progress photos" (Measures & photos), with before/after comparison and friend sharing.']},
   {v: '9.85.3', d: '2026-11-21', fr: ['Boss du mois : les nouveaux utilisateurs (peu de séances) ont maintenant un boss dès leurs premières séances, au lieu de n\'en avoir aucun.'], en: ['Monthly boss: new users (few workouts) now get a boss from their first sessions instead of none.']},
   {v: '9.85.2', d: '2026-11-21', fr: ['Amis : ton boss du mois (et sa vie restante) est maintenant visible sur ta fiche chez tes amis. Il apparaîtra chez eux après ta prochaine synchronisation.'], en: ['Friends: your monthly boss (and its remaining HP) is now visible on your profile for your friends. It shows up for them after your next sync.']},
   {v: '9.85.1', d: '2026-11-21', fr: ['Bilan de l\'année : tu peux maintenant partager une image au format story (bouton « Partager mon bilan »), ou copier le texte.'], en: ['Year review: you can now share a story-format image ("Share my review" button), or copy the text.']},
@@ -7343,8 +7344,9 @@ async function addProgressPhoto() {
     } catch (e) { toast('⚠️ ' + e.message); }
   });
 }
+const allPh = () => { const L = (S.photos || []).slice(), have = new Set(L.map(x => x.id)); S.history.forEach(h => { if (h.ph && !have.has(h.ph)) L.push({id: h.ph, d: dkey(new Date(h.date)), ses: h.id}); }); return L; };
 function photoView(id) {
-  const p = (S.photos || []).find(x => x.id === id); if (!p) return;
+  const p = allPh().find(x => x.id === id); if (!p) return;
   const w = S.body.filter(b => b.w != null && b.d <= p.d).sort((a, b) => a.d.localeCompare(b.d)).pop();
   modal(`<div class="row between"><b>${new Date(p.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'long', year: 'numeric'})}${w ? ` · ${w.w} ${U()}` : ''}</b><button class="btn sm" data-act="close">✕</button></div>
     <img data-ph="${id}" alt="" style="width:100%;border-radius:14px;margin-top:10px;display:block;background:var(--card2);min-height:200px">
@@ -7355,7 +7357,7 @@ function photoView(id) {
   phFill();
 }
 function photoCompare(a) {
-  const L = (S.photos || []).slice().sort((x, y) => x.d.localeCompare(y.d)); if (L.length < 2) { toast(T('Ajoute au moins 2 photos pour comparer', 'Add at least 2 photos to compare')); return; }
+  const L = allPh().sort((x, y) => x.d.localeCompare(y.d)); if (L.length < 2) { toast(T('Ajoute au moins 2 photos pour comparer', 'Add at least 2 photos to compare')); return; }
   const A = a ? L.find(x => x.id === a) : L[0], B = L.filter(x => x.id !== A.id).pop();
   const lab = p => new Date(p.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'short', year: '2-digit'});
   const opt = (sel, k) => `<select data-phc="${k}">${L.map(x => `<option value="${x.id}" ${x.id === sel.id ? 'selected' : ''}>${lab(x)}</option>`).join('')}</select>`;
@@ -7370,7 +7372,7 @@ function photoCompare(a) {
   document.querySelectorAll('[data-phc]').forEach(s => s.addEventListener('change', upd)); upd();
 }
 function photosCard() {
-  const L = (S.photos || []).slice().sort((a, b) => b.d.localeCompare(a.d));
+  const L = allPh().sort((a, b) => b.d.localeCompare(a.d));
   setTimeout(phFill, 0);
   return `<div class="card"><div class="row between"><h3 style="margin:0">📸 ${T('Photos de progrès', 'Progress photos')}</h3>${L.length > 1 ? `<button class="btn sm" data-act="ph-cmp">⇄ ${T('Comparer', 'Compare')}</button>` : ''}</div>
     ${L.length ? `<div class="phgrid">${L.map(p => `<button class="phth" data-act="ph-view" data-id="${p.id}"><img data-ph="${p.id}" alt="">${frPhShared(p.id) ? '<i class="phsh">👥</i>' : ''}<span>${new Date(p.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'short'})}</span></button>`).join('')}</div>` : `<p class="muted small" style="margin:6px 0 0">${T('Prends une photo toutes les 2 à 4 semaines, même pose et même lumière : c\'est la meilleure façon de voir tes progrès.', 'Take a photo every 2–4 weeks, same pose and lighting: it\'s the best way to see your progress.')}</p>`}
@@ -7384,7 +7386,7 @@ function bodyCard() {
   const diff = last && m30 && m30 !== last ? last.w - m30.w : null;
   const pts = ws.slice(-20).map(b => +b.w), mn = Math.min(...pts), mx = Math.max(...pts);
   const spark = pts.length > 1 ? `<svg viewBox="0 0 100 30" preserveAspectRatio="none" style="width:100%;height:38px;display:block;margin-top:6px"><polyline fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" points="${pts.map((v, i) => `${i / (pts.length - 1) * 100},${mx === mn ? 15 : 28 - (v - mn) / (mx - mn) * 26}`).join(' ')}"/></svg>` : '';
-  const nPh = (S.photos || []).length;
+  const nPh = allPh().length;
   return `<div class="card"><div class="row between"><div><span class="muted small">⚖️ ${T('Poids', 'Weight')}</span><br>${last ? `<b style="font-size:22px">${dec1(last.w)} ${U()}</b>${diff != null ? ` <span class="small" style="color:${diff > 0 ? 'var(--warm)' : 'var(--ok, #4ade80)'}">${diff > 0 ? '+' : ''}${dec1(diff)} ${T('en 30 j', 'in 30 d')}</span>` : ''}` : `<span class="muted">${T('Pas encore entré', 'Not entered yet')}</span>`}</div>
     <button class="btn sm primary" data-act="bw-quick">＋ ${T('Poids', 'Weight')}</button></div>${spark}
     <div class="row" style="margin-top:10px"><button class="btn sm" style="flex:1" data-act="me-edit">👤 ${T('Mes infos', 'My info')}</button><button class="btn sm" style="flex:1.6" data-act="go" data-v="measures">📏 ${T('Mesures et photos', 'Measures & photos')}${nPh ? ' (' + nPh + ')' : ''}</button></div></div>`;
@@ -7536,8 +7538,8 @@ const frSmallC = new Map();
 function frSmall(src) { const k = src.length + ':' + src.slice(-40); if (frSmallC.has(k)) return Promise.resolve(frSmallC.get(k)); return frSmall0(src).then(v => { if (v) frSmallC.set(k, v); return v; }); }
 function frSmall0(src) { return new Promise(ok => { const im = new Image(); im.onload = () => { const k = Math.min(1, 640 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL('image/jpeg', .72)); }; im.onerror = () => ok(''); im.src = src; }); }
 async function frPhotos() {
-  const ids = (FRS().ph || []).filter(id => (S.photos || []).some(p => p.id === id)), out = [];
-  for (const p of (S.photos || []).filter(x => ids.includes(x.id)).slice(-8)) { const d = await phSrc(p.id); if (d) { const img = await frSmall(d); if (img) out.push({id: p.id, d: p.d, img}); } }
+  const ids = (FRS().ph || []).filter(id => allPh().some(p => p.id === id)), out = [];
+  for (const p of allPh().filter(x => ids.includes(x.id)).slice(-8)) { const d = await phSrc(p.id); if (d) { const img = await frSmall(d); if (img) out.push({id: p.id, d: p.d, img}); } }
   return out;
 }
 async function frSessWithPh(idx) {
@@ -8384,7 +8386,7 @@ function frBossRow(d) { const o = d && d.bo; if (!GAME() || !o) return ''; const
 function frMe0() {
   const fr = FRS(), hide = new Set(fr.hide || []);
   const s = S.history.map((x, i) => [x, i]).filter(([x]) => !hide.has(x.id) && new Date(x.date) > Date.now() - 45 * 864e5).slice(-15).map(([x, i]) => Object.assign(frSess(x, i), x.ph ? {phId: x.ph} : {}));
-  const p = (S.photos || []).filter(x => (fr.ph || []).includes(x.id)).slice(-8).map(x => ({id: x.id, d: x.d, phId: x.id}));
+  const p = allPh().filter(x => (fr.ph || []).includes(x.id)).slice(-8).map(x => ({id: x.id, d: x.d, phId: x.id}));
   return {f: {c: fr.file || 'me', me: true, n: T('Moi', 'Me')}, d: {name: (S.settings.name || '').trim() || T('Moi', 'Me'), av: S.settings.avatar || '', wk: streakWeeks(), hu: frHu(), bo: frBoss(), s, p, up: fr.last, cw: Object.keys(S.seasonWon || {}).filter(k => S.seasonWon[k])}};
 }
 /* Niveau de chasseur partagé avec les amis */
@@ -9943,7 +9945,7 @@ document.addEventListener('click', e => {
     case 'ph-add': addProgressPhoto(); break;
     case 'ph-view': photoView(b.dataset.id); break;
     case 'ph-cmp': photoCompare(b.dataset.id); break;
-    case 'ph-del': { if (!confirm(T('Supprimer cette photo?', 'Delete this photo?'))) break; const id = b.dataset.id; S.photos = (S.photos || []).filter(x => x.id !== id); phDel(id).catch(() => {}); delete phCache[id]; cpGone(id); save(); closeAll(); render(); break; }
+    case 'ph-del': { if (!confirm(T('Supprimer cette photo?', 'Delete this photo?'))) break; const id = b.dataset.id; S.photos = (S.photos || []).filter(x => x.id !== id); S.history.forEach(h => { if (h.ph === id) delete h.ph; }); phDel(id).catch(() => {}); delete phCache[id]; cpGone(id); save(); closeAll(); render(); break; }
     case 'cardio-add': openCardioAdd(); break;
     case 'cardio-add-ok': { const m = ($('#cad_m') || {}).value; closeModal(); addCardio(b.dataset.n, m); break; }
     case 'cardio-other': closeModal(); openPicker({title: T('Ajouter du cardio', 'Add cardio'), cb: p => addCardio(p.name, 15)}); break;
