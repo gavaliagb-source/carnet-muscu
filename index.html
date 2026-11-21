@@ -1934,7 +1934,7 @@ function startWorkout(rid) {
   if (S.active && !confirm('Une séance est déjà en cours. La remplacer?')) { openWorkout(); return; }
   const r = S.routines.find(x => x.id === rid); if (!r) return;
   S.active = {routineId: r.id, routineName: r.name, start: new Date().toISOString(),
-    exercises: r.exercises.map(e => { const sets = mkSetsFromRoutine(e, lastFor(e.name)); return {name: e.name, orig: e.name, n0: sets.length, ss: e.ss, rest: e.rest, note: '', target: {...e}, sets}; })};
+    exercises: r.exercises.map(e => { const sets = mkSetsFromRoutine(e, lastFor(e.name)); return {name: e.name, orig: e.name, n0: sets.length, n0w: sets.filter(s => s.t !== 'W').length, ss: e.ss, rest: e.rest, note: '', target: {...e}, sets}; })};
   save(); openWorkout();
 }
 function openWorkout() { stack = [{v: 'train'}, {v: 'workout'}]; try { history.pushState({}, ''); } catch (e) {} render(); window.scrollTo(0, 0); setTimeout(scrollCur, 30); }
@@ -2155,7 +2155,7 @@ function genStart() {
   if (!genSt.list.length) return;
   if (S.active && !confirm(T('Une séance est déjà en cours. La remplacer?', 'A workout is already in progress. Replace it?'))) { closeAll(); openWorkout(); return; }
   S.active = {routineId: null, routineName: T('Séance générée', 'Generated workout'), start: new Date().toISOString(),
-    exercises: genSt.list.map(({e}) => { const sets = mkSetsFromRoutine(e, lastFor(e.name)); return {name: e.name, orig: e.name, n0: sets.length, rest: e.rest, note: '', target: {...e}, sets}; })};
+    exercises: genSt.list.map(({e}) => { const sets = mkSetsFromRoutine(e, lastFor(e.name)); return {name: e.name, orig: e.name, n0: sets.length, n0w: sets.filter(s => s.t !== 'W').length, rest: e.rest, note: '', target: {...e}, sets}; })};
   save(); closeAll(); openWorkout();
 }
 function startEmpty() {
@@ -2704,7 +2704,7 @@ function vBody() {
   return meCard() + photosCard() + stats + wGoalCard(ws) + (nut ? `<div class="row" style="margin-bottom:12px;align-items:stretch">${nut}</div>` : '') + `
     <select id="bodySel">${opts.map(([k, l]) => `<option value="${k}" ${k === bodyMetric ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
     <div class="card" style="margin-top:12px">${pts.length ? `<canvas id="chart"></canvas>${NUTRI.some(x => x[0] === bodyMetric) ? '' : predictHtml(pts.map(p => ({d: p.d + 'T12:00', v: +p.v})), bodyMetric === 'w' ? 'body' : 'cm')}` : '<div class="empty">Aucune donnée pour cette mesure.</div>'}</div>
-    <div class="card"><h3>Nouvelle mesure</h3>
+    <details class="card" id="bodyNew"><summary style="cursor:pointer;font-weight:800;font-size:16px">＋ Nouvelle mesure</summary>
       <label>Date</label><input type="date" id="bd" value="${today}">
       <label>Poids (${U()})</label><input id="bw" inputmode="decimal" placeholder="${lastEntry && lastEntry.w != null ? esc(lastEntry.w) : ''}">
       <p class="muted small" style="margin:10px 0 0">Mensurations (${MU()}), facultatif :</p>
@@ -2712,7 +2712,7 @@ function vBody() {
       <p class="muted small" style="margin:12px 0 0">Nutrition et activité du jour, facultatif :</p>
       <div class="grid2">${NUTRI.map(([k, l, u]) => `<div><label>${k === 'steps' ? l : `${l} (${u})`}</label><input id="bn_${k}" inputmode="numeric"></div>`).join('')}</div>
       <div class="gap"></div><button class="btn primary block" data-act="body-save">Enregistrer</button>
-    </div>
+    </details>
     ${S.body.length ? `<div class="card"><h3>Historique</h3><ul class="exlist">${S.body.slice().sort((a, b) => b.d.localeCompare(a.d)).slice(0, 30).map(e => `<li><span>${new Date(e.d + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'short', year: 'numeric'})}</span><span class="row"><span class="tag" style="white-space:normal;text-align:right">${[e.w != null ? e.w + ' ' + U() : '', ...MEAS.filter(([k]) => e.m && e.m[k] != null).map(([k, l]) => `${l.toLowerCase()} ${e.m[k]}`), ...NUTRI.filter(([k]) => e.n && e.n[k] != null).map(([k, l, u]) => `${Math.round(e.n[k]).toLocaleString(LOC())} ${u}`)].filter(Boolean).join(' · ')}</span><button class="btn danger sm" data-act="body-del" data-id="${e.id}">✕</button></span></li>`).join('')}</ul></div>` : ''}`;
 }
 /* Objectif de poids : une cible, une barre de progression et une date estimée d'après la tendance. */
@@ -2751,7 +2751,7 @@ function saveBody() {
   if (w != null) e.w = w;
   e.m = Object.assign(e.m || {}, m);
   if (Object.keys(nn).length) e.n = Object.assign(e.n || {}, nn);
-  save(); render(); toast('✅ Mesure enregistrée');
+  save(); render(); scrollTo({top: 0}); toast('✅ Mesure enregistrée');
 }
 
 /* ----- Réglages ----- */
@@ -4313,7 +4313,6 @@ function vProfile() {
     : pfMetric === 'vol' ? `<b>${Math.round(last.vol).toLocaleString(LOC())} ${U()}</b> <span class="muted">cette semaine</span>` : `<b>${last.reps} réps</b> <span class="muted">cette semaine</span>`;
   const n0 = new Date();
   const month = S.history.filter(h => { const d = new Date(h.date); return d.getMonth() === n0.getMonth() && d.getFullYear() === n0.getFullYear(); }).length;
-  const recent = S.history.slice().reverse().slice(0, 3);
   return `<div class="row pfhead${bannerCls(myCos('banner'))}" style="gap:14px;margin-bottom:16px"><button class="avatar${S.history.length ? rkFrame(GAME() ? hunter().rk : '', myFrame()) : ''}" data-act="avatar" aria-label="${T('Photo de profil', 'Profile photo')}">${S.settings.avatar ? `<img src="${S.settings.avatar}" alt="">` : esc((nm.trim()[0] || '?').toUpperCase())}<span class="cam">📷</span></button>
       <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0${mySet() ? ';text-shadow:0 0 12px ' + mySet().c : ''}">${esc(nm)} ${emblemOf(myCos('emblem'))}</h2>${mySet() ? `<div class="small" style="color:${mySet().c};font-weight:800">${T('Ensemble', 'Set')} ${esc(T(mySet().n[0], mySet().n[1]))}</div>` : ''}${(() => { if (!S.history.length || !GAME()) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${S.pcl && S.pcl.k ? esc(pclName(S.pcl.k)) : esc(hu.title)}</button><div class="small pftitle" style="--rc:${hu.col}">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div>`; })()}
       <div class="pfstats"><div><span class="muted small">${T('Séances', 'Workouts')}</span><br><b>${S.history.length}</b></div><div><span class="muted small">${T('Série', 'Streak')}</span><br><b>🔥 ${streakWeeks()} sem.</b></div><div><span class="muted small">Ce mois</span><br><b>${month}</b></div></div></div></div>
@@ -4329,9 +4328,7 @@ function vProfile() {
       <button class="btn tile" data-act="go" data-v="calendar">${IC('calendar', '📅')} ${T('Calendrier', 'Calendar')}</button>
       <button class="btn tile" data-act="go" data-v="medals">${IC('medal', '🏅')} ${T('Médailles', 'Medals')}</button>
       <button class="btn tile" data-act="go" data-v="recov">${IC('pulse', '💪')} ${T('Récupération', 'Recovery')}</button>
-    </div>
-    <p class="muted" style="margin:20px 0 8px">${T('Séances récentes', 'Recent workouts')}</p>
-    ${recent.length ? recent.map(h => histCard(h)).join('') + `<button class="btn block" data-act="go" data-v="history">${T(`Tout l'historique (${S.history.length})`, `Full history (${S.history.length})`)}</button>` : `<div class="empty">${T('Aucune séance encore.', 'No workouts yet.')}<button class="btn primary sm" data-tab="train" style="margin-top:12px">${T('Démarrer une séance', 'Start a workout')}</button></div><button class="btn block" data-act="hist-new">＋ ${T('Ajouter une séance oubliée', 'Add a forgotten workout')}</button>`}`;
+    </div>`;
 }
 let histLim = 40;
 function vHistAll() {
@@ -5234,6 +5231,7 @@ function pclSuggest() {
 const pclCan = () => !S.pcl || !S.pcl.k || !S.pcl.lc || +new Date(S.pcl.lc) < +weekStart(new Date());
 function pclSet(k) {
   if (!PCL[k]) return; const p = S.pcl, now = Date.now(), tot = (p && p.tot) || {};
+  if (p && p.k && p.k !== k && !confirm(T(`Passer à « ${pclName(k)} » ? Tu ne pourras pas la changer pendant 7 jours.`, `Switch to “${pclName(k)}”? You won't be able to change it for 7 days.`))) return;
   if (p && p.k) tot[p.k] = (tot[p.k] || 0) + now - +new Date(p.since);
   S.pcl = {k, since: new Date(now).toISOString(), lc: p && p.k ? new Date(now).toISOString() : '', tot}; save();
 }
@@ -6404,9 +6402,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.83.5'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.84.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.84.0', d: '2026-11-21', fr: ['Corrections : « Nouvelle mesure » est repliable et se referme après l\'ajout ; ajouter un warm-up ne compte plus comme une modification de la routine ; le doublon « Séances récentes » du profil est retiré ; « Mes infos » n\'apparaît plus dans Cardio quand ton profil est rempli ; changer de classe demande une confirmation.'], en: ['Fixes: “New measurement” is collapsible and closes after saving; adding a warm-up no longer counts as a routine change; duplicate recent workouts removed from profile; “My info” hidden in Cardio when profile is complete; class change asks for confirmation.']},
   {v: '9.83.5', d: '2026-11-18', fr: ['Boss : les restes de fond blanc autour de la Liche des marais et de la Sorcière de jade sont retirés.'], en: ['Bosses: leftover white background removed around the Swamp Lich and the Jade Witch.']},
   {v: '9.83.4', d: '2026-11-18', fr: ['Ensembles : les récompenses secrètes (Grand Maître…) restent cachées (« ??? ») tant que tu ne les as pas débloquées.'], en: ['Sets: secret rewards stay hidden (“???”) until unlocked.']},
   {v: '9.83.3', d: '2026-11-18', fr: ['Armurerie : le Sceau du Grand Maître a son écusson peint.'], en: ['Armory: the Grandmaster Seal now has its painted crest.']},
@@ -7136,7 +7135,7 @@ function routineChanges(a, r) {
   const g1 = grp(RE, y => norm(y.name)), g2 = grp(WE, x => key(x));
   const ssDiff = [...new Set([...Object.keys(g1), ...Object.keys(g2)])].some(k => (g1[k] || '') !== (g2[k] || ''));
   if (ssDiff) ch.push(T('Supersets', 'Supersets'));
-  WE.forEach(x => { if (x.orig && x.n0 != null && x.sets.length !== x.n0) ch.push(T(`${x.name} : ${x.n0} → ${x.sets.length} séries`, `${x.name}: ${x.n0} → ${x.sets.length} sets`)); });
+  WE.forEach(x => { const a0 = x.n0w != null ? x.n0w : x.n0, a1 = x.n0w != null ? x.sets.filter(s => s.t !== 'W').length : x.sets.length; if (x.orig && a0 != null && a1 !== a0) ch.push(T(`${x.name} : ${a0} → ${a1} séries`, `${x.name}: ${a0} → ${a1} sets`)); });
   WE.forEach(x => { const y = x.orig && RE.find(z => norm(z.name) === norm(x.orig)); if (y && (+x.rest || 0) !== (+y.rest || 0)) ch.push(T(`Repos de ${x.name}`, `${x.name} rest`)); });
   return [...new Set(ch)];
 }
@@ -7425,7 +7424,8 @@ function cvWeek() {
   return min ? `<div class="card"><span class="muted small" style="display:inline-flex;align-items:center;gap:5px">${IC('calendar', '📅', 15)} ${T('Cardio des 7 derniers jours', 'Cardio, last 7 days')}</span><div class="row" style="justify-content:space-around;margin-top:8px"><div class="cvsm"><b>${Math.round(min)}</b><small>min</small></div><div class="cvsm"><b>${Math.round(kc)}</b><small>kcal</small></div><div class="cvsm"><b>${(Math.round(st / 10) * 10).toLocaleString(LOC())}</b><small>${T('pas éq.', 'eq. steps')}</small></div></div></div>` : '';
 }
 function vCardio() {
-  return `${meLine()}
+  const _m = ME();
+  return `${_m.h && _m.age && _m.sex ? '' : meLine()}
     <div class="card"><h3 style="margin:0 0 10px;display:flex;align-items:center;gap:8px">${IC('heartp', '👣', 20)} ${T('Convertisseur', 'Converter')}</h3>
       <div class="cvkinds">${CV_KINDS.map(([k, emo, n, ik]) => `<button class="cvk ${cv.k === k ? 'on' : ''}" data-act="cv-kind" data-k="${k}"><span>${IC(ik, emo, 26)}</span>${T(n[0], n[1])}</button>`).join('')}</div>
       <div id="cvin">${cvInputs()}</div>
