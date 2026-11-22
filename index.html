@@ -6813,9 +6813,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.110.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.111.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.111.0', d: '2026-11-22', fr: ['Cardio sur tapis : après la séance, Runelift relit tes pas dans Health Connect et corrige la distance si la montre a décroché en cours de route. Nouvelle autorisation « pas » dans Réglages → Health Connect.', 'Montre : la permission « Activité physique » est redemandée à chaque cardio tant qu\'elle manque, et les deux compteurs de pas de la montre tournent en même temps (le plus fiable gagne).'], en: ['Treadmill cardio: after the workout, Runelift reads your steps from Health Connect and fixes the distance if the watch dropped out. New “steps” permission in Settings → Health Connect.', 'Watch: the “Physical activity” permission is asked again at each cardio while it is missing, and both step counters of the watch run at the same time (the most reliable wins).']},
   {v: '9.110.0', d: '2026-11-22', fr: ['Jusqu\'à 3 photos par séance (écran de fin et historique). Touche une photo pour l\'agrandir, ou le ✕ pour la retirer.', 'Fin de séance : si l\'appli se recharge pendant que l\'appareil photo est ouvert, l\'écran revient avec ton coffre à ouvrir. Une mise à jour n\'est plus installée tant qu\'une fenêtre est ouverte.'], en: ['Up to 3 photos per workout (end screen and history). Tap a photo to enlarge it, or the ✕ to remove it.', 'End of workout: if the app reloads while the camera is open, the screen comes back with your chest to open. An update is no longer installed while a window is open.']},
   {v: '9.109.1', d: '2026-11-22', fr: ['Quête « Bats ta dernière fois » : l\'exercice choisi reste le même jusqu\'à la vérification du lendemain.'], en: ['“Beat last time” quest: the chosen exercise stays the same until it is checked the next day.']},
   {v: '9.109.0', d: '2026-11-22', fr: ['Meilleures quêtes du jour : fini « Entraîne-toi X minutes » et les séries à compter. Les quêtes demandent maintenant un vrai effort : battre ta dernière fois sur un exercice (en priorité un exercice en plateau), soulever plus que ta dernière séance, battre un record ou faire des étirements.'], en: ['Better daily quests: no more “Train for X minutes” or sets to count. Quests now ask for real effort: beat last time on an exercise (plateaued ones first), lift more than your last workout, break a record or do a stretching session.']},
@@ -7982,7 +7983,8 @@ function vCLive() {
 }
 function clSave(min, km, inc) {
   const a = S.active; if (!a || !a.cl) return;
-  a.exercises[0].sets = [{w: '', r: min, done: true, ...(km > 0 ? {km} : {}), ...(inc > 0 ? {inc} : {})}]; delete a.cl; clStop(); save();
+  const c = a.cl, auto = clStepsOn(c) && (!(km > 0) || Math.abs(km - Math.round(clKm() * 100) / 100) < .011); // distance tirée des pas de la montre, ou vide
+  a.exercises[0].sets = [{w: '', r: min, done: true, ...(km > 0 ? {km} : {}), ...(inc > 0 ? {inc} : {}), ...(auto ? {ka: 1, k: c.k, steps: Math.round(c.steps || 0)} : {})}]; delete a.cl; clStop(); save();
   fakeAct('finish', {});
 }
 function clFinish(fromWatch) {
@@ -8439,6 +8441,24 @@ function wearBody() {
 }
 var hrTried = {};
 function hcHeart() { return hcOn() && !!(hcSt && (hcSt.granted || []).includes('heart')); }
+/* Pas du cardio sur tapis relus dans Health Connect après coup : si la montre a décroché pendant la séance, la distance est corrigée */
+function hcSteps() { return hcOn() && !!(hcSt && (hcSt.granted || []).includes('steps')); }
+const stTried = {};
+async function hcStepsFill() {
+  if (!hcOn()) return 0; if (!hcSt) await hcStatus(); if (!hcSteps()) return 0;
+  const now = Date.now(); let n = 0;
+  for (const h of S.history.slice(-30)) {
+    const s = h.exercises.length === 1 && h.exercises[0].sets.length === 1 ? h.exercises[0].sets[0] : null; if (!s || !s.ka) continue;
+    const a = new Date(h.date).getTime(), b = a + Math.max(1, +h.duration || +s.r || 1) * 60000;
+    if (now - b < 2 * 60000 || now - b > 3 * 864e5 || (stTried[h.id] && now - stTried[h.id] < 15 * 60000)) continue;
+    stTried[h.id] = now;
+    let r; try { r = await HC().readSteps({start: new Date(a).toISOString(), end: new Date(b).toISOString()}); } catch (e) { break; }
+    const st = Math.round(+(r && r.steps) || 0); if (st < 30 || st <= (+s.steps || 0) + 20) continue;
+    const k = s.k || CARDIO_KIND(h.exercises[0].name), m = st * (k === 'run' ? strideR() : strideW());
+    s.steps = st; s.km = Math.round(m / 1000 / (kmU() === 'mi' ? 1.609 : 1) * 100) / 100; n++;
+  }
+  if (n) { RC = {}; DV++; save(); } return n;
+}
 async function hcHrFill() {
   if (!hcOn()) return 0; if (!hcSt) await hcStatus(); if (!hcHeart()) return 0;
   const now = Date.now(); let n = 0;
@@ -8467,7 +8487,7 @@ function hrBlock(h) {
 function hcBody() {
   const st = hcSt; if (!st) { if (!hcBody.wait) { hcBody.wait = 1; hcStatus().then(() => { hcBody.wait = 0; if (hcSt) render(); }); } return `<p class="muted small">${T('Vérification de Health Connect…', 'Checking Health Connect…')}</p>`; }
   if (!st.available) return `<p class="muted small" style="margin:4px 0 10px">${st.reason === 'update' ? T('Health Connect doit être mis à jour pour fonctionner avec Runelift.', 'Health Connect needs an update to work with Runelift.') : T('Health Connect n\'est pas installé sur ce téléphone. Installe « Health Connect » depuis le Play Store, puis reviens ici.', 'Health Connect isn\'t installed on this phone. Install "Health Connect" from the Play Store, then come back here.')}</p><button class="btn block" data-act="hc-settings">${T('Ouvrir Health Connect', 'Open Health Connect')}</button>`;
-  const g = st.granted || [], miss = [['workout', T('séances', 'workouts')], ['calories', T('calories', 'calories')], ['weight', T('poids', 'weight')], ['heart', T('fréquence cardiaque', 'heart rate')], ['heartw', T('écriture du pouls', 'writing heart rate')], ['tcal', T('calories totales', 'total calories')]].filter(([k]) => !g.includes(k)).map(x => x[1]);
+  const g = st.granted || [], miss = [['workout', T('séances', 'workouts')], ['calories', T('calories', 'calories')], ['weight', T('poids', 'weight')], ['heart', T('fréquence cardiaque', 'heart rate')], ['steps', T('pas (cardio sur tapis)', 'steps (treadmill cardio)')], ['heartw', T('écriture du pouls', 'writing heart rate')], ['tcal', T('calories totales', 'total calories')]].filter(([k]) => !g.includes(k) && (k !== 'steps' || +st.ver >= 4)).map(x => x[1]); // « pas » : seulement avec l'APK qui sait les lire
   return `<p class="muted small" style="margin:4px 0 10px">${T('Chaque séance terminée est envoyée à Health Connect (heure, durée, nom et calories estimées). Samsung Health et ta Galaxy Watch peuvent la voir. Ton poids noté dans Samsung Health ou une balance connectée arrive dans tes Mesures. La fréquence cardiaque mesurée par ta montre pendant la séance s\'affiche dans ton historique (moyenne, max et graphique). Pour une mesure précise, lance aussi un entraînement « Musculation » sur la montre.', 'Each finished workout is sent to Health Connect (time, duration, name and estimated calories). Samsung Health and your Galaxy Watch can see it. Your weight logged in Samsung Health or a smart scale shows up in your Measures. The heart rate your watch measures during the workout shows in your history (average, max and chart). For an accurate reading, also start a "Weight training" workout on the watch.')}</p>
     ${hcOn() ? `${miss.length ? `<p class="small" style="color:var(--warn,#e0b341);margin:0 0 8px">${T('Accès manquant : ', 'Missing access: ')}${miss.join(', ')}</p><button class="btn sm block" data-act="hc-on" style="margin-bottom:8px">${T('Autoriser les accès manquants', 'Allow missing access')}</button>` : ''}
       <div class="grid2"><button class="btn sm" data-act="hc-sync">${T('Envoyer les 30 derniers jours', 'Send the last 30 days')}</button><button class="btn sm" data-act="hc-settings">${T('Gérer les accès', 'Manage access')}</button></div>
@@ -12397,8 +12417,9 @@ function runResume() {
 setTimeout(runResume, 350);
 setTimeout(wearInit, 600);
 setTimeout(phoneInit, 700);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && hcOn()) hcStepsFill().then(n => { if (n) { render(); toast(T('👣 Distance du tapis corrigée avec les pas de ta montre', '👣 Treadmill distance corrected with your watch steps')); } }); });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && hcOn()) hcHrFill().then(n => { if (n) { render(); toast(T('❤️ Fréquence cardiaque ajoutée à ta séance', '❤️ Heart rate added to your workout')); } }); });
-setTimeout(() => { if (hcOn()) hcHrFill().then(n => { if (n) render(); }); if (hcOn() && Date.now() - (+S.settings.hcW || 0) > 6 * 3600e3) hcWeights().then(n => { if (n) { render(); toast(T(`❤️ ${n} poids reçu${n > 1 ? 's' : ''} de Health Connect`, `❤️ ${n} weight${n > 1 ? 's' : ''} received from Health Connect`)); } }); }, 3000);
+setTimeout(() => { if (hcOn()) hcHrFill().then(n => { if (n) render(); }).then(() => hcStepsFill()).then(n => { if (n) render(); }); if (hcOn() && Date.now() - (+S.settings.hcW || 0) > 6 * 3600e3) hcWeights().then(n => { if (n) { render(); toast(T(`❤️ ${n} poids reçu${n > 1 ? 's' : ''} de Health Connect`, `❤️ ${n} weight${n > 1 ? 's' : ''} received from Health Connect`)); } }); }, 3000);
 window.addEventListener('hashchange', checkImport);
 setTimeout(checkFriendLink, 600); window.addEventListener('hashchange', checkFriendLink);
 setTimeout(() => frLoad(), 2500);
