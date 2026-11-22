@@ -22,11 +22,11 @@ class RLBgWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
 
     private val ctx get() = applicationContext
 
-    private fun http(url: String, method: String = "GET", body: String? = null, token: String? = null): Pair<Int, String> {
+    private fun http(url: String, method: String = "GET", body: String? = null, token: String? = null, json: Boolean = false): Pair<Int, String> {
         val c = URL(url).openConnection() as HttpURLConnection
         c.requestMethod = method; c.connectTimeout = 10_000; c.readTimeout = 15_000
         if (token != null) c.setRequestProperty("Authorization", "Bearer $token")
-        if (body != null) { c.doOutput = true; c.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); c.outputStream.use { it.write(body.toByteArray()) } }
+        if (body != null) { c.doOutput = true; c.setRequestProperty("Content-Type", if (json) "application/json" else "application/x-www-form-urlencoded"); c.outputStream.use { it.write(body.toByteArray()) } }
         val code = c.responseCode
         val txt = (if (code in 200..299) c.inputStream else c.errorStream)?.bufferedReader()?.use { it.readText() } ?: ""
         c.disconnect()
@@ -40,6 +40,9 @@ class RLBgWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
         val p = RLLivePlugin.prefs(ctx)
         val c = cfg(ctx) ?: return Result.success()
         try {
+            // Économie de lectures Firestore : rien la nuit (minuit à 7 h), les fiches des amis au plus une fois par heure
+            val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+            if (hour < 7 && p.getBoolean("bgInit", false)) return Result.success()
             val key = c.optString("key"); val pid = c.optString("pid"); val uid = c.optString("uid")
             var rt = p.getString("bgRt", null) ?: c.optString("rt")
             if (key.isEmpty() || pid.isEmpty() || uid.isEmpty() || rt.isNullOrEmpty()) return Result.success()
@@ -55,9 +58,17 @@ class RLBgWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
             // 1) Messages reçus
             val seen = try { JSONArray(p.getString("bgSeen", "[]")) } catch (e: Exception) { JSONArray() }
             val seenSet = HashSet<String>(); for (i in 0 until seen.length()) seenSet.add(seen.optString(i))
-            val (ic, itxt) = http("$base/inbox/$uid/m?pageSize=30", token = tok)
+            // Seulement les messages plus récents que le dernier vu : un message déjà lu n'est pas relu (et pas refacturé)
+            val inT = p.getString("bgInT", "") ?: ""
+            val q = JSONObject().put("structuredQuery", JSONObject().put("from", JSONArray().put(JSONObject().put("collectionId", "m")))
+                .put("where", JSONObject().put("fieldFilter", JSONObject().put("field", JSONObject().put("fieldPath", "t")).put("op", "GREATER_THAN").put("value", JSONObject().put("stringValue", inT))))
+                .put("limit", 30))
+            val (ic, itxt) = http("$base/inbox/$uid:runQuery", "POST", q.toString(), tok, json = true)
             if (ic == 200) {
-                val docs = JSONObject(itxt).optJSONArray("documents") ?: JSONArray()
+                val arr = try { JSONArray(itxt) } catch (e: Exception) { JSONArray() }
+                val docs = JSONArray(); var maxT = inT
+                for (i in 0 until arr.length()) { val d = arr.optJSONObject(i)?.optJSONObject("document") ?: continue; docs.put(d); val t = str(d.optJSONObject("fields"), "t"); if (t > maxT) maxT = t }
+                if (maxT != inT) p.edit().putString("bgInT", maxT).apply()
                 for (i in 0 until docs.length()) {
                     val d = docs.optJSONObject(i) ?: continue; val id = d.optString("name").substringAfterLast('/')
                     if (id.isEmpty() || seenSet.contains(id)) continue
@@ -89,9 +100,11 @@ class RLBgWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
                 val t = num(rh, "t"); if (raWk.isNotEmpty() && str(rh, "wk") == raWk && t > hitT) { hitT = t; hitN = str(f, "name").ifEmpty { nm } }
             }
             val frIds = HashSet<String>()
-            for (i in 0 until minOf(friends.length(), 40)) {
+            val frDue = System.currentTimeMillis() - p.getLong("bgFrT", 0L) > 55 * 60_000L || !p.getBoolean("bgInit", false)
+            if (frDue) p.edit().putLong("bgFrT", System.currentTimeMillis()).apply()
+            for (i in 0 until friends.length()) friends.optJSONArray(i)?.optString(0)?.takeIf { it.isNotEmpty() }?.let { frIds.add(it) }
+            for (i in 0 until if (frDue) minOf(friends.length(), 40) else 0) {
                 val a = friends.optJSONArray(i) ?: continue; val fu = a.optString(0); if (fu.isEmpty()) continue
-                frIds.add(fu)
                 val (fc, ft) = http("$base/users/$fu?mask.fieldPaths=last&mask.fieldPaths=name&mask.fieldPaths=rh", token = tok)
                 if (fc != 200) continue
                 val f = JSONObject(ft).optJSONObject("fields") ?: continue
