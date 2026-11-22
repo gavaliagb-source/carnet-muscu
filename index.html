@@ -6678,9 +6678,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.94.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.94.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.94.2', d: '2026-11-22', fr: ['Raid : attaquer ne recharge plus la page. Seule la carte du boss se met à jour, tu restes au même endroit.'], en: ['Raid: attacking no longer reloads the page. Only the boss card updates and you stay where you are.']},
   {v: '9.94.1', d: '2026-11-22', fr: ['Correction : les boutons d\'attaque du raid ne faisaient rien.'], en: ['Fix: raid attack buttons did nothing.']},
   {v: '9.94.0', d: '2026-11-22', fr: ['Nouveau raid de guilde : tes séances te donnent de l\'énergie (1 point par série, 1 par 5 min de cardio, 1 par 3 min d\'étirements) et tu choisis toi-même tes attaques contre le boss.', 'Chaque classe a ses 3 attaques : Guerrier (Frappe, Coup puissant, Cri de guerre), Rôdeur (Flèche, Pluie de flèches, Piège), Moine (Paume de feu, Combo, Méditation), Soigneur (Lumière, Bénédiction, Purification). Les classes hybrides ont une attaque de chacune de leurs classes plus une attaque spéciale.', 'Le boss bloque parfois une attaque (plus souvent quand il est enragé), et certaines attaques font un coup critique. On voit le boss se faire frapper.', 'Journal du combat, et un bonus de XP pour celui qui donne le coup de grâce.'], en: ['New guild raid: your workouts give you energy (1 point per set, 1 per 5 min of cardio, 1 per 3 min of stretching) and you choose your own attacks against the boss.', 'Each class has 3 attacks; hybrid classes get one from each of their classes plus a special attack.', 'The boss sometimes blocks an attack (more often when enraged), and some attacks land critical hits.', 'Battle log, and bonus XP for the finishing blow.']},
   {v: '9.93.1', d: '2026-11-22', fr: ['Les 6 classes hybrides ont enfin leur personnage, en version homme et femme : Templier, Paladin, Spartiate, Ombre, Druide et Sage.'], en: ['The 6 hybrid classes now have their own character, in male and female versions: Templar, Paladin, Spartan, Shadow, Druid and Sage.']},
@@ -9076,7 +9077,7 @@ function raAttack(k) {
   const wk = wkKey(new Date()), st = raidState(wk), A = RA_ATK[k], W = raW(wk), today = dkey(new Date());
   if (!A || !raList(clsCur()).includes(k) || st.rows.length < 2) return;
   if (st.done) { toast(T('Le boss est déjà vaincu cette semaine.', 'The boss is already defeated this week.')); return; }
-  if (A[4] === 'med') { if (W.med === today) { toast(T('Déjà médité aujourd\'hui. Reviens demain.', 'Already meditated today. Come back tomorrow.')); return; } W.med = today; W.log.push({t: Date.now(), k, d: 0, c: -A[5]}); save(); render(); toast(T(`Méditation : +${A[5]} points d'énergie`, `Meditation: +${A[5]} energy points`)); raShare(); return; }
+  if (A[4] === 'med') { if (W.med === today) { toast(T('Déjà médité aujourd\'hui. Reviens demain.', 'Already meditated today. Come back tomorrow.')); return; } W.med = today; W.log.push({t: Date.now(), k, d: 0, c: -A[5]}); save(); raRefresh(); toast(T(`Méditation : +${A[5]} points d'énergie`, `Meditation: +${A[5]} energy points`)); raShare(); return; }
   if (raAvail(wk, st) < A[2]) { toast(T('Pas assez d\'énergie : entraîne-toi pour en gagner.', 'Not enough energy: train to earn more.')); return; }
   let tgt = '';
   if (A[4] === 'gift') { const o = st.rows.filter(x => !x.me && x.id && x.ra).sort((a, b) => a.r - b.r)[0]; if (!o) { toast(T('Personne à bénir : tes coéquipiers doivent avoir la dernière version.', 'Nobody to bless: your teammates need the latest version.')); return; } tgt = o; }
@@ -9090,7 +9091,7 @@ function raAttack(k) {
   const killNow = st.act > 1 && st.tot < st.goal && st.tot + Math.min(d, RAID_PER * 2) >= st.goal && !st.killer;
   if (killNow) W.kill = 1;
   save(); try { haptic(blk ? [20] : crit ? [30, 40, 60] : [30]); } catch (e) {}
-  render();
+  raRefresh();
   const el = document.querySelector('#app .rdart');
   if (el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); const s = document.createElement('span'); s.className = 'bdmg' + (blk ? ' blk' : crit ? ' crit' : ''); s.textContent = blk ? T(`Bloqué −${d}`, `Blocked −${d}`) : `${crit ? T('Critique ', 'Critical ') : ''}−${d}`; el.appendChild(s); setTimeout(() => s.remove(), 1300); }
   if (tgt) toast(T(`${tgt.n} reçoit ${A[5]} points d'énergie`, `${tgt.n} gets ${A[5]} energy points`));
@@ -9100,8 +9101,9 @@ function raAttack(k) {
   if (killNow) { const nm = RAID_BOSS[raBossIdx(wk)]; giveXp('rkill', wk, RA_KILL, T(`Coup de grâce sur ${nm[0]}! +${RA_KILL} XP`, `Finishing blow on ${nm[1]}! +${RA_KILL} XP`)); }
   raidCheck(); raShare();
 }
+function raRefresh() { const box = document.querySelector('#app .raidbox'); if (!box) { render(); return; } box.innerHTML = raidCard(); try { snapLater(); } catch (e) {} } // seule la carte du raid est redessinée : pas de rechargement de la page
 let raShT = 0;
-function raShare() { clearTimeout(raShT); raShT = setTimeout(() => { try { if (S.guild && typeof gldSync === 'function') gldSync(true); } catch (e) {} try { if (FRS().list.length && typeof frPublish === 'function') frPublish(true); } catch (e) {} }, 1500); }
+function raShare() { clearTimeout(raShT); raShT = setTimeout(() => { try { if (S.guild && typeof gldSync === 'function') { window.raSoft = 1; gldSync(true); } } catch (e) {} try { if (FRS().list.length && typeof frPublish === 'function') frPublish(true); } catch (e) {} }, 1500); }
 function raidCheck() {
   if (!GAME() || (!FRS().list.length && !S.guild)) return;
   const wk = wkKey(new Date()), pw = wkKey(new Date(+new Date(wk + 'T12:00:00') - 3 * 864e5));
@@ -9685,7 +9687,7 @@ async function gldSync(force) {
     g.name = String(d.name || g.name || '').slice(0, 30); g.emb = d.emb || '⚔️'; g.bn = d.bn || ''; g.owner = d.owner; g.me = u.uid;
     g.mem = ms.docs.map(x => { const m = x.data() || {}; return {uid: x.id, n: String(m.n || '?').slice(0, 24), l: +m.l || 1, r: RKC[m.r] ? m.r : 'E', f: String(m.f || '').slice(0, 20), c: Math.max(0, (+m.xp || 0) - (+m.x0 || 0)), wk: m.wkk === wkk ? Math.max(0, +m.wk || 0) : 0, rp: Math.max(0, +m.rp || 0), rk: String(m.rk || ''), qp: Math.max(0, +m.qp || 0), qk: String(m.qk || ''), cl: PCL[m.cl] ? m.cl : '', lk: m.lk === 'f' ? 'f' : 'm', cv: Math.max(0, Math.min(PCL_LV.length - 1, +m.cv || 0)), ra: m.ra && typeof m.ra === 'object' ? {...m.ra, wk: String(m.ra.wk || '')} : null}; }).filter(m => !(d.ban || []).includes(m.uid));
     g.xpRaw = g.mem.reduce((a, m) => a + m.c, 0); g.xp = Math.round(g.xpRaw * gldScale(g.mem.length)); g.lvl = gldLvl(g.xp); S.gpeak = Math.max(+S.gpeak || 0, g.lvl); g.t = Date.now(); g.err = '';
-    save(); RC = {}; DV++; try { raidCheck(); } catch (e) {} if (cur().v === 'guild' && !modals.length) render();
+    save(); RC = {}; DV++; try { raidCheck(); } catch (e) {} if (cur().v === 'guild' && !modals.length) { if (window.raSoft && document.querySelector('#app .raidbox')) raRefresh(); else render(); } window.raSoft = 0;
   } catch (e) { if (S.guild) { S.guild.err = String(e && e.message || e).slice(0, 140); saveLocal(); } } finally { gldBusy = 0; }
 }
 async function gldCreate(name) {
@@ -9828,7 +9830,7 @@ function vGuild() {
   const gS = S.guild, gSub = gS ? `${esc(gS.name || '')} · ${T('niv.', 'lv.')} ${gS.lvl || 1}` : T('Crée ou rejoins une guilde', 'Create or join a guild');
   const bWon = new Set(Object.keys(S.bossLog || {}).map(mk => (+mk.slice(0, 4) * 12 + +mk.slice(5, 7) - 1) % BOSSES.length)).size;
   const GSECS = {
-    myguild: () => gSec('myguild', '🛡️', T('Ma guilde', 'My guild'), (fr || S.guild) && raidSub !== T('Avec tes amis', 'With your friends') && raidSub !== T('Avec ta guilde', 'With your guild') ? `${gSub} · ${raidSub}` : gSub, () => gldBody() + (fr || S.guild ? `<div class="gsep"></div><div class="sysh" style="margin:14px 0 8px">[ ${T('RAID DE GUILDE', 'GUILD RAID')} ]</div>${raidCard()}` : '')),
+    myguild: () => gSec('myguild', '🛡️', T('Ma guilde', 'My guild'), (fr || S.guild) && raidSub !== T('Avec tes amis', 'With your friends') && raidSub !== T('Avec ta guilde', 'With your guild') ? `${gSub} · ${raidSub}` : gSub, () => gldBody() + (fr || S.guild ? `<div class="gsep"></div><div class="sysh" style="margin:14px 0 8px">[ ${T('RAID DE GUILDE', 'GUILD RAID')} ]</div><div class="raidbox">${raidCard()}</div>` : '')),
     next: () => nextRewardsCard(),
     quests: () => gSec('quests', '🏆', T('Quêtes', 'Quests'), `${nd} / ${bo ? 3 : 2} ${T('accomplies aujourd\'hui', 'complete today')}`, () => questCard('inner')),
     season: () => gSec('season', '👑', T('Saison', 'Season'), seaSub, () => fr ? seasonCard() || `<p class="small muted" style="margin:0">${T('La saison commence dès qu\'un ami a l\'appli à jour.', 'The season starts as soon as a friend has the app up to date.')}</p>` : noFr),
