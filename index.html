@@ -6576,9 +6576,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.91.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.91.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.91.3', d: '2026-11-22', fr: ['Glisser entre les onglets marche partout, comme dans les autres applis, même depuis une case où tu es en train d\'écrire : le clavier se ferme quand l\'onglet change.'], en: ['Tab swipe works everywhere like other apps, even from a box you are typing in: the keyboard closes when the tab changes.']},
   {v: '9.91.2', d: '2026-11-22', fr: ['Glisser entre les onglets marche aussi en partant d\'une case à remplir (pas faits, inclinaison…), sauf si tu es en train d\'écrire dedans.'], en: ['Tab swipe also works starting on an input box, unless you are typing in it.']},
   {v: '9.91.1', d: '2026-11-21', fr: ['Glisser entre les onglets marche maintenant aussi sur les rangées de boutons qui ne défilent pas (ex. « exercices qui stagnent », plan de la semaine, types de cardio quand ils tiennent à l\'écran).', 'Correction : une date de séance invalide ne peut plus bloquer l\'affichage.'], en: ['Tab swipe now also works over button rows that don\'t scroll (e.g. stalled exercises, week plan).', 'Fix: an invalid session date can no longer break the display.']},
   {v: '9.91.0', d: '2026-11-21', fr: ['Glisser entre les onglets comme dans une vraie appli : l\'onglet voisin est préparé à l\'avance et suit ton doigt. Si tu relâches avant le milieu, la page revient en place.'], en: ['Swipe between tabs like a native app: the next tab is prepared ahead and follows your finger. Release before halfway and it snaps back.']},
@@ -10201,7 +10202,7 @@ document.addEventListener('touchstart', e => {
   if (swpAnim || modals.length || e.touches.length > 1 || S.settings.swipe === false) return;
   const t = e.target;
   // On bloque le glissement d'onglet seulement là où le doigt sert à autre chose : champs, graphiques, et rangées qui défilent vraiment de côté
-  if (!t.closest('#app, header') || t.closest('header button, textarea, select, input[type=range], input[type=date], input[type=time], input[type=checkbox], button.check, .chs, .armgrid, .agw, canvas, [data-noswipe]') || (t.tagName === 'INPUT' && t === document.activeElement) || hScrollAt(t)) return; // une case qu'on est en train de remplir garde le doigt
+  if (!t.closest('#app, header') || t.closest('header button, input[type=range], input[type=checkbox], button.check, .chs, .armgrid, .agw, canvas, [data-noswipe]') || (t.tagName === 'TEXTAREA' && t === document.activeElement) || hScrollAt(t)) return; // comme les autres applis : on peut glisser partout, même depuis une case en cours d'écriture
   const p = e.touches[0]; if (isIOS && (p.clientX < 24 || p.clientX > innerWidth - 24)) return;
   swp = {x: p.clientX, y: p.clientY, t: Date.now(), lock: null, dx: 0, sy: scrollY};
 }, {passive: true});
@@ -10240,7 +10241,7 @@ document.addEventListener('touchend', () => {
     let fin = false;
     const end = () => {
       if (fin) return; fin = true;
-      if (go) { try { navAnim = false; animNext = false; setRoot(dest); render(); window.scrollTo(0, 0); } catch (e) {} }
+      if (go) { try { const f = document.activeElement; if (f && /^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName)) f.blur(); navAnim = false; animNext = false; setRoot(dest); render(); window.scrollTo(0, 0); } catch (e) {} }
       ta.cancel(); tg.cancel(); g.el.classList.remove('on'); g.el.style.transform = ''; if (ghost === g) ghost = null;
       swpAnim = false; a.style.willChange = ''; a.style.transition = ''; document.documentElement.classList.remove('moving'); swpReset();
       if (go) { delete GH[dest]; g.el.remove(); snapLater(); }
@@ -10258,7 +10259,7 @@ document.addEventListener('touchend', () => {
     const out = a.animate([{transform: from, opacity: 1}, {transform: `translateX(${dir * 30}%)`, opacity: .35}], {duration: 150, easing: 'cubic-bezier(.3,0,.8,.6)', fill: 'forwards'});
     // On laisse l'ancienne page glisser ~90 ms avant de construire la nouvelle : pas de coupure brusque ni d'écran noir.
     setTimeout(() => {
-      try { if (dest === 'back') back(); else { setRoot(dest); render(); window.scrollTo(0, 0); } } catch (e) {}
+      try { const f = document.activeElement; if (f && /^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName)) f.blur(); if (dest === 'back') back(); else { setRoot(dest); render(); window.scrollTo(0, 0); } } catch (e) {}
       out.cancel();
       const inn = a.animate([{transform: `translateX(${-dir * 22}%)`, opacity: .35}, {transform: 'none', opacity: 1}], {duration: 210, easing: 'cubic-bezier(.2,.8,.2,1)'});
       const done = () => { if (!swpAnim) return; swpAnim = false; a.style.willChange = ''; a.style.transition = ''; document.documentElement.classList.remove('moving'); swpReset(); };
