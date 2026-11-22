@@ -141,6 +141,57 @@ class RLLivePlugin : Plugin() {
 
     fun clearQueue() { prefs(context).edit().putString("q", "[]").apply() }
 
+    /* Partage d'un fichier (image du bilan, de la séance, sauvegarde) avec la fenêtre « Partager » d'Android.
+       {data: base64 ou data:URL, name, mime, title} */
+    @PluginMethod
+    fun shareFile(call: PluginCall) {
+        try {
+            val raw = call.getString("data") ?: return call.reject("no data")
+            val name = (call.getString("name") ?: "runelift.png").replace(Regex("[^A-Za-z0-9._-]"), "_")
+            val mime = call.getString("mime") ?: "image/png"
+            val bytes = android.util.Base64.decode(raw.substringAfter(","), android.util.Base64.DEFAULT)
+            val dir = java.io.File(context.cacheDir, "partage").apply { mkdirs(); listFiles()?.forEach { if (System.currentTimeMillis() - it.lastModified() > 3600_000) it.delete() } }
+            val f = java.io.File(dir, name); f.writeBytes(bytes)
+            val uri = androidx.core.content.FileProvider.getUriForFile(context, context.packageName + ".fileprovider", f)
+            val send = Intent(Intent.ACTION_SEND).apply { type = mime; putExtra(Intent.EXTRA_STREAM, uri); clipData = android.content.ClipData.newRawUri(name, uri); addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+            val ch = Intent.createChooser(send, call.getString("title") ?: "").apply { addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+            val act = activity
+            if (act != null) act.startActivity(ch) else context.startActivity(ch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            call.resolve()
+        } catch (e: Exception) { call.reject(e.message ?: "error") }
+    }
+
+    /* Enregistre une image dans la galerie (Images/Runelift), sans permission sur Android 10+. {data, name} */
+    @PluginMethod
+    fun saveImage(call: PluginCall) {
+        try {
+            val raw = call.getString("data") ?: return call.reject("no data")
+            val name = (call.getString("name") ?: "runelift.png").replace(Regex("[^A-Za-z0-9._-]"), "_")
+            val bytes = android.util.Base64.decode(raw.substringAfter(","), android.util.Base64.DEFAULT)
+            if (Build.VERSION.SDK_INT < 29) return call.reject("old")
+            val v = android.content.ContentValues().apply {
+                put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, name)
+                put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/png")
+                put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Runelift")
+            }
+            val uri = context.contentResolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, v) ?: return call.reject("insert")
+            context.contentResolver.openOutputStream(uri)?.use { it.write(bytes) }
+            call.resolve()
+        } catch (e: Exception) { call.reject(e.message ?: "error") }
+    }
+
+    /* Partage d'un texte (invitation, résumé) */
+    @PluginMethod
+    fun shareText(call: PluginCall) {
+        try {
+            val send = Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_TEXT, call.getString("text") ?: "") }
+            val ch = Intent.createChooser(send, call.getString("title") ?: "")
+            val act = activity
+            if (act != null) act.startActivity(ch) else context.startActivity(ch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            call.resolve()
+        } catch (e: Exception) { call.reject(e.message ?: "error") }
+    }
+
     @PluginMethod
     fun live(call: PluginCall) {
         try { post(context, JSONObject(call.data.toString())); call.resolve() } catch (e: Exception) { call.reject(e.message ?: "error") }
