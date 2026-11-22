@@ -18,6 +18,14 @@ import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import org.json.JSONObject
+import androidx.health.services.client.ExerciseUpdateCallback
+import androidx.health.services.client.HealthServices
+import androidx.health.services.client.data.Availability
+import androidx.health.services.client.data.DataType
+import androidx.health.services.client.data.ExerciseConfig
+import androidx.health.services.client.data.ExerciseLapSummary
+import androidx.health.services.client.data.ExerciseType
+import androidx.health.services.client.data.ExerciseUpdate
 
 /* Pendant la séance : mesure le cardio, l'envoie au téléphone et fait vibrer à la fin du repos, écran éteint compris. */
 class HrService : Service(), SensorEventListener {
@@ -30,11 +38,25 @@ class HrService : Service(), SensorEventListener {
     private var stLast = -1
     private var stSent = 0L
     private var fl = 0
+    // Health Services : comme Samsung Health, la montre suit l'exercice et compte les pas même écran éteint.
+    private var hsT0 = 0L
+    private var hsOn = false
+    private val hsCb = object : ExerciseUpdateCallback {
+        override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
+            val n = try { update.latestMetrics.getData(DataType.STEPS_TOTAL)?.total } catch (e: Exception) { null } ?: return
+            stepsHs(n.toInt())
+        }
+        override fun onLapSummaryReceived(lapSummary: ExerciseLapSummary) {}
+        override fun onRegistered() {}
+        override fun onRegistrationFailed(throwable: Throwable) { hsOn = false }
+        override fun onAvailabilityChanged(dataType: DataType<*, *>, availability: Availability) {}
+    }
     private val tick = object : Runnable {
         override fun run() {
             WS.checkRest(this@HrService)
             // Écran éteint, la montre garde les pas en réserve : on les réclame toutes les 5 s.
             if (WS.cl() != null && ++fl % 5 == 0) try { sm?.flush(this@HrService) } catch (e: Exception) {}
+            hsCheck()
             if (!WS.on()) { stopSelf(); return }
             h.postDelayed(this, 1000)
         }
@@ -102,7 +124,33 @@ class HrService : Service(), SensorEventListener {
         }
     }
 
+    private fun hsCheck() {
+        val c = WS.cl()
+        val want = c != null && c.optInt("st", 0) == 1 && (Build.VERSION.SDK_INT < 29 || checkSelfPermission(android.Manifest.permission.ACTIVITY_RECOGNITION) == android.content.pm.PackageManager.PERMISSION_GRANTED)
+        if (want && c != null && c.optLong("t0") != hsT0) {
+            hsT0 = c.optLong("t0")
+            try {
+                val ec = HealthServices.getClient(this).exerciseClient
+                ec.setUpdateCallback(hsCb)
+                val type = if (c.optString("k") == "run") ExerciseType.RUNNING_TREADMILL else ExerciseType.WALKING
+                val cfg = ExerciseConfig.builder(type).setDataTypes(setOf(DataType.STEPS_TOTAL)).setIsAutoPauseAndResumeEnabled(false).setIsGpsEnabled(false).build()
+                ec.startExerciseAsync(cfg); hsOn = true
+            } catch (e: Exception) { hsOn = false }
+        } else if (!want && hsOn) hsEnd()
+    }
+    private fun hsEnd() {
+        if (!hsOn) return
+        hsOn = false; hsT0 = 0L
+        try { val ec = HealthServices.getClient(this).exerciseClient; ec.endExerciseAsync(); ec.clearUpdateCallbackAsync(hsCb) } catch (e: Exception) {}
+    }
+    private fun stepsHs(n: Int) {
+        val c = WS.cl() ?: return
+        val now = System.currentTimeMillis()
+        if (n != stLast && now - stSent >= 3000) { stLast = n; stSent = now; WS.send(this, JSONObject().put("a", "st").put("n", n).put("t0", c.optLong("t0")).put("t", now)) }
+    }
+
     private fun steps(v: Float) {
+        if (hsOn) return
         val c = WS.cl() ?: return
         val t0 = c.optLong("t0")
         if (t0 != stT0 || stBase < 0 || v < stBase) { stT0 = t0; stBase = v; stLast = -1 }
@@ -118,6 +166,7 @@ class HrService : Service(), SensorEventListener {
 
     override fun onDestroy() {
         h.removeCallbacks(tick)
+        hsEnd()
         try { sm?.unregisterListener(this) } catch (e: Exception) {}
         try { if (wl?.isHeld == true) wl?.release() } catch (e: Exception) {}
         super.onDestroy()

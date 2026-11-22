@@ -40,4 +40,5 @@ dependencies {
     implementation 'androidx.wear.protolayout:protolayout:1.2.1'
     implementation 'androidx.wear.protolayout:protolayout-expression:1.2.1'
     implementation 'androidx.concurrent:concurrent-futures:1.2.0'
+    implementation 'androidx.health:health-services-client:1.0.0'
 }
