@@ -6569,9 +6569,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.89.5'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.89.6'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.89.6', d: '2026-11-21', fr: ['Séance sur tapis : la fenêtre montre en direct les calories (et les pas) selon l\'inclinaison et la distance que tu entres.'], en: ['Treadmill session: the window shows calories (and steps) live as you enter incline and distance.']},
   {v: '9.89.5', d: '2026-11-21', fr: ['Cardio en direct : à la fin d\'une marche ou d\'une course sur tapis, l\'appli te demande l\'inclinaison moyenne (et la distance si tu veux) pour calculer des calories plus justes. Tu peux passer.'], en: ['Live cardio: after a treadmill walk or run, the app asks for the average incline (and distance) for more accurate calories. You can skip.']},
   {v: '9.89.4', d: '2026-11-21', fr: ['Amis : la carte « Tu partages tes séances / Mon code » en haut est retirée. « Mon code ami » est maintenant dans « Ajouter ».'], en: ['Friends: the “You share your workouts / My code” card is removed. “My friend code” is now in “Add”.']},
   {v: '9.89.3', d: '2026-11-21', fr: ['Défis entre amis : le message de victoire dit maintenant contre qui, le type de défi et les deux scores (ex. « Défi gagné contre Tania (le plus de volume) : 12 400 lb contre 9 800 lb. +300 XP »).'], en: ['Friend challenges: the win message now shows who you beat, the challenge type and both scores.']},
@@ -7702,14 +7703,17 @@ function clFinish(fromWatch) {
   if (!c.pat) c.pat = Date.now(); clStop(); save(); window._clPend = null;
   const n = v => { v = String(v || '').replace(',', '.').trim(); return v !== '' && !isNaN(v) && +v > 0 ? +v : 0; };
   window._clRead = () => ({inc: Math.min(40, n(($('#clinc') || {}).value)), km: n(($('#cldist') || {}).value)});
+  window._clCalc = () => { const el = $('#clkc'); if (!el) return; const v = window._clRead(), r = cardioCalc(c.k, min, v.km, v.inc, bodyKg()); el.innerHTML = r ? `<b style="font-size:22px">${r.kcal.toLocaleString(LOC())}</b> kcal${c.k === 'walk' || c.k === 'run' ? ` <span class="muted">· ≈ ${r.steps.toLocaleString(LOC())} ${T('pas', 'steps')}</span>` : ''}${v.inc ? ` <span class="muted">· ${T('pente', 'incline')} ${DN(v.inc)} %</span>` : ''}` : ''; };
   modal(`<h2 style="margin:0 0 4px">${T('Séance sur tapis', 'Treadmill session')}</h2>
     <p class="muted small" style="margin:0 0 6px">${hm(min)} · ${T('Facultatif : l\'inclinaison et la distance de ton tapis donnent des calories plus justes.', 'Optional: your treadmill incline and distance give more accurate calories.')}</p>
     <label>${T('Inclinaison moyenne (%)', 'Average incline (%)')}</label>
     <div class="chips">${[0, 2, 4, 6, 8, 10, 12, 15].map(v => `<button class="btn sm" data-act="cl-inc" data-v="${v}">${v} %</button>`).join('')}</div>
     <input id="clinc" inputmode="decimal" placeholder="${T('ex. 8', 'e.g. 8')}">
     <label>${T('Distance', 'Distance')} (${kmU()})</label><input id="cldist" inputmode="decimal" placeholder="${T('facultatif', 'optional')}">
-    <button class="btn primary block" data-act="cl-save" style="margin-top:14px">${T('Enregistrer', 'Save')}</button>
-    <button class="btn block" data-act="cl-skip" style="margin-top:8px">${T('Passer', 'Skip')}</button>`, {onclose: () => { const p = window._clPend || {}; window._clPend = null; setTimeout(() => clSave(min, p.km || 0, p.inc || 0), 0); }});
+    <div class="card" style="margin:14px 0 0;text-align:center;padding:12px"><div class="muted small">${T('Ça donne', 'That gives')}</div><div id="clkc"></div></div>
+    <button class="btn primary block" data-act="cl-save" style="margin-top:12px">${T('Enregistrer', 'Save')}</button>
+    <button class="btn block" data-act="cl-skip" style="margin-top:8px">${T('Passer', 'Skip')}</button>`, {onclose: () => { const p = window._clPend || {}; window._clPend = null; window._clCalc = null; setTimeout(() => clSave(min, p.km || 0, p.inc || 0), 0); }});
+  window._clCalc();
 }
 function cardioLiveCard() {
   const a = S.active;
@@ -10820,7 +10824,7 @@ document.addEventListener('click', e => {
     /* progrès */
     case 'prog-tab': progTab = b.dataset.p; render(); break;
     case 'ph-full': { const src = b.currentSrc || b.src; if (!src) break; const o = document.createElement('div'); o.className = 'phfull'; o.innerHTML = `<img src="${src}" alt="">`; o.onclick = () => o.remove(); document.body.appendChild(o); break; }
-    case 'cl-inc': { const i = $('#clinc'); if (i) i.value = b.dataset.v; b.parentNode.querySelectorAll('.btn').forEach(x => x.classList.toggle('on', x === b)); break; }
+    case 'cl-inc': { const i = $('#clinc'); if (i) i.value = b.dataset.v; b.parentNode.querySelectorAll('.btn').forEach(x => x.classList.toggle('on', x === b)); if (window._clCalc) window._clCalc(); break; }
     case 'cl-save': window._clPend = window._clRead ? window._clRead() : null; closeModal(); break;
     case 'cl-skip': window._clPend = null; closeModal(); break;
     case 'bm-pick': bodyMetric = b.dataset.k; render(); break;
@@ -10861,6 +10865,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('toggle', e => { const d = e.target; if (d && d.classList && d.classList.contains('mcatd')) { S.settings.medOpen = S.settings.medOpen || {}; S.settings.medOpen[d.dataset.c] = d.open; saveLocal(); } }, true);
 document.addEventListener('input', e => {
+  if ((e.target.id === 'clinc' || e.target.id === 'cldist') && window._clCalc) { window._clCalc(); if (e.target.id === 'clinc') document.querySelectorAll('[data-act="cl-inc"]').forEach(x => x.classList.toggle('on', x.dataset.v === e.target.value.trim())); }
   if (e.target.id === 'hin') { hCheck(); return; }
   if (e.target.id === 'frsq') { frSearch(); return; }
   const t = e.target;
