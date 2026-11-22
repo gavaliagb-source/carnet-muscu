@@ -1052,7 +1052,7 @@ const BWL = () => isEN() ? 'BW' : 'PDC';
 const dec1 = v => { const s = (Math.round(v * 10) / 10).toString(); return isEN() ? s : s.replace('.', ','); };
 /* Minutes → « 50 min » ou « 1 h 20 » */
 const hm = m => { m = Math.round(+m || 0); return m < 60 ? m + ' min' : `${Math.floor(m / 60)} h${m % 60 ? ' ' + pad2(m % 60) : ''}`; };
-const DTF = {}; const dateFr = iso => (DTF[LOC()] || (DTF[LOC()] = new Intl.DateTimeFormat(LOC(), {day: 'numeric', month: 'short'}))).format(new Date(iso));
+const DTF = {}; const dateFr = iso => { const d = new Date(iso); if (isNaN(d)) return ''; try { return (DTF[LOC()] || (DTF[LOC()] = new Intl.DateTimeFormat(LOC(), {day: 'numeric', month: 'short'}))).format(d); } catch (e) { return d.toLocaleDateString(); } };
 const toLocalInput = iso => { const d = new Date(iso); return `${dkey(d)}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
 const e1rm = (w, r) => (+w > 0 && +r > 0) ? +w * (1 + +r / 30) : 0;
 const clone = o => JSON.parse(JSON.stringify(o));
@@ -6576,9 +6576,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.91.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.91.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.91.1', d: '2026-11-21', fr: ['Glisser entre les onglets marche maintenant aussi sur les rangées de boutons qui ne défilent pas (ex. « exercices qui stagnent », plan de la semaine, types de cardio quand ils tiennent à l\'écran).', 'Correction : une date de séance invalide ne peut plus bloquer l\'affichage.'], en: ['Tab swipe now also works over button rows that don\'t scroll (e.g. stalled exercises, week plan).', 'Fix: an invalid session date can no longer break the display.']},
   {v: '9.91.0', d: '2026-11-21', fr: ['Glisser entre les onglets comme dans une vraie appli : l\'onglet voisin est préparé à l\'avance et suit ton doigt. Si tu relâches avant le milieu, la page revient en place.'], en: ['Swipe between tabs like a native app: the next tab is prepared ahead and follows your finger. Release before halfway and it snaps back.']},
   {v: '9.90.5', d: '2026-11-21', fr: ['Guilde et Profil se construisent 2 à 3 fois plus vite (calculs gardés en mémoire tant que tes données ne changent pas) : le glissement vers ces onglets est plus fluide.', 'Les effets animés (auras, bannières) se mettent en pause pendant le glissement.'], en: ['Guild and Profile build 2-3x faster (results kept until your data changes): swiping to them is smoother.', 'Animated effects pause while swiping.']},
   {v: '9.90.4', d: '2026-11-21', fr: ['Glisser entre les onglets : plus de flash noir ni de coupure. L\'ancienne page glisse et s\'assombrit, la nouvelle arrive du bon côté en continu.'], en: ['Swiping between tabs: no more black flash or cut. The old page slides and dims while the new one slides in.']},
@@ -10187,6 +10188,7 @@ function ghostFor(dest) {
   GH[dest].classList.add('on'); return (ghost = {el: GH[dest], dest});
 }
 function snapLater() { clearTimeout(snapT); if (stack.length === 1) snapT = setTimeout(() => ric(tabSnap, {timeout: 1500}), 350); }
+function hScrollAt(el) { for (let n = el; n && n !== document.body && n.id !== 'app'; n = n.parentElement) { if (n.scrollWidth > n.clientWidth + 4) { const o = getComputedStyle(n).overflowX; if (o === 'auto' || o === 'scroll') return true; } } return false; }
 function swipeTarget(dx) {
   if (stack.length > 1) return dx > 0 ? 'back' : null;
   const TABS = swTabs(), i = TABS.indexOf(stack[0].v);
@@ -10197,7 +10199,8 @@ document.addEventListener('touchstart', e => {
   swp = null; swpReset();
   if (swpAnim || modals.length || e.touches.length > 1 || S.settings.swipe === false) return;
   const t = e.target;
-  if (!t.closest('#app, header') || t.closest('header button, input,textarea,select,button.check,.chs,.chips,.wstrip,.cycprev,.seg,.cvkinds,.frlist,.stbl,.armtabs,.armgrid,.agw,canvas,[data-noswipe]')) return;
+  // On bloque le glissement d'onglet seulement là où le doigt sert à autre chose : champs, graphiques, et rangées qui défilent vraiment de côté
+  if (!t.closest('#app, header') || t.closest('header button, input,textarea,select,button.check,.chs,.armgrid,.agw,canvas,[data-noswipe]') || hScrollAt(t)) return;
   const p = e.touches[0]; if (isIOS && (p.clientX < 24 || p.clientX > innerWidth - 24)) return;
   swp = {x: p.clientX, y: p.clientY, t: Date.now(), lock: null, dx: 0, sy: scrollY};
 }, {passive: true});
