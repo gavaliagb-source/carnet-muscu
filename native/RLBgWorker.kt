@@ -60,8 +60,10 @@ class RLBgWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
             val seenSet = HashSet<String>(); for (i in 0 until seen.length()) seenSet.add(seen.optString(i))
             // Seulement les messages plus récents que le dernier vu : un message déjà lu n'est pas relu (et pas refacturé)
             val inT = p.getString("bgInT", "") ?: ""
+            // 10 min de marge : l'heure d'un message vient du téléphone de l'ami, qui peut retarder un peu (les doublons sont écartés par bgSeen)
+            val inQ = if (inT.isEmpty()) "" else try { java.time.Instant.parse(inT).minusSeconds(600).toString() } catch (e: Exception) { "" }
             val q = JSONObject().put("structuredQuery", JSONObject().put("from", JSONArray().put(JSONObject().put("collectionId", "m")))
-                .put("where", JSONObject().put("fieldFilter", JSONObject().put("field", JSONObject().put("fieldPath", "t")).put("op", "GREATER_THAN").put("value", JSONObject().put("stringValue", inT))))
+                .put("where", JSONObject().put("fieldFilter", JSONObject().put("field", JSONObject().put("fieldPath", "t")).put("op", "GREATER_THAN").put("value", JSONObject().put("stringValue", inQ))))
                 .put("limit", 30))
             val (ic, itxt) = http("$base/inbox/$uid:runQuery", "POST", q.toString(), tok, json = true)
             if (ic == 200) {
