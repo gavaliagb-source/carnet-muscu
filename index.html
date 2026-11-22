@@ -5556,6 +5556,7 @@ function clsBonus(h) { // appelée à la fin d'une séance
   return giveXp('cls', h.id, xp, '') ? xp : 0;
 }
 /* Quêtes du jour préférées par chaque classe de base */
+const CLS_Q2 = {g: ['over', 'pr', 'volp'], r: ['cmin', 'over', 'volp'], m: ['over', 'stretch', 'pr'], s: ['stretch', 'over', 'volp']}; // quêtes du jour depuis la v9.109
 const CLS_Q = {g: ['pr', 'vol', 'sets'], r: ['cmin', 'reps', 'dur'], m: ['dur', 'sets', 'ex'], s: ['ex', 'reps', 'dur']};
 function pclPick() {
   const p = S.pcl || {}, can = pclCan(), a = clsAuto(), cur = clsCur(), fix = clsMode() === 'fix';
@@ -5970,13 +5971,32 @@ function dailyQuest0(d, extra) {
   // Quête de cardio (classes d'endurance) : hors de la liste de base pour ne pas changer les quêtes des jours passés
   const hsCardio = hs => Math.round(hs.reduce((a, h) => a + h.exercises.reduce((b2, e) => b2 + e.sets.filter(x => x.u === 'c' && x.done !== false).reduce((c2, x) => c2 + (+x.r || 0), 0), 0), 0));
   const cmin = () => { const L = S.history.filter(x => +new Date(x.date) > Date.now() - 42 * 864e5).map(x => hsCardio([x])).filter(v => v > 0), av = L.length ? L.reduce((a, v) => a + v, 0) / L.length : 20; return {id: 'cmin', ic: '🏃', goal: Math.min(60, Math.max(15, rnd5(av, 5))), t: ['Fais # minutes de cardio', 'Do # minutes of cardio'], cur: hsCardio}; };
-  const byId = id => id === 'cmin' ? cmin() : pool.find(x => x.id === id && x.goal != null);
+  // Quêtes qui demandent un vrai effort (v9.109) : battre sa dernière fois sur un exercice, plus de volume, des étirements
+  const exBest = e => Math.max(0, ...work(e.sets).filter(x => x.u !== 's' && x.u !== 'c').map(x => e1rm(x.w, x.r)));
+  const over = () => {
+    if (!R || !P) return null;
+    const L = [...new Set(R.exercises.map(e => e.name))].map(n => { const pe = P.exercises.find(e => norm(e.name) === norm(n)); if (!pe) return null;
+      const ws = work(pe.sets).filter(x => x.u !== 's' && x.u !== 'c' && +x.w > 0 && +x.r > 0); if (!ws.length) return null;
+      const top = ws.reduce((a, x) => e1rm(x.w, x.r) > e1rm(a.w, a.r) ? x : a); let st = null; try { st = stagnation(n); } catch (e) {}
+      return {n, pb: e1rm(top.w, top.r), w: +top.w, r: +top.r, st: !!st}; }).filter(Boolean);
+    if (!L.length) return null; const sg = L.filter(x => x.st), C = sg.length ? sg : L, x = C[sd % C.length], wv = (+x.w.toFixed(2)).toLocaleString(LOC());
+    return {id: 'over', ic: '📈', goal: 1, t: [`Bats ton ${wv}×${x.r} sur ${x.n}`, `Beat your ${wv}×${x.r} on ${x.n}`],
+      cur: hs => hs.some(h => h.exercises.some(e => norm(e.name) === norm(x.n) && exBest(e) > x.pb + 1e-9)) ? 1 : 0};
+  };
+  const vst = u === 'kg' ? 50 : 100;
+  const volp = () => P && pVol >= vs ? {id: 'volp', ic: '🏗️', goal: Math.ceil(pVol * 1.02 / vst) * vst, t: [`Soulève plus que la dernière fois : # ${u}`, `Lift more than last time: # ${u}`], cur: hsVol} : null;
+  const stretch = () => ({id: 'stretch', ic: '🧘', goal: 1, t: ['Fais une séance d\'étirements', 'Do a stretching session'], cur: () => (S.stretchLog || []).filter(x => dkey(x.date) === k).length});
+  const NEWQ = {over, volp, stretch};
+  const byId = id => id === 'cmin' ? cmin() : NEWQ[id] ? NEWQ[id]() : pool.find(x => x.id === id && x.goal != null);
   const today = dkey(new Date()) === k, qp = (S.qPick || {})[k];
   let q = qp ? byId(qp) : null;
   if (!q) {
     // Ta classe oriente la quête du jour (7 jours sur 10) ; une fois choisie, la quête du jour ne change plus.
     const ck = today && GAME() ? clsCur() : '';
-    if (ck && (sd >> 4) % 10 < 7) { const pref = [...new Set(pclParts(ck).flatMap(x => CLS_Q[x] || []))]; for (let n = 0; n < pref.length && !q; n++) q = byId(pref[(sd + n) % pref.length]) || null; }
+    if (today) { // nouvelles quêtes : plus de « entraîne-toi X minutes » ni de séries à compter, seulement des défis qui demandent un effort
+      if (ck && (sd >> 4) % 10 < 7) { const pref = [...new Set(pclParts(ck).flatMap(x => CLS_Q2[x] || []))]; for (let n = 0; n < pref.length && !q; n++) q = byId(pref[(sd + n) % pref.length]) || null; }
+      const L = ['over', 'pr', 'volp', 'over', 'stretch', 'push']; for (let n = 0; n < L.length && !q; n++) q = byId(L[(sd + n) % L.length]) || null;
+    }
     if (!q) { let i = sd % pool.length; for (let n = 0; n < pool.length && pool[i].goal == null; n++) i = (i + 1) % pool.length; q = pool[i]; }
     if (today) { const P = S.qPick = S.qPick || {}; P[k] = q.id; Object.keys(P).forEach(d0 => { if (d0 < dkey(new Date(Date.now() - 60 * 864e5))) delete P[d0]; }); }
   }
@@ -6776,9 +6796,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.108.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.109.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.109.0', d: '2026-11-22', fr: ['Meilleures quêtes du jour : fini « Entraîne-toi X minutes » et les séries à compter. Les quêtes demandent maintenant un vrai effort : battre ta dernière fois sur un exercice (en priorité un exercice en plateau), soulever plus que ta dernière séance, battre un record ou faire des étirements.'], en: ['Better daily quests: no more “Train for X minutes” or sets to count. Quests now ask for real effort: beat last time on an exercise (plateaued ones first), lift more than your last workout, break a record or do a stretching session.']},
   {v: '9.108.0', d: '2026-11-22', fr: ['Guilde plus courte : 4 sous-onglets en haut (Aujourd\'hui, Raid, Classements, Collection). La saison du mois est maintenant dans Classements, avec le classement mondial.'], en: ['Shorter Guild: 4 sub-tabs at the top (Today, Raid, Rankings, Collection). The monthly season is now in Rankings, with the world ranking.']},
   {v: '9.107.1', d: '2026-11-22', fr: ['Demandes d\'ami plus sûres : la demande part toujours, même si le bonus d\'invitation ne peut pas être envoyé.'], en: ['Safer friend requests: the request always goes through, even if the invite bonus cannot be sent.']},
   {v: '9.107.0', d: '2026-11-22', fr: ['Inviter des amis rapporte : un ami qui découvre Runelift grâce à toi et t\'envoie sa première demande d\'ami donne 250 XP à vous deux. Nouveaux titres : Recruteur, Rassembleur et Chef de clan.', 'Rappels de raid hors de l\'appli : une notification quand ton équipe frappe le boss sans toi, et quand il reste 2 jours puis 1 jour avec de l\'énergie à dépenser.'], en: ['Inviting friends pays off: a friend who discovers Runelift through you and sends you their first friend request gives you both 250 XP. New titles: Recruiter, Rallier and Clan chief.', 'Raid reminders outside the app: a notification when your team hits the boss without you, and when 2 days then 1 day are left with energy to spend.']},
