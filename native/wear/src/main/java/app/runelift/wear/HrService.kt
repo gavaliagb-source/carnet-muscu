@@ -29,9 +29,12 @@ class HrService : Service(), SensorEventListener {
     private var stT0 = 0L
     private var stLast = -1
     private var stSent = 0L
+    private var fl = 0
     private val tick = object : Runnable {
         override fun run() {
             WS.checkRest(this@HrService)
+            // Écran éteint, la montre garde les pas en réserve : on les réclame toutes les 5 s.
+            if (WS.cl() != null && ++fl % 5 == 0) try { sm?.flush(this@HrService) } catch (e: Exception) {}
             if (!WS.on()) { stopSelf(); return }
             h.postDelayed(this, 1000)
         }
@@ -74,7 +77,8 @@ class HrService : Service(), SensorEventListener {
             sm?.getDefaultSensor(Sensor.TYPE_HEART_RATE)?.let { sm?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
             // Pas (cardio sur tapis) : le téléphone en déduit la distance et la vitesse.
             if (Build.VERSION.SDK_INT < 29 || checkSelfPermission(android.Manifest.permission.ACTIVITY_RECOGNITION) == android.content.pm.PackageManager.PERMISSION_GRANTED)
-                sm?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)?.let { sm?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL, 0) }
+                // Version « réveil » si la montre l'a : les pas arrivent même écran éteint.
+                (sm?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER, true) ?: sm?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER))?.let { sm?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL, 0) }
         } catch (e: Exception) {}
         try {
             wl = (getSystemService(POWER_SERVICE) as PowerManager).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "runelift:workout")
