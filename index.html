@@ -174,6 +174,7 @@ canvas{width:100%;height:210px;display:block}
 .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px;margin-bottom:12px;gap:3px}
 .seg button{flex:1;background:none;border:0;color:var(--muted);padding:9px 4px;border-radius:9px;font-size:14px;font-weight:600}
 .seg button.on{background:var(--card2);color:var(--accent)}
+.sphg{display:grid;gap:6px;margin-bottom:8px}.sphg.n2{grid-template-columns:1fr 1fr}.sphg.n3{grid-template-columns:1fr 1fr 1fr}.sph{position:relative;display:block}.sph img{width:100%;height:200px;object-fit:cover;border-radius:12px;display:block;background:var(--card2);cursor:zoom-in}.sphg.n2 .sph img{height:170px}.sphg.n3 .sph img{height:130px}.sphx{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:28px;padding:0}
 .gseg{margin-bottom:12px}.gseg button{font-size:13px;padding:9px 2px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
 .chip{font-size:13px;padding:5px 10px;border-radius:999px;background:var(--card2);border:1px solid var(--line);color:var(--muted)}
@@ -2332,8 +2333,20 @@ function finishWorkout() {
     ${wasFree ? `<button class="btn block" data-act="save-as-routine" data-hid="${id}" style="margin-bottom:8px">💾 Enregistrer comme routine</button>` : ''}
     <div class="grid2" style="margin-bottom:8px"><button class="btn" data-act="hist-img" data-hid="${id}">🖼️ ${T('Image', 'Image')}</button><button class="btn" data-act="hist-share" data-hid="${id}">📤 ${T('Texte', 'Text')}</button></div>
     <button class="btn block" data-act="st-go" data-id="${stSuggest(S.history[S.history.length - 1])}" style="margin-bottom:8px">🧘 ${T('Étirements', 'Stretching')} ${esc(T(ST_PRESETS.find(x => x.id === stSuggest(S.history[S.history.length - 1])).n[0], ST_PRESETS.find(x => x.id === stSuggest(S.history[S.history.length - 1])).n[1]).toLowerCase())} (≈ ${fmtMin(stDur(ST_PRESETS.find(x => x.id === stSuggest(S.history[S.history.length - 1]))))})</button>
-    <button class="btn primary block" data-act="close">Super</button>`, {id: 'finsheet'});
+    <button class="btn primary block" data-act="close">Super</button>`, {id: 'finsheet', onclose: () => { try { localStorage.removeItem('rl-finpend'); } catch (e) {} }});
+  try { localStorage.setItem('rl-finpend', JSON.stringify({hid: id, t: Date.now()})); } catch (e) {}
   setTimeout(() => finAnim(huBefore, huAfter), 60);
+}
+/* L'appli a été rechargée pendant l'écran de fin (souvent quand l'appareil photo s'ouvre sur Android) : on le rouvre en version courte */
+function finResume() {
+  let f = null; try { f = JSON.parse(localStorage.getItem('rl-finpend') || 'null'); } catch (e) {}
+  if (!f || Date.now() - f.t > 30 * 60e3 || S.active) { try { localStorage.removeItem('rl-finpend'); } catch (e) {} return; }
+  const h = S.history.find(x => x.id === f.hid); if (!h || modals.length) return;
+  const ch = chestsPending()[0];
+  modal(`<h2 style="margin:0 0 4px">${T('Séance enregistrée', 'Workout saved')}</h2><p class="small muted" style="margin:0 0 12px">${esc(h.routineName || '')}</p>
+    ${ch ? `<button class="btn block chbtn" style="--cc:${CHR[ch.rar][2]};margin-bottom:10px" data-act="chest-open" data-id="${ch.id}">🎁 ${T('Ouvrir ton coffre', 'Open your chest')} <b>${esc(T(CHR[ch.rar][0], CHR[ch.rar][1]))}</b></button>` : ''}
+    <div id="sessph">${sessPhBox(h.id)}</div>
+    <button class="btn primary block" data-act="close">Super</button>`, {id: 'finsheet', onclose: () => { try { localStorage.removeItem('rl-finpend'); } catch (e) {} }});
 }
 /* Écran de fin : les blocs apparaissent un après l'autre, les chiffres comptent, la barre d'XP se remplit */
 function finAnim(hb, ha) {
@@ -2610,15 +2623,15 @@ function cardioCard(e, ei, last, mates) {
 
 /* ----- Historique ----- */
 function histCard(h, open) {
-  if (h.ph) setTimeout(phFill, 0);
+  if (hPhs(h).length) setTimeout(phFill, 0);
   if (selH) return `<div class="card rcard selc ${selH.has(h.id) ? 'on' : ''}" data-act="selh-t" data-hid="${h.id}"><div class="row" style="gap:10px;width:100%"><span class="selbox ${selH.has(h.id) ? 'on' : ''}">${selH.has(h.id) ? '✓' : ''}</span><div style="flex:1;min-width:0"><h3 style="margin:0">${esc(h.routineName)}</h3><span class="muted small">${new Date(h.date).toLocaleDateString(LOC(), {weekday: 'short', day: 'numeric', month: 'short'})} · ${h.exercises.length} exos</span></div></div></div>`;
   return `<details class="card hist" data-hid="${h.id}" ${open ? 'open' : ''}><summary>
       <div class="row between"><div><h3>${esc(h.routineName)}</h3><span class="muted small">${new Date(h.date).toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long'})} · ${hm(h.duration)}${h.hr ? ` · ${IC('heart', '♥', 12)} ${h.hr.avg}` : ''}</span></div><span class="tag">${h.exercises.length} ${h.exercises.length > 1 ? T('exos', 'exercises') : T('exo', 'exercise')} ▾</span></div>
     </summary>
     <ul class="exlist">${h.exercises.map(e => `<li><span class="row" style="gap:8px;align-items:flex-start">${thumb(e.name, 28)}<span>${exl(e.name)}${e.ss ? ` <span class="sspill sm" ${ssSty(e)}>Superset</span>` : ''}${e.note ? `<br><span class="small muted">📝 ${esc(e.note)}</span>` : ''}${e.sets.map((s, i) => s.n ? `<br><span class="small muted">Série ${i + 1} : ${esc(s.n)}</span>` : '').join('')}</span></span><span class="tag">${e.sets.map(s => fmtSet(s, true)).join(', ')}</span></li>`).join('')}</ul>
-    ${hrBlock(h)}${h.ph ? `<img data-ph="${h.ph}" alt="" data-act="hist-phbig" data-hid="${h.id}" style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;display:block;margin:4px 0 10px;background:var(--card2);min-height:100px;cursor:zoom-in">` : ''}
+    ${hrBlock(h)}${hPhs(h).length ? `<div class="sphg n${hPhs(h).length}" style="margin:4px 0 10px">${hPhs(h).map(id => `<span class="sph"><img data-ph="${id}" alt="" data-act="hist-phbig" data-hid="${h.id}"></span>`).join('')}</div>` : ''}
     <div class="row hacts"><button class="btn sm" data-act="hist-edit" data-hid="${h.id}">✏️ Modifier</button>
-    <button class="btn sm" data-act="hist-ph" data-hid="${h.id}">📷 ${h.ph ? T('Changer la photo', 'Change photo') : T('Photo', 'Photo')}</button>${h.ph ? `<button class="btn sm" data-act="hist-phrm" data-hid="${h.id}">✕ ${T('Photo', 'Photo')}</button>` : ''}
+    ${hPhs(h).length < PH_SESS ? `<button class="btn sm" data-act="hist-ph" data-hid="${h.id}">📷 ${T('Photo', 'Photo')}${hPhs(h).length ? ` (${hPhs(h).length} / ${PH_SESS})` : ''}</button>` : ''}${h.ph ? `<button class="btn sm" data-act="hist-phrm" data-hid="${h.id}">✕ ${T(hPhs(h).length > 1 ? 'Photos' : 'Photo', hPhs(h).length > 1 ? 'Photos' : 'Photo')}</button>` : ''}
     <button class="btn sm" data-act="hist-sharemenu" data-hid="${h.id}">📤 ${T('Partager', 'Share')}</button>
     <button class="btn sm" data-act="h2r" data-hid="${h.id}">📁 ${T('En routine', 'As routine')}</button>
     <button class="btn danger sm" data-act="del-hist" data-hid="${h.id}">Supprimer</button></div>
@@ -3467,7 +3480,10 @@ function restoreAll(d) {
   S = migrate({...x, active: null, cloud: keep.cloud, gd: keep.gd, cb: keep.cb, photos: ph});
 }
 /* Photos de progrès : les images sont dans IndexedDB ; pour les sauvegardes on les regroupe {id: image} */
-const phIds = () => [...(S.photos || []).map(p => p.id), ...S.history.filter(x => x.ph).map(x => x.ph)];
+const PH_SESS = 3; // photos par séance au plus
+const hPhs = h => h ? [h.ph, ...(Array.isArray(h.phx) ? h.phx : [])].filter(Boolean) : []; // h.ph = la première (cartes d'amis, anciennes versions), h.phx = les suivantes
+function hPhDrop(h, id) { if (!h) return; const L = hPhs(h).filter(x => x !== id); if (L[0]) h.ph = L[0]; else delete h.ph; if (L.length > 1) h.phx = L.slice(1); else delete h.phx; }
+const phIds = () => [...(S.photos || []).map(p => p.id), ...S.history.flatMap(hPhs)];
 async function phAll() { const out = {}; for (const id of phIds()) { try { const d = await phGet(id); if (d) out[id] = d; } catch (e) {} } return out; }
 async function phRestore(map) { let n = 0; for (const [id, d] of Object.entries(map || {})) { if (typeof d === 'string' && d.startsWith('data:image')) { try { await phPut(id, d); phCache[id] = d; n++; } catch (e) {} } } return n; }
 function cloudRestoreData(d) {
@@ -6797,9 +6813,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.109.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.110.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.110.0', d: '2026-11-22', fr: ['Jusqu\'à 3 photos par séance (écran de fin et historique). Touche une photo pour l\'agrandir, ou le ✕ pour la retirer.', 'Fin de séance : si l\'appli se recharge pendant que l\'appareil photo est ouvert, l\'écran revient avec ton coffre à ouvrir. Une mise à jour n\'est plus installée tant qu\'une fenêtre est ouverte.'], en: ['Up to 3 photos per workout (end screen and history). Tap a photo to enlarge it, or the ✕ to remove it.', 'End of workout: if the app reloads while the camera is open, the screen comes back with your chest to open. An update is no longer installed while a window is open.']},
   {v: '9.109.1', d: '2026-11-22', fr: ['Quête « Bats ta dernière fois » : l\'exercice choisi reste le même jusqu\'à la vérification du lendemain.'], en: ['“Beat last time” quest: the chosen exercise stays the same until it is checked the next day.']},
   {v: '9.109.0', d: '2026-11-22', fr: ['Meilleures quêtes du jour : fini « Entraîne-toi X minutes » et les séries à compter. Les quêtes demandent maintenant un vrai effort : battre ta dernière fois sur un exercice (en priorité un exercice en plateau), soulever plus que ta dernière séance, battre un record ou faire des étirements.'], en: ['Better daily quests: no more “Train for X minutes” or sets to count. Quests now ask for real effort: beat last time on an exercise (plateaued ones first), lift more than your last workout, break a record or do a stretching session.']},
   {v: '9.108.0', d: '2026-11-22', fr: ['Guilde plus courte : 4 sous-onglets en haut (Aujourd\'hui, Raid, Classements, Collection). La saison du mois est maintenant dans Classements, avec le classement mondial.'], en: ['Shorter Guild: 4 sub-tabs at the top (Today, Raid, Rankings, Collection). The monthly season is now in Rankings, with the world ranking.']},
@@ -7758,8 +7775,8 @@ function addSessionPhoto(hid) {
       toast(T('⏳ Ajout de la photo…', '⏳ Adding photo…'));
       const d = await shrinkImg(f, 1280, .78), id = 'hp' + uid();
       await phPut(id, d); phCache[id] = d;
-      if (hh.ph) { phDel(hh.ph).catch(() => {}); cpGone(hh.ph); }
-      hh.ph = id; save(); cpQueue(2000);
+      const L = hPhs(hh); if (L.length >= PH_SESS) { toast(T(`Maximum ${PH_SESS} photos par séance`, `Up to ${PH_SESS} photos per workout`)); phDel(id).catch(() => {}); return; }
+      if (!hh.ph) hh.ph = id; else hh.phx = [...(hh.phx || []), id]; save(); cpQueue(2000);
       const box = $('#sessph'); if (box) box.innerHTML = sessPhBox(hid);
       if (cur().v === 'profile') render();
       if (gdOn()) gdQueue(4000);
@@ -7770,9 +7787,11 @@ function addSessionPhoto(hid) {
 }
 function sessPhBox(hid) {
   const hh = S.history.find(x => x.id === hid); if (!hh) return '';
-  if (!hh.ph) return `<button class="btn block" data-act="hist-ph" data-hid="${hid}" style="margin-bottom:8px">📷 ${T('Ajouter une photo à ta séance', 'Add a photo to your workout')}</button>`;
+  const L = hPhs(hh);
+  if (!L.length) return `<button class="btn block" data-act="hist-ph" data-hid="${hid}" style="margin-bottom:8px">📷 ${T('Ajouter une photo à ta séance', 'Add a photo to your workout')}</button>`;
   setTimeout(phFill, 0);
-  return `<div style="position:relative;margin-bottom:8px"><img data-ph="${hh.ph}" alt="" style="width:100%;max-height:260px;object-fit:cover;border-radius:12px;display:block;background:var(--card2);min-height:120px"><button class="btn sm" data-act="hist-ph" data-hid="${hid}" style="position:absolute;right:8px;bottom:8px">📷 ${T('Changer', 'Change')}</button></div>`;
+  return `<div class="sphg n${L.length}">${L.map(id => `<span class="sph"><img data-ph="${id}" alt="" data-act="sph-big" data-id="${id}"><button class="sphx" data-act="sph-rm" data-hid="${hid}" data-id="${id}" aria-label="${T('Retirer', 'Remove')}">✕</button></span>`).join('')}</div>
+    ${L.length < PH_SESS ? `<button class="btn block" data-act="hist-ph" data-hid="${hid}" style="margin-bottom:8px">📷 ${T('Ajouter une photo', 'Add a photo')} (${L.length} / ${PH_SESS})</button>` : ''}`;
 }
 async function addProgressPhoto() {
   pickImage(async f => {
@@ -7785,7 +7804,7 @@ async function addProgressPhoto() {
     } catch (e) { toast('⚠️ ' + e.message); }
   });
 }
-const allPh = () => { const L = (S.photos || []).slice(), have = new Set(L.map(x => x.id)); S.history.forEach(h => { if (h.ph && !have.has(h.ph)) L.push({id: h.ph, d: dkey(new Date(h.date)), ses: h.id}); }); return L; };
+const allPh = () => { const L = (S.photos || []).slice(), have = new Set(L.map(x => x.id)); S.history.forEach(h => hPhs(h).forEach(id => { if (!have.has(id)) L.push({id, d: dkey(new Date(h.date)), ses: h.id}); })); return L; };
 function photoView(id) {
   const p = allPh().find(x => x.id === id); if (!p) return;
   const w = S.body.filter(b => b.w != null && b.d <= p.d).sort((a, b) => a.d.localeCompare(b.d)).pop();
@@ -8839,7 +8858,7 @@ function vWorld() {
 /* ===== Mise à jour forcée : si une version plus récente est en ligne, l'appli se recharge toute seule (jamais pendant une séance) ===== */
 async function checkUpdate() {
   try {
-    if (S.active || !navigator.onLine) return;
+    if (S.active || !navigator.onLine || modals.length || document.getElementById('chesto')) return;
     const r = await fetch('version.json?t=' + Date.now(), {cache: 'no-store'}); if (!r.ok) return;
     const v = (await r.json()).v; if (!v || verCmp(v, APP_VERSION) <= 0) return;
     const k = 'cm-upd-' + v; if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1');
@@ -11032,7 +11051,7 @@ document.addEventListener('click', e => {
     case 'ph-add': addProgressPhoto(); break;
     case 'ph-view': photoView(b.dataset.id); break;
     case 'ph-cmp': photoCompare(b.dataset.id); break;
-    case 'ph-del': { if (!confirm(T('Supprimer cette photo?', 'Delete this photo?'))) break; const id = b.dataset.id; S.photos = (S.photos || []).filter(x => x.id !== id); S.history.forEach(h => { if (h.ph === id) delete h.ph; }); phDel(id).catch(() => {}); delete phCache[id]; cpGone(id); save(); closeAll(); render(); break; }
+    case 'ph-del': { if (!confirm(T('Supprimer cette photo?', 'Delete this photo?'))) break; const id = b.dataset.id; S.photos = (S.photos || []).filter(x => x.id !== id); S.history.forEach(h => { if (hPhs(h).includes(id)) hPhDrop(h, id); }); phDel(id).catch(() => {}); delete phCache[id]; cpGone(id); save(); closeAll(); render(); break; }
     case 'cardio-add': openCardioAdd(); break;
     case 'cardio-add-ok': { const m = ($('#cad_m') || {}).value; closeModal(); addCardio(b.dataset.n, m); break; }
     case 'cardio-other': closeModal(); openPicker({title: T('Ajouter du cardio', 'Add cardio'), cb: p => addCardio(p.name, 15)}); break;
@@ -11635,7 +11654,9 @@ document.addEventListener('click', e => {
     case 'hist-share': { if ($('#shmenu')) closeModal(); const hh = S.history.find(x => x.id === b.dataset.hid); if (hh) shareText(workoutText(hh)); break; }
     case 'hist-new': openNewPast(); break;
     case 'hist-ph': addSessionPhoto(b.dataset.hid); break;
-    case 'hist-phrm': { const hh = S.history.find(x => x.id === b.dataset.hid); if (!hh || !hh.ph || !confirm(T('Retirer la photo de cette séance?', 'Remove the photo from this workout?'))) break; phDel(hh.ph).catch(() => {}); delete phCache[hh.ph]; cpGone(hh.ph); delete hh.ph; save(); render(); if (frOn()) frPublish(true); break; }
+    case 'hist-phrm': { const hh = S.history.find(x => x.id === b.dataset.hid), L = hPhs(hh); if (!L.length || !confirm(L.length > 1 ? T('Retirer les photos de cette séance?', 'Remove the photos from this workout?') : T('Retirer la photo de cette séance?', 'Remove the photo from this workout?'))) break; L.forEach(id => { phDel(id).catch(() => {}); delete phCache[id]; cpGone(id); }); delete hh.ph; delete hh.phx; save(); render(); if (frOn()) frPublish(true); break; }
+    case 'sph-rm': { const hh = S.history.find(x => x.id === b.dataset.hid), id = b.dataset.id; if (!hh || !hPhs(hh).includes(id) || !confirm(T('Retirer cette photo?', 'Remove this photo?'))) break; hPhDrop(hh, id); phDel(id).catch(() => {}); delete phCache[id]; cpGone(id); save(); const box = $('#sessph'); if (box) box.innerHTML = sessPhBox(hh.id); if (frOn()) frPublish(true); break; }
+    case 'sph-big': modal(`<div class="row between"><b>${T('Photo', 'Photo')}</b><button class="btn sm" data-act="close">✕</button></div><img src="${b.src}" alt="" style="width:100%;border-radius:14px;margin-top:10px;display:block">`); break;
     case 'hist-phbig': modal(`<div class="row between"><b>${esc((S.history.find(x => x.id === b.dataset.hid) || {}).routineName || '')}</b><button class="btn sm" data-act="close">✕</button></div><img src="${b.src}" alt="" style="width:100%;border-radius:14px;margin-top:10px;display:block">`); break;
     case 'new-past-ok': createPast(); break;
     case 'ed-set-menu': openSetMenu(draft.exercises[ei].sets, si, draft.exercises[ei].name, () => showEditor()); break;
@@ -12399,6 +12420,7 @@ setTimeout(() => { try { const fr = FRS(); if (frOn() && fr.fb && fr.pubName !==
   } }
 if (cloudOn()) setTimeout(() => cloudPush(), 4000);
 setTimeout(remindSync, 3000);
+setTimeout(finResume, 1200);
 setTimeout(() => { try { const fr = FRS(), x = frHu(); if (frOn() && x && fr.huL !== x.l) { fr.huL = x.l; save(); frQueue(false); } } catch (e) {} }, 6000);
 setTimeout(() => loadTxt(), 5000);
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
