@@ -162,6 +162,7 @@ canvas{width:100%;height:210px;display:block}
 .stat b{display:block;font-size:20px}
 .phfull{position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center}.phfull img{max-width:100%;max-height:100%;object-fit:contain}
 @keyframes gflash{0%,100%{box-shadow:0 0 0 0 transparent}30%{box-shadow:0 0 0 2px var(--accent),0 0 22px -4px var(--accent)}}.gflash{animation:gflash 1.6s ease 2;border-radius:12px}.gstrip .gshead{padding:6px 0;margin:-6px 0 0}
+.tabghost{position:fixed;left:0;right:0;bottom:0;z-index:4;overflow:hidden;pointer-events:none;background:var(--bg);visibility:hidden;transform:translateX(200%);contain:strict}.tabghost.on{visibility:visible;will-change:transform}.tabghost *{animation-play-state:paused!important;transition:none!important}
 .bmrow{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px}.bmrow::-webkit-scrollbar{display:none}.bmrow .btn{flex:none;white-space:nowrap}
 .hist summary,summary.nomark{list-style:none;cursor:pointer}summary.nomark::-webkit-details-marker{display:none}
 .hist summary::-webkit-details-marker{display:none}
@@ -6575,9 +6576,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.90.5'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.91.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.91.0', d: '2026-11-21', fr: ['Glisser entre les onglets comme dans une vraie appli : l\'onglet voisin est préparé à l\'avance et suit ton doigt. Si tu relâches avant le milieu, la page revient en place.'], en: ['Swipe between tabs like a native app: the next tab is prepared ahead and follows your finger. Release before halfway and it snaps back.']},
   {v: '9.90.5', d: '2026-11-21', fr: ['Guilde et Profil se construisent 2 à 3 fois plus vite (calculs gardés en mémoire tant que tes données ne changent pas) : le glissement vers ces onglets est plus fluide.', 'Les effets animés (auras, bannières) se mettent en pause pendant le glissement.'], en: ['Guild and Profile build 2-3x faster (results kept until your data changes): swiping to them is smoother.', 'Animated effects pause while swiping.']},
   {v: '9.90.4', d: '2026-11-21', fr: ['Glisser entre les onglets : plus de flash noir ni de coupure. L\'ancienne page glisse et s\'assombrit, la nouvelle arrive du bon côté en continu.'], en: ['Swiping between tabs: no more black flash or cut. The old page slides and dims while the new one slides in.']},
   {v: '9.90.3', d: '2026-11-21', fr: ['Glisser entre les onglets est plus fluide : l\'ancienne page finit de glisser pendant que la nouvelle se prépare, au lieu de figer un instant.'], en: ['Swiping between tabs is smoother: the old page keeps sliding while the new one loads, instead of freezing.']},
@@ -6833,7 +6835,7 @@ let tourSt = null;
 function tourStart(k) {
   if (tourSt) return;
   S.settings.tour = S.settings.tour || {}; S.settings.tour[k] = 1; saveLocal();
-  tourSt = {k, i: 0, L: TOURS[k].filter(st => (!st.when || st.when()) && (k !== 'guild' || !st.sel || document.querySelector(st.sel)))};
+  tourSt = {k, i: 0, L: TOURS[k].filter(st => (!st.when || st.when()) && (k !== 'guild' || !st.sel || [...[...document.querySelectorAll(st.sel)].filter(e => !e.closest('.tabghost'))].find(e => !e.closest('.tabghost'))))};
   const el = document.createElement('div'); el.id = 'tour';
   el.innerHTML = '<div class="tspot none"></div><div class="tbub"></div>';
   el.addEventListener('click', e => {
@@ -6847,7 +6849,7 @@ function tourGo(i) {
   const L = tourSt.L; if (i >= L.length) return tourEnd(); if (i < 0) i = 0;
   tourSt.i = i; const st = L[i];
   if (st.tab && (stack.length > 1 || stack[0].v !== st.tab)) { setRoot(st.tab); render(); window.scrollTo(0, 0); }
-  const find = () => st.sel ? [...document.querySelectorAll(st.sel)].find(x => x.offsetParent !== null || getComputedStyle(x).position === 'fixed') : null;
+  const find = () => st.sel ? [...[...document.querySelectorAll(st.sel)].filter(e => !e.closest('.tabghost'))].find(x => x.offsetParent !== null || getComputedStyle(x).position === 'fixed') : null;
   const tg = find();
   if (tg && !tg.closest('nav, header')) { const r = tg.getBoundingClientRect(); if (r.top < 70 || r.bottom > innerHeight - 220) tg.scrollIntoView({block: 'center'}); }
   setTimeout(() => tourPlace(find()), tg ? 260 : 0);
@@ -9247,11 +9249,11 @@ function cosPreview(kind, id) {
 /* Rafraîchit seulement le contenu de l'Armurerie (sans recharger la page ni remettre les onglets au début) */
 function armRefresh(anim) {
   RC = {}; DV++;
-  const c = document.querySelector('.armcontent'); if (!c) { render(); return; }
-  c.innerHTML = armoryBody(true); { const hw = document.querySelector('.armbody .hcwrap'); if (hw) { const t = document.createElement('div'); t.innerHTML = heroCard(); if (t.firstElementChild) hw.replaceWith(t.firstElementChild); } } if (anim) { c.classList.remove('armfade'); void c.offsetWidth; c.classList.add('armfade'); }
-  document.querySelectorAll('.armtabs button').forEach(x => x.classList.toggle('on', x.dataset.t === armTab));
+  const c = document.querySelector('#app .armcontent'); if (!c) { render(); return; }
+  c.innerHTML = armoryBody(true); { const hw = document.querySelector('#app .armbody .hcwrap'); if (hw) { const t = document.createElement('div'); t.innerHTML = heroCard(); if (t.firstElementChild) hw.replaceWith(t.firstElementChild); } } if (anim) { c.classList.remove('armfade'); void c.offsetWidth; c.classList.add('armfade'); }
+  document.querySelectorAll('#app .armtabs button').forEach(x => x.classList.toggle('on', x.dataset.t === armTab));
   const st = document.getElementById('gstatus'); if (st) { const t = document.createElement('div'); t.innerHTML = statusCard(); st.replaceWith(t.firstElementChild); }
-  const sm = document.querySelector('details[data-gid="arm"] .gswh small'); if (sm) { const [ok, tot] = armoryCount(); sm.textContent = `${ok} / ${tot} ${T('récompenses débloquées', 'rewards unlocked')}`; }
+  const sm = document.querySelector('#app details[data-gid="arm"] .gswh small'); if (sm) { const [ok, tot] = armoryCount(); sm.textContent = `${ok} / ${tot} ${T('récompenses débloquées', 'rewards unlocked')}`; }
 }
 function armoryCount() {
   let ok = 0, tot = 0;
@@ -9371,7 +9373,7 @@ document.addEventListener('pointermove', e => { const c = e.target && e.target.c
 document.addEventListener('pointerout', e => { const c = e.target && e.target.closest && e.target.closest('.hcard'); if (c && !c.contains(e.relatedTarget)) { c.style.transform = ''; c.style.removeProperty('--mx'); c.style.removeProperty('--my'); } }, {passive: true});
 let hcOri = null;
 function heroBig() {
-  const on = ev => { const c = document.querySelector('.hcwrap.big .hcard'); if (!c || ev.gamma == null) return; hcTilt(c, .5 + ev.gamma / 50, .5 + ((ev.beta || 45) - 45) / 50); };
+  const on = ev => { const c = document.querySelector('#app .hcwrap.big .hcard'); if (!c || ev.gamma == null) return; hcTilt(c, .5 + ev.gamma / 50, .5 + ((ev.beta || 45) - 45) / 50); };
   const start = () => { if (hcOri) window.removeEventListener('deviceorientation', hcOri); hcOri = on; window.addEventListener('deviceorientation', hcOri); };
   try { if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') DeviceOrientationEvent.requestPermission().then(r => { if (r === 'granted') start(); }, () => {}); else start(); } catch (e) {}
   modal(`<div class="row between"><b>${T('Ma carte de héros', 'My hero card')}</b><button class="btn sm" data-act="close">✕</button></div>${heroCard(true)}`, {onclose: () => { if (hcOri) window.removeEventListener('deviceorientation', hcOri); hcOri = null; }});
@@ -9910,6 +9912,7 @@ function render() {
   document.body.classList.toggle('focusing', !!(focusOn && S.active && cur().v === 'workout'));
   if (navAnim) { const d = navAnim === true ? 'fade' : navAnim; navAnim = false; const a = $('#app'); a.classList.remove('enter', 'nv-fwd', 'nv-back', 'nv-fade'); void a.offsetWidth; a.classList.add('enter', 'nv-' + d); clearTimeout(enterT); enterT = setTimeout(() => a.classList.remove('enter', 'nv-fwd', 'nv-back', 'nv-fade'), 450); } // l'apparition en fondu une seule fois : les mises à jour suivantes ne la rejouent plus
   syncWake();
+  snapLater();
   try { friFill(); } catch (e) {}
   if (LV()) { lockSync(); widgetSync(); }
   if (GAME() && !S.active && S.history.length) setTimeout(revealCheck, 1500);
@@ -10142,13 +10145,51 @@ let swp = null, swpAnim = false;
 let movT = null;
 function moving() { const h = document.documentElement; if (!h.classList.contains('moving')) h.classList.add('moving'); clearTimeout(movT); movT = setTimeout(() => { if (!swpAnim) h.classList.remove('moving'); }, 220); }
 window.addEventListener('scroll', moving, {passive: true});
-function swpReset() { if (swp || swpAnim) return; const a = $('#app'); if (a && (a.style.transform || a.style.opacity || a.style.willChange)) { a.style.transition = ''; a.style.transform = ''; a.style.opacity = ''; a.style.willChange = ''; } }
+function swpReset() { if (swp || swpAnim) return; if (ghost) { ghost.el.classList.remove('on'); ghost.el.style.transform = ''; ghost = null; } const a = $('#app'); if (a && (a.style.transform || a.style.opacity || a.style.willChange)) { a.style.transition = ''; a.style.transform = ''; a.style.opacity = ''; a.style.willChange = ''; } }
 window.addEventListener('scroll', () => { if (swp && !swp.lock && Math.abs(scrollY - (swp.sy || 0)) > 10) swp.lock = 'v'; swpReset(); }, {passive: true}); // la page défile avant que le geste soit décidé : c'est un défilement
 document.addEventListener('visibilitychange', swpReset);
 setInterval(() => { if (swp && Date.now() - (swp.lt || swp.t) > 2500) swp = null; swpReset(); }, 1500); // geste resté « ouvert » (fin du toucher jamais reçue)
+/* ---------- Onglet voisin déjà prêt à côté : il suit le doigt comme dans une vraie appli ----------
+   On garde une copie figée du dernier affichage de chaque onglet principal, et les deux voisins de l'onglet
+   courant sont préparés à l'avance (cachés). Pendant le glissement on ne fait que déplacer des images déjà
+   prêtes : rien à construire, donc pas d'accroc. Le vrai onglet est construit une fois l'animation finie. */
+const TABH = {}, GH = {};
+let ghost = null, snapT = null;
+function swTabs() { return ['train', 'stretch', 'cardio', 'timers', ...(GAME() ? ['guild'] : []), 'profile']; }
+function tabSnap() {
+  if (stack.length !== 1 || modals.length || swp || swpAnim || foldActive()) return;
+  const v = stack[0].v, a = $('#app'); if (!ROOT_TABS.includes(v) || !a || !a.firstElementChild) return;
+  try {
+    const cl = a.cloneNode(true), cs = a.querySelectorAll('canvas'), cd = cl.querySelectorAll('canvas');
+    cs.forEach((c, i) => { try { const im = document.createElement('img'); im.src = c.toDataURL(); im.style.cssText = `display:block;width:${c.clientWidth}px;height:${c.clientHeight}px`; cd[i].replaceWith(im); } catch (e) {} });
+    cl.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
+    TABH[v] = cl.innerHTML;
+  } catch (e) {}
+  ghostPrep();
+}
+function ghostEl(dest) {
+  const el = document.createElement('div'); el.className = 'tabghost'; el.setAttribute('aria-hidden', 'true');
+  el.innerHTML = '<main>' + TABH[dest] + '</main>'; el.dataset.v = dest; el.dataset.h = String(TABH[dest].length);
+  document.body.appendChild(el); return el;
+}
+function ghostPrep() {
+  if (stack.length !== 1 || swp || swpAnim) return;
+  const T0 = swTabs(), i = T0.indexOf(stack[0].v), want = i < 0 ? [] : [T0[i - 1], T0[i + 1]].filter(v => v && TABH[v]);
+  Object.keys(GH).forEach(v => { if (!want.includes(v) || GH[v].dataset.h !== String(TABH[v].length)) { GH[v].remove(); delete GH[v]; } });
+  want.forEach(v => { if (!GH[v]) GH[v] = ghostEl(v); });
+  const hb = document.querySelector('header'), top = (hb ? Math.round(hb.getBoundingClientRect().bottom) : 0) + 'px';
+  Object.values(GH).forEach(el => { el.style.top = top; });
+}
+function ghostFor(dest) {
+  if (ghost && ghost.dest === dest) return ghost;
+  if (ghost) { ghost.el.classList.remove('on'); ghost.el.style.transform = ''; ghost = null; }
+  if (!dest || dest === 'back' || !GH[dest] || foldActive()) return null;
+  GH[dest].classList.add('on'); return (ghost = {el: GH[dest], dest});
+}
+function snapLater() { clearTimeout(snapT); if (stack.length === 1) snapT = setTimeout(() => ric(tabSnap, {timeout: 1500}), 350); }
 function swipeTarget(dx) {
   if (stack.length > 1) return dx > 0 ? 'back' : null;
-  const TABS = ['train', 'stretch', 'cardio', 'timers', ...(GAME() ? ['guild'] : []), 'profile'], i = TABS.indexOf(stack[0].v);
+  const TABS = swTabs(), i = TABS.indexOf(stack[0].v);
   if (i < 0) return null;
   return dx < 0 ? (TABS[i + 1] || null) : (TABS[i - 1] || null);
 }
@@ -10165,10 +10206,13 @@ document.addEventListener('touchmove', e => {
   swp.lt = Date.now(); const p = e.touches[0], dx = p.clientX - swp.x, dy = p.clientY - swp.y;
   if (!swp.lock && (Math.abs(dx) > 12 || Math.abs(dy) > 12)) swp.lock = Math.abs(dx) > Math.abs(dy) * 1.6 && swipeTarget(dx) ? 'h' : 'v';
   if (swp.lock !== 'h') return;
-  if (!swipeTarget(dx)) { swp.dx = 0; const a = $('#app'); a.style.transform = ''; a.style.opacity = ''; return; }
+  if (!swipeTarget(dx)) { swp.dx = 0; const a = $('#app'); a.style.transform = ''; a.style.opacity = ''; if (ghost) { ghost.el.classList.remove('on'); ghost.el.style.transform = ''; ghost = null; } return; }
   swp.dx = dx;
   // Une seule mise à jour par image (le doigt envoie souvent plus d'événements que l'écran n'affiche d'images)
-  if (!swp.raf) swp.raf = requestAnimationFrame(() => { const s = swp; if (!s) return; s.raf = 0; if (s.lock !== 'h') return; moving(); const a = $('#app'); if (!a.style.willChange) a.style.willChange = 'transform, opacity'; a.style.transition = 'none'; a.style.transform = `translateX(${s.dx * 0.6}px)`; });
+  if (!swp.raf) swp.raf = requestAnimationFrame(() => { const s = swp; if (!s) return; s.raf = 0; if (s.lock !== 'h') return; moving(); const a = $('#app'); if (!a.style.willChange) a.style.willChange = 'transform, opacity'; a.style.transition = 'none';
+    const g = ghostFor(swipeTarget(s.dx));
+    if (g) { a.style.transform = `translateX(${s.dx}px)`; g.el.style.transform = `translateX(${(s.dx < 0 ? innerWidth : -innerWidth) + s.dx}px)`; }
+    else a.style.transform = `translateX(${s.dx * 0.6}px)`; });
 }, {passive: true});
 document.addEventListener('touchend', () => {
   if (!swp) return;
@@ -10177,6 +10221,30 @@ document.addEventListener('touchend', () => {
   const dest = swipeTarget(s.dx), fast = Math.abs(s.dx) > 35 && Date.now() - s.t < 320;
   a.style.transition = 'transform .18s ease, opacity .18s ease';
   if (s.raf) cancelAnimationFrame(s.raf);
+  const g = ghost && ghost.dest === dest ? ghost : null;
+  if (g && a.animate) {
+    // Mode « vraie appli » : les deux pages finissent leur course ensemble (hors du fil principal), puis le vrai onglet remplace la copie.
+    swpAnim = true; clearTimeout(movT); document.documentElement.classList.add('moving');
+    const W = innerWidth, go = Math.abs(s.dx) > W * .28 || fast, sg = s.dx < 0 ? -1 : 1, gx0 = (s.dx < 0 ? W : -W) + s.dx;
+    const left = go ? (W - Math.abs(s.dx)) / W : Math.abs(s.dx) / W, dur = Math.round(140 + 160 * Math.min(1, left));
+    const ez = 'cubic-bezier(.2,.75,.25,1)';
+    a.style.transition = 'none'; g.el.style.transition = 'none';
+    const ta = a.animate([{transform: `translateX(${s.dx}px)`}, {transform: go ? `translateX(${sg * W}px)` : 'translateX(0)'}], {duration: dur, easing: ez, fill: 'forwards'});
+    const tg = g.el.animate([{transform: `translateX(${gx0}px)`}, {transform: go ? 'translateX(0)' : `translateX(${s.dx < 0 ? W : -W}px)`}], {duration: dur, easing: ez, fill: 'forwards'});
+    a.style.transform = ''; g.el.style.transform = '';
+    if (go) { try { $('#title').textContent = VIEWS[dest][0]; document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x.dataset.tab === dest)); } catch (e) {} }
+    let fin = false;
+    const end = () => {
+      if (fin) return; fin = true;
+      if (go) { try { navAnim = false; animNext = false; setRoot(dest); render(); window.scrollTo(0, 0); } catch (e) {} }
+      ta.cancel(); tg.cancel(); g.el.classList.remove('on'); g.el.style.transform = ''; if (ghost === g) ghost = null;
+      swpAnim = false; a.style.willChange = ''; a.style.transition = ''; document.documentElement.classList.remove('moving'); swpReset();
+      if (go) { delete GH[dest]; g.el.remove(); snapLater(); }
+    };
+    tg.onfinish = end; setTimeout(end, dur + 250);
+    return;
+  }
+  if (ghost) { ghost.el.classList.remove('on'); ghost.el.style.transform = ''; ghost = null; }
   if (dest && (Math.abs(s.dx) > 65 || fast) && a.animate) {
     /* L'ancienne page finit de glisser pendant que la nouvelle se prépare : ces animations tournent hors du fil
        principal, donc le mouvement reste fluide même si l'onglet met un peu de temps à se construire. */
@@ -10200,7 +10268,7 @@ document.addEventListener('touchend', () => {
     requestAnimationFrame(() => { a.style.transition = 'transform .16s cubic-bezier(.2,.8,.2,1)'; a.style.transform = ''; setTimeout(() => { swpAnim = false; a.style.transition = ''; a.style.willChange = ''; swpReset(); }, 200); });
   } else { a.style.transform = ''; a.style.opacity = ''; setTimeout(() => { if (!swp) a.style.willChange = ''; }, 250); }
 }, {passive: true});
-document.addEventListener('touchcancel', () => { swp = null; swpReset(); }, {passive: true});
+document.addEventListener('touchcancel', () => { swp = null; if (ghost && !swpAnim) { ghost.el.classList.remove('on'); ghost.el.style.transform = ''; ghost = null; } swpReset(); }, {passive: true});
 
 document.addEventListener('toggle', e => { const d = e.target; if (d.dataset && d.dataset.sec) { if (d.open) secOpen.add(d.dataset.sec); else secOpen.delete(d.dataset.sec); } }, true);
 /* Toucher une case de chiffres (charge, reps, durée…) sélectionne tout : on tape directement la nouvelle valeur */
@@ -10213,7 +10281,7 @@ document.addEventListener('focusin', e => {
 /* ===================== Événements ===================== */
 document.addEventListener('click', e => {
   const gs = e.target.closest('[data-gsec]');
-  if (gs && e.target.closest('.gstrip')) { const sec = gs.dataset.gsec, gq = ['q', 'd', 'b'].includes(sec); if (sec !== 'status' && !gq) { S.settings.gOpen = S.settings.gOpen || {}; S.settings.gOpen[sec] = true; save(); } navAnim = false; setRoot('guild'); render(); window.scrollTo(0, 0); setTimeout(() => { const t = sec === 'status' ? document.getElementById('gstatus') : gq ? document.querySelector('#app [data-gq="' + sec + '"]') : document.querySelector('[data-gid="' + sec + '"]'); if (t && (gq || sec === 'status')) { t.classList.remove('gflash'); void t.offsetWidth; t.classList.add('gflash'); } if (t) { const hh = (document.querySelector('header') || {}).offsetHeight || 60, r = t.getBoundingClientRect(); window.scrollTo(0, sec === 'status' ? 0 : Math.max(0, scrollY + r.top - (gq ? Math.max(hh + 12, (innerHeight - r.height) / 2) : hh + 12))); } }, 80); return; }
+  if (gs && e.target.closest('.gstrip')) { const sec = gs.dataset.gsec, gq = ['q', 'd', 'b'].includes(sec); if (sec !== 'status' && !gq) { S.settings.gOpen = S.settings.gOpen || {}; S.settings.gOpen[sec] = true; save(); } navAnim = false; setRoot('guild'); render(); window.scrollTo(0, 0); setTimeout(() => { const t = sec === 'status' ? document.getElementById('gstatus') : gq ? document.querySelector('#app [data-gq="' + sec + '"]') : document.querySelector('#app [data-gid="' + sec + '"]'); if (t && (gq || sec === 'status')) { t.classList.remove('gflash'); void t.offsetWidth; t.classList.add('gflash'); } if (t) { const hh = (document.querySelector('header') || {}).offsetHeight || 60, r = t.getBoundingClientRect(); window.scrollTo(0, sec === 'status' ? 0 : Math.max(0, scrollY + r.top - (gq ? Math.max(hh + 12, (innerHeight - r.height) / 2) : hh + 12))); } }, 80); return; }
   const n = e.target.closest('[data-tab]');
   if (n) { const ti = ROOT_TABS.indexOf(n.dataset.tab), fi = ROOT_TABS.indexOf(stack[0].v); navAnim = false; const t0 = n.dataset.tab, same = stack.length === 1 && stack[0].v === t0; if (stack.length === 1) TABY[stack[0].v] = Math.round(scrollY); setRoot(t0); render(); const y0 = same ? 0 : (TABY[t0] || 0); window.scrollTo(0, y0); if (y0) setTimeout(() => window.scrollTo(0, y0), 60); return; } // onglets du bas : affichage net immédiat, sans fondu
   const b = e.target.closest('[data-act]'); if (!b) return;
@@ -10342,11 +10410,11 @@ document.addEventListener('click', e => {
       med: [T('MÉD · Médailles', 'MED · Medals'), T('Le nombre de médailles que tu as débloquées sur le total disponible.', 'The number of medals you have unlocked out of the total available.')]}[b.dataset.k];
       if (K) modal(`<h2>${K[0]}</h2><p class="muted">${K[1]}</p><button class="btn primary block" data-act="close">OK</button>`); break; }
     case 'xp-info': modal(`<h2>${T('Comment gagner de l\'XP', 'How to earn XP')}</h2><div class="xpl">${[[T('Séance', 'Workout'), 100], [T('Série', 'Set'), 5], [T('Record', 'Record'), 40], [T('Médaille', 'Medal'), 250], [T('Quête du jour', 'Daily quest'), 150], [T('Donjon', 'Dungeon'), 500], ['Boss', 1000], [T('Raid réussi', 'Raid cleared'), 400], [T('Défi gagné', 'Challenge won'), 300], [T('Quête ratée', 'Missed quest'), -QFAIL_XP]].map(([l, v]) => `<div class="row between"><span>${l}</span><b style="color:${v < 0 ? 'var(--warm)' : 'var(--ok)'}">${v > 0 ? '+' : '−'}${Math.abs(v).toLocaleString(LOC())} XP</b></div>`).join('')}</div><p class="small muted">${T('Les événements donnent aussi des bonus (double XP, quêtes spéciales).', 'Events also give bonuses (double XP, special quests).')}</p><p class="small muted">${ic('star', 14)} ${T('Au niveau 100, tu peux passer le <b>Prestige</b> : retour au niveau 1 avec une étoile et des récompenses exclusives. Tu gardes tes médailles, ta classe et tes cosmétiques.', 'At level 100 you can <b>Prestige</b>: back to level 1 with a star and exclusive rewards. You keep your medals, class and cosmetics.')}</p><button class="btn primary block" data-act="close">OK</button>`); break;
-    case 'cos-set': S.settings.cos = S.settings.cos || {}; S.settings.cos[b.dataset.k] = b.dataset.id; save(); armRefresh(); if (frOn() && ['banner', 'emblem'].includes(b.dataset.k)) frQueue(false); if (b.dataset.k === 'fx') { const x = document.querySelector('.armit.on'); if (x) setFx(x, false, b.dataset.id); } if (b.dataset.k === 'cele') confetti(120); break;
+    case 'cos-set': S.settings.cos = S.settings.cos || {}; S.settings.cos[b.dataset.k] = b.dataset.id; save(); armRefresh(); if (frOn() && ['banner', 'emblem'].includes(b.dataset.k)) frQueue(false); if (b.dataset.k === 'fx') { const x = document.querySelector('#app .armit.on'); if (x) setFx(x, false, b.dataset.id); } if (b.dataset.k === 'cele') confetti(120); break;
     case 'cos-prev': cosPreview(b.dataset.kind, b.dataset.id); break;
     case 'hero-big': heroBig(); break;
     case 'bl-st': blSet(document.getElementById('bl-' + b.dataset.g), b.dataset.s); break;
-    case 'bl-all': document.querySelectorAll('.blc .bart').forEach(x => blSet(x, b.dataset.s)); break;
+    case 'bl-all': document.querySelectorAll('#app .blc .bart, .modal .blc .bart').forEach(x => blSet(x, b.dataset.s)); break;
     case 'bl-hit': blHit(b.dataset.g); break;
     case 'bl-kill': blKill(b.dataset.k, +b.dataset.i); break;
     case 'set-eq': setEquip(b.dataset.id); break;
@@ -10380,7 +10448,7 @@ document.addEventListener('click', e => {
       else if (k === 'theme') { const t = REWARD_THEMES.find(x => x.id === id); if (t) { S.settings.theme = 'noir'; S.settings.accent = t.acc; S.settings.bg = t.bg; applyTheme(); } }
       else { S.settings.cos = S.settings.cos || {}; S.settings.cos[k] = id; }
       save(); armRefresh(); if (frOn() && ['title', 'frame', 'banner', 'emblem'].includes(k)) frQueue(false);
-      if (k === 'fx') setTimeout(() => { const x = document.querySelector('.armit.on'); if (x) setFx(x, false, id); }, 50); if (k === 'cele') confetti(120); break; }
+      if (k === 'fx') setTimeout(() => { const x = document.querySelector('#app .armit.on'); if (x) setFx(x, false, id); }, 50); if (k === 'cele') confetti(120); break; }
     case 'cos-try2': if (b.dataset.k === 'fx') setFx(b, false, b.dataset.id); else { celeForce = b.dataset.id; confetti(140); celeForce = null; } break;
     case 'cos-how': toast(T(`🔒 Se débloque avec : ${b.dataset.h}`, `🔒 Unlocks with: ${b.dataset.h}`)); break;
     case 'cos-try': if (b.dataset.k === 'fx') setFx(b, false); else confetti(120); break;
