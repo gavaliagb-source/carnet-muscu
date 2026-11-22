@@ -125,7 +125,8 @@ class HrService : Service(), SensorEventListener {
         }
     }
 
-    private fun dbg(m: String) { try { WS.send(this, JSONObject().put("a", "dbg").put("m", m)) } catch (e: Throwable) {} }
+    private fun scr(): String = try { if ((getSystemService(POWER_SERVICE) as PowerManager).isInteractive) "on" else "off" } catch (e: Throwable) { "?" }
+    private fun dbg(m: String) { android.util.Log.i("RLSTEP", "dbg $m"); try { WS.send(this, JSONObject().put("a", "dbg").put("m", m)) } catch (e: Throwable) {} }
     private fun hsCheck() {
         val c = WS.cl()
         val act = Build.VERSION.SDK_INT < 29 || checkSelfPermission(android.Manifest.permission.ACTIVITY_RECOGNITION) == android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -153,6 +154,7 @@ class HrService : Service(), SensorEventListener {
         try { val ec = HealthServices.getClient(this).exerciseClient; ec.endExerciseAsync(); ec.clearUpdateCallbackAsync(hsCb) } catch (e: Throwable) {}
     }
     private fun hrHs(b: Int) {
+        if (lastSent == 0L) android.util.Log.i("RLSTEP", "pouls hs $b")
         if (b < 30 || b > 230) return
         val now = System.currentTimeMillis()
         WS.bpm = b; WS.bpmT = now; WS.changed()
@@ -161,7 +163,7 @@ class HrService : Service(), SensorEventListener {
     private fun stepsHs(n: Int) {
         val c = WS.cl() ?: return
         val now = System.currentTimeMillis()
-        if (n != stLast && now - stSent >= 3000) { stLast = n; stSent = now; WS.send(this, JSONObject().put("a", "st").put("n", n).put("t0", c.optLong("t0")).put("t", now)) }
+        if (n != stLast && now - stSent >= 3000) { stLast = n; stSent = now; android.util.Log.i("RLSTEP", "send hs n=$n ecran=${scr()}"); WS.send(this, JSONObject().put("a", "st").put("n", n).put("t0", c.optLong("t0")).put("t", now)) }
     }
 
     private fun steps(v: Float) {
@@ -173,6 +175,7 @@ class HrService : Service(), SensorEventListener {
         val now = System.currentTimeMillis()
         if (n != stLast && now - stSent >= 3000) {
             stLast = n; stSent = now
+            android.util.Log.i("RLSTEP", "send capteur n=$n ecran=${scr()}")
             WS.send(this, JSONObject().put("a", "st").put("n", n).put("t0", t0).put("t", now))
         }
     }

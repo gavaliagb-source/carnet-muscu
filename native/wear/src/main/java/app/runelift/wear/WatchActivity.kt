@@ -140,6 +140,7 @@ class WatchActivity : Activity() {
         super.onCreate(savedInstanceState)
         WS.init(this)
         if (intent?.getBooleanExtra("rl_demo", false) == true) { demoMode = true; WS.demo(this) }
+        if (intent?.getBooleanExtra("rl_cardio", false) == true) { demoMode = true; WS.demoCardio(this, intent?.getStringExtra("rl_k") ?: "walk") }
         fromTile(intent)
         scroll = LockScroll(this).apply { setBackgroundColor(BG); isVerticalScrollBarEnabled = false; isFocusable = true; isFocusableInTouchMode = true }
         col = LinearLayout(this).apply {

@@ -43,6 +43,14 @@ object WS {
 
     /* Mode démo (tests sur émulateur seulement : lancé avec l'option rl_demo). */
     fun demo(ctx: Context) { init(ctx); local = null; saveLocal(); update(Demo.JSON) }
+    /* Test émulateur : cardio sur tapis lancé « depuis le téléphone ». */
+    fun demoCardio(ctx: Context, k: String) {
+        init(ctx); local = null; saveLocal()
+        val now = System.currentTimeMillis()
+        val o = JSONObject(Demo.JSON).put("on", 1).put("id", "cardio-$now").put("st", java.time.Instant.ofEpochMilli(now).toString())
+            .put("cl", JSONObject().put("t0", now).put("pms", 0).put("pat", 0).put("g", 1).put("sp", 1).put("k", k).put("st", 1).put("km", 0).put("kc", 0).put("mx", 190))
+        update(o.toString())
+    }
 
     /* À appeler au démarrage de chaque composant : récupère la séance locale et le dernier état du téléphone. */
     fun init(ctx: Context) {
