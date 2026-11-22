@@ -37,6 +37,10 @@ self.addEventListener('fetch', e => {
 // Toucher une notification (cell ou montre) ramène à l'appli, sur la séance
 self.addEventListener('notificationclick', e => {
   e.notification.close();
+  if (e.notification.tag === 'carnet-raid') {
+    e.waitUntil(self.clients.matchAll({type: 'window', includeUncontrolled: true}).then(cs => { const c = cs.find(x => 'focus' in x); return c ? c.focus() : self.clients.openWindow('./?go=guild'); }));
+    return;
+  }
   if (e.notification.tag === 'carnet-remind') {
     e.waitUntil(self.clients.matchAll({type: 'window', includeUncontrolled: true}).then(cs => { const c = cs.find(x => 'focus' in x); return c ? c.focus() : self.clients.openWindow('./?go=quest'); }));
     return;
@@ -76,8 +80,9 @@ self.addEventListener('message', e => {
 const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 async function remindCheck() {
   const c = await caches.open('carnet-remind'), r = await c.match('./__remind.json'); if (!r) return;
-  const p = await r.json(); if (!p.on) return;
-  const now = new Date(), dk = ymd(now);
+  const p = await r.json(); const now = new Date(), dk = ymd(now);
+  await raidRemind(c, p, now);
+  if (!p.on) return;
   const sr = await c.match('./__remind-shown'); if (sr && (await sr.text()) === dk) return;
   if (now.getHours() < p.hour || now.getHours() >= 23) return;
   if (p.last && ymd(new Date(p.last)) === dk) return;
@@ -87,5 +92,13 @@ async function remindCheck() {
   if (!title) return;
   await self.registration.showNotification(title, {body: p.body, tag: 'carnet-remind', icon: 'icon-192.png', badge: 'icon-192.png', data: {go: 'quest'}});
   await c.put('./__remind-shown', new Response(dk));
+}
+// Rappel de fin de raid : il reste 2 jours, puis 1 jour, et tu as encore de quoi attaquer
+async function raidRemind(c, p, now) {
+  const R = p.ra; if (!R || !R.can || now.getHours() < 10 || now.getHours() >= 22) return;
+  const left = R.end - now.getTime(); if (left <= 0 || left > 48 * 3600e3) return;
+  const key = R.wk + (left <= 24 * 3600e3 ? ':1' : ':2'), sr = await c.match('./__raid-shown'); if (sr && (await sr.text()) === key) return;
+  await self.registration.showNotification(p.tRa.replace('#', left <= 24 * 3600e3 ? p.d1 : p.d2), {body: p.bRa.replace('#', R.en).replace('%', R.bn), tag: 'carnet-raid', icon: 'icon-192.png', badge: 'icon-192.png', data: {go: 'guild'}});
+  await c.put('./__raid-shown', new Response(key));
 }
 self.addEventListener('periodicsync', e => { if (e.tag === 'carnet-remind') e.waitUntil(remindCheck()); });

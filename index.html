@@ -6227,9 +6227,10 @@ async function remindSync() {
     wp.forEach((p, i) => { if (i < di || !p || !p.r || p.rest) return; const d = new Date(); d.setDate(d.getDate() + i - di); days[dkey(d)] = p.r.name; });
     const plan = {on, gap: +S.settings.remindGap || 3, plan: S.settings.remindPlan !== false, hour: S.settings.remindHour == null ? 17 : +S.settings.remindHour, last, days,
       tGap: T('Ça fait # jours sans entraînement', '# days without training'), tPlan: T('Séance prévue aujourd\'hui : #', 'Workout planned today: #'),
-      body: T('La Guilde t\'attend, aventurier. Ta quête du jour est prête.', 'The Guild awaits, adventurer. Your daily quest is ready.')};
+      body: T('La Guilde t\'attend, aventurier. Ta quête du jour est prête.', 'The Guild awaits, adventurer. Your daily quest is ready.'),
+      ra: notifOn() && !LV() ? raBrief() : null, tRa: T('Plus que # avant la fin du raid', 'Only # left in the raid'), bRa: T('Tu as # points d\'énergie à dépenser contre %.', 'You have # energy points to spend on %.'), d1: T('1 jour', '1 day'), d2: T('2 jours', '2 days')};
     const c = await caches.open('carnet-remind'); await c.put('./__remind.json', new Response(JSON.stringify(plan), {headers: {'Content-Type': 'application/json'}}));
-    if (on && 'serviceWorker' in navigator) { const reg = await navigator.serviceWorker.ready; if (reg.periodicSync) { try { await reg.periodicSync.register('carnet-remind', {minInterval: 6 * 3600e3}); } catch (e) {} } }
+    if ((on || plan.ra) && 'serviceWorker' in navigator) { const reg = await navigator.serviceWorker.ready; if (reg.periodicSync) { try { await reg.periodicSync.register('carnet-remind', {minInterval: 6 * 3600e3}); } catch (e) {} } }
   } catch (e) {}
 }
 async function remindTest() {
@@ -6774,9 +6775,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.106.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.107.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.107.0', d: '2026-11-22', fr: ['Inviter des amis rapporte : un ami qui découvre Runelift grâce à toi et t\'envoie sa première demande d\'ami donne 250 XP à vous deux. Nouveaux titres : Recruteur, Rassembleur et Chef de clan.', 'Rappels de raid hors de l\'appli : une notification quand ton équipe frappe le boss sans toi, et quand il reste 2 jours puis 1 jour avec de l\'énergie à dépenser.'], en: ['Inviting friends pays off: a friend who discovers Runelift through you and sends you their first friend request gives you both 250 XP. New titles: Recruiter, Rallier and Clan chief.', 'Raid reminders outside the app: a notification when your team hits the boss without you, and when 2 days then 1 day are left with energy to spend.']},
   {v: '9.106.0', d: '2026-11-22', fr: ['S\'entraîner avec un ami : sous chaque séance d\'un ami, « Faire cette séance avec mes poids » copie ses exercices, son nombre de séries et ses reps, avec TES charges (ta dernière fois sur chaque exercice). Quand un ami s\'entraîne en ce moment, le bouton « Rejoindre » dans « En direct » copie la séance qu\'il est en train de faire.'], en: ['Train with a friend: copy a friend\'s workout with your own weights, or join the workout they are doing right now.']},
   {v: '9.105.0', d: '2026-11-22', fr: ['Sons du jeu : chaque attaque de raid a son son (lame, coup lourd, flèches, feu, dague, marteau sacré, orbe, harpe…), le boss bloque avec un choc de bouclier, les critiques sonnent fort, chaque boss a son cri, et une fanfare joue quand le raid est gagné. Les boss du mois crient aussi quand tu les bats. Tu peux couper ces sons dans Réglages.'], en: ['Game sounds: every raid attack, block, critical hit and boss has its own sound, with a fanfare when the raid is won. You can turn them off in Settings.']},
   {v: '9.104.0', d: '2026-11-22', fr: ['Les légendes d\'Aldrun : chaque classe, chaque boss du mois et chaque boss de raid a maintenant son histoire. Touche « Légende » sous le nom d\'un boss (raid, quêtes, bestiaire) ou « Lire sa légende » dans la fiche d\'une classe. L\'histoire du monde est dans le « i » du choix de classe et du bestiaire.'], en: ['The legends of Aldrun: every class, monthly boss and raid boss now has its story.']},
@@ -8314,7 +8316,7 @@ async function bgSync() {
     const on = S.settings.bgNotif !== false && !!FRS().fb && !!u;
     if (!on) { if (bgLast !== 'off') { bgLast = 'off'; L.bg({on: false}).catch(() => {}); } return; }
     const fr = (FRS().list || []).filter(f => fbIs(f.c)).map(f => [f.c.slice(3), String(f.n || '')]);
-    const o = {on: true, rt: u.refreshToken, key: FB_CFG.apiKey, pid: FB_CFG.projectId, uid: u.uid, fr, lang: isEN() ? 'en' : 'fr'};
+    const ra = raBrief(), o = {on: true, rt: u.refreshToken, key: FB_CFG.apiKey, pid: FB_CFG.projectId, uid: u.uid, fr, lang: isEN() ? 'en' : 'fr', ...(ra ? {ra, rm: raRm()} : {})};
     const j = JSON.stringify(o); if (j === bgLast) return; bgLast = j; L.bg(o).catch(() => {});
   } catch (e) {}
 }
@@ -8322,6 +8324,7 @@ function liveAct(a) { if (a === 'add30' && timerEnd > Date.now()) fakeAct('timer
 function launchAct(v) {
   if (!v || !S.settings.onboarded) return;
   if (v === 'friends') { closeAll(); setRoot('profile'); go('friends'); return; }
+  if (v === 'raid') { closeAll(); setRoot(GAME() ? 'guild' : 'profile'); render(); return; }
   if (S.active) { if (cur().v !== 'workout') openWorkout(); return; }
   if (v !== 'open' && S.routines.some(r => r.id === v)) startWorkout(v);
 }
@@ -8330,7 +8333,7 @@ function phoneInit() {
   L.addListener('live', d => liveAct(d && d.a));
   L.addListener('launch', () => L.launch().then(r => launchAct(r && r.start), () => {}));
   const chk = () => { L.pending().then(r => (r && r.items || []).forEach(x => liveAct(x.a)), () => {}); L.launch().then(r => launchAct(r && r.start), () => {}); };
-  chk(); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { chk(); widgetSync(true); bgSync(); } });
+  chk(); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { chk(); widgetSync(true); bgSync(); } else bgSync(); });
   setTimeout(() => { lockSync(); widgetSync(true); bgSync(); }, 2500);
 }
 function phoneBody() {
@@ -8860,7 +8863,7 @@ function frShowCode(old) {
   modal(`<div class="row between"><h2 style="margin:0">👥 ${T('Mon code ami', 'My friend code')}</h2><button class="btn sm" data-act="close">✕</button></div>
     <p class="small">${fr.fb ? T(`Tes amis te trouvent en cherchant ${myH() ? '<b>@' + esc(myH()) + '</b>' : 'ton @pseudo'} dans Amis → Ajouter, ou avec ce code. Tu reçois leur demande dans la cloche 🔔 : dès que tu acceptes, vous voyez vos séances.`, `Friends find you by searching ${myH() ? '<b>@' + esc(myH()) + '</b>' : 'your @username'} in Friends → Add, or with this code. Their request arrives in the bell 🔔: once you accept, you see each other's workouts.`) : T('Envoie ton code à tes amis. Dans leur appli : Profil → Amis → Ajouter, puis ils collent ton message. Ensuite, demande-leur le leur pour les voir aussi.', 'Send your code to your friends. In their app: Profile → Friends → Add, then they paste your message. Then ask for theirs to see them too.')}</p>
     <div class="frcode" style="margin-top:10px${fr.fb ? ';font-size:28px;letter-spacing:3px;text-align:center' : ''}">${esc(frMyCode())}</div>${fr.fb ? `<p class="small muted" style="margin:8px 0 0">${T('Ce code ne change jamais.', 'This code never changes.')}</p>` : ''}
-    <div class="row" style="margin-top:10px"><button class="btn primary" style="flex:1" data-act="fr-share">📤 ${T('Inviter un ami', 'Invite a friend')}</button><button class="btn" style="flex:1" data-act="fr-copy">📋 ${T('Copier', 'Copy')}</button></div>`);
+    <div class="row" style="margin-top:10px"><button class="btn primary" style="flex:1" data-act="fr-share">📤 ${T('Inviter un ami', 'Invite a friend')}</button><button class="btn" style="flex:1" data-act="fr-copy">📋 ${T('Copier', 'Copy')}</button></div>${fr.fb ? refLine() : ''}`);
 }
 const frCodeOf = t => { t = String(t || ''); const s0 = t.trim().match(/^([A-Za-z]{2,4}-\d{4})$/) || t.match(/(?:Code ami|Friend code)\s*:\s*([A-Za-z]{2,4}-\d{4})(?![\w-])/i) || t.match(/ami=([A-Za-z]{2,4}-\d{4})(?![\w-])/); if (s0) return s0[1].toUpperCase(); const m = t.match(/ami=([A-Za-z0-9_-]{20,})/) || t.match(/(?:Code ami|Friend code)\s*:\s*([A-Za-z0-9_-]{20,})/i) || t.trim().match(/^([A-Za-z0-9_-]{20,})$/); return m ? m[1] : ''; };
 async function frFetch(code) {
@@ -9271,7 +9274,22 @@ function raAttack(k) {
 }
 function raRefresh() { const box = document.querySelector('#app .raidbox'); if (!box) { render(); return; } box.innerHTML = raidCard(); try { snapLater(); } catch (e) {} } // seule la carte du raid est redessinée : pas de rechargement de la page
 let raShT = 0;
-function raShare() { clearTimeout(raShT); raShT = setTimeout(() => { try { if (S.guild && typeof gldSync === 'function') { window.raSoft = 1; gldSync(true); } } catch (e) {} try { if (FRS().list.length && typeof frPublish === 'function') frPublish(true); } catch (e) {} try { if (cbOn()) cbPush(false); } catch (e) {} }, 1500); }
+/* Résumé du raid pour les rappels hors de l'appli (téléphone : tâche Android ; web : service worker) */
+function raBrief() {
+  try {
+    if (!GAME() || (!FRS().list.length && !S.guild)) return null;
+    const wk = wkKey(new Date()), st = raidState(wk); if (st.rows.length < 2 || st.done) return null;
+    const costs = raList(clsCur()).map(k => RA_ATK[k]).filter(A => A && A[4] !== 'med').map(A => A[2]), en = raAvail(wk, st), W = S.raidW && S.raidW[wk];
+    const nm = RAID_BOSS[raBossIdx(wk)], bn = T(nm[0], nm[1]).replace(/^./, c => c.toUpperCase());
+    return {wk, end: +new Date(wk + 'T00:00:00') + 7 * 864e5, en, can: costs.length && en >= Math.min(...costs) ? 1 : 0, mt: W && W.log.length ? Math.max(...W.log.map(x => +x.t || 0)) : 0, bn};
+  } catch (e) { return null; }
+}
+function raRm() { // les autres combattants du raid (guilde, sinon amis) : [uid, nom]
+  const g = S.guild && (S.guild.mem || []).length ? S.guild : null;
+  if (g) return (g.mem || []).filter(m => m.uid !== g.me).slice(0, 30).map(m => [sUid(m.uid), String(m.n || '')]).filter(x => x[0]);
+  return (FRS().list || []).filter(f => fbIs(f.c)).slice(0, 30).map(f => [f.c.slice(3), String(f.n || '')]);
+}
+function raShare() { clearTimeout(raShT); raShT = setTimeout(() => { try { const u = fbMe(), W = S.raidW && S.raidW[wkKey(new Date())], t = W && W.log.length ? Math.max(...W.log.map(x => +x.t || 0)) : 0; if (u && t && t !== raShare.t) { raShare.t = t; fbDb().collection('users').doc(u.uid).set({rh: {wk: wkKey(new Date()), t}}, {merge: true}).catch(() => {}); } } catch (e) {} try { bgSync(); remindSync(); } catch (e) {} try { if (S.guild && typeof gldSync === 'function') { window.raSoft = 1; gldSync(true); } } catch (e) {} try { if (FRS().list.length && typeof frPublish === 'function') frPublish(true); } catch (e) {} try { if (cbOn()) cbPush(false); } catch (e) {} }, 1500); }
 function raidCheck() {
   if (!GAME() || (!FRS().list.length && !S.guild)) return;
   const wk = wkKey(new Date()), pw = wkKey(new Date(+new Date(wk + 'T12:00:00') - 3 * 864e5));
@@ -9583,13 +9601,13 @@ const TITLES = [ // [groupe de médaille, palier (0 = premier), [fr, en]]
   ['dg', 2, ['Nettoyeur de donjons', 'Dungeon cleaner']], ['boss', 0, ['Tueur de boss', 'Boss slayer']], ['boss', 3, ['Fléau des boss', 'Bane of bosses']],
   ['shs', 0, ['Forgeron légendaire', 'Legendary smith']], ['raid', 0, ['Compagnon de raid', 'Raid companion']], ['chw', 1, ['Duelliste', 'Duelist']],
   ['stl', 0, ['Légende du Serment de fer', 'Legend of the Iron Oath'], 4], ['stl', 1, ['Légende de la Piste sans fin', 'Legend of the Endless Trail'], 4], ['stl', 2, ['Légende du Dojo', 'Legend of the Dojo'], 4], ['stl', 3, ['Légende de la Source', 'Legend of the Wellspring'], 4], ['stl', 4, ['Flamme de l\'Ordre', 'Flame of the Order'], 4], ['stl', 5, ['Porteur de lumière', 'Lightbearer'], 4], ['stl', 6, ['L\'un des Trois Cents', 'One of the Three Hundred'], 4], ['stl', 7, ['Maître des ombres', 'Shadow master'], 4], ['stl', 8, ['Cœur de la forêt', 'Heart of the Forest'], 4], ['stl', 9, ['Celui des Mille Pas', 'Walker of a Thousand Steps'], 4],
-  ['rl', 0, ['Briseur de forteresse', 'Fortress breaker'], 2], ['rl', 1, ['Fondeur de colosse', 'Colossus smelter'], 2], ['rl', 2, ['Chasseur des sables', 'Sand hunter'], 2], ['rl', 3, ['Tueur de la Reine', 'Queen slayer'], 2], ['rl', 4, ['Brise-glace', 'Icebreaker'], 2], ['rl', 5, ['Fléau des abysses', 'Bane of the deep'], 2], ['rmvp', 0, ['Héros de raid', 'Raid hero'], 3],
+  ['rl', 0, ['Briseur de forteresse', 'Fortress breaker'], 2], ['rl', 1, ['Fondeur de colosse', 'Colossus smelter'], 2], ['rl', 2, ['Chasseur des sables', 'Sand hunter'], 2], ['rl', 3, ['Tueur de la Reine', 'Queen slayer'], 2], ['rl', 4, ['Brise-glace', 'Icebreaker'], 2], ['rl', 5, ['Fléau des abysses', 'Bane of the deep'], 2], ['rmvp', 0, ['Héros de raid', 'Raid hero'], 3], ['ref', 0, ['Recruteur', 'Recruiter'], 1], ['ref', 1, ['Rassembleur', 'Rallier'], 2], ['ref', 2, ['Chef de clan', 'Clan chief'], 3],
   ['sea', 0, ['Champion de saison', 'Season champion']], ['evt', 1, ['Fêtard de la Guilde', 'Guild reveler']], ['lvl', 9, ['Légende vivante', 'Living legend']],
   ['chs', 5, ['Pilleur de coffres', 'Chest raider'], 2], ['chs', 36, ['Seigneur du butin', 'Loot lord'], 4], ['chl', 10, ['Nécromancien', 'Necromancer'], 2], ['chd', 5, ['Dompteur de dragons', 'Dragon tamer'], 2], ['chd', 28, ['Tueur de wyrms', 'Wyrmslayer'], 4], ['chk', 5, ['Marin des abysses', 'Abyssal sailor'], 2], ['chk', 20, ['Seigneur des profondeurs', 'Lord of the deep'], 3], ['b3', 4, ['Dieu du fer', 'God of iron'], 4], ['pr', 4, ['Briseur de légendes', 'Legend breaker'], 4], ['boss', 4, ['Dévoreur de boss', 'Boss devourer'], 4], ['dg', 5, ['Seigneur des donjons', 'Dungeon lord'], 4], ['qd', 6, ['Élu de la Guilde', 'Chosen of the Guild'], 4], ['wk', 5, ['Inarrêtable', 'Unstoppable'], 4]];
 var CH_TT = {chs: 'mimic', chl: 'liche', chd: 'dragon', chk: 'kraken'};
 function titleList() { // titres débloqués selon tes médailles
   const me = medalsEarned();
-  return TITLES.map(([g, i, t]) => { if (g === 'stl') { const b = PCL_ALL[i]; return {id: g + i, t: T(t[0], t[1]), ok: stDone(b), how: T(`Termine l'histoire de classe ${pclName(b)}`, `Finish the ${pclName(b)} class story`)}; } if (g === 'rl') return {id: g + i, t: T(t[0], t[1]), ok: !!(S.raidLoot || {})['b' + i], how: T('Bats ce boss de raid avec ta guilde', 'Defeat this raid boss with your guild')}; if (g === 'rmvp') return {id: 'rmvp0', t: T(t[0], t[1]), ok: !!(S.raidLoot || {}).mvp, how: T('Fais le plus de dégâts d\'un raid réussi', 'Deal the most damage in a cleared raid')}; if (g === 'gm') return {id: 'gm0', t: T(t[0], t[1]), ok: cosReq({set: 'title'}).ok, how: ''}; if (CH_TT[g]) { const q = cosReq({fr: i, ft: CH_TT[g]}); return {id: g + i, t: T(t[0], t[1]), ok: q.ok, how: q.why}; } const d = g === 'n1' ? me.defs.find(x => x.id === 'n1') : me.defs.filter(x => x.g === g).sort((a, b) => a.v - b.v)[i]; return d ? {id: g + i, t: T(t[0], t[1]), ok: !!me.got[d.id], how: d.t} : null; }).filter(Boolean);
+  return TITLES.map(([g, i, t]) => { if (g === 'stl') { const b = PCL_ALL[i]; return {id: g + i, t: T(t[0], t[1]), ok: stDone(b), how: T(`Termine l'histoire de classe ${pclName(b)}`, `Finish the ${pclName(b)} class story`)}; } if (g === 'rl') return {id: g + i, t: T(t[0], t[1]), ok: !!(S.raidLoot || {})['b' + i], how: T('Bats ce boss de raid avec ta guilde', 'Defeat this raid boss with your guild')}; if (g === 'ref') { const need = [1, 3, 10][i]; return {id: g + i, t: T(t[0], t[1]), ok: refCount() >= need, how: T(`Invite ${need} ami${need > 1 ? 's' : ''} qui découvre${need > 1 ? 'nt' : ''} Runelift`, `Invite ${need} friend${need > 1 ? 's' : ''} new to Runelift`)}; } if (g === 'rmvp') return {id: 'rmvp0', t: T(t[0], t[1]), ok: !!(S.raidLoot || {}).mvp, how: T('Fais le plus de dégâts d\'un raid réussi', 'Deal the most damage in a cleared raid')}; if (g === 'gm') return {id: 'gm0', t: T(t[0], t[1]), ok: cosReq({set: 'title'}).ok, how: ''}; if (CH_TT[g]) { const q = cosReq({fr: i, ft: CH_TT[g]}); return {id: g + i, t: T(t[0], t[1]), ok: q.ok, how: q.why}; } const d = g === 'n1' ? me.defs.find(x => x.id === 'n1') : me.defs.filter(x => x.g === g).sort((a, b) => a.v - b.v)[i]; return d ? {id: g + i, t: T(t[0], t[1]), ok: !!me.got[d.id], how: d.t} : null; }).filter(Boolean);
 }
 const myTitle = () => { if (!GAME()) return ''; const k = clsCur(); return k ? pclName(k) + ' ' + pclMast(k).title : ''; }; // le titre affiché est celui de ta classe (maîtrise)
 const titleOf = id => { const x = TITLES.find(([g, i]) => g + i === id); return x ? T(x[2][0], x[2][1]) : ''; };
@@ -10268,7 +10286,7 @@ function vFriends() {
   const friends = fr.list.length ? `<div class="frlist"><button class="frchip add" data-act="fr-add"><span class="frav sm">＋</span><span>${T('Ajouter', 'Add')}</span></button>${meChip}${fr.list.map(f => { const d = frData[f.c] && frData[f.c].d; return `<button class="frchip${frLive(f.c) ? ' live' : ''}" data-act="fr-who" data-c="${f.c}">${d && d.av ? `<img class="frav sm" src="${d.av}" alt="">` : `<span class="frav sm">${esc((f.n || '?')[0].toUpperCase())}</span>`}<span>${esc(f.n || '…')}${d ? `<small>${frLv(d)}${d.wk != null ? ` 🔥 ${d.wk} ${T('sem.', 'wk')}` : ''}</small>` : ''}${f.gone ? `<small>⚠️ ${T('partage arrêté', 'stopped')}</small>` : f.err ? `<small class="frold">⚠️ ${T('pas chargé', 'not loaded')}</small>` : d && d.up ? `<small class="${Date.now() - new Date(d.up) > 3 * 864e5 ? 'frold' : ''}">${T('à jour', 'updated')} ${frAgo(d.up)}</small>` : ''}</span></button>`; }).join('')}</div>`
     : fr.fb ? `<div class="card frfind"><b>👥 ${T('Trouve tes amis', 'Find your friends')}</b><p class="small muted" style="margin:4px 0 8px">${T('Tape le @pseudo ou le nom d\'un ami. Il reçoit une demande, et dès qu\'il accepte, vous voyez vos séances l\'un de l\'autre.', 'Type a friend\'s @username or name. They get a request, and once they accept, you see each other\'s workouts.')}</p>
       <div class="hin-wrap"><span>🔍</span><input id="frsq" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="${T('@pseudo, nom ou code ami', '@username, name or friend code')}"></div><input id="frin" type="hidden"><div id="frsr" style="margin-top:10px"></div>
-      <p class="small muted" style="margin:10px 0 6px">${T('Ton ami n\'a pas encore l\'appli? Envoie-lui ton profil :', 'Friend doesn\'t have the app yet? Send them your profile:')}</p><button class="btn block" data-act="fr-share">📤 ${T('Inviter un ami', 'Invite a friend')}${myH() ? ' (@' + esc(myH()) + ')' : ''}</button></div>`
+      <p class="small muted" style="margin:10px 0 6px">${T('Ton ami n\'a pas encore l\'appli? Envoie-lui ton profil :', 'Friend doesn\'t have the app yet? Send them your profile:')}</p><button class="btn block" data-act="fr-share">📤 ${T('Inviter un ami', 'Invite a friend')}${myH() ? ' (@' + esc(myH()) + ')' : ''}</button>${refLine()}</div>`
     : `<button class="btn primary block" data-act="fr-add" style="margin-bottom:12px">＋ ${T('Ajouter un ami', 'Add a friend')}</button>`;
   const recHtml = rec.length ? `<div class="card"><span class="muted small">❤️ ${T('Réactions à tes séances', 'Reactions to your workouts')}</span>${rec.map(x => `<div class="small" style="margin-top:6px">${x.e} <b>${esc(x.n)}</b> · ${esc(x.h.routineName || '')} <span class="muted">(${dateFr(x.h.date)})</span></div>`).join('')}</div>` : '';
   const feedL = fr.list.length ? feed : []; // sans ami, pas besoin de revoir toutes ses propres séances ici
@@ -11910,19 +11928,30 @@ function openHandlePick(first) {
   setTimeout(hCheck, 50);
 }
 /* Demandes d'ami */
+/* ---------- Parrainage : un nouveau venu qui rejoint grâce à toi = 250 XP pour vous deux ---------- */
+const REF_XP = 250;
+const refNew = () => !S.refBy && FRS().list.length === 0 && S.history.length < 5;
+const refCount = () => (S.xpb || []).filter(x => x.k === 'ref').length;
+function refWin(id, name) { // je suis le parrain : mon ami vient d'arriver
+  if (!giveXp('ref', sUid(id), REF_XP, T(`${name || 'Ton ami'} t'a rejoint! +${REF_XP} XP`, `${name || 'Your friend'} joined you! +${REF_XP} XP`))) return;
+  const n = refCount(), t = n === 1 ? 'ref0' : n === 3 ? 'ref1' : n === 10 ? 'ref2' : ''; if (t) setTimeout(() => toast(T('Nouveau titre débloqué : ', 'New title unlocked: ') + titleOf(t)), 2600);
+}
+function refWelcome(id, name) { giveXp('refw', sUid(id), REF_XP, T(`Bienvenue! ${name || 'Ton ami'} t'a invité : +${REF_XP} XP`, `Welcome! ${name || 'Your friend'} invited you: +${REF_XP} XP`)); }
+const refLine = () => `<p class="small muted" style="margin:10px 0 0">${T(`Un ami qui découvre Runelift grâce à toi : <b>+${REF_XP} XP</b> pour vous deux.`, `A friend who discovers Runelift through you: <b>+${REF_XP} XP</b> for both of you.`)}${ib(T('Inviter des amis', 'Inviting friends'), T(`Ça compte quand ton ami t'envoie sa toute première demande d'ami, avant sa 5e séance, et que tu l'acceptes. Chacun reçoit ${REF_XP} XP. Titres : Recruteur (1 ami), Rassembleur (3 amis), Chef de clan (10 amis).`, `It counts when your friend sends you their very first friend request, before their 5th workout, and you accept it. You both get ${REF_XP} XP. Titles: Recruiter (1 friend), Rallier (3 friends), Clan chief (10 friends).`))}${refCount() ? ' · ' + T(`${refCount()} recruté${refCount() > 1 ? 's' : ''}`, `${refCount()} recruited`) : ''}</p>`;
 async function frReqSend(id, name, h) {
   const u = fbMe(), fr = FRS(); if (!u) return; if (id === u.uid) { toast(T('😄 C\'est toi!', '😄 That\'s you!')); return; }
   const c = 'fb:' + id; if (fr.list.some(f => f.c === c)) { toast(T('Vous êtes déjà amis', 'Already friends')); return; }
   if ((fr.reqIn || []).some(r => r.uid === id)) return frReqAccept(id);
+  const ref = refNew() ? 1 : 0; if (ref) S.refBy = id;
   fr.reqOut = (fr.reqOut || []).filter(r => r.uid !== id); fr.reqOut.push({uid: id, name: name || '', h: h || '', t: new Date().toISOString()}); save(); fbAllowSync();
-  try { await fbDb().collection('inbox').doc(id).collection('m').add({from: u.uid, type: 'req', name: myNm(), h: myH(), t: new Date().toISOString()}); toast(T(`📨 Demande envoyée${name ? ' à ' + name : ''}`, `📨 Request sent${name ? ' to ' + name : ''}`)); }
+  try { await fbDb().collection('inbox').doc(id).collection('m').add({from: u.uid, type: 'req', name: myNm(), h: myH(), t: new Date().toISOString(), ...(ref ? {ref: 1} : {})}); toast(T(`📨 Demande envoyée${name ? ' à ' + name : ''}`, `📨 Request sent${name ? ' to ' + name : ''}`)); }
   catch (e) { toast('⚠️ ' + e.message); }
   frSearchRender();
 }
 async function frReqAccept(id) {
   const fr = FRS(), r = (fr.reqIn || []).find(x => x.uid === id) || {uid: id}, c = 'fb:' + id, u = fbMe();
   fr.reqIn = (fr.reqIn || []).filter(x => x.uid !== id); fr.reqOut = (fr.reqOut || []).filter(x => x.uid !== id);
-  if (!fr.list.some(f => f.c === c)) fr.list.push({c, n: r.name || '…', add: new Date().toISOString()});
+  if (!fr.list.some(f => f.c === c)) { fr.list.push({c, n: r.name || '…', add: new Date().toISOString()}); if (r.ref) refWin(id, r.name); }
   NOTIFS().forEach(n => { if (n.key === 'req:' + id) { n.read = true; n.done = 'ok'; } }); save(); fbAllowSync(); fbWatch();
   if (u) try { await fbDb().collection('inbox').doc(id).collection('m').add({from: u.uid, type: 'acc', name: myNm(), h: myH(), t: new Date().toISOString()}); } catch (e) {}
   toast(T(`✅ ${r.name || ''} est maintenant ton ami`, `✅ ${r.name || ''} is now your friend`).replace('  ', ' ')); const p = document.getElementById('reqpop'); if (p) p.remove(); bellUpd(); if (['friends', 'notifs'].includes(cur().v) && !modals.length) render();
@@ -11956,15 +11985,15 @@ function reqShow(r) {
 function fbInboxMsg(m, me) {
   m = safeIn(m); if (!m || typeof m !== 'object' || Array.isArray(m)) return;
   const fr = FRS(), from = sUid(m.from); if (!from || from === me) return;
-  m.type = sStr(m.type, 10); m.h = sH(m.h); m.name = sName(m.name, m.h); m.e = sStr(m.e, 8); m.t = sStr(m.t, 40); m.id = sStr(m.id, 80); m.k = sStr(m.k, 12); m.gid = sStr(m.gid, 6).toUpperCase().replace(/[^A-Z0-9]/g, ''); m.gn = sStr(m.gn, 30);
+  m.type = sStr(m.type, 10); m.h = sH(m.h); m.name = sName(m.name, m.h); m.e = sStr(m.e, 8); m.t = sStr(m.t, 40); m.id = sStr(m.id, 80); m.k = sStr(m.k, 12); m.gid = sStr(m.gid, 6).toUpperCase().replace(/[^A-Z0-9]/g, ''); m.gn = sStr(m.gn, 30); m.ref = m.ref === 1 && m.type === 'req' ? 1 : 0;
   const c = 'fb:' + from, isFr = fr.list.some(f => f.c === c);
   if (!isFr && !['req', 'add', 'acc'].includes(m.type)) return; // encouragements et défis : seulement entre amis
   if (m.type === 'gi') { if (m.gid.length !== 6 || (S.guild && S.guild.id === m.gid)) return; if (notifAdd({type: 'gi', key: 'gi:' + from + ':' + m.gid, uid: from, name: m.name, gid: m.gid, gn: m.gn})) { toast(T(`🛡️ ${m.name} t'invite dans la guilde « ${m.gn} »`, `🛡️ ${m.name} invites you to the guild "${m.gn}"`)); const n = NOTIFS().find(x => x.key === 'gi:' + from + ':' + m.gid); if (n) giShow(n); } return; }
   if (m.type === 'cheer') { cheerShow(m); notifAdd({type: 'cheer', name: m.name, e: m.e || '🔥', uid: from}); return; }
   if (m.type === 'add' || m.type === 'req') {
     if (isFr) { if (m.type === 'req') fbDb().collection('inbox').doc(from).collection('m').add({from: me, type: 'acc', name: (S.settings.name || '').trim(), h: myH(), t: new Date().toISOString()}).catch(() => {}); return; }
-    if ((fr.reqOut || []).some(r => r.uid === from)) { fr.reqIn = (fr.reqIn || []).concat([{uid: from, name: m.name, h: m.h || '', t: m.t}]); frReqAccept(from); return; } // demande croisée : amis direct
-    fr.reqIn = (fr.reqIn || []).filter(r => r.uid !== from); fr.reqIn.push({uid: from, name: m.name || '', h: m.h || '', t: m.t || new Date().toISOString()}); save();
+    if ((fr.reqOut || []).some(r => r.uid === from)) { fr.reqIn = (fr.reqIn || []).concat([{uid: from, name: m.name, h: m.h || '', t: m.t, ...(m.ref ? {ref: 1} : {})}]); frReqAccept(from); return; } // demande croisée : amis direct
+    fr.reqIn = (fr.reqIn || []).filter(r => r.uid !== from); fr.reqIn.push({uid: from, name: m.name || '', h: m.h || '', t: m.t || new Date().toISOString(), ...(m.ref ? {ref: 1} : {})}); save();
     notifAdd({type: 'req', key: 'req:' + from, uid: from, name: m.name, h: m.h || ''}); reqShow({uid: from, name: m.name, h: m.h}); return;
   }
   if (m.type === 'ch') { notifAdd({type: 'ch', key: 'ch:' + m.id, uid: from, name: m.name, k: m.k, chid: m.id}); toast(T(`⚔️ ${m.name} te lance un défi!`, `⚔️ ${m.name} challenges you!`)); setTimeout(() => { try { frLoad(true); } catch (e) {} }, 500); return; }
@@ -11973,6 +12002,7 @@ function fbInboxMsg(m, me) {
     if (!isFr && !(fr.reqOut || []).some(r => r.uid === from)) return; // je ne lui ai rien demandé : personne ne peut s'ajouter tout seul à mes amis
     fr.reqOut = (fr.reqOut || []).filter(r => r.uid !== from);
     if (!isFr) { fr.list.push({c, n: m.name || '…', add: new Date().toISOString()}); save(); setTimeout(fbWatch, 0); }
+    if (S.refBy === from) refWelcome(from, m.name);
     fbAllowSync(); notifAdd({type: 'acc', name: m.name, h: m.h || '', uid: from}); toast(T(`🤝 ${m.name} a accepté ta demande d'ami`, `🤝 ${m.name} accepted your friend request`));
   }
 }
