@@ -6,3 +6,7 @@
 -dontwarn org.checkerframework.**
 -dontwarn com.google.common.**
 -ignorewarnings
+
+# Health Services : le client lit ses messages (proto) par réflexion, on garde tout.
+-keep class androidx.health.** { *; }
+-dontwarn androidx.health.**

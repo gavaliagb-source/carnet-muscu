@@ -41,16 +41,18 @@ class HrService : Service(), SensorEventListener {
     // Health Services : comme Samsung Health, la montre suit l'exercice et compte les pas même écran éteint.
     private var hsT0 = 0L
     private var hsOn = false
+    private var nUp = 0
     private val hsCb = object : ExerciseUpdateCallback {
         override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
-            try { update.latestMetrics.getData(DataType.HEART_RATE_BPM).lastOrNull()?.value?.let { hrHs(it.toInt()) } } catch (e: Throwable) {}
-            val n = try { update.latestMetrics.getData(DataType.STEPS_TOTAL)?.total } catch (e: Throwable) { null } ?: return
+            if (++nUp <= 3 || nUp % 20 == 0) android.util.Log.i("RLSTEP", "maj #$nUp etat=${try { update.exerciseStateInfo.state.name } catch (e: Throwable) { "?" }} types=${try { update.latestMetrics.dataTypes.joinToString { it.name } } catch (e: Throwable) { e.toString() }}")
+            try { update.latestMetrics.getData(DataType.HEART_RATE_BPM).lastOrNull()?.value?.let { hrHs(it.toInt()) } } catch (e: Throwable) { android.util.Log.i("RLSTEP", "err pouls $e") }
+            val n = try { update.latestMetrics.getData(DataType.STEPS_TOTAL)?.total } catch (e: Throwable) { android.util.Log.i("RLSTEP", "err pas $e"); null } ?: return
             stepsHs(n.toInt())
         }
         override fun onLapSummaryReceived(lapSummary: ExerciseLapSummary) {}
-        override fun onRegistered() {}
+        override fun onRegistered() { android.util.Log.i("RLSTEP", "rappel enregistré") }
         override fun onRegistrationFailed(throwable: Throwable) { hsOn = false; dbg("suivi refusé : " + (throwable.message ?: "").take(100)) }
-        override fun onAvailabilityChanged(dataType: DataType<*, *>, availability: Availability) {}
+        override fun onAvailabilityChanged(dataType: DataType<*, *>, availability: Availability) { android.util.Log.i("RLSTEP", "dispo ${dataType.name} $availability") }
     }
     private val tick = object : Runnable {
         override fun run() {
