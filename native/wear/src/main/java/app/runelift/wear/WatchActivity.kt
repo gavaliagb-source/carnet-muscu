@@ -237,6 +237,7 @@ class WatchActivity : Activity() {
         WS.exSel = t.first; WS.selE = t.first; WS.selS = t.second; field = 0; paint()
     }
 
+    private var permT0 = 0L
     private fun perms() {
         val need = mutableListOf<String>()
         if (checkSelfPermission(Manifest.permission.BODY_SENSORS) != PackageManager.PERMISSION_GRANTED) need.add(Manifest.permission.BODY_SENSORS)
@@ -244,7 +245,8 @@ class WatchActivity : Activity() {
         if (Build.VERSION.SDK_INT >= 36 && checkSelfPermission("android.permission.health.READ_HEART_RATE") != PackageManager.PERMISSION_GRANTED) need.add("android.permission.health.READ_HEART_RATE")
         val p = getSharedPreferences("rl", MODE_PRIVATE)
         val actOk = Build.VERSION.SDK_INT < 29 || checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
-        if (!actOk && !p.getBoolean("askedAct", false)) { p.edit().putBoolean("askedAct", true).apply(); need.add(Manifest.permission.ACTIVITY_RECOGNITION); requestPermissions(need.toTypedArray(), 3); return }
+        val clT0 = WS.cl()?.optLong("t0") ?: 0L // pendant un cardio : on redemande à chaque nouveau cardio, sinon aucun pas n'est compté
+        if (!actOk && (if (clT0 > 0) p.getLong("askedActT0", 0L) != clT0 else !p.getBoolean("askedAct", false))) { p.edit().putBoolean("askedAct", true).putLong("askedActT0", clT0).apply(); need.add(Manifest.permission.ACTIVITY_RECOGNITION); requestPermissions(need.toTypedArray(), 3); return }
         if (need.isNotEmpty() && !p.getBoolean("asked", false)) { p.edit().putBoolean("asked", true).apply(); requestPermissions(need.toTypedArray(), 3) }
     }
 
@@ -323,6 +325,7 @@ class WatchActivity : Activity() {
         if (askAb) { col.gravity = Gravity.CENTER; abandonView(); return }
         if (swapFor >= 0) { swapView(swapFor); return }
         val cl = WS.cl()
+        if (cl != null && cl.optLong("t0") != permT0) { permT0 = cl.optLong("t0"); perms() }
         if (cl != null) { if (page < 1) page = 1; col.gravity = Gravity.CENTER; col.setPadding((sw * 0.07).toInt(), (shh * 0.05).toInt(), (sw * 0.07).toInt(), (shh * 0.05).toInt()); scroll.locked = true; clDots(); if (page == 2) clControls(cl) else clView(cl); return }
         dots()
         when (page) {

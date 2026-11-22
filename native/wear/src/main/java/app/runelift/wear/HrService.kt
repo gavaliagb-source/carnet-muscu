@@ -165,24 +165,23 @@ class HrService : Service(), SensorEventListener {
         WS.bpm = b; WS.bpmT = now; WS.changed()
         if (now - lastSent >= 5000) { lastSent = now; WS.hr(this, b, now) }
     }
+    private var hsN = 0; private var hsNT0 = 0L; private var snN = 0
     private fun stepsHs(n: Int) {
         val c = WS.cl() ?: return
-        val now = System.currentTimeMillis()
-        if (n != stLast && now - stSent >= 3000) { stLast = n; stSent = now; android.util.Log.i("RLSTEP", "send hs n=$n ecran=${scr()}"); WS.send(this, JSONObject().put("a", "st").put("n", n).put("t0", c.optLong("t0")).put("t", now)) }
+        if (c.optLong("t0") != hsNT0) { hsNT0 = c.optLong("t0"); hsN = 0 }
+        hsN = maxOf(hsN, n); stSend(c)
+    }
+    // Les deux compteurs tournent : celui qui a compté le plus gagne (l'un des deux peut décrocher écran éteint)
+    private fun stSend(c: JSONObject) {
+        val n = maxOf(hsN, snN); val now = System.currentTimeMillis()
+        if (n != stLast && now - stSent >= 3000) { stLast = n; stSent = now; android.util.Log.i("RLSTEP", "send n=$n hs=$hsN capteur=$snN ecran=${scr()}"); WS.send(this, JSONObject().put("a", "st").put("n", n).put("t0", c.optLong("t0")).put("t", now)) }
     }
 
     private fun steps(v: Float) {
-        if (hsOn) return
         val c = WS.cl() ?: return
         val t0 = c.optLong("t0")
-        if (t0 != stT0 || stBase < 0 || v < stBase) { stT0 = t0; stBase = v; stLast = -1 }
-        val n = (v - stBase).toInt()
-        val now = System.currentTimeMillis()
-        if (n != stLast && now - stSent >= 3000) {
-            stLast = n; stSent = now
-            android.util.Log.i("RLSTEP", "send capteur n=$n ecran=${scr()}")
-            WS.send(this, JSONObject().put("a", "st").put("n", n).put("t0", t0).put("t", now))
-        }
+        if (t0 != stT0 || stBase < 0 || v < stBase) { stT0 = t0; stBase = v; stLast = -1; snN = 0; if (t0 != hsNT0) { hsNT0 = t0; hsN = 0 } }
+        snN = maxOf(snN, (v - stBase).toInt()); stSend(c)
     }
 
     override fun onAccuracyChanged(s: Sensor?, a: Int) {}

@@ -7,6 +7,8 @@ import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.WeightRecord
@@ -40,7 +42,8 @@ class RLHealthPlugin : Plugin() {
     private val pHr = HealthPermission.getReadPermission(HeartRateRecord::class)
     private val pHrW = HealthPermission.getWritePermission(HeartRateRecord::class)
     private val pTcal = HealthPermission.getWritePermission(TotalCaloriesBurnedRecord::class)
-    private val perms = setOf(pWorkout, pKcal, pWeight, pHr, pHrW, pTcal)
+    private val pSteps = HealthPermission.getReadPermission(StepsRecord::class)
+    private val perms = setOf(pWorkout, pKcal, pWeight, pHr, pHrW, pTcal, pSteps)
 
     private fun sdk() = HealthConnectClient.getSdkStatus(context)
     private fun client() = HealthConnectClient.getOrCreate(context)
@@ -60,6 +63,7 @@ class RLHealthPlugin : Plugin() {
         if (pHr in g) a.put("heart")
         if (pHrW in g) a.put("heartw")
         if (pTcal in g) a.put("tcal")
+        if (pSteps in g) a.put("steps")
         return a
     }
 
@@ -68,7 +72,7 @@ class RLHealthPlugin : Plugin() {
         val s = sdk()
         val r = JSObject()
         r.put("available", s == HealthConnectClient.SDK_AVAILABLE)
-        r.put("ver", 3) // 3 = + pouls et calories totales
+        r.put("ver", 4) // 3 = + pouls et calories totales, 4 = + pas
         r.put("reason", when (s) {
             HealthConnectClient.SDK_AVAILABLE -> "ok"
             HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> "update"
@@ -181,6 +185,20 @@ class RLHealthPlugin : Plugin() {
                 token = res.pageToken
             } while (token != null && a.length() < 20000)
             resolve(JSObject().put("items", a))
+        }
+    }
+
+    /* Pas faits entre start et end, toutes sources confondues (montre + téléphone comptés une seule fois par Health Connect) */
+    @PluginMethod
+    fun readSteps(call: PluginCall) {
+        if (sdk() != HealthConnectClient.SDK_AVAILABLE) { call.reject("unavailable"); return }
+        val start = Instant.parse(call.getString("start") ?: run { call.reject("start"); return })
+        val end = Instant.parse(call.getString("end") ?: run { call.reject("end"); return })
+        call.safe {
+            val c = client()
+            if (pSteps !in c.permissionController.getGrantedPermissions()) { reject("no_permission"); return@safe }
+            val r = c.aggregate(AggregateRequest(setOf(StepsRecord.COUNT_TOTAL), TimeRangeFilter.between(start, end)))
+            resolve(JSObject().put("steps", r[StepsRecord.COUNT_TOTAL] ?: 0L))
         }
     }
 
