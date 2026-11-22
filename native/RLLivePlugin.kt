@@ -135,7 +135,7 @@ class RLLivePlugin : Plugin() {
     }
 
     override fun load() { instance = this; fg = true; channels(context) }
-    override fun handleOnResume() { fg = true; NotificationManagerCompat.from(context).cancel(RLBgWorker.NID_BASE) }
+    override fun handleOnResume() { fg = true; NotificationManagerCompat.from(context).let { it.cancel(RLBgWorker.NID_BASE); it.cancel(RLBgWorker.NID_BASE + 1) } }
     override fun handleOnPause() { fg = false }
     override fun handleOnDestroy() { if (instance === this) instance = null }
 
