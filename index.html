@@ -1051,7 +1051,7 @@ const BWL = () => isEN() ? 'BW' : 'PDC';
 const dec1 = v => { const s = (Math.round(v * 10) / 10).toString(); return isEN() ? s : s.replace('.', ','); };
 /* Minutes → « 50 min » ou « 1 h 20 » */
 const hm = m => { m = Math.round(+m || 0); return m < 60 ? m + ' min' : `${Math.floor(m / 60)} h${m % 60 ? ' ' + pad2(m % 60) : ''}`; };
-const dateFr = iso => new Date(iso).toLocaleDateString(LOC(), {day: 'numeric', month: 'short'});
+const DTF = {}; const dateFr = iso => (DTF[LOC()] || (DTF[LOC()] = new Intl.DateTimeFormat(LOC(), {day: 'numeric', month: 'short'}))).format(new Date(iso));
 const toLocalInput = iso => { const d = new Date(iso); return `${dkey(d)}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
 const e1rm = (w, r) => (+w > 0 && +r > 0) ? +w * (1 + +r / 30) : 0;
 const clone = o => JSON.parse(JSON.stringify(o));
@@ -1450,10 +1450,12 @@ function incFor(name) {
 const INC_OPTS = () => S.settings.unit === 'kg' ? [0.5, 1, 1.25, 2, 2.5, 5] : [1, 2.5, 5, 10];
 function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('⚠️ Sauvegarde impossible'); } }
 function save() {
-  RC = {}; saveLocal(); if (typeof queueCloud === 'function') queueCloud(); if (typeof gdQueue === 'function') gdQueue(); }
+  RC = {}; DV++; saveLocal(); if (typeof queueCloud === 'function') queueCloud(); if (typeof gdQueue === 'function') gdQueue(); }
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 
 /* ---------- Navigation façon Hevy (pile d'écrans) ---------- */
+var DV = 0, PC = {}; // cache gardé d'un affichage à l'autre tant que les données ne changent pas (DV monte à chaque sauvegarde)
+const pcSig = () => DV + '|' + S.history.length + '|' + (S.body || []).length + '|' + LOC() + '|' + dkey(new Date()) + '|' + (S.settings.unit || '');
 var RC = {}; // petit cache remis à zéro à chaque affichage et à chaque sauvegarde (évite de recalculer 50 fois la même chose)
 const ROOT_TABS = ['train', 'stretch', 'cardio', 'timers', 'guild', 'profile'];
 function lastTab() { try { const t = localStorage.getItem('cm-tab'); return ROOT_TABS.includes(t) ? t : 'train'; } catch (e) { return 'train'; } }
@@ -2259,7 +2261,7 @@ function finishWorkout() {
     else if (nv === 0 && pv === 0) { const nr = Math.max(...ws.map(s => +s.r)), pr = Math.max(...prevSets.map(s => +s.r)); if (nr > pr) prs.push({name: e.name, from: pr + ' reps', to: nr + ' reps'}); }
   });
   const meBefore = medalsEarned(), medBefore = meBefore.got, huBefore = hunter(meBefore);
-  S.history.push({id, routineId: a.routineId, routineName: a.routineName, date: a.start, duration: Math.round(((+a.endAt || Date.now()) - new Date(a.start)) / 60000), exercises, ...(hrSum(a.hrl) ? {hr: hrSum(a.hrl)} : {}), ...(a.wid ? {wid: a.wid} : {})}); RC = {};
+  S.history.push({id, routineId: a.routineId, routineName: a.routineName, date: a.start, duration: Math.round(((+a.endAt || Date.now()) - new Date(a.start)) / 60000), exercises, ...(hrSum(a.hrl) ? {hr: hrSum(a.hrl)} : {}), ...(a.wid ? {wid: a.wid} : {})}); RC = {}; DV++;
   const wasFree = !a.routineId;
   const rtR = S.routines.find(x => x.id === a.routineId), rtCh = routineChanges(a, rtR);
   window._rtUpd = rtCh.length ? {rid: a.routineId, ex: JSON.parse(JSON.stringify(a.exercises))} : null;
@@ -2980,7 +2982,7 @@ function saveEditor() {
   if (!d.exercises.length) { toast('Ajoute au moins une série avec des reps'); return false; }
   d.duration = +d.duration || 0; delete d.isNew;
   const i = S.history.findIndex(x => x.id === d.id);
-  if (i >= 0) S.history[i] = d; else S.history.push(d); RC = {};
+  if (i >= 0) S.history[i] = d; else S.history.push(d); RC = {}; DV++;
   S.history.sort((a, b) => a.date.localeCompare(b.date));
   save(); return true;
 }
@@ -3116,7 +3118,7 @@ function importHevyCsv(txt) {
   const all = [...map.values()]; importBad = all.filter(s => !s.date).length;
   const add = all.filter(s => s.date && s.exercises.some(e => e.sets.length) && !known.has(s.date.slice(0, 16)));
   add.forEach(s => { delete s._ss; fixSS(s.exercises); });
-  S.history.push(...add); S.history.sort((a, b) => a.date.localeCompare(b.date)); RC = {};
+  S.history.push(...add); S.history.sort((a, b) => a.date.localeCompare(b.date)); RC = {}; DV++;
   return add.length;
 }
 /* Import CSV des autres applis (Strong, FitNotes, etc.) : on repère les colonnes par leur nom */
@@ -3159,7 +3161,7 @@ function importOtherCsv(txt) {
   const all = [...map.values()]; importBad = all.filter(s => !s.date).length;
   const add = all.filter(s => s.date && s.exercises.some(e => e.sets.length) && !known.has(s.date.slice(0, 16)));
   add.forEach(s => s.exercises = s.exercises.filter(e => e.sets.length));
-  S.history.push(...add); S.history.sort((a, b) => a.date.localeCompare(b.date)); RC = {};
+  S.history.push(...add); S.history.sort((a, b) => a.date.localeCompare(b.date)); RC = {}; DV++;
   return add.length;
 }
 function importFile(file) {
@@ -3998,8 +4000,9 @@ let rtMetric = 'vol';
 const routineSessions = r => S.history.filter(h => h.routineId === r.id || norm(h.routineName) === norm(r.name));
 const BW_RE = /traction|\bdips?\b|pull.?up|chin.?up|pompe|push.?up|muscle.?up|inverted row|rowing invers/i;
 const bwMemo = new Map();
-function isBWEx(name) { const k = norm(name); if (!bwMemo.has(k)) { const L = libEntry(name); bwMemo.set(k, (L && ['body weight', 'weighted'].includes(L.eq)) || BW_RE.test(name)); } return bwMemo.get(k); }
-function bwAt(iso) { if (S.settings.bwVol === false || !S.body.length) return 0; const d = String(iso).slice(0, 10); let v = 0; for (const b of S.body.slice().sort((a, c) => a.d.localeCompare(c.d))) { if (b.d <= d && +b.w > 0) v = +b.w; } return v || (+S.body.filter(b => +b.w > 0).sort((a, c) => a.d.localeCompare(c.d))[0]?.w || 0); }
+const bwRaw = new Map();
+function isBWEx(name) { const q = bwRaw.get(name); if (q !== undefined) return q; const k = norm(name); if (!bwMemo.has(k)) { const L = libEntry(name); bwMemo.set(k, (L && ['body weight', 'weighted'].includes(L.eq)) || BW_RE.test(name)); } const v = bwMemo.get(k); bwRaw.set(name, v); return v; }
+function bwAt(iso) { if (S.settings.bwVol === false || !S.body.length) return 0; const d = String(iso).slice(0, 10); let v = 0; for (const b of (PC.bodyS || (PC.bodyS = S.body.slice().sort((a, c) => a.d.localeCompare(c.d))))) { if (b.d <= d && +b.w > 0) v = +b.w; } return v || (+S.body.filter(b => +b.w > 0).sort((a, c) => a.d.localeCompare(c.d))[0]?.w || 0); }
 const sessVol = h => { let bw = null; return h.exercises.reduce((t, e) => { const add = isBWEx(e.name) ? (bw ?? (bw = bwAt(h.date))) : 0; return t + work(e.sets).reduce((a, s) => a + (s.u === 's' ? 0 : ((+s.w || 0) + add) * (+s.r || 0)), 0); }, 0); };
 const sessReps = h => h.exercises.reduce((t, e) => t + work(e.sets).reduce((a, s) => a + (s.u === 's' || s.u === 'c' ? 0 : (+s.r || 0)), 0), 0);
 function routinePoints(r) {
@@ -4186,7 +4189,8 @@ function weekRings() {
     ${!cycleOn() && !(S.schedule || []).some(x => x === 'rest' || S.routines.some(r => r.id === x)) ? `<button class="linkbtn small" style="margin-top:6px" data-act="sched-edit">📅 ${T('Planifier ma semaine', 'Plan my week')}</button>` : S.settings.goal ? '' : `<div class="muted small" style="margin-top:4px">${T('Objectifs = ta moyenne des 4 dernières semaines', 'Goals = your average of the last 4 weeks')}</div>`}</div></div>`;
 }
 /* ---------- Grille d'activité de l'année ---------- */
-function actGrid(inner) {
+function actGrid(inner) { const k = 'ag' + (inner ? 1 : 0) + LOC() + dkey(new Date()); return PC[k] || (PC[k] = actGrid0(inner)); }
+function actGrid0(inner) {
   if (!S.history.length) return '';
   const vol = {}; S.history.forEach(h => { const k = dkey(new Date(h.date)); vol[k] = (vol[k] || 0) + Math.max(1, sessVol(h)); });
   const vals = Object.values(vol).sort((a, b) => a - b), q = f => vals[Math.min(vals.length - 1, Math.floor(vals.length * f))];
@@ -4679,7 +4683,8 @@ const sesMet = e => {
   const top = Math.max(...ws.map(s => +s.w || 0));
   return {top, reps: ws.filter(s => (+s.w || 0) === top).reduce((a, s) => a + (+s.r || 0), 0), e: Math.max(...ws.map(s => e1rm(s.w, s.r))), maxR: Math.max(...ws.map(s => +s.r || 0))};
 };
-function stagnation(name) {
+function stagnation(name) { const m = PC.stag || (PC.stag = new Map()), k = name + '|' + dkey(new Date()); if (!m.has(k)) m.set(k, stagnation0(name)); return m.get(k); }
+function stagnation0(name) {
   if (S.settings.stagOff) return null;
   const ign = (S.settings.stagIgn || {})[norm(name)]; if (ign && Date.now() < ign) return null;
   const now = Date.now();
@@ -5810,7 +5815,7 @@ function syncQuestFails() {
 /* Supprimer une séance = comme si elle n'avait jamais existé : on retire aussi les quêtes, donjon, boss, coffre et bonus qu'elle avait donnés */
 function forgetSession(hid) {
   const h = S.history.find(x => x.id === hid); if (!h) return;
-  S.history = S.history.filter(x => x.id !== hid); RC = {};
+  S.history = S.history.filter(x => x.id !== hid); RC = {}; DV++;
   const k = dkey(new Date(h.date)), today = dkey(new Date()), d = new Date(k + 'T12:00');
   // quête du jour
   if (qLog()[k] && !dailyQuest(new Date(d)).done) { delete qLog()[k]; if (k < today && k >= (S.qStart || '') && (plannedDay(d) || S.history.some(x => dkey(x.date) === k))) qFail()[k] = QFAIL_XP; }
@@ -5821,9 +5826,9 @@ function forgetSession(hid) {
   // coffre de cette séance (XP + fragments)
   const ch = (S.chests || []).find(c => c.id === hid); if (ch) { if (ch.open) { S.frag = Math.max(0, (S.frag || 0) - (ch.fr || 0)); const F = FRAGS(); Object.entries(chestFrs(ch)).forEach(([t, k]) => F[t] = Math.max(0, (F[t] || 0) - k)); } S.chests = S.chests.filter(c => c.id !== hid); }
   // bonus d'XP liés à cette séance (coffre, double XP) et événements qui ne sont plus réussis
-  RC = {}; const evs = typeof eventsAround === 'function' ? eventsAround() : [];
+  RC = {}; DV++; const evs = typeof eventsAround === 'function' ? eventsAround() : [];
   S.xpb = (S.xpb || []).filter(x => { if ((x.k === 'chest' || x.k === 'x2') && x.id === hid) return false; if (x.k === 'ev') { const e = evs.find(y => y.id === x.id); if (e && e.q && evProg(e) < e.q.g) return false; } return true; });
-  RC = {}; prcMemo = null;
+  RC = {}; DV++; prcMemo = null;
 }
 function syncSystem() {
   syncQuestFails();
@@ -5919,7 +5924,8 @@ function questCard(compact) {
 }
 /* ----- Armée des ombres ----- */
 const SHR = [[1, 'E'], [5, 'D'], [10, 'C'], [20, 'B'], [35, 'A'], [50, 'S']];
-function shadowArmy() {
+function shadowArmy() { return PC.sa || (PC.sa = shadowArmy0()); }
+function shadowArmy0() {
   const H = S.history.slice().sort((a, b) => a.date.localeCompare(b.date)), map = new Map();
   H.forEach(x => x.exercises.forEach(e => {
     const ws = work(e.sets).filter(s => s.u !== 's'); if (!ws.length) return;
@@ -6569,9 +6575,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.90.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.90.5'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.90.5', d: '2026-11-21', fr: ['Guilde et Profil se construisent 2 à 3 fois plus vite (calculs gardés en mémoire tant que tes données ne changent pas) : le glissement vers ces onglets est plus fluide.', 'Les effets animés (auras, bannières) se mettent en pause pendant le glissement.'], en: ['Guild and Profile build 2-3x faster (results kept until your data changes): swiping to them is smoother.', 'Animated effects pause while swiping.']},
   {v: '9.90.4', d: '2026-11-21', fr: ['Glisser entre les onglets : plus de flash noir ni de coupure. L\'ancienne page glisse et s\'assombrit, la nouvelle arrive du bon côté en continu.'], en: ['Swiping between tabs: no more black flash or cut. The old page slides and dims while the new one slides in.']},
   {v: '9.90.3', d: '2026-11-21', fr: ['Glisser entre les onglets est plus fluide : l\'ancienne page finit de glisser pendant que la nouvelle se prépare, au lieu de figer un instant.'], en: ['Swiping between tabs is smoother: the old page keeps sliding while the new one loads, instead of freezing.']},
   {v: '9.90.2', d: '2026-11-21', fr: ['Cardio en direct : l\'écran affiche ce que dit la montre (exercice démarré, permission manquante…) pour comprendre pourquoi les pas ou le pouls n\'arrivent pas.'], en: ['Live cardio: shows what the watch reports (exercise started, missing permission…) to see why steps or heart rate don\'t arrive.']},
@@ -7749,7 +7756,7 @@ function cvSave() {
   const n = T(...CV_KINDS.find(x => x[0] === cv.k)[2]), names = {walk: 'Tapis roulant (marche)', run: 'Tapis roulant (course)', bike: 'Vélo stationnaire', ell: 'Elliptique', stair: 'Escaliers (StairMaster)', row: 'Rameur', rope: 'Corde à sauter'};
   const set = {w: '', r: Math.round(r.min), u: 'c', kc: r.kcal, st: Math.round(r.steps / 10) * 10};
   if (['walk', 'run'].includes(cv.k)) { set.km = Math.round((kmU() === 'mi' ? r.realKm / 1.609 : r.realKm) * 100) / 100; if (+cv.inc) set.inc = +cv.inc; if (r.realSteps) set.steps = r.realSteps; } else if (+cv.level) set.inc = +cv.level;
-  S.history.push({id: uid(), routineName: 'Cardio', date: new Date(Date.now() - r.min * 60000).toISOString(), duration: Math.round(r.min), exercises: [{name: names[cv.k] || n, sets: [set]}]}); RC = {};
+  S.history.push({id: uid(), routineName: 'Cardio', date: new Date(Date.now() - r.min * 60000).toISOString(), duration: Math.round(r.min), exercises: [{name: names[cv.k] || n, sets: [set]}]}); RC = {}; DV++;
   S.history.sort((a, b) => a.date.localeCompare(b.date));
   save(); render(); toast(T('✅ Cardio ajouté à ton historique', '✅ Cardio added to your history')); if (frOn()) frPublish(true);
 }
@@ -8808,7 +8815,7 @@ function chestOpen(id, fake) {
   };
   if (c.open) { show(); return; }
   o.querySelector('.chbox').addEventListener('click', () => {
-    if (c.open) return; c.open = true; if (!fake) { const F = FRAGS(); Object.entries(chestFrs(c)).forEach(([t, k]) => F[t] = (F[t] || 0) + k); S.frag = (S.frag || 0) + (c.fr || 0); giveXp('chest', c.id, c.xp); RC = {}; save(); }
+    if (c.open) return; c.open = true; if (!fake) { const F = FRAGS(); Object.entries(chestFrs(c)).forEach(([t, k]) => F[t] = (F[t] || 0) + k); S.frag = (S.frag || 0) + (c.fr || 0); giveXp('chest', c.id, c.xp); RC = {}; DV++; save(); }
     const bx = o.querySelector('.chbox'); bx.innerHTML = chestSvg(c.rar, 230, true); bx.classList.add('open'); o.querySelector('.chhint').textContent = '';
     if (S.settings.haptic !== false) haptic([40, 60, 120]); setTimeout(() => { confetti(c.rar >= 2 ? 160 : 90); show(); }, 450);
   });
@@ -9239,7 +9246,7 @@ function cosPreview(kind, id) {
 }
 /* Rafraîchit seulement le contenu de l'Armurerie (sans recharger la page ni remettre les onglets au début) */
 function armRefresh(anim) {
-  RC = {};
+  RC = {}; DV++;
   const c = document.querySelector('.armcontent'); if (!c) { render(); return; }
   c.innerHTML = armoryBody(true); { const hw = document.querySelector('.armbody .hcwrap'); if (hw) { const t = document.createElement('div'); t.innerHTML = heroCard(); if (t.firstElementChild) hw.replaceWith(t.firstElementChild); } } if (anim) { c.classList.remove('armfade'); void c.offsetWidth; c.classList.add('armfade'); }
   document.querySelectorAll('.armtabs button').forEach(x => x.classList.toggle('on', x.dataset.t === armTab));
@@ -9330,7 +9337,7 @@ function setsBody() {
 function setEquip(id) {
   const s = SETC[id]; if (!s) return; let n = 0;
   setPieces(s).forEach(p => { if (p.own.length) { eqItem(p.k, p.own[p.own.length - 1].id); n++; } });
-  save(); RC = {}; armRefresh(); if (frOn()) frQueue(false);
+  save(); RC = {}; DV++; armRefresh(); if (frOn()) frQueue(false);
   toast(T(`Ensemble ${s.n[0]} équipé (${n} pièces)`, `${s.n[1]} set equipped (${n} pieces)`));
 }
 
@@ -9463,7 +9470,7 @@ async function gldSync(force) {
     g.name = String(d.name || g.name || '').slice(0, 30); g.emb = d.emb || '⚔️'; g.bn = d.bn || ''; g.owner = d.owner; g.me = u.uid;
     g.mem = ms.docs.map(x => { const m = x.data() || {}; return {uid: x.id, n: String(m.n || '?').slice(0, 24), l: +m.l || 1, r: RKC[m.r] ? m.r : 'E', f: String(m.f || '').slice(0, 20), c: Math.max(0, (+m.xp || 0) - (+m.x0 || 0)), wk: m.wkk === wkk ? Math.max(0, +m.wk || 0) : 0, rp: Math.max(0, +m.rp || 0), rk: String(m.rk || ''), qp: Math.max(0, +m.qp || 0), qk: String(m.qk || ''), cl: PCL[m.cl] ? m.cl : '', lk: m.lk === 'f' ? 'f' : 'm', cv: Math.max(0, Math.min(PCL_LV.length - 1, +m.cv || 0))}; }).filter(m => !(d.ban || []).includes(m.uid));
     g.xpRaw = g.mem.reduce((a, m) => a + m.c, 0); g.xp = Math.round(g.xpRaw * gldScale(g.mem.length)); g.lvl = gldLvl(g.xp); S.gpeak = Math.max(+S.gpeak || 0, g.lvl); g.t = Date.now(); g.err = '';
-    save(); RC = {}; try { raidCheck(); } catch (e) {} if (cur().v === 'guild' && !modals.length) render();
+    save(); RC = {}; DV++; try { raidCheck(); } catch (e) {} if (cur().v === 'guild' && !modals.length) render();
   } catch (e) { if (S.guild) { S.guild.err = String(e && e.message || e).slice(0, 140); saveLocal(); } } finally { gldBusy = 0; }
 }
 async function gldCreate(name) {
@@ -9811,7 +9818,8 @@ function bigTimerSync() {
 }
 /* ---------- Mode écran déplié (téléphone pliable, tablette) : séance à gauche, chrono et historique à droite ---------- */
 let foldEx = null;
-const foldWide = () => S.settings.fold !== false && innerWidth >= 700;
+let VW = innerWidth; addEventListener('resize', () => { VW = innerWidth; }, {passive: true});
+const foldWide = () => S.settings.fold !== false && VW >= 700;
 const foldActive = () => foldWide() && cur().v === 'workout' && !!S.active;
 function foldSpark(name) {
   const ss = exSessions(name).slice().sort((a, b) => a.h.date.localeCompare(b.h.date)).slice(-12);
@@ -9870,7 +9878,7 @@ document.addEventListener('toggle', e => { const d = e.target; if (!d || !d.data
   const fb = d.querySelector(':scope > .gfb'); if (d.open && fb && !fb.childElementCount && GSB[d.dataset.gid]) { try { fb.innerHTML = GSB[d.dataset.gid](); iconize(fb); friFill(); } catch (e2) {} } }, true);
 let animNext = true, ANIM = true; // les graphiques s'animent seulement à l'ouverture d'un écran (pas à chaque mise à jour)
 function render() {
-  RC = {}; wearPush();
+  RC = {}; { const g = pcSig(); if (PC.sig !== g) PC = {sig: g}; } wearPush();
   ANIM = !!navAnim || animNext; animNext = false;
   if (selR && cur().v !== 'train') { selR = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
   if (selH && !HVIEWS.includes(cur().v)) { selH = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
@@ -10132,7 +10140,7 @@ function renderChrome() {
 let swp = null, swpAnim = false;
 /* Remet la page en place si un glissement a été interrompu (sinon elle restait décalée et sombre) */
 let movT = null;
-function moving() { const h = document.documentElement; if (!h.classList.contains('moving')) h.classList.add('moving'); clearTimeout(movT); movT = setTimeout(() => h.classList.remove('moving'), 220); }
+function moving() { const h = document.documentElement; if (!h.classList.contains('moving')) h.classList.add('moving'); clearTimeout(movT); movT = setTimeout(() => { if (!swpAnim) h.classList.remove('moving'); }, 220); }
 window.addEventListener('scroll', moving, {passive: true});
 function swpReset() { if (swp || swpAnim) return; const a = $('#app'); if (a && (a.style.transform || a.style.opacity || a.style.willChange)) { a.style.transition = ''; a.style.transform = ''; a.style.opacity = ''; a.style.willChange = ''; } }
 window.addEventListener('scroll', () => { if (swp && !swp.lock && Math.abs(scrollY - (swp.sy || 0)) > 10) swp.lock = 'v'; swpReset(); }, {passive: true}); // la page défile avant que le geste soit décidé : c'est un défilement
@@ -10172,7 +10180,8 @@ document.addEventListener('touchend', () => {
   if (dest && (Math.abs(s.dx) > 65 || fast) && a.animate) {
     /* L'ancienne page finit de glisser pendant que la nouvelle se prépare : ces animations tournent hors du fil
        principal, donc le mouvement reste fluide même si l'onglet met un peu de temps à se construire. */
-    swpAnim = true; const dir = s.dx > 0 ? 1 : -1, from = a.style.transform || 'none';
+    swpAnim = true; clearTimeout(movT); document.documentElement.classList.add('moving'); // animations décoratives en pause pendant le glissement
+    const dir = s.dx > 0 ? 1 : -1, from = a.style.transform || 'none';
     a.style.transition = 'none'; a.style.transform = ''; a.style.opacity = ''; a.style.willChange = 'transform, opacity';
     const out = a.animate([{transform: from, opacity: 1}, {transform: `translateX(${dir * 30}%)`, opacity: .35}], {duration: 150, easing: 'cubic-bezier(.3,0,.8,.6)', fill: 'forwards'});
     // On laisse l'ancienne page glisser ~90 ms avant de construire la nouvelle : pas de coupure brusque ni d'écran noir.
@@ -10180,7 +10189,7 @@ document.addEventListener('touchend', () => {
       try { if (dest === 'back') back(); else { setRoot(dest); render(); window.scrollTo(0, 0); } } catch (e) {}
       out.cancel();
       const inn = a.animate([{transform: `translateX(${-dir * 22}%)`, opacity: .35}, {transform: 'none', opacity: 1}], {duration: 210, easing: 'cubic-bezier(.2,.8,.2,1)'});
-      const done = () => { swpAnim = false; a.style.willChange = ''; a.style.transition = ''; swpReset(); };
+      const done = () => { if (!swpAnim) return; swpAnim = false; a.style.willChange = ''; a.style.transition = ''; document.documentElement.classList.remove('moving'); swpReset(); };
       inn.onfinish = done; inn.oncancel = done; setTimeout(done, 450);
     }, 90);
   } else if (dest && (Math.abs(s.dx) > 65 || fast)) {
@@ -10322,7 +10331,7 @@ document.addEventListener('click', e => {
       <p class="small">✅ ${T('Tu gardes : médailles, classe, cosmétiques débloqués, titres, historique.', 'You keep: medals, class, unlocked cosmetics, titles, history.')}</p>
       <p class="small">🎁 ${T('Prestige 1 : cadre et emblème « Étoile du Prestige », aura « Chute d\'étoiles », titre « Renaissant ». Prestige 2, 3 et 5 : encore plus.', 'Prestige 1: “Prestige star” frame and emblem, “Starfall” aura, “Reborn” title. Prestige 2, 3 and 5: even more.')}</p>
       <div class="row" style="gap:8px;margin-top:12px"><button class="btn block" data-act="close">${T('Pas maintenant', 'Not now')}</button><button class="btn primary block" data-act="prestige-go">🌟 ${T('Confirmer', 'Confirm')}</button></div>`); break; }
-    case 'prestige-go': { const hu = hunter(); if (hu.lvl < 100) break; S.prestige = (S.prestige || []).concat([{t: Date.now(), xp: hu.raw - (S.prestige || []).reduce((a, x) => a + (+x.xp || 0), 0)}]); RC = {}; save(); closeModal();
+    case 'prestige-go': { const hu = hunter(); if (hu.lvl < 100) break; S.prestige = (S.prestige || []).concat([{t: Date.now(), xp: hu.raw - (S.prestige || []).reduce((a, x) => a + (+x.xp || 0), 0)}]); RC = {}; DV++; save(); closeModal();
       const n = S.prestige.length, o = document.createElement('div'); o.id = 'prestigeo';
       o.innerHTML = `<div class="awk"><div class="sysh">[ ${T('GUILDE', 'GUILD')} ]</div><div class="pbig">🌟</div><div class="awt" style="font-size:26px;letter-spacing:5px">PRESTIGE ${n}</div><div class="awn">${T('L\'ascension recommence.', 'The climb begins again.')}</div><div class="muted small awtap">${T('Touche pour continuer', 'Tap to continue')}</div></div>`;
       o.addEventListener('click', () => { o.remove(); render(); }); document.body.appendChild(o); confetti(200); if (S.settings.haptic !== false) haptic([80, 60, 80, 60, 400]); break; }
@@ -10341,7 +10350,7 @@ document.addEventListener('click', e => {
     case 'bl-hit': blHit(b.dataset.g); break;
     case 'bl-kill': blKill(b.dataset.k, +b.dataset.i); break;
     case 'set-eq': setEquip(b.dataset.id); break;
-    case 'rv-eq': { eqItem(b.dataset.k, b.dataset.id); save(); RC = {}; if (frOn()) frQueue(false); toast(T('Équipé', 'Equipped')); closeModal(); if (['guild', 'profile'].includes(cur().v)) render(); break; }
+    case 'rv-eq': { eqItem(b.dataset.k, b.dataset.id); save(); RC = {}; DV++; if (frOn()) frQueue(false); toast(T('Équipé', 'Equipped')); closeModal(); if (['guild', 'profile'].includes(cur().v)) render(); break; }
     case 'gld-new': gldAsk('new'); break;
     case 'gld-join': gldAsk('join'); break;
     case 'gld-inv': gldInvite(); break;
@@ -10364,7 +10373,7 @@ document.addEventListener('click', e => {
       if (S.pcl && S.pcl.k) { modal(`<h2 style="margin:0 0 8px">${T('Changer de classe ?', 'Change class?')}</h2><p style="margin:0 0 10px">${T('Tu passes à', 'You are switching to')} <b>${esc(pclName(k))}</b>.</p><p class="small" style="margin:0 0 14px;color:var(--warm)">${T('⚠ Tu ne pourras plus changer de classe pendant 7 jours.', '⚠ You won\'t be able to change class again for 7 days.')}</p><div class="row" style="gap:8px"><button class="btn" style="flex:1" data-act="close">${T('Annuler', 'Cancel')}</button><button class="btn primary" style="flex:1" data-act="pcl-yes" data-k="${k}">${T('Confirmer', 'Confirm')}</button></div>`); break; }
       pclSet(k); closeAll(); render(); toast(T(`${pclName(k)} : classe choisie`, `${pclName(k)}: class chosen`)); break; }
     case 'chest-next': { const o = document.getElementById('chesto'); if (o) o.remove(); const c = chestsPending()[0]; if (c) chestOpen(c.id); break; }
-    case 'chest-close': { const o = document.getElementById('chesto'); if (o) o.remove(); RC = {}; render(); break; }
+    case 'chest-close': { const o = document.getElementById('chesto'); if (o) o.remove(); RC = {}; DV++; render(); break; }
     case 'cos-eq': { const k = b.dataset.kind, id = b.dataset.id; closeModal();
       if (k === 'title') { S.settings.title = id; toast(T(`🏷️ Titre : ${titleOf(id)}`, `🏷️ Title: ${titleOf(id)}`)); }
       else if (k === 'frame') S.settings.frame = id;
