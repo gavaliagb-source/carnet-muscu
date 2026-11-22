@@ -165,6 +165,7 @@ canvas{width:100%;height:210px;display:block}
 /* Onglets voisins prêts juste hors de l'écran (déjà dessinés : rien à préparer au moment de glisser) */
 .tabghost{position:fixed;left:0;right:0;bottom:0;z-index:4;overflow:hidden;pointer-events:none;background:var(--bg);will-change:transform;contain:strict;transform:translateX(calc(100% + 40px))}.tabghost.gl{transform:translateX(calc(-100% - 40px))}.tabghost *{animation:none!important;transition:none!important}
 #app{will-change:transform}
+.pclduo{position:relative;display:inline-block;flex:none}.pclduo>span{position:absolute;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--card2);box-shadow:0 0 0 2px var(--card)}.pclduo>span:first-child{left:0;top:0}.pclduo>span:last-child{right:0;bottom:0}.pclduo img{width:100%;height:100%;object-fit:cover}
 .bmrow{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px}.bmrow::-webkit-scrollbar{display:none}.bmrow .btn{flex:none;white-space:nowrap}
 .hist summary,summary.nomark{list-style:none;cursor:pointer}summary.nomark::-webkit-details-marker{display:none}
 .hist summary::-webkit-details-marker{display:none}
@@ -2269,7 +2270,7 @@ function finishWorkout() {
   const rtR = S.routines.find(x => x.id === a.routineId), rtCh = routineChanges(a, rtR);
   window._rtUpd = rtCh.length ? {rid: a.routineId, ex: JSON.parse(JSON.stringify(a.exercises))} : null;
   const chest = GAME() ? chestRoll(id, exercises, prs.length) : null;
-  const sysNew = syncSystem(); const evX2 = GAME() ? evDoubleXp(S.history[S.history.length - 1]) : 0; if (GAME()) evCheck();
+  const sysNew = syncSystem(); const evX2 = GAME() ? evDoubleXp(S.history[S.history.length - 1]) : 0, clsX = GAME() ? clsBonus(S.history[S.history.length - 1]) : 0; if (GAME()) evCheck();
   const cpB = COMP_LIVE && GAME() ? compOf(huBefore) : null;
   const meAfter = medalsEarned(), huAfter = hunter(meAfter), medDefs = meAfter.defs, medNew = Object.keys(meAfter.got).filter(k => !medBefore[k]).map(k => medDefs.find(d => d.id === k)).filter(Boolean);
   const cpA = COMP_LIVE && GAME() ? compSync(huAfter) : null, cpEvo = cpB && cpA && cpB.key !== cpA.key && cpA.st > cpB.st; window._cpEvo = cpEvo ? [cpB, cpA] : null;
@@ -2288,6 +2289,7 @@ function finishWorkout() {
       ${huAfter.lvl > huBefore.lvl ? `<b style="font-size:18px;letter-spacing:1px">${T('NIVEAU SUPÉRIEUR!', 'LEVEL UP!')}</b><div style="margin:4px 0">${T('Niveau', 'Level')} ${huBefore.lvl} → <b style="color:var(--rc);font-size:20px">${huAfter.lvl}</b></div>` : `<div>${T('Niveau', 'Level')} <b>${huAfter.lvl}</b></div>`}
       ${huAfter.rk !== huBefore.rk ? `<div style="margin:6px 0">${T('Nouveau rang', 'New rank')}${CLN()} ${rkBadge(huAfter.rk, 'mrk lvrk')} <b style="color:var(--rc)">${esc(huAfter.title)}</b></div>` : ''}
       ${evX2 ? `<div style="margin:6px 0">🎪 ${T('Bonus d\'événement (double XP)', 'Event bonus (double XP)')} <b>+${evX2} XP</b></div>` : ''}
+      ${clsX ? `<div style="margin:6px 0;display:flex;align-items:center;justify-content:center;gap:8px">${pclImg(clsCur(), 22)} ${T('Bonus de classe', 'Class bonus')} (${esc(pclName(clsCur()))}) <b>+${clsX} XP</b></div>` : ''}
       ${sysNew.quest ? `<div style="margin:6px 0">✨ ${T('Quête quotidienne accomplie', 'Daily quest complete')} <b>+150 XP</b></div>` : ''}
       ${sysNew.dungeon ? `<div style="margin:6px 0">⚔️ ${T('Donjon nettoyé', 'Dungeon cleared')} <b>+500 XP</b></div>` : ''}
       ${sysNew.boss ? `<div style="margin:8px 0;font-size:17px">☠️ <b>${T('BOSS VAINCU!', 'BOSS DEFEATED!')}</b> ${esc(sysNew.boss.name)} <b>+1 000 XP</b></div>` : ''}
@@ -3845,7 +3847,7 @@ function vTrain() {
   let h = '';
   if (a) h += `<div class="card" style="border-color:var(--accent)"><div class="row between"><div><h3>Séance en cours</h3><span class="muted small">${esc(a.routineName)} · ⏱ <span id="elapsed2">${fmtDur(Date.now() - new Date(a.start))}</span></span></div><button class="btn primary sm" data-act="go-workout">Reprendre</button></div></div>`;
   h += todayCard();
-  syncSystem(); if (GAME()) { evCheck(); h += guildStrip(); setTimeout(evAnnounce, 0); }
+  syncSystem(); if (GAME()) { clsSync(); evCheck(); h += guildStrip(); setTimeout(evAnnounce, 0); }
   h += cloudNag();
   if (deloadOn()) h += `<div class="card" style="border-color:var(--warm)"><div class="row between"><div><b>🪶 Semaine de récupération</b><br><span class="muted small">Charges −${S.settings.deload.pct} % jusqu'au ${new Date(S.settings.deload.until + 'T12:00').toLocaleDateString(LOC(), {day: 'numeric', month: 'long'})}</span></div><button class="btn sm" data-act="deload-off">Arrêter</button></div></div>`;
   if (!S.history.length && !S.settings.xferHide) h += `<div class="card" style="border-color:var(--accent)"><div class="row between" style="align-items:flex-start"><div><b>📲 ${T('Tu viens d\'une autre appli?', 'Coming from another app?')}</b><br><span class="muted small">${T('Ramène ton historique, tes records et tes routines de Hevy, Strong ou de n\'importe quelle appli qui exporte un fichier CSV.', 'Bring your history, records and routines from Hevy, Strong or any app that exports a CSV file.')}</span></div><button class="btn sm ghost" data-act="xfer-hide" aria-label="${T('Masquer', 'Hide')}">✕</button></div><button class="btn primary block" data-act="xfer-open" style="margin-top:10px">📥 ${T('Importer mon fichier CSV', 'Import my CSV file')}</button></div>`;
@@ -4460,7 +4462,7 @@ function vProfile() {
       <button class="btn tile" data-act="go" data-v="recov">${IC('pulse', '💪')} ${T('Récupération', 'Recovery')}</button>
     </div>`};
   return `<div class="row pfhead${bannerCls(myCos('banner'))}" style="gap:14px;margin-bottom:16px"><button class="avatar${S.history.length ? rkFrame(GAME() ? hunter().rk : '', myFrame()) : ''}" data-act="avatar" aria-label="${T('Photo de profil', 'Profile photo')}">${S.settings.avatar ? `<img src="${S.settings.avatar}" alt="">` : esc((nm.trim()[0] || '?').toUpperCase())}<span class="cam">📷</span></button>
-      <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0${mySet() ? ';text-shadow:0 0 12px ' + mySet().c : ''}">${esc(nm)} ${emblemOf(myCos('emblem'))}</h2>${mySet() ? `<div class="small" style="color:${mySet().c};font-weight:800">${T('Ensemble', 'Set')} ${esc(T(mySet().n[0], mySet().n[1]))}</div>` : ''}${(() => { if (!S.history.length || !GAME()) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${S.pcl && S.pcl.k ? esc(pclName(S.pcl.k)) : esc(hu.title)}</button><div class="small pftitle" style="--rc:${hu.col}">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div>`; })()}
+      <div style="flex:1;min-width:0"><h2 style="font-size:20px;margin-bottom:0${mySet() ? ';text-shadow:0 0 12px ' + mySet().c : ''}">${esc(nm)} ${emblemOf(myCos('emblem'))}</h2>${mySet() ? `<div class="small" style="color:${mySet().c};font-weight:800">${T('Ensemble', 'Set')} ${esc(T(mySet().n[0], mySet().n[1]))}</div>` : ''}${(() => { if (!S.history.length || !GAME()) return ''; const hu = hunter(); return `<button class="rkchip" style="--rc:${hu.col}" data-act="go" data-v="medals">${rkBadge(hu.rk)} ${T('Niv.', 'Lv.')} ${hu.lvl} · ${clsCur() ? esc(pclName(clsCur())) : esc(hu.title)}</button><div class="small pftitle" style="--rc:${hu.col}">${esc(hu.title)}${myTitle() ? ` · « ${esc(myTitle())} »` : ''}</div>`; })()}
       <div class="pfstats"><div><span class="muted small">${T('Séances', 'Workouts')}</span><br><b>${S.history.length}</b></div><div><span class="muted small">${T('Série', 'Streak')}</span><br><b>🔥 ${streakWeeks()} sem.</b></div><div><span class="muted small">Ce mois</span><br><b>${month}</b></div></div></div></div>${secTop('pf')}${pfOrder().filter(id => !(S.settings.pfHide || []).includes(id)).map(id => secWrap('pf', id, PFS[id]())).join('')}${secHidden('pf')}
     ${secEdit === 'pf' ? '' : `<button class="linkbtn" style="margin:14px auto 0;display:block" data-act="pfcust">${T('Personnaliser le profil', 'Customize profile')}</button>`}`;
 }
@@ -5339,62 +5341,148 @@ function hClass(lvl) {
   return 'ftr';
 }
 /* ---------- Classe du joueur : choisie (avec une suggestion d'après tes 4 dernières semaines), changeable une fois par semaine, avec maîtrise ---------- */
+/* ===================== Classes (v9.93) =====================
+   Ta classe se calcule toute seule d'après tes 6 dernières semaines (4 classes de base + 6 hybrides),
+   ou tu la fixes comme objectif. Elle donne des quêtes du jour adaptées et +25 % d'XP sur les séances de ton style.
+   La maîtrise monte avec tes résultats dans le style de la classe (pas avec le temps). */
 const PCL = {
-  g: ['⚔️', ['Guerrier', 'Warrior'], ['Force brute : charges lourdes et peu de répétitions.', 'Raw strength: heavy loads and low reps.']],
+  g: ['⚔️', ['Guerrier', 'Warrior'], ['Force : charges lourdes et peu de répétitions.', 'Strength: heavy loads and low reps.']],
   r: ['🏃', ['Rôdeur', 'Ranger'], ['Endurance : cardio et longues séries de répétitions.', 'Endurance: cardio and long high-rep sets.']],
-  m: ['🔥', ['Moine', 'Monk'], ['Discipline : tu t\'entraînes régulièrement, semaine après semaine.', 'Discipline: you train steadily, week after week.']],
-  s: ['❤️', ['Soigneur', 'Healer'], ['Équilibre et récupération : étirements et grande variété d\'exercices.', 'Balance and recovery: stretching and a wide variety of exercises.']]};
-const PCL_K = ['g', 'r', 'm', 's'];
-const PCL_LV = [[0, ['Novice', 'Novice']], [14, ['Apprenti', 'Apprentice']], [42, ['Aguerri', 'Seasoned']], [91, ['Vétéran', 'Veteran']], [182, ['Maître', 'Master']]]; // jours joués dans cette classe
+  m: ['🔥', ['Moine', 'Monk'], ['Discipline : tu t\'entraînes souvent, semaine après semaine.', 'Discipline: you train often, week after week.']],
+  s: ['❤️', ['Soigneur', 'Healer'], ['Équilibre : étirements et grande variété d\'exercices.', 'Balance: stretching and a wide variety of exercises.']],
+  gm: ['🛡️', ['Templier', 'Templar'], ['Force et discipline : du lourd, semaine après semaine.', 'Strength and discipline: heavy lifting, week after week.']],
+  gs: ['✨', ['Paladin', 'Paladin'], ['Force et équilibre : du lourd, mais aussi étirements et variété.', 'Strength and balance: heavy lifting plus stretching and variety.']],
+  gr: ['🔱', ['Spartiate', 'Spartan'], ['Force et endurance : charges lourdes et cardio.', 'Strength and endurance: heavy loads and cardio.']],
+  mr: ['🌙', ['Ombre', 'Shadow'], ['Endurance et discipline : cardio régulier, sans jamais lâcher.', 'Endurance and discipline: steady cardio, never giving up.']],
+  rs: ['🌿', ['Druide', 'Druid'], ['Endurance et équilibre : cardio, étirements et variété.', 'Endurance and balance: cardio, stretching and variety.']],
+  ms: ['📿', ['Sage', 'Sage'], ['Discipline et équilibre : régularité, étirements et variété.', 'Discipline and balance: consistency, stretching and variety.']]};
+const PCL_K = ['g', 'r', 'm', 's'], PCL_HY = ['gm', 'gs', 'gr', 'mr', 'rs', 'ms'], PCL_ALL = [...PCL_K, ...PCL_HY];
+const hyKey = (a, b) => [a, b].sort().join('');
+const pclParts = k => k && k.length === 2 ? k.split('') : [k];
+const PCL_LV = [[0, ['Novice', 'Novice']], [80, ['Apprenti', 'Apprentice']], [250, ['Aguerri', 'Seasoned']], [600, ['Vétéran', 'Veteran']], [1200, ['Maître', 'Master']], [2400, ['Grand maître', 'Grandmaster']]]; // points de maîtrise
 const pclName = k => { const x = PCL[k]; return x ? T(x[1][0], x[1][1]) : ''; };
-const PCL_ART = {'g-m': 1, 'g-f': 1, 'r-m': 1, 'r-f': 1, 'm-m': 1, 'm-f': 1, 's-m': 1, 's-f': 1}; // images disponibles : cls/<classe>-<m|f>.webp
+const pclDesc = k => { const x = PCL[k]; return x ? T(x[2][0], x[2][1]) : ''; };
+const PCL_ART = {'g-m': 1, 'g-f': 1, 'r-m': 1, 'r-f': 1, 'm-m': 1, 'm-f': 1, 's-m': 1, 's-f': 1}; // images disponibles : cls/<classe>-<m|f>.webp (ajouter les hybrides ici quand leurs images existent)
 const pclLook = () => (S.settings.look === 'f' || S.settings.look === 'm') ? S.settings.look : (S.settings.sex === 'f' ? 'f' : 'm');
 const pclArt = (k, lk) => { const l = lk || pclLook(), o = l === 'f' ? 'm' : 'f'; return PCL_ART[k + '-' + l] ? k + '-' + l : PCL_ART[k + '-' + o] ? k + '-' + o : ''; };
 const pclIc = k => (PCL[k] || ['❔'])[0];
-const pclImg = (k, sz = 56, lk) => pclArt(k, lk) ? `<img class="pclimg" src="cls/${pclArt(k, lk)}.webp" width="${sz}" height="${sz}" alt="" decoding="async" draggable="false">` : `<span style="font-size:${Math.round(sz * .6)}px">${pclIc(k)}</span>`;
-function pclSuggest() {
-  const since = Date.now() - 28 * 864e5, H = S.history.filter(h => +new Date(h.date) >= since), st = (S.stretchLog || []).filter(x => +new Date(x.date) >= since).length;
-  if (!H.length && !st) return null;
-  let heavy = 0, cm = 0; const days = new Set(), ex = new Set();
-  H.forEach(h => { days.add(dkey(new Date(h.date))); h.exercises.forEach(e => { ex.add(norm(e.name)); e.sets.forEach(x => { if (x.t === 'W') return; if (x.u === 'c') cm += +x.r || 0; else if (x.u !== 's' && +x.w > 0 && +x.r > 0 && +x.r <= 8) heavy++; }); }); });
-  const sc = {g: heavy / 90, r: cm / 150, m: days.size / 20, s: st / 8 * .7 + ex.size / 25 * .3};
-  const k = PCL_K.slice().sort((a, b) => sc[b] - sc[a])[0];
-  const why = {g: T(`${heavy} séries lourdes (8 reps ou moins) en 4 semaines`, `${heavy} heavy sets (8 reps or fewer) in 4 weeks`), r: T(`${Math.round(cm)} min de cardio en 4 semaines`, `${Math.round(cm)} min of cardio in 4 weeks`),
-    m: T(`${days.size} jours d'entraînement en 4 semaines`, `${days.size} training days in 4 weeks`), s: T(`${st} séance${st > 1 ? 's' : ''} d'étirements et ${ex.size} exercices différents`, `${st} stretching session${st > 1 ? 's' : ''} and ${ex.size} different exercises`)};
-  return {k, why: why[k]};
+// Image de classe ; une classe hybride sans image montre ses deux classes d'origine côte à côte
+const pclImg = (k, sz = 56, lk) => {
+  if (pclArt(k, lk)) return `<img class="pclimg" src="cls/${pclArt(k, lk)}.webp" width="${sz}" height="${sz}" alt="" decoding="async" draggable="false">`;
+  if (k && k.length === 2 && PCL[k]) { const [a, b] = pclParts(k), s2 = Math.round(sz * .74); return `<span class="pclduo" style="width:${sz}px;height:${sz}px"><span style="width:${s2}px;height:${s2}px">${pclImg(a, s2, lk)}</span><span style="width:${s2}px;height:${s2}px">${pclImg(b, s2, lk)}</span></span>`; }
+  return `<span style="font-size:${Math.round(sz * .6)}px">${pclIc(k)}</span>`;
+};
+/* Ce qui compte pour chaque classe de base, sur une période */
+function clsStats(days) {
+  const since = days ? Date.now() - days * 864e5 : 0, H = S.history.filter(h => +new Date(h.date) >= since), SL = (S.stretchLog || []).filter(x => +new Date(x.date) >= since);
+  let heavy = 0, cm = 0, hirep = 0, varied = 0; const dd = new Set(), ex = new Set();
+  H.forEach(h => { dd.add(dkey(new Date(h.date))); const e1 = new Set(); h.exercises.forEach(e => { ex.add(norm(e.name)); e1.add(norm(e.name)); e.sets.forEach(x => { if (x.t === 'W' || x.done === false) return; if (x.u === 'c') cm += +x.r || 0; else if (x.u !== 's' && +x.w > 0 && +x.r > 0 && +x.r <= 6) heavy++; else if (x.u !== 's' && +x.r >= 15) hirep++; }); }); if (e1.size >= 6) varied++; });
+  SL.forEach(x => dd.add(dkey(new Date(x.date))));
+  return {n: H.length, heavy, cm: Math.round(cm), hirep, days: dd.size, st: SL.length, ex: ex.size, varied};
 }
-const pclCan = () => !S.pcl || !S.pcl.k || !S.pcl.lc || Date.now() - +new Date(S.pcl.lc) >= 7 * 864e5;
+/* Scores des 6 dernières semaines (1 = style bien marqué) */
+function clsScores() {
+  if (PC.csc) return PC.csc;
+  const s = clsStats(42);
+  return (PC.csc = {g: s.heavy / 100, r: (s.cm + s.hirep) / 400, m: s.days / 30, s: s.st / 12 * .7 + s.ex / 25 * .3, s0: s});
+}
+const clsFit = (k, sc) => { if (k.length === 1) return sc[k] || 0; const [a, b] = pclParts(k), lo = Math.min(sc[a], sc[b]), hi = Math.max(sc[a], sc[b]); return (sc[a] + sc[b]) / 2 * (hi > 0 && lo / hi >= .8 ? 1.05 : .8); };
+/* Choix de la classe à partir des scores : la meilleure, ou un hybride quand les deux premiers styles sont proches.
+   prev = classe actuelle : on la garde tant qu'elle reste presque aussi juste (évite de changer pour un rien). */
+function clsPick(sc, prev) {
+  const ks = PCL_K.slice().sort((a, b) => sc[b] - sc[a]), a = ks[0], b = ks[1];
+  let k = sc[b] >= sc[a] * .8 && sc[b] >= .35 ? hyKey(a, b) : a;
+  if (prev && PCL[prev] && prev !== k && clsFit(prev, sc) >= clsFit(k, sc) * .9) k = prev;
+  return k;
+}
+/* Classe calculée : la meilleure, ou un hybride quand tes deux styles principaux sont proches */
+function clsAuto() {
+  if (PC.cau) return PC.cau;
+  const sc = clsScores(); if (!sc.s0.n && !sc.s0.st) return (PC.cau = null);
+  return (PC.cau = {k: clsPick(sc, S.pcl && S.pcl.auto), sc});
+}
+const clsMode = () => S.pcl && S.pcl.mode === 'fix' && PCL[S.pcl.k] ? 'fix' : 'auto';
+/* Ta classe actuelle (clé), ou '' si pas encore assez de données */
+function clsCur() { if (!S.pcl) S.pcl = {mode: 'auto'}; if (clsMode() === 'fix') return S.pcl.k; const a = clsAuto(); return a ? a.k : (S.pcl.auto && PCL[S.pcl.auto] ? S.pcl.auto : ''); }
+/* Mémorise la classe calculée ; annonce quand elle change */
+function clsSync() {
+  if (!GAME()) return; S.pcl = S.pcl || {mode: 'auto'}; if (!S.pcl.mode) S.pcl.mode = 'auto';
+  const a = clsAuto(); if (!a || S.pcl.auto === a.k) return;
+  const old = S.pcl.auto; S.pcl.auto = a.k; S.pcl.ac = new Date().toISOString(); saveLocal();
+  if (old && clsMode() === 'auto') setTimeout(() => toast(T(`Ta classe évolue : tu deviens ${pclName(a.k)}`, `Your class evolves: you are now a ${pclName(a.k)}`)), 900);
+}
+/* Ce qu'il te manque pour qu'une autre classe passe devant */
+function clsNextHint() {
+  const a = clsAuto(); if (!a) return '';
+  const sc = a.sc, s0 = sc.s0, cur = a.k;
+  // [unités pour 1 point de score, libellé, maximum réaliste en plus sur 6 semaines]
+  const U = {g: [100, T('séries lourdes (6 reps ou moins)', 'heavy sets (6 reps or fewer)'), 200], r: [400, T('min de cardio', 'min of cardio'), 900], m: [30, T('jours d\'entraînement de plus', 'more training days'), Math.max(0, 42 - s0.days)], s: [12 / .7, T('séances d\'étirements', 'stretching sessions'), 30]};
+  let best = null;
+  PCL_K.forEach(x => { // on simule : combien en plus dans ce style pour que ta classe change ?
+    const mx = U[x][2], st = Math.max(1, Math.round(mx / 60));
+    for (let n = st; n <= mx; n += st) { const k2 = clsPick({...sc, [x]: sc[x] + n / U[x][0]}, cur); if (k2 !== cur) { const r = n / mx; if (!best || r < best.r) best = {k: k2, x, n, r}; break; } }
+  });
+  return best ? T(`Encore ~${best.n} ${U[best.x][1]} sur 6 semaines pour devenir ${pclName(best.k)}`, `About ${best.n} more ${U[best.x][1]} over 6 weeks to become ${pclName(best.k)}`) : '';
+}
+/* Pourquoi cette classe (texte court) */
+function clsWhy(k) {
+  const s = clsScores().s0, P = {g: T(`${s.heavy} séries lourdes`, `${s.heavy} heavy sets`), r: T(`${s.cm} min de cardio`, `${s.cm} min of cardio`), m: T(`${s.days} jours actifs`, `${s.days} active days`), s: T(`${s.st} étirements · ${s.ex} exercices`, `${s.st} stretches · ${s.ex} exercises`)};
+  return pclParts(k).map(x => P[x]).join(' + ') + ' ' + T('en 6 semaines', 'in 6 weeks');
+}
+// Compatibilité (ancien nom)
+function pclSuggest() { const a = clsAuto(); return a ? {k: a.k, why: clsWhy(a.k)} : null; }
+const pclCan = () => !S.pcl || !S.pcl.lc || Date.now() - +new Date(S.pcl.lc) >= 7 * 864e5;
 const pclNext = () => new Date(+new Date(S.pcl.lc) + 7 * 864e5).toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long'});
+/* Fixer une classe comme objectif (k) ou revenir au calcul automatique (k = 'auto') */
 function pclSet(k) {
-  if (!PCL[k]) return; const p = S.pcl, now = Date.now(), tot = (p && p.tot) || {};
-  if (p && p.k) tot[p.k] = (tot[p.k] || 0) + now - +new Date(p.since);
-  S.pcl = {k, since: new Date(now).toISOString(), lc: p && p.k ? new Date(now).toISOString() : '', tot}; save();
+  const p = S.pcl || {}, first = !p.mode || (p.mode === 'auto' && !p.lc && !p.k);
+  if (k === 'auto') S.pcl = {...p, mode: 'auto', lc: first ? '' : new Date().toISOString()};
+  else if (PCL[k]) S.pcl = {...p, mode: 'fix', k, lc: first ? '' : new Date().toISOString()};
+  save();
 }
+/* Points de maîtrise (toute ton histoire) : séries lourdes, cardio, jours actifs, étirements et variété */
+function clsPts() {
+  if (PC.cpt) return PC.cpt; const s = clsStats(0);
+  return (PC.cpt = {g: s.heavy, r: Math.round(s.cm / 4) + s.hirep, m: s.days * 4, s: s.st * 8 + s.varied * 3});
+}
+const PCL_PTS = {g: ['1 point par série lourde (6 reps ou moins)', '1 point per heavy set (6 reps or fewer)'], r: ['1 point par 4 min de cardio ou par série de 15 reps et plus', '1 point per 4 min of cardio or per 15+ rep set'], m: ['4 points par jour d\'entraînement', '4 points per training day'], s: ['8 points par séance d\'étirements, 3 par séance de 6 exercices ou plus', '8 points per stretching session, 3 per session with 6+ exercises']};
 function pclMast(k) {
-  const p = S.pcl, ms = ((p && p.tot && p.tot[k]) || 0) + (p && p.k === k ? Date.now() - +new Date(p.since) : 0), d = ms / 864e5;
-  let lv = 0; PCL_LV.forEach((x, i) => { if (d >= x[0]) lv = i; });
+  if (!PCL[k]) return {lv: 0, pts: 0, title: T('Novice', 'Novice'), nx: 0, pct: 0};
+  const P = clsPts(), pts = Math.round(pclParts(k).reduce((a, x) => a + (P[x] || 0), 0) / pclParts(k).length);
+  let lv = 0; PCL_LV.forEach((x, i) => { if (pts >= x[0]) lv = i; });
   const nx = PCL_LV[lv + 1], from = PCL_LV[lv][0];
-  return {lv, d: Math.floor(d), title: T(PCL_LV[lv][1][0], PCL_LV[lv][1][1]), nx: nx ? nx[0] : 0, pct: nx ? Math.round((d - from) / (nx[0] - from) * 100) : 100};
+  return {lv, pts, d: pts, title: T(PCL_LV[lv][1][0], PCL_LV[lv][1][1]), nx: nx ? nx[0] : 0, pct: nx ? Math.round((pts - from) / (nx[0] - from) * 100) : 100};
 }
-function pclCard() {
-  if (!GAME()) return '';
-  const sg = pclSuggest(), p = S.pcl;
-  if (!p || !p.k) return `<div class="card"><div class="sysh" style="margin:0 0 6px">[ ${T('TA CLASSE', 'YOUR CLASS')} ]</div>
-    ${sg ? `<div class="row" style="gap:10px;align-items:center">${pclImg(sg.k, 64)}<div style="flex:1;min-width:0"><b>${esc(pclName(sg.k))}</b> <span class="muted small">${T('conseillée', 'suggested')}</span><div class="small muted">${esc(sg.why)}</div></div></div>
-    <div class="row" style="gap:8px;margin-top:10px"><button class="btn primary" style="flex:1" data-act="pcl-set" data-k="${sg.k}">${T('Accepter', 'Accept')}</button><button class="btn" style="flex:1" data-act="pcl-pick">${T('En choisir une autre', 'Pick another')}</button></div>`
-    : `<p class="small muted" style="margin:0 0 8px">${T('Choisis le style qui te ressemble. Tu pourras la changer une fois par semaine.', 'Pick the style that suits you. You can change it once a week.')}</p><button class="btn primary block" data-act="pcl-pick">${T('Choisir ma classe', 'Choose my class')}</button>`}</div>`;
-  const m = pclMast(p.k);
-  return `<div class="card"><div class="row between"><div class="sysh" style="margin:0">[ ${T('TA CLASSE', 'YOUR CLASS')} ]</div><button class="btn sm" data-act="pcl-pick">${T('Changer', 'Change')}</button></div>
-    <div class="row" style="gap:12px;align-items:center;margin-top:8px">${pclImg(p.k, 84)}<div style="flex:1;min-width:0"><b class="bossn">${esc(pclName(p.k))} ${esc(m.title)}</b><div class="small muted">${T('Maîtrise', 'Mastery')} ${m.lv + 1} · ${m.d} ${T(m.d > 1 ? 'jours' : 'jour', m.d > 1 ? 'days' : 'day')}</div></div></div>
-    ${m.nx ? `<div class="goal sysbar" style="margin:8px 0 2px"><div style="width:${m.pct}%"></div></div><div class="small muted">${T('Prochain titre dans', 'Next title in')} ${m.nx - m.d} ${T(m.nx - m.d > 1 ? 'jours' : 'jour', m.nx - m.d > 1 ? 'days' : 'day')}</div>` : `<div class="small" style="color:#f5c542;margin-top:6px">${T('Maîtrise maximale', 'Maximum mastery')}</div>`}</div>`;
+/* Une séance « dans ton style » ? (pour le bonus de 25 % d'XP) */
+function clsMatch(h, k) {
+  if (!h || !PCL[k]) return false;
+  let heavy = 0, cm = 0, hirep = 0; const ex = new Set();
+  h.exercises.forEach(e => { ex.add(norm(e.name)); e.sets.forEach(x => { if (x.t === 'W' || x.done === false) return; if (x.u === 'c') cm += +x.r || 0; else if (x.u !== 's' && +x.w > 0 && +x.r > 0 && +x.r <= 6) heavy++; else if (x.u !== 's' && +x.r >= 15) hirep++; }); });
+  const t = +new Date(h.date), wk = S.history.filter(x => x !== h && +new Date(x.date) < t && +new Date(x.date) >= t - 7 * 864e5).map(x => dkey(new Date(x.date)));
+  const ok = {g: heavy >= 5, r: cm >= 15 || hirep >= 4, m: new Set(wk).size >= 2, s: ex.size >= 6 || (S.stretchLog || []).some(x => dkey(new Date(x.date)) === dkey(new Date(h.date)))};
+  return pclParts(k).some(x => ok[x]);
 }
+const CLS_XP = .25;
+function clsBonus(h) { // appelée à la fin d'une séance
+  const k = clsCur(); if (!k || !h) return 0; h.cls = k;
+  if (!clsMatch(h, k)) return 0;
+  const xp = Math.round((100 + work(h.exercises.flatMap(x => x.sets)).length * 5) * CLS_XP);
+  return giveXp('cls', h.id, xp, '') ? xp : 0;
+}
+/* Quêtes du jour préférées par chaque classe de base */
+const CLS_Q = {g: ['pr', 'vol', 'sets'], r: ['cmin', 'reps', 'dur'], m: ['dur', 'sets', 'ex'], s: ['ex', 'reps', 'dur']};
 function pclPick() {
-  const sg = pclSuggest(), p = S.pcl, can = pclCan();
-  modal(`<div class="row between"><h2 style="margin:0">${T('Choisis ta classe', 'Choose your class')}</h2><button class="btn sm" data-act="close">✕</button></div>
-    ${sg ? `<p class="small muted" style="margin:8px 0 0">${T('Conseillée d\'après tes 4 dernières semaines', 'Suggested from your last 4 weeks')} : <b>${esc(pclName(sg.k))}</b> (${esc(sg.why)}).</p>` : ''}
-    <div class="row" style="gap:6px;margin-top:10px;align-items:center"><span class="small muted">${T('Apparence', 'Look')}</span>${['m', 'f'].map(l => `<button class="btn sm ${pclLook() === l ? 'primary' : ''}" data-act="pcl-look" data-v="${l}">${l === 'm' ? T('Homme', 'Male') : T('Femme', 'Female')}</button>`).join('')}</div>
-    <div class="menu" style="margin-top:10px">${PCL_K.map(k => { const on = p && p.k === k, x = PCL[k]; return `<button class="btn block" style="text-align:left;${on ? 'border-color:var(--accent)' : ''}" data-act="pcl-set" data-k="${k}"><span style="display:inline-flex;vertical-align:middle;margin-right:8px">${pclImg(k, 44)}</span><b>${esc(pclName(k))}</b>${sg && sg.k === k ? ` <span class="small" style="color:var(--accent)">${T('conseillée', 'suggested')}</span>` : ''}${on ? ` <span class="small muted">${T('actuelle', 'current')}</span>` : ''}<div class="small muted" style="margin-top:2px;font-weight:400">${esc(T(x[2][0], x[2][1]))}</div></button>`; }).join('')}</div>
-    <p class="small muted" style="margin:10px 0 0">${can ? T('Tu peux changer de classe une fois par semaine. Chaque classe garde sa maîtrise.', 'You can change class once a week. Each class keeps its mastery.') : T('Tu as déjà changé de classe cette semaine : prochain changement le ', 'You already changed class this week: next change on ') + pclNext()}</p>`);
+  const p = S.pcl || {}, can = pclCan(), a = clsAuto(), cur = clsCur(), fix = clsMode() === 'fix';
+  const row = (k, on) => `<button class="btn block" style="text-align:left;display:flex;gap:10px;align-items:center;${on ? 'border-color:var(--accent)' : ''}" data-act="pcl-set" data-k="${k}"><span style="flex:none">${pclImg(k, 44)}</span><span style="min-width:0"><b>${esc(pclName(k))}</b>${on ? ` <span class="small" style="color:var(--accent)">${T('objectif actuel', 'current goal')}</span>` : ''}<br><span class="small muted" style="font-weight:500">${esc(pclDesc(k))}</span></span></button>`;
+  modal(`<div class="row between"><h2 style="margin:0">${T('Ta classe', 'Your class')}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <p class="small muted" style="margin:8px 0 10px">${T('Chaque classe donne des quêtes du jour adaptées et +25 % d\'XP sur les séances de ton style. Ta maîtrise monte avec tes résultats.', 'Each class gives tailored daily quests and +25% XP on workouts in your style. Mastery grows with your results.')}</p>
+    <button class="btn block" style="text-align:left;display:flex;gap:10px;align-items:center;${fix ? '' : 'border-color:var(--accent)'}" data-act="pcl-set" data-k="auto"><span style="flex:none">${a ? pclImg(a.k, 44) : pclImg('m', 44)}</span><span style="min-width:0"><b>${T('Automatique', 'Automatic')}</b> <span class="small" style="color:var(--accent)">${fix ? T('recommandé', 'recommended') : T('actif', 'on')}</span><br><span class="small muted" style="font-weight:500">${a ? T(`D'après tes 6 dernières semaines : ${pclName(a.k)} (${clsWhy(a.k)}).`, `From your last 6 weeks: ${pclName(a.k)} (${clsWhy(a.k)}).`) : T('Ta classe se calculera dès tes premières séances.', 'Your class will be computed after your first workouts.')}</span></span></button>
+    <div class="row" style="gap:6px;margin:12px 0 4px;align-items:center"><span class="small muted">${T('Apparence', 'Look')}</span>${['m', 'f'].map(l => `<button class="btn sm ${pclLook() === l ? 'primary' : ''}" data-act="pcl-look" data-v="${l}">${l === 'm' ? T('Homme', 'Male') : T('Femme', 'Female')}</button>`).join('')}</div>
+    <p class="small" style="margin:10px 0 6px"><b>${T('Ou fixe un objectif', 'Or set a goal')}</b></p>
+    <div class="menu">${PCL_K.map(k => row(k, fix && p.k === k)).join('')}</div>
+    <p class="small" style="margin:12px 0 6px"><b>${T('Classes hybrides', 'Hybrid classes')}</b></p>
+    <div class="menu">${PCL_HY.map(k => row(k, fix && p.k === k)).join('')}</div>
+    <p class="small muted" style="margin:10px 0 0">${can ? T('Tu peux changer d\'objectif une fois par semaine. En automatique, ta classe suit ton entraînement.', 'You can change goal once a week. In automatic mode, your class follows your training.') : T('Tu as déjà changé cette semaine : prochain changement le ', 'You already changed this week: next change on ') + esc(pclNext())}</p>`);
 }
 const clsName = c => { const x = HCLASSES[c] || HCLASSES.none; return T(x[1][0], x[1][1]); };
 const clsIc = c => (HCLASSES[c] || HCLASSES.none)[0];
@@ -5783,8 +5871,20 @@ function dailyQuest0(d, extra) {
     {id: 'dur', ic: '⏱️', goal: R ? Math.max(20, fl(pDur * 0.9, 5)) : Math.max(45, rnd5(b.dur || 60, 5)), t: ['Entraîne-toi # minutes', 'Train for # minutes'], cur: hsDur},
     {id: 'ex', ic: '📚', goal: R ? (nEx >= 3 ? Math.min(8, nEx) : null) : Math.max(4, Math.min(8, b.ex || 5)), t: ['Fais # exercices différents', 'Do # different exercises'], cur: hsEx},
     {id: 'vol', ic: '🏗️', goal: R ? (pVol >= vs ? fl(pVol, vs) : null) : (b.vol > 0 ? rnd5(b.vol * 1.1, vs) : null), t: [`Soulève # ${u} en tout`, `Lift # ${u} in total`], cur: hsVol}];
-  let i = sd % pool.length; for (let n = 0; n < pool.length && pool[i].goal == null; n++) i = (i + 1) % pool.length;
-  const q = pool[i], hs = S.history.filter(x => dkey(x.date) === k).concat(extra || []), cur = q.cur(hs);
+  // Quête de cardio (classes d'endurance) : hors de la liste de base pour ne pas changer les quêtes des jours passés
+  const hsCardio = hs => Math.round(hs.reduce((a, h) => a + h.exercises.reduce((b2, e) => b2 + e.sets.filter(x => x.u === 'c' && x.done !== false).reduce((c2, x) => c2 + (+x.r || 0), 0), 0), 0));
+  const cmin = () => { const L = S.history.filter(x => +new Date(x.date) > Date.now() - 42 * 864e5).map(x => hsCardio([x])).filter(v => v > 0), av = L.length ? L.reduce((a, v) => a + v, 0) / L.length : 20; return {id: 'cmin', ic: '🏃', goal: Math.min(60, Math.max(15, rnd5(av, 5))), t: ['Fais # minutes de cardio', 'Do # minutes of cardio'], cur: hsCardio}; };
+  const byId = id => id === 'cmin' ? cmin() : pool.find(x => x.id === id && x.goal != null);
+  const today = dkey(new Date()) === k, qp = (S.qPick || {})[k];
+  let q = qp ? byId(qp) : null;
+  if (!q) {
+    // Ta classe oriente la quête du jour (7 jours sur 10) ; une fois choisie, la quête du jour ne change plus.
+    const ck = today && GAME() ? clsCur() : '';
+    if (ck && (sd >> 4) % 10 < 7) { const pref = [...new Set(pclParts(ck).flatMap(x => CLS_Q[x] || []))]; for (let n = 0; n < pref.length && !q; n++) q = byId(pref[(sd + n) % pref.length]) || null; }
+    if (!q) { let i = sd % pool.length; for (let n = 0; n < pool.length && pool[i].goal == null; n++) i = (i + 1) % pool.length; q = pool[i]; }
+    if (today) { const P = S.qPick = S.qPick || {}; P[k] = q.id; Object.keys(P).forEach(d0 => { if (d0 < dkey(new Date(Date.now() - 60 * 864e5))) delete P[d0]; }); }
+  }
+  const hs = S.history.filter(x => dkey(x.date) === k).concat(extra || []), cur = q.cur(hs);
   return {k, ...q, cur, done: cur >= q.goal, text: T(q.t[0], q.t[1]).replace('#', q.goal.toLocaleString(LOC()))};
 }
 /* Note la quête du jour et le donjon de la semaine quand ils sont réussis. Renvoie ce qui vient d'être accompli. */
@@ -5830,7 +5930,7 @@ function forgetSession(hid) {
   const ch = (S.chests || []).find(c => c.id === hid); if (ch) { if (ch.open) { S.frag = Math.max(0, (S.frag || 0) - (ch.fr || 0)); const F = FRAGS(); Object.entries(chestFrs(ch)).forEach(([t, k]) => F[t] = Math.max(0, (F[t] || 0) - k)); } S.chests = S.chests.filter(c => c.id !== hid); }
   // bonus d'XP liés à cette séance (coffre, double XP) et événements qui ne sont plus réussis
   RC = {}; DV++; const evs = typeof eventsAround === 'function' ? eventsAround() : [];
-  S.xpb = (S.xpb || []).filter(x => { if ((x.k === 'chest' || x.k === 'x2') && x.id === hid) return false; if (x.k === 'ev') { const e = evs.find(y => y.id === x.id); if (e && e.q && evProg(e) < e.q.g) return false; } return true; });
+  S.xpb = (S.xpb || []).filter(x => { if ((x.k === 'chest' || x.k === 'x2' || x.k === 'cls') && x.id === hid) return false; if (x.k === 'ev') { const e = evs.find(y => y.id === x.id); if (e && e.q && evProg(e) < e.q.g) return false; } return true; });
   RC = {}; DV++; prcMemo = null;
 }
 function syncSystem() {
@@ -6578,9 +6678,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.92.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.93.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.93.0', d: '2026-11-22', fr: ['Nouvelles classes : ta classe se calcule toute seule d\'après tes 6 dernières semaines (Guerrier, Rôdeur, Moine, Soigneur) et devient hybride quand deux styles sont proches (Templier, Paladin, Spartiate, Ombre, Druide, Sage). Tu peux aussi fixer une classe comme objectif.', 'Ta classe sert à quelque chose : la quête du jour suit ton style (dont une nouvelle quête de cardio) et tu gagnes +25 % d\'XP sur les séances de ton style.', 'La maîtrise monte avec tes résultats (séries lourdes, cardio, jours actifs, étirements), plus avec le temps. Novice → Apprenti → Aguerri → Vétéran → Maître → Grand maître.', 'Tes amis et ta guilde voient ta vraie classe (fini « Mage » d\'un côté et « Moine » de l\'autre).'], en: ['New classes: your class is computed from your last 6 weeks (Warrior, Ranger, Monk, Healer) and becomes a hybrid when two styles are close (Templar, Paladin, Spartan, Shadow, Druid, Sage). You can also set a class as a goal.', 'Your class matters: the daily quest follows your style (incl. a new cardio quest) and you get +25% XP on workouts in your style.', 'Mastery grows with your results, not time.', 'Friends and guild see your real class.']},
   {v: '9.92.0', d: '2026-11-22', fr: ['Glissement entre onglets encore plus fluide : tous les onglets sont préparés en coulisse dès l\'ouverture de l\'appli (plus besoin de les visiter une fois), les onglets voisins sont déjà dessinés juste hors de l\'écran, et la page actuelle est prête à bouger avant même que tu glisses.'], en: ['Even smoother tab swipes: every tab is prepared in the background at launch, neighbor tabs are pre-drawn just off-screen, and the current page is ready to move before you swipe.']},
   {v: '9.91.3', d: '2026-11-22', fr: ['Glisser entre les onglets marche partout, comme dans les autres applis, même depuis une case où tu es en train d\'écrire : le clavier se ferme quand l\'onglet change.'], en: ['Tab swipe works everywhere like other apps, even from a box you are typing in: the keyboard closes when the tab changes.']},
   {v: '9.91.2', d: '2026-11-22', fr: ['Glisser entre les onglets marche aussi en partant d\'une case à remplir (pas faits, inclinaison…), sauf si tu es en train d\'écrire dedans.'], en: ['Tab swipe also works starting on an input box, unless you are typing in it.']},
@@ -8691,9 +8792,9 @@ function frMe0() {
   return {f: {c: fr.file || 'me', me: true, n: T('Moi', 'Me')}, d: {name: (S.settings.name || '').trim() || T('Moi', 'Me'), av: S.settings.avatar || '', wk: streakWeeks(), hu: frHu(), bo: frBoss(), s, p, up: fr.last, cw: Object.keys(S.seasonWon || {}).filter(k => S.seasonWon[k])}};
 }
 /* Niveau de chasseur partagé avec les amis */
-function frHu() { if (!S.history.length || !GAME()) return null; const x = hunter(); return {l: x.lvl, p: x.p || 0, r: x.rk, xp: x.xp, c: x.cls, t: '', k: S.pcl && S.pcl.k ? S.pcl.k : '', v: pclLook(), m: S.pcl && S.pcl.k ? pclMast(S.pcl.k).lv : 0, f: myFrame(), b: myCos('banner'), e: myCos('emblem'), s: (mySet() || {}).id || ''}; }
+function frHu() { if (!S.history.length || !GAME()) return null; const x = hunter(); return {l: x.lvl, p: x.p || 0, r: x.rk, xp: x.xp, c: x.cls, t: '', k: clsCur(), v: pclLook(), m: clsCur() ? pclMast(clsCur()).lv : 0, f: myFrame(), b: myCos('banner'), e: myCos('emblem'), s: (mySet() || {}).id || ''}; }
 const huTitle = r => { const x = HRANKS.find(y => y[1] === r); return x ? T(x[2][0], x[2][1]) : ''; };
-const frLv = (d, big) => GAME() && d && d.hu && d.hu.r ? (big ? `<span class="frlvb" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${rkBadge(d.hu.r, 'mrk lvrk')} ${T('Niveau', 'Level')} ${d.hu.l}${d.hu.p ? ' 🌟' + d.hu.p : ''} · ${d.hu.c && d.hu.c !== 'none' ? clsIc(d.hu.c) + ' ' + esc(clsName(d.hu.c)) : esc(huTitle(d.hu.r))}</span><div class="small pftitle" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${esc(huTitle(d.hu.r))}${d.hu.k && PCL[d.hu.k] ? ` · « ${esc(pclName(d.hu.k) + ' ' + T(PCL_LV[Math.max(0, Math.min(PCL_LV.length - 1, +d.hu.m || 0))][1][0], PCL_LV[Math.max(0, Math.min(PCL_LV.length - 1, +d.hu.m || 0))][1][1]))} »` : ''}</div>` : `<span class="frlv" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${d.hu.r} · ${T('Niv.', 'Lv.')} ${d.hu.l}</span>`) : '';
+const frLv = (d, big) => GAME() && d && d.hu && d.hu.r ? (big ? `<span class="frlvb" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${rkBadge(d.hu.r, 'mrk lvrk')} ${T('Niveau', 'Level')} ${d.hu.l}${d.hu.p ? ' 🌟' + d.hu.p : ''} · ${d.hu.k && PCL[d.hu.k] ? esc(pclName(d.hu.k)) : esc(huTitle(d.hu.r))}</span><div class="small pftitle" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${esc(huTitle(d.hu.r))}${d.hu.k && PCL[d.hu.k] ? ` · « ${esc(pclName(d.hu.k) + ' ' + T(PCL_LV[Math.max(0, Math.min(PCL_LV.length - 1, +d.hu.m || 0))][1][0], PCL_LV[Math.max(0, Math.min(PCL_LV.length - 1, +d.hu.m || 0))][1][1]))} »` : ''}</div>` : `<span class="frlv" style="--rc:${RKC[d.hu.r] || '#9aa3ad'}">${d.hu.r} · ${T('Niv.', 'Lv.')} ${d.hu.l}</span>`) : '';
 function frRanking() {
   if (!GAME()) return '';
   const fr = FRS(), rows = [];
@@ -8703,7 +8804,7 @@ function frRanking() {
   if (L.length < 2) return '';
   const old = rows.filter(r => !r.d.hu && !r.me).map(r => r.d.name), meNo = rows.some(r => r.me && !r.d.hu);
   return `<div class="card sysw" style="margin:0 0 12px"><div class="sysh">[ ${T('CLASSEMENT', 'RANKING')} ]</div>
-    ${L.map((r, i) => `<button class="frrk ${r.me ? 'me' : ''}" data-act="fr-who" data-c="${r.c}" style="--rc:${RKC[r.d.hu.r]}"><b class="frpos">${i + 1}</b>${frAv(r.d, r.c, 'sm')}<span style="flex:1;min-width:0;text-align:left"><b>${esc(r.me ? T('Moi', 'Me') : r.d.name)}</b><br><span class="small muted">${r.d.hu.c && r.d.hu.c !== 'none' ? clsIc(r.d.hu.c) + ' ' + esc(clsName(r.d.hu.c)) : esc(huTitle(r.d.hu.r))}</span></span><span style="text-align:right">${rkBadge(r.d.hu.r, 'mrk lvrk')}<br><span class="small"><b>${T('Niv.', 'Lv.')} ${r.d.hu.l}</b></span></span></button>`).join('')}
+    ${L.map((r, i) => `<button class="frrk ${r.me ? 'me' : ''}" data-act="fr-who" data-c="${r.c}" style="--rc:${RKC[r.d.hu.r]}"><b class="frpos">${i + 1}</b>${frAv(r.d, r.c, 'sm')}<span style="flex:1;min-width:0;text-align:left"><b>${esc(r.me ? T('Moi', 'Me') : r.d.name)}</b><br><span class="small muted">${r.d.hu.k && PCL[r.d.hu.k] ? esc(pclName(r.d.hu.k)) : esc(huTitle(r.d.hu.r))}</span></span><span style="text-align:right">${rkBadge(r.d.hu.r, 'mrk lvrk')}<br><span class="small"><b>${T('Niv.', 'Lv.')} ${r.d.hu.l}</b></span></span></button>`).join('')}
     ${meNo ? `<p class="small muted" style="margin:8px 0 0">${T('Termine ta première séance pour entrer dans le classement.', 'Finish your first workout to enter the ranking.')}</p>` : ''}${old.length ? `<p class="small muted" style="margin:8px 0 0">${T('Pas encore de niveau pour', 'No level yet for')} ${esc(old.join(', '))} : ${T('aucune séance terminée pour l\'instant.', 'no finished workout yet.')}</p>` : ''}</div>`;
 }
 function frItems(f, d) { const out = []; (d.s || []).forEach(s => out.push({f, d, s})); (d.p || []).forEach(ph => out.push({f, d, s: {id: ph.id, d: ph.d + 'T12:00:00', ph}})); return out; }
@@ -8896,7 +8997,7 @@ const cardRd = (d, wk) => !d ? null : d.rd && d.rd.wk === wk ? d.rd.r : d.rdp &&
    Seuls ceux qui s'entraînent cette semaine comptent : chaque aventurier actif ajoute 1 500 reps de PV (2 au minimum). */
 const gldReps = (m, wk) => m.rk === wk ? m.rp : m.qk === wk ? m.qp : 0;
 function raidState(wk) {
-  const g = S.guild && (S.guild.mem || []).length ? S.guild : null, rows = [{c: 'me', me: true, n: T('Moi', 'Me'), r: myWeekReps(wk), cl: S.pcl && S.pcl.k || '', lk: pclLook()}];
+  const g = S.guild && (S.guild.mem || []).length ? S.guild : null, rows = [{c: 'me', me: true, n: T('Moi', 'Me'), r: myWeekReps(wk), cl: clsCur(), lk: pclLook()}];
   if (g) (g.mem || []).forEach(m => { if (m.uid !== g.me) rows.push({c: 'g:' + m.uid, n: m.n, r: Math.max(0, +gldReps(m, wk) || 0), rk: m.r, f: m.f, cl: m.cl, lk: m.lk}); });
   else FRS().list.forEach(f => { const c = frData[f.c]; if (!c || !c.d) return; const r = cardRd(c.d, wk); if (r != null) rows.push({c: f.c, d: c.d, n: c.d.name, r, cl: c.d.hu && PCL[c.d.hu.k] ? c.d.hu.k : '', lk: c.d.hu && c.d.hu.v}); });
   const act = rows.filter(x => x.r > 0);
@@ -9044,7 +9145,7 @@ function titleList() { // titres débloqués selon tes médailles
   const me = medalsEarned();
   return TITLES.map(([g, i, t]) => { if (g === 'gm') return {id: 'gm0', t: T(t[0], t[1]), ok: cosReq({set: 'title'}).ok, how: ''}; if (CH_TT[g]) { const q = cosReq({fr: i, ft: CH_TT[g]}); return {id: g + i, t: T(t[0], t[1]), ok: q.ok, how: q.why}; } const d = g === 'n1' ? me.defs.find(x => x.id === 'n1') : me.defs.filter(x => x.g === g).sort((a, b) => a.v - b.v)[i]; return d ? {id: g + i, t: T(t[0], t[1]), ok: !!me.got[d.id], how: d.t} : null; }).filter(Boolean);
 }
-const myTitle = () => (GAME() && S.pcl && S.pcl.k && PCL[S.pcl.k]) ? pclName(S.pcl.k) + ' ' + pclMast(S.pcl.k).title : ''; // le titre affiché est celui de ta classe (maîtrise)
+const myTitle = () => { if (!GAME()) return ''; const k = clsCur(); return k ? pclName(k) + ' ' + pclMast(k).title : ''; }; // le titre affiché est celui de ta classe (maîtrise)
 const titleOf = id => { const x = TITLES.find(([g, i]) => g + i === id); return x ? T(x[2][0], x[2][1]) : ''; };
 const REWARD_THEMES = [
   {id: 'bronze', n: ['Bronze', 'Bronze'], l: 20, acc: '#d08a4a', bg: '#120d09'}, {id: 'argent', n: ['Argent', 'Silver'], l: 30, acc: '#cfd8e3', bg: '#0d1015'},
@@ -9279,10 +9380,10 @@ function rewardsCard() {
 /* ===================== Onglet Guilde (mode jeu) : tout ce qui touche au jeu au même endroit ===================== */
 function pclRow() {
   if (!GAME()) return '';
-  const p = S.pcl;
-  if (!p || !p.k) { const sg = pclSuggest(); return `<div class="pclrow row" style="gap:10px;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--line, #ffffff18)">${sg ? pclImg(sg.k, 44) : ''}<div style="flex:1;min-width:0"><div class="small muted">${T('Classe', 'Class')}</div>${sg ? `<b>${esc(pclName(sg.k))}</b> <span class="muted small">${T('conseillée', 'suggested')}</span>` : `<span class="small muted">${T('Choisis ton style', 'Pick your style')}</span>`}</div>${sg ? `<button class="btn sm primary" data-act="pcl-set" data-k="${sg.k}">${T('Accepter', 'Accept')}</button>` : ''}<button class="btn sm" data-act="pcl-pick">${sg ? T('Autre', 'Other') : T('Choisir', 'Choose')}</button></div>`; }
-  const m = pclMast(p.k);
-  return `<div class="pclrow" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line, #ffffff18)"><div class="row" style="gap:10px;align-items:center">${pclImg(p.k, 52)}<div style="flex:1;min-width:0"><div class="small muted">${T('Classe', 'Class')} · ${T('Maîtrise', 'Mastery')} ${m.lv + 1}</div><b>${esc(pclName(p.k))} ${esc(m.title)}</b><div class="small muted">${m.nx ? T('Prochain titre dans', 'Next title in') + ' ' + (m.nx - m.d) + ' ' + T(m.nx - m.d > 1 ? 'jours' : 'jour', m.nx - m.d > 1 ? 'days' : 'day') : T('Maîtrise maximale', 'Maximum mastery')}</div></div><button class="btn sm" data-act="pcl-pick">${T('Changer', 'Change')}</button></div>${m.nx ? `<div class="goal sysbar" style="margin:8px 0 0"><div style="width:${m.pct}%"></div></div>` : ''}</div>`;
+  const k = clsCur(), fix = clsMode() === 'fix', top = 'margin-top:12px;padding-top:10px;border-top:1px solid var(--line, #ffffff18)';
+  if (!k) return `<div class="pclrow row" style="gap:10px;align-items:center;${top}"><div style="flex:1;min-width:0"><div class="small muted">${T('Classe', 'Class')}</div><span class="small">${T('Ta classe se révélera après tes premières séances.', 'Your class will reveal itself after your first workouts.')}</span></div><button class="btn sm" data-act="pcl-pick">${T('Voir', 'View')}</button></div>`;
+  const m = pclMast(k), hint = fix ? '' : clsNextHint();
+  return `<div class="pclrow" style="${top}"><div class="row" style="gap:10px;align-items:center">${pclImg(k, 52)}<div style="flex:1;min-width:0"><div class="small muted">${fix ? T('Classe · objectif', 'Class · goal') : T('Classe · automatique', 'Class · automatic')} · ${T('Maîtrise', 'Mastery')} ${m.lv + 1}</div><b>${esc(pclName(k))} ${esc(m.title)}</b><div class="small muted">${m.nx ? T(`${m.pts.toLocaleString(LOC())} / ${m.nx.toLocaleString(LOC())} points de maîtrise`, `${m.pts.toLocaleString(LOC())} / ${m.nx.toLocaleString(LOC())} mastery points`) : T('Maîtrise maximale', 'Maximum mastery')}</div></div><button class="btn sm" data-act="pcl-pick">${T('Changer', 'Change')}</button></div>${m.nx ? `<div class="goal sysbar" style="margin:8px 0 0"><div style="width:${m.pct}%"></div></div>` : ''}<div class="small muted" style="margin-top:6px">${T('Bonus : quêtes du jour adaptées et +25 % d\'XP sur les séances de ton style.', 'Bonus: tailored daily quests and +25% XP on workouts in your style.')}${hint ? '<br>' + esc(hint) : ''}</div></div>`;
 }
 function statusCard() {
   const me = medalsEarned(), {st, defs} = me, n = Object.keys(me.got).length, hu = hunter(me), fmtN = v => Math.round(v).toLocaleString(LOC()), pct = Math.min(100, Math.round(hu.cur / hu.need * 100));
@@ -9365,7 +9466,7 @@ function heroCard(big) {
   return `<div class="hcwrap${big ? ' big' : ''}"><div class="hcard${foil}${st ? ' hset' : ''}" style="--rr:${R[2]};--sc:${st ? st.c : R[2]}"${big ? '' : ' data-act="hero-big" role="button"'}>
     <div class="hcbn${bn ? bannerCls(bn) : ' hcbn0'}"></div><div class="hcshade"></div>
     <div class="hctop"><span class="hcrk" style="--rc:${hu.col}">${esc(hu.rk)}</span><span class="hclv">${T('Niv.', 'Lv.')} ${hu.lvl}</span>${hu.p ? `<span class="hclv">${T('Prestige', 'Prestige')} ${hu.p}</span>` : ''}${tier ? `<span class="hcrar">${tier === 2 ? T('Carte mythique', 'Mythic card') : T('Carte brillante', 'Shining card')}</span>` : ''}</div>
-    <div class="hcmid">${av}<div class="hcid"><b class="hcname">${esc(nm)} ${emblemOf(myCos('emblem'))}</b><span class="hctitle">${esc(hu.title)}${tt ? ` · « ${esc(tt)} »` : ''}</span><span class="hccls">${S.pcl && S.pcl.k ? esc(pclName(S.pcl.k)) : ''}</span></div></div>
+    <div class="hcmid">${av}<div class="hcid"><b class="hcname">${esc(nm)} ${emblemOf(myCos('emblem'))}</b><span class="hctitle">${esc(hu.title)}${tt ? ` · « ${esc(tt)} »` : ''}</span><span class="hccls">${clsCur() ? esc(pclName(clsCur())) : ''}</span></div></div>
     ${st ? `<div class="hcset">${T('Ensemble', 'Set')} · ${esc(T(st.n[0], st.n[1]))}</div>` : ''}
     <i class="hcfoil"></i><i class="hcglare"></i></div>
     ${big ? `<p class="small muted" style="text-align:center;margin:12px 0 0">${tier ? T('Penche ton téléphone pour la faire briller.', 'Tilt your phone to make it shine.') + ' ' : ''}${T('Ta carte brille quand tu portes un ensemble complet (3 pièces, onglet Ensembles). Elle devient mythique au Prestige ou avec l\'ensemble Grand Maître.', 'Your card shines when you wear a full set (3 pieces, Sets tab). It turns mythic at Prestige or with the Grandmaster set.')}</p>` : !tier ? `<p class="small muted hchint" style="margin:6px 0 0">${T('Équipe un ensemble complet pour faire briller ta carte.', 'Equip a full set to make your card shine.')}</p>` : ''}</div>`;
@@ -9473,7 +9574,7 @@ async function gldSync(force) {
     const hu = hunter(), wkk = dkey(weekStart(new Date()));
     const rk = wkKey(new Date()), qk = wkKey(new Date(+new Date(rk + 'T12:00:00') - 3 * 864e5));
     const mdoc = {n: myNm().slice(0, 24), l: hu.lvl, r: hu.rk, f: myFrame(), x0: +g.x0 || 0, xp: hu.raw, wk: weekXp(), wkk, rp: myWeekReps(rk), rk, qp: myWeekReps(qk), qk, t: new Date().toISOString()}, mref = ref.collection('m').doc(u.uid);
-    if (S.pcl && S.pcl.k && !window.gldNoCl) { try { await mref.set({...mdoc, cl: S.pcl.k, lk: pclLook(), cv: pclMast(S.pcl.k).lv}); } catch (e) { window.gldNoCl = 1; await mref.set(mdoc); } } else await mref.set(mdoc); // la classe est ajoutée si les règles Firebase l'acceptent
+    if (clsCur() && !window.gldNoCl) { try { await mref.set({...mdoc, cl: clsCur(), lk: pclLook(), cv: pclMast(clsCur()).lv}); } catch (e) { window.gldNoCl = 1; await mref.set(mdoc); } } else await mref.set(mdoc); // la classe est ajoutée si les règles Firebase l'acceptent
     const ms = await ref.collection('m').limit(GLD_MAX + 5).get();
     g.name = String(d.name || g.name || '').slice(0, 30); g.emb = d.emb || '⚔️'; g.bn = d.bn || ''; g.owner = d.owner; g.me = u.uid;
     g.mem = ms.docs.map(x => { const m = x.data() || {}; return {uid: x.id, n: String(m.n || '?').slice(0, 24), l: +m.l || 1, r: RKC[m.r] ? m.r : 'E', f: String(m.f || '').slice(0, 20), c: Math.max(0, (+m.xp || 0) - (+m.x0 || 0)), wk: m.wkk === wkk ? Math.max(0, +m.wk || 0) : 0, rp: Math.max(0, +m.rp || 0), rk: String(m.rk || ''), qp: Math.max(0, +m.qp || 0), qk: String(m.qk || ''), cl: PCL[m.cl] ? m.cl : '', lk: m.lk === 'f' ? 'f' : 'm', cv: Math.max(0, Math.min(PCL_LV.length - 1, +m.cv || 0))}; }).filter(m => !(d.ban || []).includes(m.uid));
@@ -9610,7 +9711,7 @@ function gCustom() {
 function vGuild() {
   if (!GAME()) { setRoot('train'); return vTrain(); }
   if (!S.history.length) return `<div class="empty">${T('Ta première séance t\'inscrit à la Guilde : niveau, rang, quêtes et boss commencent ici.', 'Your first workout signs you up to the Guild: level, rank, quests and bosses start here.')}<br><button class="btn primary sm" data-tab="train" style="margin-top:12px">${T('Démarrer une séance', 'Start a workout')}</button></div>`;
-  syncSystem(); evCheck(); setTimeout(evAnnounce, 0);
+  syncSystem(); clsSync(); evCheck(); setTimeout(evAnnounce, 0);
   const fr = FRS().list.length, q = dailyQuest(), dg = weekDungeon(), bo = monthBoss(), nd = (q.rest || q.done ? 1 : 0) + (dg.done ? 1 : 0) + (bo && bo.done ? 1 : 0);
   const [aOk, aTot] = armoryCount(), sh = shadowArmy().length;
   let raidSub = T('Avec tes amis', 'With your friends'), seaSub = T('Avec tes amis', 'With your friends');
@@ -10466,11 +10567,14 @@ document.addEventListener('click', e => {
     case 'chest-open': chestOpen(b.dataset.id); break;
     case 'pcl-pick': pclPick(); break;
     case 'pcl-look': S.settings.look = b.dataset.v === 'f' ? 'f' : 'm'; save(); closeAll(); render(); pclPick(); break;
-    case 'pcl-yes': { const k = b.dataset.k; if (!PCL[k] || !pclCan()) { closeAll(); break; } pclSet(k); closeAll(); render(); toast(T(`${pclName(k)} : classe choisie`, `${pclName(k)}: class chosen`)); break; }
-    case 'pcl-set': { const k = b.dataset.k; if (!PCL[k]) break; if (S.pcl && S.pcl.k === k) { closeAll(); break; }
-      if (!pclCan()) { toast(T('Tu as déjà changé de classe : prochain changement le ', 'You already changed class: next change on ') + pclNext()); break; }
-      if (S.pcl && S.pcl.k) { modal(`<h2 style="margin:0 0 8px">${T('Changer de classe ?', 'Change class?')}</h2><p style="margin:0 0 10px">${T('Tu passes à', 'You are switching to')} <b>${esc(pclName(k))}</b>.</p><p class="small" style="margin:0 0 14px;color:var(--warm)">${T('⚠ Tu ne pourras plus changer de classe pendant 7 jours.', '⚠ You won\'t be able to change class again for 7 days.')}</p><div class="row" style="gap:8px"><button class="btn" style="flex:1" data-act="close">${T('Annuler', 'Cancel')}</button><button class="btn primary" style="flex:1" data-act="pcl-yes" data-k="${k}">${T('Confirmer', 'Confirm')}</button></div>`); break; }
-      pclSet(k); closeAll(); render(); toast(T(`${pclName(k)} : classe choisie`, `${pclName(k)}: class chosen`)); break; }
+    case 'pcl-yes': { const k = b.dataset.k; if ((k !== 'auto' && !PCL[k]) || !pclCan()) { closeAll(); break; } pclSet(k); closeAll(); render(); toast(k === 'auto' ? T('Classe automatique : elle suit ton entraînement', 'Automatic class: it follows your training') : T(`Objectif : ${pclName(k)}`, `Goal: ${pclName(k)}`)); break; }
+    case 'pcl-set': { const k = b.dataset.k; if (k !== 'auto' && !PCL[k]) break;
+      const fix = clsMode() === 'fix'; if ((k === 'auto' && !fix) || (fix && S.pcl.k === k)) { closeAll(); break; }
+      const first = !S.pcl || !S.pcl.mode || (S.pcl.mode === 'auto' && !S.pcl.lc && !S.pcl.k);
+      if (!pclCan()) { toast(T('Tu as déjà changé cette semaine : prochain changement le ', 'You already changed this week: next change on ') + pclNext()); break; }
+      const nm = k === 'auto' ? T('Automatique', 'Automatic') : pclName(k);
+      if (!first) { modal(`<h2 style="margin:0 0 8px">${T('Changer de classe ?', 'Change class?')}</h2><p style="margin:0 0 10px">${T('Tu passes à', 'You are switching to')} <b>${esc(nm)}</b>.</p><p class="small" style="margin:0 0 14px;color:var(--warm)">${T('⚠ Tu ne pourras plus changer pendant 7 jours.', '⚠ You won\'t be able to change again for 7 days.')}</p><div class="row" style="gap:8px"><button class="btn" style="flex:1" data-act="close">${T('Annuler', 'Cancel')}</button><button class="btn primary" style="flex:1" data-act="pcl-yes" data-k="${k}">${T('Confirmer', 'Confirm')}</button></div>`); break; }
+      pclSet(k); closeAll(); render(); toast(k === 'auto' ? T('Classe automatique : elle suit ton entraînement', 'Automatic class: it follows your training') : T(`Objectif : ${pclName(k)}`, `Goal: ${pclName(k)}`)); break; }
     case 'chest-next': { const o = document.getElementById('chesto'); if (o) o.remove(); const c = chestsPending()[0]; if (c) chestOpen(c.id); break; }
     case 'chest-close': { const o = document.getElementById('chesto'); if (o) o.remove(); RC = {}; DV++; render(); break; }
     case 'cos-eq': { const k = b.dataset.kind, id = b.dataset.id; closeModal();
@@ -11488,8 +11592,8 @@ function obRender() {
     <label>${T('Niveau d\'expérience', 'Experience level')}</label>${obSeg('exp', [['beg', T('Débutant', 'Beginner')], ['int', T('Interm.', 'Interm.')], ['adv', T('Avancé', 'Advanced')]])}
     <p class="muted small" style="margin:8px 0 0">${EXP_WHAT()[d.exp]} ${T('Il monte tout seul au fil de tes séances.', 'It goes up on its own as you train.')}</p>
     ${nextBtn(d.game ? T('Continuer', 'Continue') : T('C\'est parti!', 'Let\'s go!') + ' 🚀')}`;
-  else if (step === 'cls') { const sg = pclSuggest(); if (d.cls == null) d.cls = sg ? sg.k : ''; h = `${obDots()}<h2 class="ob-h2">${T('Ta classe', 'Your class')}</h2><p class="muted">${sg ? T('Conseillée d\'après tes 4 dernières semaines', 'Suggested from your last 4 weeks') + ' : ' + esc(sg.why) + '.' : T('Choisis le style qui te ressemble.', 'Pick the style that suits you.')} ${T('Tu pourras la changer une fois par semaine.', 'You can change it once a week.')}</p>
-    <div style="margin-top:12px">${PCL_K.map(k => `<button class="ob-opt ${d.cls === k ? 'on' : ''}" data-act="ob-seg" data-k="cls" data-v="${k}"><span class="ob-ic">${pclImg(k, 40)}</span><span><b>${esc(pclName(k))}${sg && sg.k === k ? ' · ' + T('conseillée', 'suggested') : ''}</b><small>${esc(T(PCL[k][2][0], PCL[k][2][1]))}</small></span></button>`).join('')}</div>
+  else if (step === 'cls') { const sg = pclSuggest(); if (d.cls == null) d.cls = 'auto'; h = `${obDots()}<h2 class="ob-h2">${T('Ta classe', 'Your class')}</h2><p class="muted">${T('Elle donne des quêtes adaptées et +25 % d\'XP sur les séances de ton style. Le plus simple : la laisser se calculer d\'après ton entraînement.', 'It gives tailored quests and +25% XP on workouts in your style. Easiest: let it follow your training.')}</p>
+    <div style="margin-top:12px"><button class="ob-opt ${d.cls === 'auto' ? 'on' : ''}" data-act="ob-seg" data-k="cls" data-v="auto"><span class="ob-ic">${pclImg(sg ? sg.k : 'm', 40)}</span><span><b>${T('Automatique', 'Automatic')} · ${T('recommandé', 'recommended')}</b><small>${sg ? T(`Pour l'instant : ${pclName(sg.k)} (${sg.why})`, `For now: ${pclName(sg.k)} (${sg.why})`) : T('Ta classe se révélera après tes premières séances.', 'Your class will reveal itself after your first workouts.')}</small></span></button>${PCL_K.map(k => `<button class="ob-opt ${d.cls === k ? 'on' : ''}" data-act="ob-seg" data-k="cls" data-v="${k}"><span class="ob-ic">${pclImg(k, 40)}</span><span><b>${T('Objectif', 'Goal')} : ${esc(pclName(k))}</b><small>${esc(pclDesc(k))}</small></span></button>`).join('')}</div>
     ${nextBtn(T('C\'est parti!', 'Let\'s go!') + ' 🚀')}`; }
   o.innerHTML = `<div class="ob-in obs-${step}">${back}${h}</div>`;
   try { iconize(o); } catch (e) {}
@@ -11570,7 +11674,7 @@ setInterval(authGate, 45000);
 window.addEventListener('online', () => setTimeout(authGate, 1500));
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(authGate, 1500); });
 function obFinish() {
-  const u = obSt && obSt.u, mode = obSt && obSt.mode, obSt0h = obSt && obSt.d.h; obApply(); S.settings.onboarded = true; if (mode === 'new' && obSt.d.game && obSt.d.cls && PCL[obSt.d.cls] && !(S.pcl && S.pcl.k)) pclSet(obSt.d.cls);
+  const u = obSt && obSt.u, mode = obSt && obSt.mode, obSt0h = obSt && obSt.d.h; obApply(); S.settings.onboarded = true; if (mode === 'new' && obSt.d.game && obSt.d.cls && (obSt.d.cls === 'auto' || PCL[obSt.d.cls]) && !(S.pcl && S.pcl.mode)) pclSet(obSt.d.cls);
   if (mode === 'new') { S.settings.tourPending = true;
     if (!S.history.length && !S.settings.xferDone) { const sp = starterProgram(S.settings.obj, +S.settings.goal || 4, S.settings.exp || 'int'); S.routines = sp.rs; S.schedule = sp.sched; S.settings.starter = 1; } }
   save(); obClose(); applyTheme(); render();
