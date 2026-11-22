@@ -43,12 +43,13 @@ class HrService : Service(), SensorEventListener {
     private var hsOn = false
     private val hsCb = object : ExerciseUpdateCallback {
         override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
-            val n = try { update.latestMetrics.getData(DataType.STEPS_TOTAL)?.total } catch (e: Exception) { null } ?: return
+            try { update.latestMetrics.getData(DataType.HEART_RATE_BPM).lastOrNull()?.value?.let { hrHs(it.toInt()) } } catch (e: Throwable) {}
+            val n = try { update.latestMetrics.getData(DataType.STEPS_TOTAL)?.total } catch (e: Throwable) { null } ?: return
             stepsHs(n.toInt())
         }
         override fun onLapSummaryReceived(lapSummary: ExerciseLapSummary) {}
         override fun onRegistered() {}
-        override fun onRegistrationFailed(throwable: Throwable) { hsOn = false }
+        override fun onRegistrationFailed(throwable: Throwable) { hsOn = false; dbg("suivi refusé : " + (throwable.message ?: "").take(100)) }
         override fun onAvailabilityChanged(dataType: DataType<*, *>, availability: Availability) {}
     }
     private val tick = object : Runnable {
@@ -56,7 +57,7 @@ class HrService : Service(), SensorEventListener {
             WS.checkRest(this@HrService)
             // Écran éteint, la montre garde les pas en réserve : on les réclame toutes les 5 s.
             if (WS.cl() != null && ++fl % 5 == 0) try { sm?.flush(this@HrService) } catch (e: Exception) {}
-            hsCheck()
+            try { hsCheck() } catch (e: Throwable) {}
             if (!WS.on()) { stopSelf(); return }
             h.postDelayed(this, 1000)
         }
@@ -124,24 +125,38 @@ class HrService : Service(), SensorEventListener {
         }
     }
 
+    private fun dbg(m: String) { try { WS.send(this, JSONObject().put("a", "dbg").put("m", m)) } catch (e: Throwable) {} }
     private fun hsCheck() {
         val c = WS.cl()
-        val want = c != null && c.optInt("st", 0) == 1 && (Build.VERSION.SDK_INT < 29 || checkSelfPermission(android.Manifest.permission.ACTIVITY_RECOGNITION) == android.content.pm.PackageManager.PERMISSION_GRANTED)
+        val act = Build.VERSION.SDK_INT < 29 || checkSelfPermission(android.Manifest.permission.ACTIVITY_RECOGNITION) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        val want = c != null && c.optInt("st", 0) == 1 && act
+        if (c != null && c.optInt("st", 0) == 1 && !act && hsT0 != -1L) { hsT0 = -1L; dbg("permission Activité physique refusée sur la montre") }
         if (want && c != null && c.optLong("t0") != hsT0) {
             hsT0 = c.optLong("t0")
             try {
                 val ec = HealthServices.getClient(this).exerciseClient
                 ec.setUpdateCallback(hsCb)
                 val type = if (c.optString("k") == "run") ExerciseType.RUNNING_TREADMILL else ExerciseType.WALKING
-                val cfg = ExerciseConfig.builder(type).setDataTypes(setOf(DataType.STEPS_TOTAL)).setIsAutoPauseAndResumeEnabled(false).setIsGpsEnabled(false).build()
-                ec.startExerciseAsync(cfg); hsOn = true
-            } catch (e: Exception) { hsOn = false }
+                val cfg = ExerciseConfig.builder(type).setDataTypes(setOf(DataType.STEPS_TOTAL, DataType.HEART_RATE_BPM)).setIsAutoPauseAndResumeEnabled(false).setIsGpsEnabled(false).build()
+                hsOn = true
+                val f = ec.startExerciseAsync(cfg)
+                f.addListener({
+                    try { f.get(); dbg("exercice montre démarré") }
+                    catch (e: Throwable) { hsOn = false; dbg("exercice refusé : " + (e.cause?.message ?: e.message ?: e.javaClass.simpleName).take(120)) }
+                }, mainExecutor)
+            } catch (e: Throwable) { hsOn = false; dbg("Health Services indisponible : " + (e.message ?: e.javaClass.simpleName).take(120)) }
         } else if (!want && hsOn) hsEnd()
     }
     private fun hsEnd() {
         if (!hsOn) return
         hsOn = false; hsT0 = 0L
-        try { val ec = HealthServices.getClient(this).exerciseClient; ec.endExerciseAsync(); ec.clearUpdateCallbackAsync(hsCb) } catch (e: Exception) {}
+        try { val ec = HealthServices.getClient(this).exerciseClient; ec.endExerciseAsync(); ec.clearUpdateCallbackAsync(hsCb) } catch (e: Throwable) {}
+    }
+    private fun hrHs(b: Int) {
+        if (b < 30 || b > 230) return
+        val now = System.currentTimeMillis()
+        WS.bpm = b; WS.bpmT = now; WS.changed()
+        if (now - lastSent >= 5000) { lastSent = now; WS.hr(this, b, now) }
     }
     private fun stepsHs(n: Int) {
         val c = WS.cl() ?: return
