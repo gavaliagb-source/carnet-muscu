@@ -46,8 +46,11 @@ class HrService : Service(), SensorEventListener {
         override fun onExerciseUpdateReceived(update: ExerciseUpdate) {
             if (++nUp <= 3 || nUp % 20 == 0) android.util.Log.i("RLSTEP", "maj #$nUp etat=${try { update.exerciseStateInfo.state.name } catch (e: Throwable) { "?" }} types=${try { update.latestMetrics.dataTypes.joinToString { it.name } } catch (e: Throwable) { e.toString() }}")
             try { update.latestMetrics.getData(DataType.HEART_RATE_BPM).lastOrNull()?.value?.let { hrHs(it.toInt()) } } catch (e: Throwable) { android.util.Log.i("RLSTEP", "err pouls $e") }
-            val n = try { update.latestMetrics.getData(DataType.STEPS_TOTAL)?.total } catch (e: Throwable) { android.util.Log.i("RLSTEP", "err pas $e"); null } ?: return
-            stepsHs(n.toInt())
+            val n = try { update.latestMetrics.getData(DataType.STEPS_TOTAL)?.total } catch (e: Throwable) { null }
+            if (n != null) { stepsHs(n.toInt()); return }
+            // Plan B : certaines montres donnent les pas par intervalle au lieu du total
+            val d = try { update.latestMetrics.getData(DataType.STEPS).sumOf { it.value } } catch (e: Throwable) { 0L }
+            if (d > 0) { hsAcc += d; stepsHs(hsAcc.toInt()) }
         }
         override fun onLapSummaryReceived(lapSummary: ExerciseLapSummary) {}
         override fun onRegistered() { android.util.Log.i("RLSTEP", "rappel enregistré") }
@@ -61,6 +64,7 @@ class HrService : Service(), SensorEventListener {
             fl++
             if (WS.cl() != null && fl % 5 == 0) try { sm?.flush(this@HrService) } catch (e: Exception) {}
             try { hsCheck() } catch (e: Throwable) {}
+            if (WS.cl() != null) { stepReg(); diag() }
             // Écran éteint, Health Services regroupe les données : on les réclame toutes les 10 s.
             if (hsOn && fl % 10 == 0 && scr() == "off") try { HealthServices.getClient(this@HrService).exerciseClient.flushAsync() } catch (e: Throwable) {}
             if (!WS.on()) { stopSelf(); return }
@@ -104,9 +108,7 @@ class HrService : Service(), SensorEventListener {
             sm = getSystemService(SENSOR_SERVICE) as SensorManager
             sm?.getDefaultSensor(Sensor.TYPE_HEART_RATE)?.let { sm?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
             // Pas (cardio sur tapis) : le téléphone en déduit la distance et la vitesse.
-            if (Build.VERSION.SDK_INT < 29 || checkSelfPermission(android.Manifest.permission.ACTIVITY_RECOGNITION) == android.content.pm.PackageManager.PERMISSION_GRANTED)
-                // Version « réveil » si la montre l'a : les pas arrivent même écran éteint.
-                (sm?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER, true) ?: sm?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER))?.let { sm?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL, 0) }
+            stepReg()
         } catch (e: Exception) {}
         try {
             wl = (getSystemService(POWER_SERVICE) as PowerManager).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "runelift:workout")
@@ -130,8 +132,26 @@ class HrService : Service(), SensorEventListener {
         }
     }
 
+    private var snReg = 0 // 0 = pas encore, 1 = branché, -1 = la montre n'a pas de capteur de pas
+    private fun actOk() = Build.VERSION.SDK_INT < 29 || checkSelfPermission(android.Manifest.permission.ACTIVITY_RECOGNITION) == android.content.pm.PackageManager.PERMISSION_GRANTED
+    // Version « réveil » si la montre l'a : les pas arrivent même écran éteint. Rebranché si la permission arrive pendant le cardio.
+    private fun stepReg() {
+        if (snReg != 0 || !actOk()) return
+        try { val sn = sm?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER, true) ?: sm?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+            snReg = if (sn != null && sm?.registerListener(this, sn, SensorManager.SENSOR_DELAY_NORMAL, 0) == true) 1 else -1 } catch (e: Throwable) { snReg = -1 }
+    }
+    // Diagnostic affiché sur l'écran de cardio du téléphone : quel compteur marche, et combien il a compté
+    private var lastErr = ""; private var diagT = 0L
+    private fun diag() {
+        val c = WS.cl() ?: return; if (c.optInt("st", 0) != 1) return
+        val now = System.currentTimeMillis(); if (now - diagT < 10_000) return; diagT = now
+        val fr = WS.t("a", "b") == "a"
+        val m = if (!actOk()) (if (fr) "permission Activité physique refusée : Paramètres de la montre → Applis → Runelift → Autorisations" else "Physical activity permission denied: watch Settings → Apps → Runelift → Permissions")
+            else (if (fr) "suivi ${if (hsOn) "actif $hsN" else "inactif"} · capteur ${when (snReg) { 1 -> "$snN"; -1 -> "absent"; else -> "en attente" }}" else "tracking ${if (hsOn) "on $hsN" else "off"} · sensor ${when (snReg) { 1 -> "$snN"; -1 -> "missing"; else -> "waiting" }}") + (if (lastErr.isNotEmpty()) " · $lastErr" else "")
+        try { WS.send(this, JSONObject().put("a", "dbg").put("m", m)) } catch (e: Throwable) {}
+    }
     private fun scr(): String = try { if ((getSystemService(POWER_SERVICE) as PowerManager).isInteractive) "on" else "off" } catch (e: Throwable) { "?" }
-    private fun dbg(m: String) { android.util.Log.i("RLSTEP", "dbg $m"); try { WS.send(this, JSONObject().put("a", "dbg").put("m", m)) } catch (e: Throwable) {} }
+    private fun dbg(m: String) { android.util.Log.i("RLSTEP", "dbg $m"); if (!m.startsWith("exercice montre démarré")) lastErr = m.take(80); try { WS.send(this, JSONObject().put("a", "dbg").put("m", m)) } catch (e: Throwable) {} }
     private fun hsCheck() {
         val c = WS.cl()
         val act = Build.VERSION.SDK_INT < 29 || checkSelfPermission(android.Manifest.permission.ACTIVITY_RECOGNITION) == android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -143,13 +163,18 @@ class HrService : Service(), SensorEventListener {
                 val ec = HealthServices.getClient(this).exerciseClient
                 ec.setUpdateCallback(hsCb)
                 val type = if (c.optString("k") == "run") ExerciseType.RUNNING_TREADMILL else ExerciseType.WALKING
-                val cfg = ExerciseConfig.builder(type).setDataTypes(setOf(DataType.STEPS_TOTAL, DataType.HEART_RATE_BPM)).setIsAutoPauseAndResumeEnabled(false).setIsGpsEnabled(false).build()
-                hsOn = true
-                val f = ec.startExerciseAsync(cfg)
-                f.addListener({
-                    try { f.get(); dbg("exercice montre démarré") }
-                    catch (e: Throwable) { hsOn = false; dbg("exercice refusé : " + (e.cause?.message ?: e.message ?: e.javaClass.simpleName).take(120)) }
-                }, mainExecutor)
+                hsAcc = 0L; hsOn = true
+                // Essais dans l'ordre : total de pas, pas par intervalle, pouls seul (le capteur de pas prend alors le relais)
+                val tries = listOf<Set<DataType<*, *>>>(setOf(DataType.STEPS_TOTAL, DataType.HEART_RATE_BPM), setOf(DataType.STEPS, DataType.HEART_RATE_BPM), setOf(DataType.HEART_RATE_BPM))
+                fun go(i: Int) {
+                    val cfg = ExerciseConfig.builder(type).setDataTypes(tries[i]).setIsAutoPauseAndResumeEnabled(false).setIsGpsEnabled(false).build()
+                    val f = ec.startExerciseAsync(cfg)
+                    f.addListener({
+                        try { f.get(); dbg("exercice montre démarré" + if (i > 0) " (essai ${i + 1})" else "") }
+                        catch (e: Throwable) { if (i + 1 < tries.size) go(i + 1) else { hsOn = false; dbg("exercice refusé : " + (e.cause?.message ?: e.message ?: e.javaClass.simpleName).take(120)) } }
+                    }, mainExecutor)
+                }
+                go(0)
             } catch (e: Throwable) { hsOn = false; dbg("Health Services indisponible : " + (e.message ?: e.javaClass.simpleName).take(120)) }
         } else if (!want && hsOn) hsEnd()
     }
@@ -165,7 +190,7 @@ class HrService : Service(), SensorEventListener {
         WS.bpm = b; WS.bpmT = now; WS.changed()
         if (now - lastSent >= 5000) { lastSent = now; WS.hr(this, b, now) }
     }
-    private var hsN = 0; private var hsNT0 = 0L; private var snN = 0
+    private var hsN = 0; private var hsNT0 = 0L; private var snN = 0; private var hsAcc = 0L
     private fun stepsHs(n: Int) {
         val c = WS.cl() ?: return
         if (c.optLong("t0") != hsNT0) { hsNT0 = c.optLong("t0"); hsN = 0 }
