@@ -5932,7 +5932,7 @@ function syncQuestFails() {
 /* Supprimer une séance = comme si elle n'avait jamais existé : on retire aussi les quêtes, donjon, boss, coffre et bonus qu'elle avait donnés */
 function forgetSession(hid) {
   const h = S.history.find(x => x.id === hid); if (!h) return;
-  S.history = S.history.filter(x => x.id !== hid); RC = {}; DV++;
+  S.history = S.history.filter(x => x.id !== hid); hTomb([hid]); RC = {}; DV++;
   const k = dkey(new Date(h.date)), today = dkey(new Date()), d = new Date(k + 'T12:00');
   // quête du jour
   if (qLog()[k] && !dailyQuest(new Date(d)).done) { delete qLog()[k]; if (k < today && k >= (S.qStart || '') && (plannedDay(d) || S.history.some(x => dkey(x.date) === k))) qFail()[k] = QFAIL_XP; }
@@ -6694,9 +6694,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.99.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.99.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.99.1', d: '2026-11-22', fr: ['Synchro entre ton téléphone (appli) et le navigateur : les attaques de raid, l\'énergie, les séances, les étirements, les quêtes, les pouvoirs et l\'histoire de classe se fusionnent au lieu de s\'écraser. Les attaques partent dans le cloud tout de suite.'], en: ['Sync between your phone app and the browser: raid attacks, energy, workouts, stretching, quests, powers and story now merge instead of overwriting.']},
   {v: '9.99.0', d: '2026-11-22', fr: ['Choix de classe : touche une classe pour voir sa fiche, avec son portrait en grand, son bonus, ses 3 attaques de raid, son pouvoir de la semaine et son histoire. Le bouton « Choisir cette classe » est en bas.'], en: ['Class picker: tap a class to see its sheet with a big portrait, bonus, raid attacks, weekly power and story.']},
   {v: '9.98.5', d: '2026-11-22', fr: ['Guilde : la carte « Aujourd\'hui » se ferme et s\'ouvre comme les autres sections (ouverte par défaut). Fermée, elle montre juste le nombre de quêtes accomplies.'], en: ['Guild: the Today card can be collapsed like the other sections (open by default).']},
   {v: '9.98.4', d: '2026-11-22', fr: ['Donjon : tu peux changer de porte tant que tu n\'as pas fait de séance depuis ton choix.'], en: ['Dungeon: you can change door as long as you have not trained since choosing.']},
@@ -8495,11 +8496,34 @@ async function cbPush(force) {
     for (let i = 0; i < body.length; i += SZ) parts.push(body.slice(i, i + SZ));
     for (let i = 0; i < parts.length; i++) await base.collection('b').doc(String(i)).set({d: parts[i]});
     await base.set({n: parts.length, t: new Date().toISOString(), size: body.length, h: hs, sess: S.history.length, rout: S.routines.length}, {merge: true});
-    Object.assign(c, {hash: hs, last: new Date().toISOString(), err: ''});
+    Object.assign(c, {hash: hs, rh: hs, last: new Date().toISOString(), err: ''});
   } catch (e) { c.err = e.code === 'permission-denied' ? T('accès refusé (règles Firebase)', 'access denied (Firebase rules)') : (e.message || String(e)); }
   cbBusy = false; saveLocal();
   if (cur().v === 'settings') render();
 }
+/* Fusion entre appareils : séances, étirements, raid, XP bonus, quêtes… de chaque appareil sont gardés (rien ne s'écrase) */
+const hTomb = ids => { const T0 = S.hDel = S.hDel || []; ids.forEach(id => { if (id && !T0.includes(id)) T0.push(id); }); if (T0.length > 400) S.hDel = T0.slice(-400); };
+function mergeData(B, R) {
+  if (!R || typeof R !== 'object') return B;
+  const del = new Set([...(B.hDel || []), ...(R.hDel || [])]); B.hDel = [...del].slice(-400);
+  const uni = (a, b, key) => { const m = new Map(); (a || []).forEach(x => x && m.set(key(x), x)); (b || []).forEach(x => { if (x && !m.has(key(x))) m.set(key(x), x); }); return [...m.values()]; };
+  B.history = uni(B.history, R.history, x => x.id).filter(x => !del.has(x.id)).sort((a, b) => new Date(a.date) - new Date(b.date));
+  B.stretchLog = uni(B.stretchLog, R.stretchLog, x => x.id || x.date);
+  B.xpb = uni(B.xpb, R.xpb, x => x.k + '|' + x.id);
+  const RW = R.raidW || {}, W = B.raidW = B.raidW || {};
+  Object.keys(RW).forEach(wk => { const a = W[wk] = W[wk] || {log: [], b: [], g: {}}, b = RW[wk] || {};
+    a.log = uni(a.log, b.log, x => x.t + '|' + x.k).sort((x, y) => x.t - y.t); a.b = uni(a.b, b.b, x => x.k + '|' + x.u);
+    a.g = a.g || {}; Object.entries(b.g || {}).forEach(([k, v]) => { a.g[k] = Math.max(+a.g[k] || 0, +v || 0); });
+    if ((b.med || '') > (a.med || '')) a.med = b.med; if (b.kill) a.kill = 1; });
+  ['dgPick', 'qPick', 'qLog', 'qFail', 'qSafe', 'bossLog', 'raidLoot'].forEach(k => { const r = R[k]; if (!r || typeof r !== 'object' || Array.isArray(r)) return; const b = B[k] = B[k] && typeof B[k] === 'object' ? B[k] : {}; Object.keys(r).forEach(x => { if (!(x in b)) b[x] = r[x]; }); });
+  if (R.raidLoot && B.raidLoot) B.raidLoot.mvp = Math.max(+B.raidLoot.mvp || 0, +R.raidLoot.mvp || 0) || undefined;
+  B.powWeeks = [...new Set([...(B.powWeeks || []), ...(R.powWeeks || [])])].slice(-20);
+  const G = B.gRaid = B.gRaid || {}; Object.entries(R.gRaid || {}).forEach(([g, L]) => { G[g] = [...new Set([...(G[g] || []), ...(L || [])])]; });
+  const St = B.story = B.story || {}; Object.entries(R.story || {}).forEach(([k, v]) => { if (!St[k] || (+v.ch || 0) > (+St[k].ch || 0)) St[k] = v; });
+  if (R.pow && (!B.pow || R.pow.wk > B.pow.wk || (R.pow.wk === B.pow.wk && ((R.pow.used && !B.pow.used) || (R.pow.second && !B.pow.second))))) B.pow = R.pow;
+  return B;
+}
+const mergeSig = X => { try { const W = X.raidW || {}; return strHash(JSON.stringify([(X.history || []).map(h => h.id).sort(), (X.stretchLog || []).map(x => x.id || x.date).sort(), (X.xpb || []).map(x => x.k + '|' + x.id).sort(), Object.keys(W).sort().map(k => [(W[k].log || []).length, (W[k].b || []).length, W[k].g, W[k].med || '', W[k].kill || 0]), ['dgPick', 'qPick', 'qLog', 'qFail', 'qSafe', 'bossLog', 'raidLoot', 'gRaid', 'story'].map(k => Object.keys(X[k] || {}).sort().join()), Object.values(X.story || {}).map(v => v.ch), X.pow || null, (X.powWeeks || []).length, (X.hDel || []).length])); } catch (e) { return ''; } };
 /* Synchro entre appareils : si un autre appareil a sauvegardé plus récent, on le récupère tout seul (sans rien perdre ici) */
 let cbPullT = 0, cbPulling = false;
 async function cbAutoPull(fromPush) {
@@ -8507,15 +8531,18 @@ async function cbAutoPull(fromPush) {
   cbPulling = true;
   try {
     const u = await fbSignIn(false); if (!u) return false;
-    const m = await cbMeta(u.uid); if (!m || !m.h || m.h === c.hash) return false; // rien de nouveau dans le cloud
+    const m = await cbMeta(u.uid); if (!m || !m.h || m.h === c.hash || m.h === c.rh) return false; // rien de nouveau dans le cloud
     const localChanged = strHash(backupBody()) !== c.hash;
-    if (localChanged && !(m.sess > S.history.length)) return false; // ce téléphone a autant ou plus de séances : on garde ses données (elles seront envoyées)
-    if (localChanged && !confirm(T(`Une sauvegarde plus récente d'un autre appareil existe (${m.sess} séances, ${dateFr(m.t)}). La récupérer ? Ce téléphone sera mis à jour avec elle.`, `A newer backup from another device exists (${m.sess} workouts, ${dateFr(m.t)}). Get it? This phone will be updated with it.`))) { c.hash = m.h; saveLocal(); return false; }
     const base = fbDb().collection('private').doc(u.uid); let body = '';
     for (let i = 0; i < m.n; i++) { const d = await base.collection('b').doc(String(i)).get(); body += (d.exists && d.data().d) || ''; }
     if (S.active) return false;
-    const data = JSON.parse(body), cb = CB(); restoreAll(data); S.cb = cb; S.cb.on = true; S.cb.hash = strHash(backupBody()); S.cb.last = new Date().toISOString();
-    saveLocal(); applyTheme(); render(); try { if (typeof gldSync === 'function' && S.guild) gldSync(true); } catch (e) {}
+    const data = JSON.parse(body), cb = CB(), mine = JSON.parse(backupBody());
+    if (localChanged) { mergeData(S, data); } // ce téléphone a aussi changé : on garde ses réglages et on ajoute ce que l'autre appareil a fait
+    else { restoreAll(data); mergeData(S, mine); } // rien de neuf ici : on prend tout l'autre appareil (sans perdre ce qui était ici)
+    const more = mergeSig(S) !== mergeSig(data) || localChanged; // ce qui est ici a des choses que le cloud n'a pas
+    S.cb = cb; S.cb.on = true; S.cb.rh = m.h; S.cb.hash = more ? m.h : strHash(backupBody()); S.cb.last = new Date().toISOString();
+    RC = {}; DV++; PC = {}; saveLocal(); applyTheme(); render(); try { if (typeof gldSync === 'function' && S.guild) gldSync(true); } catch (e) {}
+    if (more) setTimeout(() => cbPush(true), 500); // le résultat fusionné repart dans le cloud pour l'autre appareil
     toast(T('☁️ Synchronisé depuis ton autre appareil', '☁️ Synced from your other device')); return true;
   } catch (e) { console.warn('autopull', e); return false; } finally { cbPulling = false; cbPullT = Date.now(); }
 }
@@ -9130,7 +9157,7 @@ function raAttack(k) {
 }
 function raRefresh() { const box = document.querySelector('#app .raidbox'); if (!box) { render(); return; } box.innerHTML = raidCard(); try { snapLater(); } catch (e) {} } // seule la carte du raid est redessinée : pas de rechargement de la page
 let raShT = 0;
-function raShare() { clearTimeout(raShT); raShT = setTimeout(() => { try { if (S.guild && typeof gldSync === 'function') { window.raSoft = 1; gldSync(true); } } catch (e) {} try { if (FRS().list.length && typeof frPublish === 'function') frPublish(true); } catch (e) {} }, 1500); }
+function raShare() { clearTimeout(raShT); raShT = setTimeout(() => { try { if (S.guild && typeof gldSync === 'function') { window.raSoft = 1; gldSync(true); } } catch (e) {} try { if (FRS().list.length && typeof frPublish === 'function') frPublish(true); } catch (e) {} try { if (cbOn()) cbPush(false); } catch (e) {} }, 1500); }
 function raidCheck() {
   if (!GAME() || (!FRS().list.length && !S.guild)) return;
   const wk = wkKey(new Date()), pw = wkKey(new Date(+new Date(wk + 'T12:00:00') - 3 * 864e5));
@@ -10740,7 +10767,7 @@ document.addEventListener('click', e => {
     case 'wo-reorder': closeModal(); openReorder(A.exercises, arr => { A.exercises = arr; fixSS(arr); save(); render(); }); break;
     case 'reo-del': b.closest('.reo').remove(); break;
     case 'reo-done': { const idx = [...document.querySelectorAll('#reolist .reo')].map(x => +x.dataset.i); const arr = idx.map(i => reo.list[i]); const cb = reo.onDone; closeModal(); cb(arr); break; }
-    case 'fix-import': { const bad = new Set(brokenImports()); S.history = S.history.filter(x => !bad.has(x)); save(); closeAll(); render(); toast(`🧹 ${bad.size} séances retirées — choisis ton fichier CSV Hevy`); $('#fileIn').click(); break; }
+    case 'fix-import': { const bad = new Set(brokenImports()); hTomb([...bad].map(x => x.id)); S.history = S.history.filter(x => !bad.has(x)); save(); closeAll(); render(); toast(`🧹 ${bad.size} séances retirées — choisis ton fichier CSV Hevy`); $('#fileIn').click(); break; }
     case 'go': if (b.dataset.v === 'settings' && b.closest('.nag, .card') && !cloudOn() && /Activer|Turn on/.test(b.textContent)) secOpen.add('cloud'); go(b.dataset.v, {n: b.dataset.n, rid: b.dataset.rid}); break;
     case 'start-empty': startEmpty(); break;
     case 'gen-open': openGen(); break;
@@ -10948,7 +10975,7 @@ document.addEventListener('click', e => {
     case 'h2r-after-import': closeAll(); go('history'); setTimeout(h2rLatest, 200); break;
     case 'selh-t': { const id = b.dataset.hid; selH.has(id) ? selH.delete(id) : selH.add(id); render(); selHBar(); break; }
     case 'selh-end': selHEnd(); break;
-    case 'selh-del': { const n = selH.size; if (!n || !confirm(T(`Supprimer ${n} séance${n > 1 ? 's' : ''} de ton historique?`, `Delete ${n} workout${n > 1 ? 's' : ''} from your history?`))) break; snap(); S.history = S.history.filter(x => !selH.has(x.id)); save(); selHEnd(); undoToast(T(`🗑 ${n} séance${n > 1 ? 's' : ''} supprimée${n > 1 ? 's' : ''}`, `🗑 ${n} workout${n > 1 ? 's' : ''} deleted`)); break; }
+    case 'selh-del': { const n = selH.size; if (!n || !confirm(T(`Supprimer ${n} séance${n > 1 ? 's' : ''} de ton historique?`, `Delete ${n} workout${n > 1 ? 's' : ''} from your history?`))) break; snap(); hTomb([...selH]); S.history = S.history.filter(x => !selH.has(x.id)); save(); selHEnd(); undoToast(T(`🗑 ${n} séance${n > 1 ? 's' : ''} supprimée${n > 1 ? 's' : ''}`, `🗑 ${n} workout${n > 1 ? 's' : ''} deleted`)); break; }
     case 'selx-start': closeAll(); selXStart(b.dataset.k, b.dataset.id); break;
     case 'selx-t': { if (e.target.closest('.handle')) break; const id = b.dataset.id; selX.ids.has(id) ? selX.ids.delete(id) : selX.ids.add(id); render(); selXBar(); break; }
     case 'selx-all': { const all = selXAll(); if (all.every(id => selX.ids.has(id))) selX.ids.clear(); else all.forEach(id => selX.ids.add(id)); render(); selXBar(); break; }
