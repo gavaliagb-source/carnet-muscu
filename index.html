@@ -513,7 +513,7 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .clzb{height:10px;border-radius:6px;background:linear-gradient(90deg,#7dd3fc 0 60%,#4ade80 60% 70%,#facc15 70% 80%,#fb923c 80% 90%,#ef4444 90%);position:relative;margin:0 4px;opacity:.85}
 .clzb i{position:absolute;top:-4px;left:var(--zp,0%);width:4px;height:18px;border-radius:2px;background:#fff;transform:translateX(-2px);transition:left .4s}
 .clzl{display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin:4px 4px 0}
-.clgrid{display:flex;gap:10px;margin-top:16px}.clst{flex:1;text-align:center;background:var(--card2);border-radius:12px;padding:10px 4px}.clst b{display:block;font-size:26px;font-variant-numeric:tabular-nums}.clst i{font-style:normal;opacity:.6;font-size:12px}
+.clgrid{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.clgrid .clst{min-width:calc(50% - 5px)}.clst{flex:1;text-align:center;background:var(--card2);border-radius:12px;padding:10px 4px}.clst b{display:block;font-size:26px;font-variant-numeric:tabular-nums}.clst i{font-style:normal;opacity:.6;font-size:12px}
 .glist2{display:flex;flex-direction:column;gap:8px;margin-top:10px}.grow{display:flex!important;justify-content:space-between;align-items:center;text-align:left}.grow i{font-style:normal;opacity:.6;font-size:20px}
 .bossrow .bmini{display:flex;gap:10px;align-items:center}.bossrow .bmini .bart{width:56px;height:56px}
 .bossrow.dead{border-color:color-mix(in srgb,var(--ok) 60%,transparent);background:color-mix(in srgb,var(--ok) 8%,transparent)}
@@ -6569,9 +6569,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.89.6'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.90.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.90.0', d: '2026-11-21', fr: ['Cardio en direct sur tapis : la montre compte tes pas. L\'appli en déduit ta distance et ta vitesse en direct (selon ta taille), les calories en tiennent compte, et la distance est déjà remplie à la fin. Demande de réinstaller l\'appli de la montre et d\'accepter « Activité physique ».'], en: ['Live treadmill cardio: your watch counts your steps. The app shows live distance and speed (from your height), uses them for calories, and pre-fills the distance at the end. Requires the new watch app and the “Physical activity” permission.']},
   {v: '9.89.6', d: '2026-11-21', fr: ['Séance sur tapis : la fenêtre montre en direct les calories (et les pas) selon l\'inclinaison et la distance que tu entres.'], en: ['Treadmill session: the window shows calories (and steps) live as you enter incline and distance.']},
   {v: '9.89.5', d: '2026-11-21', fr: ['Cardio en direct : à la fin d\'une marche ou d\'une course sur tapis, l\'appli te demande l\'inclinaison moyenne (et la distance si tu veux) pour calculer des calories plus justes. Tu peux passer.'], en: ['Live cardio: after a treadmill walk or run, the app asks for the average incline (and distance) for more accurate calories. You can skip.']},
   {v: '9.89.4', d: '2026-11-21', fr: ['Amis : la carte « Tu partages tes séances / Mon code » en haut est retirée. « Mon code ami » est maintenant dans « Ajouter ».'], en: ['Friends: the “You share your workouts / My code” card is removed. “My friend code” is now in “Add”.']},
@@ -7639,6 +7640,7 @@ function cvWeek() {
 const CL_NAMES = {walk: ['Tapis roulant (marche)', 'Marche extérieure'], run: ['Tapis roulant (course)', 'Course'], bike: ['Vélo stationnaire', 'Vélo extérieur'], ell: ['Elliptique'], stair: ['Escaliers (StairMaster)'], row: ['Rameur'], rope: ['Corde à sauter']};
 const CL_ZONES = [['#7dd3fc', 'Z1', 0, 'Très léger', 'Very light'], ['#4ade80', 'Z2', .6, 'Endurance', 'Endurance'], ['#facc15', 'Z3', .7, 'Tempo', 'Tempo'], ['#fb923c', 'Z4', .8, 'Seuil', 'Threshold'], ['#ef4444', 'Z5', .9, 'Maximal', 'Maximum']];
 const CL_GPSK = ['walk', 'run', 'bike'];
+const clStepsOn = c => !!c && !c.gps && ['walk', 'run'].includes(c.k);
 let clTi = null, clW = null, clLast = null, clGpsOn = true, clK = 'run';
 const clMaxHr = () => { const a = ME().age; return a ? 220 - a : 190; };
 const clMs = () => { const a = S.active, c = a && a.cl; return c ? Math.max(0, (c.pat || Date.now()) - c.t0 - (c.pms || 0)) : 0; };
@@ -7671,7 +7673,8 @@ function clTick() {
   set('cl-z', live ? `<b style="color:${z[0]}">${z[1]}</b> · ${T(z[3], z[4])}` : T('Pouls de la montre : en attente', 'Watch heart rate: waiting'));
   const zb = document.getElementById('cl-zb'); if (zb) zb.style.setProperty('--zp', live ? Math.min(100, Math.round(wearBpm / clMaxHr() * 100)) + '%' : '0%');
   if (c.gps) { set('cl-km', km.toFixed(2)); set('cl-p', km > .05 ? (a.cl.k === 'bike' ? (km / (min / 60)).toFixed(1) : (() => { const pm = min / km; return Math.floor(pm) + ':' + String(Math.round((pm % 1) * 60) % 60).padStart(2, '0'); })()) : '–'); }
-  const cc = cardioCalc(CARDIO_KIND(a.exercises[0].name), Math.max(1, Math.round(min)), c.gps ? Math.round(km * 100) / 100 : '', '', bodyKg()); set('cl-c', cc ? cc.kcal + '' : '–');
+  if (clStepsOn(c)) { set('cl-st', c.steps ? c.steps.toLocaleString(LOC()) : '–'); set('cl-km', c.steps ? DN(Math.round(km * 100) / 100) : '–'); set('cl-p', km > .05 && min > .5 ? DN(Math.round(km / (min / 60) * 10) / 10) : '–'); }
+  const cc = cardioCalc(CARDIO_KIND(a.exercises[0].name), Math.max(1, Math.round(min)), c.gps || (clStepsOn(c) && c.steps > 30) ? Math.round(km * 100) / 100 : '', '', bodyKg()); set('cl-c', cc ? cc.kcal + '' : '–');
   const pb = document.getElementById('cl-pause'); if (pb) { const t = c.pat ? T('Reprendre', 'Resume') : T('Pause', 'Pause'); if (pb.textContent !== t) pb.textContent = t; }
   if (!(Math.floor(ms / 1000) % 10)) saveLocal();
   if (!(Math.floor(ms / 1000) % 5)) wearPush();
@@ -7685,7 +7688,7 @@ function vCLive() {
     <div class="clhr"><span class="clheart">${IC('heart', '♥', 30)}</span><b id="cl-b" class="clbpm">–</b><span class="muted">bpm</span></div>
     <div id="cl-z" class="small" style="text-align:center;margin:2px 0 8px"></div><div class="clzb" id="cl-zb"><i></i></div>
     <div class="clzl">${CL_ZONES.map(z => `<span style="color:${z[0]}">${z[1]}</span>`).join('')}</div>
-    <div class="clgrid">${c.gps ? st('cl-km', T('Distance', 'Distance'), kmU()) + (c.k === 'bike' ? st('cl-p', T('Vitesse', 'Speed'), kmU() + '/h') : st('cl-p', T('Allure', 'Pace'), '/' + kmU())) : ''}${st('cl-c', 'Calories', 'kcal')}</div>
+    <div class="clgrid">${clStepsOn(c) ? st('cl-st', T('Pas', 'Steps'), T('montre', 'watch')) + st('cl-km', T('Distance', 'Distance'), kmU()) + st('cl-p', T('Vitesse', 'Speed'), kmU() + '/h') : ''}${c.gps ? st('cl-km', T('Distance', 'Distance'), kmU()) + (c.k === 'bike' ? st('cl-p', T('Vitesse', 'Speed'), kmU() + '/h') : st('cl-p', T('Allure', 'Pace'), '/' + kmU())) : ''}${st('cl-c', 'Calories', 'kcal')}</div>
     ${c.gps && c.gpsErr ? `<p class="small" style="color:var(--warm);text-align:center">${T('GPS indisponible : autorise la localisation pour Runelift.', 'GPS unavailable: allow location for Runelift.')}</p>` : ''}
     <p class="muted small" style="text-align:center;margin:8px 0 0">${T('Pouls et zone viennent de ta montre (zones selon une fréquence max estimée à', 'Heart rate and zone come from your watch (zones from an estimated max rate of')} ${clMaxHr()}${T(' bpm).', ' bpm).')}</p>
     <div class="row" style="gap:8px;margin-top:14px"><button class="btn" id="cl-pause" style="flex:1" data-act="cl-pause">${T('Pause', 'Pause')}</button><button class="btn primary" style="flex:1.4" data-act="cl-finish">${T('Terminer', 'Finish')}</button></div>
@@ -7699,7 +7702,8 @@ function clSave(min, km, inc) {
 function clFinish(fromWatch) {
   const a = S.active, c = a && a.cl; if (!c) return;
   const min = Math.max(1, Math.round(clMs() / 60000)), km = Math.round(clKm() * 100) / 100;
-  if (fromWatch || c.gps || !['walk', 'run'].includes(c.k)) { clSave(min, c.gps ? km : 0, 0); return; }
+  const skm = clStepsOn(c) && c.steps > 30 ? km : 0;
+  if (fromWatch || c.gps || !['walk', 'run'].includes(c.k)) { clSave(min, c.gps ? km : skm, 0); return; }
   if (!c.pat) c.pat = Date.now(); clStop(); save(); window._clPend = null;
   const n = v => { v = String(v || '').replace(',', '.').trim(); return v !== '' && !isNaN(v) && +v > 0 ? +v : 0; };
   window._clRead = () => ({inc: Math.min(40, n(($('#clinc') || {}).value)), km: n(($('#cldist') || {}).value)});
@@ -7709,7 +7713,7 @@ function clFinish(fromWatch) {
     <label>${T('Inclinaison moyenne (%)', 'Average incline (%)')}</label>
     <div class="chips">${[0, 2, 4, 6, 8, 10, 12, 15].map(v => `<button class="btn sm" data-act="cl-inc" data-v="${v}">${v} %</button>`).join('')}</div>
     <input id="clinc" inputmode="decimal" placeholder="${T('ex. 8', 'e.g. 8')}">
-    <label>${T('Distance', 'Distance')} (${kmU()})</label><input id="cldist" inputmode="decimal" placeholder="${T('facultatif', 'optional')}">
+    <label>${T('Distance', 'Distance')} (${kmU()})</label><input id="cldist" inputmode="decimal" value="${skm ? DN(skm) : ''}" placeholder="${T('facultatif', 'optional')}">${skm ? `<p class="muted small" style="margin:4px 0 0">${T(`D'après tes ${c.steps.toLocaleString(LOC())} pas comptés par la montre. Corrige avec le chiffre du tapis si tu l'as.`, `From the ${c.steps.toLocaleString(LOC())} steps counted by your watch. Use the treadmill's number if you have it.`)}</p>` : ''}
     <div class="card" style="margin:14px 0 0;text-align:center;padding:12px"><div class="muted small">${T('Ça donne', 'That gives')}</div><div id="clkc"></div></div>
     <button class="btn primary block" data-act="cl-save" style="margin-top:12px">${T('Enregistrer', 'Save')}</button>
     <button class="btn block" data-act="cl-skip" style="margin-top:8px">${T('Passer', 'Skip')}</button>`, {onclose: () => { const p = window._clPend || {}; window._clPend = null; window._clCalc = null; setTimeout(() => clSave(min, p.km || 0, p.inc || 0), 0); }});
@@ -7936,7 +7940,7 @@ function wearState() {
       return {n: e.name, i: wearImg(e.name), alt: wearAlt(e.name, 6), s: sl.length || +e.sets || 0, rest: +e.rest === -1 ? 0 : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)), c: isCardio(e) || isTimed(e) ? 1 : 0, sl}; };
     return {on: 0, lang, acc, u: U(), kg: Math.round(bodyKg()), rw: +S.settings.restWarm > 0 ? +S.settings.restWarm : 45, rd: +S.settings.restDrop > 0 ? +S.settings.restDrop : 0, mine: wearMine(), rts: L.map(r => ({id: r.id, n: r.name, td: r.id === td ? 1 : 0, ex: (r.exercises || []).map(exOf)}))};
   }
-  const clS = A.cl ? (() => { const km = clKm(), min = Math.max(1, Math.round(clMs() / 60000)), cc = cardioCalc(CARDIO_KIND(A.exercises[0].name), min, A.cl.gps ? Math.round(km * 100) / 100 : '', '', bodyKg()); return {t0: A.cl.t0, pms: A.cl.pms || 0, pat: A.cl.pat || 0, g: A.cl.gps ? 1 : 0, sp: A.cl.k === 'bike' ? 1 : 0, km: Math.round(km * 100) / 100, kc: cc ? cc.kcal : 0, mx: clMaxHr()}; })() : null;
+  const clS = A.cl ? (() => { const km = clKm(), min = Math.max(1, Math.round(clMs() / 60000)), cc = cardioCalc(CARDIO_KIND(A.exercises[0].name), min, A.cl.gps || (clStepsOn(A.cl) && A.cl.steps > 30) ? Math.round(km * 100) / 100 : '', '', bodyKg()); return {t0: A.cl.t0, pms: A.cl.pms || 0, pat: A.cl.pat || 0, g: A.cl.gps || clStepsOn(A.cl) ? 1 : 0, sp: A.cl.k === 'bike' || clStepsOn(A.cl) ? 1 : 0, km: Math.round(km * 100) / 100, kc: cc ? cc.kcal : 0, mx: clMaxHr()}; })() : null;
   return {...(clS ? {cl: clS} : {}), on: 1, id: A.start, st: A.start, n: A.routineName || '', u: U(), lang, acc, kg: Math.round(bodyKg()), rw: +S.settings.restWarm > 0 ? +S.settings.restWarm : 45, rd: +S.settings.restDrop > 0 ? +S.settings.restDrop : 0, mine: wearMine(), re: timerEnd > Date.now() ? timerEnd : 0, rt: timerTot || 0,
     ex: A.exercises.map(e => ({n: e.name, i: wearImg(e.name), alt: wearAlt(e.name), rest: +e.rest === -1 ? 0 : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)), c: isCardio(e) || isTimed(e) ? 1 : 0,
       s: e.sets.map((x, si) => ({w: x.w === '' || x.w == null ? '' : +x.w, r: x.r !== '' && x.r != null ? +x.r : (+x.ph || 0), d: x.done ? 1 : 0, t: x.t || '', p: wearPrev(e, x, si)}))}))};
@@ -7990,6 +7994,10 @@ function wearCmd(d) {
     if (timerEnd > Date.now()) bigTimerOpen();
   } else if (d.a === 'rest') {
     if (d.skip) stopTimer(); else if (+d.add && timerEnd > Date.now()) fakeAct('timer-add', {});
+  } else if (d.a === 'st') {
+    const c = A.cl; if (!clStepsOn(c) || (+d.t0 && +d.t0 !== c.t0)) return; const n = Math.max(0, Math.round(+d.n || 0)), dl = n - (c.stRaw || 0);
+    if (dl < 0) { c.stRaw = n; return; } if (c.pat) c.stOff = (c.stOff || 0) + dl; c.stRaw = n; c.steps = Math.max(0, n - (c.stOff || 0));
+    c.m = c.steps * (c.k === 'run' ? strideR() : strideW()); return;
   } else if (d.a === 'hr') {
     const b = Math.round(+d.bpm); if (!(b > 25 && b < 250)) return;
     const t = Math.round(((+d.t || Date.now()) - new Date(A.start).getTime()) / 1000);
