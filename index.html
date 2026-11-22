@@ -741,7 +741,7 @@ html.moving :is(.fra-rot .frimg,.fra-pulse .frimg,.fra-sheen::after,.frsp){anima
 .th img.thi{opacity:0;transition:opacity .15s}.th img.thi.ok{opacity:1}
 .frchip small.frold{color:var(--warn,#f59e0b)}
 
-.livec{border-color:#22c55e!important;box-shadow:0 0 14px #22c55e33}.frchip.live .frav{box-shadow:0 0 0 2px var(--card),0 0 0 4px #22c55e}
+.frtrain{margin-top:10px}.livec{border-color:#22c55e!important;box-shadow:0 0 14px #22c55e33}.frchip.live .frav{box-shadow:0 0 0 2px var(--card),0 0 0 4px #22c55e}
 .cheero{position:fixed;left:50%;top:18%;transform:translateX(-50%);z-index:9999;background:var(--card);border:2px solid #f97316;border-radius:18px;padding:14px 20px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 40px #0008,0 0 24px #f9731666;animation:cheerIn .5s cubic-bezier(.2,1.5,.4,1)}.cheero span{font-size:34px}@keyframes cheerIn{from{transform:translateX(-50%) scale(.3);opacity:0}}
 .lbrow{gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.lbrow:first-child{border-top:0}.lbrow.me{background:color-mix(in srgb,var(--accent) 12%,transparent);margin:0 -12px;padding:10px 12px}.lbn{width:34px;text-align:center}
 .ob{position:fixed;inset:0;z-index:14;background:var(--bg);overflow-y:auto;animation:obIn .25s ease}.ob.out{opacity:0;transition:opacity .25s}
@@ -2018,7 +2018,7 @@ function startWorkout(rid) {
   const r = S.routines.find(x => x.id === rid); if (!r) return;
   S.active = {routineId: r.id, routineName: r.name, start: new Date().toISOString(),
     exercises: r.exercises.map(e => { const sets = mkSetsFromRoutine(e, lastFor(e.name)); return {name: e.name, orig: e.name, n0: sets.length, n0w: sets.filter(s => s.t !== 'W').length, ss: e.ss, rest: e.rest, note: '', target: {...e}, sets}; })};
-  save(); openWorkout();
+  save(); openWorkout(); try { if (frOn()) frQueue(false); } catch (e) {}
 }
 function openWorkout() { stack = [{v: 'train'}, {v: 'workout'}]; render(); window.scrollTo(0, 0); setTimeout(scrollCur, 30); hSync(); }
 /* Exercice en cours = premier exercice avec une série non cochée */
@@ -2240,6 +2240,19 @@ function genStart() {
   S.active = {routineId: null, routineName: T('Séance générée', 'Generated workout'), start: new Date().toISOString(),
     exercises: genSt.list.map(({e}) => { const sets = mkSetsFromRoutine(e, lastFor(e.name)); return {name: e.name, orig: e.name, n0: sets.length, n0w: sets.filter(s => s.t !== 'W').length, rest: e.rest, note: '', target: {...e}, sets}; })};
   save(); closeAll(); openWorkout();
+}
+/* S'entraîner avec un ami : sa séance (exercices, nombre de séries, reps), avec MES poids (ma dernière fois sur chaque exercice) */
+function frTrainFrom(name, ex, who) {
+  ex = (Array.isArray(ex) ? ex : []).filter(e => e && e.n).slice(0, 25); if (!ex.length) { toast(T('Rien à copier dans cette séance', 'Nothing to copy in this workout')); return; }
+  if (S.active && !confirm(T('Une séance est déjà en cours. La remplacer?', 'A workout is already in progress. Replace it?'))) { openWorkout(); return; }
+  let mine = 0;
+  S.active = {routineId: null, routineName: T(`${name} avec ${who}`, `${name} with ${who}`).slice(0, 80), start: new Date().toISOString(), with: who,
+    exercises: ex.map(e => { const last = lastFor(e.n); if (last) mine++; const card = e.k === 'c';
+      const tgt = {name: e.n, sets: Math.max(1, Math.min(10, +e.ns || 3)), reps: card ? '' : String(Math.max(1, Math.round(+e.r || 10)))};
+      const sets = card ? [{w: '', r: '', ph: String(Math.round(+e.r || 20)), u: 'c', done: false}] : mkSetsFromRoutine(tgt, last);
+      return {name: e.n, orig: e.n, n0: sets.length, n0w: sets.length, note: '', target: tgt, sets}; })};
+  save(); closeAll(); openWorkout(); try { frQueue(false); } catch (e) {}
+  toast(T(`Séance de ${who} copiée : ${mine} exercice${mine > 1 ? 's' : ''} avec tes poids${ex.length - mine ? `, ${ex.length - mine} nouveau${ex.length - mine > 1 ? 'x' : ''} pour toi` : ''}`, `${who}'s workout copied: ${mine} exercise${mine > 1 ? 's' : ''} with your weights${ex.length - mine ? `, ${ex.length - mine} new to you` : ''}`));
 }
 function startEmpty() {
   if (S.active && !confirm('Une séance est déjà en cours. La remplacer?')) { openWorkout(); return; }
@@ -6761,9 +6774,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.105.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.106.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.106.0', d: '2026-11-22', fr: ['S\'entraîner avec un ami : sous chaque séance d\'un ami, « Faire cette séance avec mes poids » copie ses exercices, son nombre de séries et ses reps, avec TES charges (ta dernière fois sur chaque exercice). Quand un ami s\'entraîne en ce moment, le bouton « Rejoindre » dans « En direct » copie la séance qu\'il est en train de faire.'], en: ['Train with a friend: copy a friend\'s workout with your own weights, or join the workout they are doing right now.']},
   {v: '9.105.0', d: '2026-11-22', fr: ['Sons du jeu : chaque attaque de raid a son son (lame, coup lourd, flèches, feu, dague, marteau sacré, orbe, harpe…), le boss bloque avec un choc de bouclier, les critiques sonnent fort, chaque boss a son cri, et une fanfare joue quand le raid est gagné. Les boss du mois crient aussi quand tu les bats. Tu peux couper ces sons dans Réglages.'], en: ['Game sounds: every raid attack, block, critical hit and boss has its own sound, with a fanfare when the raid is won. You can turn them off in Settings.']},
   {v: '9.104.0', d: '2026-11-22', fr: ['Les légendes d\'Aldrun : chaque classe, chaque boss du mois et chaque boss de raid a maintenant son histoire. Touche « Légende » sous le nom d\'un boss (raid, quêtes, bestiaire) ou « Lire sa légende » dans la fiche d\'une classe. L\'histoire du monde est dans le « i » du choix de classe et du bestiaire.'], en: ['The legends of Aldrun: every class, monthly boss and raid boss now has its story.']},
   {v: '9.103.0', d: '2026-11-22', fr: ['Appli Android : « Partager mon bilan », l\'image de séance, l\'export CSV et la copie de sauvegarde ouvrent maintenant la fenêtre Partager d\'Android (Messenger, galerie, Drive…). Il faut la nouvelle version de l\'APK.'], en: ['Android app: sharing images and exporting files now opens the Android share sheet. Needs the new APK.']},
@@ -8745,10 +8759,11 @@ async function liveSync(force) {
   try { await fbDb().collection('users').doc(u.uid).set({live: st ? {...st, up: new Date().toISOString()} : null}, {merge: true}); } catch (e) {}
 }
 setInterval(() => liveSync(false), 25000);
+const frLw = c => { const d = frData[c] && frData[c].d, w = d && d.lw; if (!w || typeof w !== 'object' || !Array.isArray(w.ex) || !w.ex.length || !(Date.now() - new Date(w.st) < 4 * 3600e3)) return null; return {st: sStr(w.st, 40), n: sStr(w.n, 80), ex: w.ex.slice(0, 25).map(e => e && typeof e === 'object' ? {n: sStr(e.n, 100), ns: sInt(e.ns, 1, 1, 20), r: sNum(e.r), ...(e.k === 'c' ? {k: 'c'} : {})} : null).filter(e => e && e.n)}; };
 const frLive = c => { const L = frData[c] && frData[c].live; return L && L.up && Date.now() - new Date(L.up) < 12 * 60000 ? L : null; };
 function liveCard() {
   const fr = FRS(), L = (fr.list || []).map(f => ({f, L: frLive(f.c)})).filter(x => x.L); if (!L.length) return '';
-  return `<div class="card livec"><b>🟢 ${T('En direct', 'Live')}</b>${L.map(({f, L: l}) => `<div class="row between" style="margin-top:8px;gap:8px"><span class="small"><b>${esc(f.n || '')}</b> ${T('s\'entraîne', 'is training')} · ${esc(l.r)}<br><span class="muted">${l.s} ${T('séries', 'sets')} · ${l.e}/${l.n} ${T('exos', 'exercises')} · ${T('depuis', 'for')} ${Math.max(1, Math.round((Date.now() - new Date(l.st)) / 60000))} min</span></span><button class="btn sm" data-act="fr-cheer" data-c="${f.c}">🔥 ${T('Encourager', 'Cheer')}</button></div>`).join('')}</div>`;
+  return `<div class="card livec"><b>🟢 ${T('En direct', 'Live')}</b>${L.map(({f, L: l}) => `<div class="row between" style="margin-top:8px;gap:8px"><span class="small"><b>${esc(f.n || '')}</b> ${T('s\'entraîne', 'is training')} · ${esc(l.r)}<br><span class="muted">${l.s} ${T('séries', 'sets')} · ${l.e}/${l.n} ${T('exos', 'exercises')} · ${T('depuis', 'for')} ${Math.max(1, Math.round((Date.now() - new Date(l.st)) / 60000))} min</span></span>${frLw(f.c) ? `<button class="btn sm primary" data-act="fr-join" data-c="${esc(f.c)}">${T('Rejoindre', 'Join')}</button>` : ''}<button class="btn sm" data-act="fr-cheer" data-c="${f.c}">🔥 ${T('Encourager', 'Cheer')}</button></div>`).join('')}</div>`;
 }
 const cheerT = {};
 async function frCheer(c) {
@@ -8984,6 +8999,7 @@ function frPost({f, d, s}) {
       <div style="flex:1;min-width:0"><b>${esc(d.name)}</b> ${frLv(d)} <span class="muted small">· ${frAgo(s.d)}</span><br><span class="small">💪 ${T('a fait', 'did')} <b>${esc(s.n)}</b> · ${hm(s.dur)}${s.pr ? ` · 🏆 ${s.pr} record${s.pr > 1 ? 's' : ''}` : ''}</span></div></div>
     ${s.img ? frImg(f, s, s.img) : f.me && s.phId ? frImg(f, s) : ''}
     <div class="frex">${ex.slice(0, 5).map(o => `<div>${frExLine(o)}</div>`).join('')}${more > 0 ? `<div class="muted">+ ${more} ${T('autre' + (more > 1 ? 's' : ''), 'more')}</div>` : ''}</div>
+    ${f.me ? '' : `<button class="btn sm block frtrain" data-act="fr-train" data-c="${esc(f.c)}" data-s="${esc(s.id)}">${T('Faire cette séance avec mes poids', 'Do this workout with my weights')}</button>`}
     ${frReactRow(f, s)}${frCmRow(f, s)}</div>`;
 }
 function frReactRow(f, s) {
@@ -9549,6 +9565,7 @@ function frSocial() {
   const fr = FRS(), now = new Date(), m = monKey(now), wk = wkKey(now), pw = wkKey(new Date(+new Date(wk + 'T12:00:00') - 3 * 864e5)), cp = {};
   chList().forEach(c => { if (+new Date(c.until) > Date.now() - 14 * 864e5) cp[c.id] = chMine(c); });
   const o = {cm: (fr.cm || []).slice(-100), ch: (fr.ch || []).filter(c => +new Date(c.until) > Date.now() - 14 * 864e5), ca: Object.fromEntries(Object.entries(fr.chOk || {}).filter(([, t]) => Date.now() - new Date(t) < 21 * 864e5)), cn: (fr.chNo || []).slice(-30), cp, rd: {wk, r: raDmg(wk), a: raPub(wk)}, rdp: {wk: pw, r: raDmg(pw)}};
+  const A = S.active; if (A && !A.cl && (A.exercises || []).length) o.lw = {st: A.start, n: String(A.routineName || '').slice(0, 80), ex: A.exercises.slice(0, 25).map(e => { const ws = (e.sets || []).filter(x => x.t !== 'W'), c = ws.some(x => x.u === 'c'); return {n: e.name, ns: Math.max(1, ws.length), r: c ? (+(ws[0] || {}).r || 0) : +((e.target && String(e.target.reps || '').split('-').pop()) || (ws[0] || {}).ph || (ws[0] || {}).r || 0) || 0, ...(c ? {k: 'c'} : {})}; })};
   if (GAME()) { o.sx = {m, xp: seasonXp(m)}; o.sxp = {m: prevMon(m), xp: seasonXp(prevMon(m))}; o.cw = Object.keys(S.seasonWon || {}).filter(k => S.seasonWon[k]); }
   return o;
 }
@@ -10972,6 +10989,8 @@ document.addEventListener('click', e => {
     case 'fr-stop': frStop(); break;
     case 'fr-code': frShowCode(); break;
     case 'fr-code-old': closeAll(); frShowCode(true); break;
+    case 'fr-train': { const d = frData[b.dataset.c] && frData[b.dataset.c].d, x = d && Array.isArray(d.s) ? d.s.find(y => y && y.id === b.dataset.s) : null; if (x) frTrainFrom(x.n || T('Séance', 'Workout'), x.ex, d.name || '?'); break; }
+    case 'fr-join': { const w = frLw(b.dataset.c), d = frData[b.dataset.c] && frData[b.dataset.c].d; if (w) frTrainFrom(w.n || T('Séance', 'Workout'), w.ex, (d && d.name) || '?'); else toast(T('Sa séance n\'est plus en cours', 'Their workout is no longer in progress')); break; }
     case 'fr-copy': try { navigator.clipboard.writeText(frMsg()); toast(T('📋 Code copié : colle-le à ton ami', '📋 Code copied: paste it to your friend')); } catch (e) { toast(FRS().file); } break;
     case 'fr-share': shareText(frMsg()); break;
     case 'fr-add': openFrAdd(); break;
