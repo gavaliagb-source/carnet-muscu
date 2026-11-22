@@ -5350,12 +5350,12 @@ const PCL = {
   r: ['🏃', ['Rôdeur', 'Ranger'], ['Endurance : cardio et longues séries de répétitions.', 'Endurance: cardio and long high-rep sets.']],
   m: ['🔥', ['Moine', 'Monk'], ['Discipline : tu t\'entraînes souvent, semaine après semaine.', 'Discipline: you train often, week after week.']],
   s: ['❤️', ['Soigneur', 'Healer'], ['Équilibre : étirements et grande variété d\'exercices.', 'Balance: stretching and a wide variety of exercises.']],
-  gm: ['🛡️', ['Templier', 'Templar'], ['Force et discipline : du lourd, semaine après semaine.', 'Strength and discipline: heavy lifting, week after week.']],
-  gs: ['✨', ['Paladin', 'Paladin'], ['Force et équilibre : du lourd, mais aussi étirements et variété.', 'Strength and balance: heavy lifting plus stretching and variety.']],
-  gr: ['🔱', ['Spartiate', 'Spartan'], ['Force et endurance : charges lourdes et cardio.', 'Strength and endurance: heavy loads and cardio.']],
-  mr: ['🌙', ['Ombre', 'Shadow'], ['Endurance et discipline : cardio régulier, sans jamais lâcher.', 'Endurance and discipline: steady cardio, never giving up.']],
-  rs: ['🌿', ['Druide', 'Druid'], ['Endurance et équilibre : cardio, étirements et variété.', 'Endurance and balance: cardio, stretching and variety.']],
-  ms: ['📿', ['Sage', 'Sage'], ['Discipline et équilibre : régularité, étirements et variété.', 'Discipline and balance: consistency, stretching and variety.']]};
+  gm: ['🛡️', ['Templier', 'Templar'], ['Le chevalier de fer : tu soulèves lourd, et tu reviens chaque semaine sans faute.', 'The iron knight: you lift heavy and show up every week without fail.']],
+  gs: ['✨', ['Paladin', 'Paladin'], ['Le protecteur : tu soulèves lourd et tu prends soin de ton corps avec étirements et variété.', 'The protector: you lift heavy and take care of your body with stretching and variety.']],
+  gr: ['🔱', ['Spartiate', 'Spartan'], ['Le soldat complet : charges lourdes et cardio, prêt pour tous les combats.', 'The complete soldier: heavy loads and cardio, ready for any fight.']],
+  mr: ['🌙', ['Ombre', 'Shadow'], ['Le chasseur silencieux : cardio régulier et longues séries, jour après jour.', 'The silent hunter: steady cardio and long sets, day after day.']],
+  rs: ['🌿', ['Druide', 'Druid'], ['Le gardien de la nature : cardio en plein air, étirements et mouvements variés.', 'The nature guardian: outdoor cardio, stretching and varied movement.']],
+  ms: ['📿', ['Sage', 'Sage'], ['Le maître serein : régularité, souplesse et grande variété d\'exercices.', 'The serene master: consistency, flexibility and a wide variety of exercises.']]};
 const PCL_K = ['g', 'r', 'm', 's'], PCL_HY = ['gm', 'gs', 'gr', 'mr', 'rs', 'ms'], PCL_ALL = [...PCL_K, ...PCL_HY];
 const hyKey = (a, b) => [a, b].sort().join('');
 const pclParts = k => k && k.length === 2 ? k.split('') : [k];
@@ -5479,9 +5479,7 @@ function pclPick() {
     <button class="btn block" style="text-align:left;display:flex;gap:10px;align-items:center;${fix ? '' : 'border-color:var(--accent)'}" data-act="pcl-set" data-k="auto"><span style="flex:none">${a ? pclImg(a.k, 44) : pclImg('m', 44)}</span><span style="min-width:0"><b>${T('Automatique', 'Automatic')}</b> <span class="small" style="color:var(--accent)">${fix ? T('recommandé', 'recommended') : T('actif', 'on')}</span><br><span class="small muted" style="font-weight:500">${a ? T(`D'après tes 6 dernières semaines : ${pclName(a.k)} (${clsWhy(a.k)}).`, `From your last 6 weeks: ${pclName(a.k)} (${clsWhy(a.k)}).`) : T('Ta classe se calculera dès tes premières séances.', 'Your class will be computed after your first workouts.')}</span></span></button>
     <div class="row" style="gap:6px;margin:12px 0 4px;align-items:center"><span class="small muted">${T('Apparence', 'Look')}</span>${['m', 'f'].map(l => `<button class="btn sm ${pclLook() === l ? 'primary' : ''}" data-act="pcl-look" data-v="${l}">${l === 'm' ? T('Homme', 'Male') : T('Femme', 'Female')}</button>`).join('')}</div>
     <p class="small" style="margin:10px 0 6px"><b>${T('Ou fixe un objectif', 'Or set a goal')}</b></p>
-    <div class="menu">${PCL_K.map(k => row(k, fix && p.k === k)).join('')}</div>
-    <p class="small" style="margin:12px 0 6px"><b>${T('Classes hybrides', 'Hybrid classes')}</b></p>
-    <div class="menu">${PCL_HY.map(k => row(k, fix && p.k === k)).join('')}</div>
+    <div class="menu">${PCL_ALL.map(k => row(k, fix && p.k === k)).join('')}</div>
     <p class="small muted" style="margin:10px 0 0">${can ? T('Tu peux changer d\'objectif une fois par semaine. En automatique, ta classe suit ton entraînement.', 'You can change goal once a week. In automatic mode, your class follows your training.') : T('Tu as déjà changé cette semaine : prochain changement le ', 'You already changed this week: next change on ') + esc(pclNext())}</p>`);
 }
 function pclInfo(k) { // fiche d'une classe : grand portrait, style, attaques de raid, pouvoir et histoire
@@ -5494,7 +5492,7 @@ function pclInfo(k) { // fiche d'une classe : grand portrait, style, attaques de
     <div class="small" style="margin-top:6px">${T('Ta maîtrise', 'Your mastery')} : <b>${esc(M.title)}</b> · ${M.pts.toLocaleString(LOC())} ${T(M.pts > 1 ? 'points' : 'point', M.pts > 1 ? 'points' : 'point')}</div></div>
     <div class="pclinf-s"><div class="sysh" style="font-size:11px">[ ${T('BONUS', 'BONUS')} ]</div><p class="small" style="margin:4px 0 0">${T('Quêtes du jour adaptées à ton style et +25 % d\'XP sur les séances de ton style.', 'Daily quests suited to your style and +25% XP on workouts in your style.')}</p></div>
     <div class="pclinf-s"><div class="sysh" style="font-size:11px">[ ${T('ATTAQUES DE RAID', 'RAID ATTACKS')} ]</div>${atk}</div>
-    <div class="pclinf-s"><div class="sysh" style="font-size:11px">[ ${T(powOpts(k).length > 1 ? 'POUVOIRS (1 AU CHOIX)' : 'POUVOIR DE LA SEMAINE', powOpts(k).length > 1 ? 'POWERS (PICK ONE)' : 'WEEKLY POWER')} ]</div>${pow}</div>
+    <div class="pclinf-s"><div class="sysh" style="font-size:11px">[ ${T('POUVOIR DE LA SEMAINE', 'WEEKLY POWER')} ]</div>${pow}</div>
     ${b ? `<div class="pclinf-s"><div class="sysh" style="font-size:11px">[ ${T('HISTOIRE', 'STORY')} ]</div><p class="small" style="margin:4px 0 0"><b>${esc(T(STORY[b][0][0], STORY[b][0][1]))}</b> · ${T('5 chapitres, un titre légendaire à la fin.', '5 chapters, a legendary title at the end.')}</p></div>` : ''}
     <button class="btn block ${cur ? '' : 'primary'}" style="margin-top:12px" data-act="pcl-set" data-k="${k}"${cur ? ' disabled' : ''}>${cur ? T('C\'est ta classe', 'This is your class') : T('Choisir cette classe', 'Pick this class')}</button>`);
 }
@@ -5593,7 +5591,7 @@ var labC = {k: 'g', look: 'm', lv: 0};
 function labCls() {
   const chip = (a, v, l, on) => `<button class="btn sm${on ? ' primary' : ''}" data-act="lab-c" data-k="${a}" data-v="${v}">${l}</button>`, k = labC.k, x = PCL[k], lv = PCL_LV[labC.lv], nx = PCL_LV[labC.lv + 1];
   const html = `<h2>🧪 ${T('Classes', 'Classes')}</h2><p class="small muted" style="margin-top:0">${T('Rien ici ne change ta partie : c\'est juste un aperçu.', 'Nothing here changes your progress: it\'s just a preview.')}</p>
-    <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${PCL_K.map(c => chip('k', c, esc(pclName(c)), k === c)).join('')}</div>
+    <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${PCL_ALL.map(c => chip('k', c, esc(pclName(c)), k === c)).join('')}</div>
     <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${chip('look', 'm', T('Homme', 'Male'), labC.look === 'm')}${chip('look', 'f', T('Femme', 'Female'), labC.look === 'f')}</div>
     <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${PCL_LV.map((l, i) => chip('lv', i, T(l[1][0], l[1][1]), labC.lv === i)).join('')}</div>
     <div style="text-align:center">${pclImg(k, 220, labC.look)}</div>
@@ -6694,9 +6692,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.100.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.101.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.101.0', d: '2026-11-22', fr: ['Templier, Paladin, Spartiate, Ombre, Druide et Sage deviennent des classes à part entière : leur propre description, leurs 3 attaques de raid, leur pouvoir de la semaine et leur histoire en 5 chapitres avec un titre légendaire. Les 10 classes sont dans une seule liste.'], en: ['Templar, Paladin, Spartan, Shadow, Druid and Sage are now full classes with their own description, raid attacks, weekly power and story.']},
   {v: '9.100.0', d: '2026-11-22', fr: ['Chaque boss de raid a maintenant sa particularité, affichée sous son nom : Armure de pierre (Forteresse), Lent et lourd (Colosse), Il s\'enfouit (Ver des sables, sous terre un jour sur deux), Venin (Reine des araignées), Il se gèle (Géant de glace, entouré de glace quand personne ne s\'est battu), Tempête (Léviathan).'], en: ['Each raid boss now has its own trait, shown under its name.']},
   {v: '9.99.1', d: '2026-11-22', fr: ['Synchro entre ton téléphone (appli) et le navigateur : les attaques de raid, l\'énergie, les séances, les étirements, les quêtes, les pouvoirs et l\'histoire de classe se fusionnent au lieu de s\'écraser. Les attaques partent dans le cloud tout de suite.'], en: ['Sync between your phone app and the browser: raid attacks, energy, workouts, stretching, quests, powers and story now merge instead of overwriting.']},
   {v: '9.99.0', d: '2026-11-22', fr: ['Choix de classe : touche une classe pour voir sa fiche, avec son portrait en grand, son bonus, ses 3 attaques de raid, son pouvoir de la semaine et son histoire. Le bouton « Choisir cette classe » est en bas.'], en: ['Class picker: tap a class to see its sheet with a big portrait, bonus, raid attacks, weekly power and story.']},
@@ -9050,7 +9049,7 @@ const RA_TRAIT = [
   ['Lent et lourd', 'Slow and heavy', 'Les grosses attaques (15 points) font +20 %, les petites (5 points ou moins) font −20 %.', 'Big attacks (15 points) deal +20%, small ones (5 points or less) deal −20%.'],
   ['Il s\'enfouit', 'It burrows', 'Un jour sur deux, il est sous terre et ne prend que la moitié des dégâts.', 'Every other day it is underground and takes only half damage.'],
   ['Venin', 'Venom', 'Chaque attaque bloquée te fait perdre 1 point d\'énergie. Le Piège, les Ronces et les coups critiques font +25 %.', 'Each blocked attack costs you 1 energy point. Trap, Thorns and critical hits deal +25%.'],
-  ['Il se gèle', 'It freezes', 'Il se soigne après 1 seul jour sans combat. Les attaques de feu (Paume de feu, Combo, Poing de fer) font +30 %.', 'It heals after just 1 day without fighting. Fire attacks (Fire palm, Combo, Iron fist) deal +30%.'],
+  ['Il se gèle', 'It freezes', 'Il se soigne après 1 seul jour sans combat. Les attaques de feu (Paume de feu, Combo, Poing de fer, Flamme sacrée) font +30 %.', 'It heals after just 1 day without fighting. Fire attacks (Fire palm, Combo, Iron fist) deal +30%.'],
   ['Tempête', 'Storm', 'Les coups critiques sont 2 fois plus fréquents pour tout le monde, mais il est enragé dès 70 % de sa vie.', 'Critical hits are twice as frequent for everyone, but it is enraged from 70% of its health.']
 ];
 const raUnder = () => Math.floor((Date.now() - wkRange(wkKey(new Date()))[0]) / 864e5) % 2 === 1; // Ver des sables : sous terre les jours 2, 4 et 6
@@ -9076,6 +9075,18 @@ const RA_ATK = {
   s1: ['Lumière', 'Light', 5, 1.15, '', 0, 'Attaque simple, un peu plus forte.', 'Simple attack, a bit stronger.'],
   s2: ['Bénédiction', 'Blessing', 10, .3, 'gift', 10, 'Donne 10 points d\'énergie au membre qui a fait le moins de dégâts.', 'Gives 10 energy points to the member with the least damage.'],
   s3: ['Purification', 'Purify', 10, .5, 'pure', 1, 'Le boss ne peut plus bloquer pendant 24 h, pour toute l\'équipe.', 'The boss cannot block for 24 h, for the whole team.'],
+  gm1: ['Coup de bouclier', 'Shield bash', 5, 1, '', 0, 'Attaque simple.', 'Simple attack.'],
+  gm3: ['Flamme sacrée', 'Sacred flame', 12, 1, 'streak', .1, '+10 % par jour d\'entraînement d\'affilée (jusqu\'à +50 %).', '+10% per training day in a row (up to +50%).'],
+  gs1: ['Lumière sacrée', 'Holy light', 5, 1.1, '', 0, 'Attaque simple, un peu plus forte.', 'Simple attack, a bit stronger.'],
+  gs3: ['Aura de protection', 'Protective aura', 10, .5, 'pure', 1, 'Le boss ne peut plus bloquer pendant 24 h, pour toute l\'équipe.', 'The boss cannot block for 24 h, for the whole team.'],
+  gr1: ['Coup de lance', 'Spear thrust', 5, 1, '', 0, 'Attaque simple.', 'Simple attack.'],
+  gr3: ['Phalange', 'Phalanx', 10, .5, 'team', .1, '+10 % de dégâts pour toute l\'équipe pendant 24 h.', '+10% damage for the whole team for 24 h.'],
+  mr1: ['Lame d\'ombre', 'Shadow blade', 3, 1, '', 0, 'Petite attaque rapide, seulement 3 points.', 'Quick little attack, only 3 points.'],
+  mr3: ['Marque de l\'ombre', 'Shadow mark', 10, .5, 'trap', .15, 'Le boss prend +15 % de dégâts de tout le monde pendant 24 h.', 'The boss takes +15% damage from everyone for 24 h.'],
+  rs1: ['Épines', 'Thorn shot', 5, 1, '', 0, 'Attaque simple.', 'Simple attack.'],
+  rs3: ['Régénération', 'Regrowth', 10, .3, 'gift', 10, 'Donne 10 points d\'énergie au membre qui a fait le moins de dégâts.', 'Gives 10 energy points to the member with the least damage.'],
+  ms1: ['Orbe de lumière', 'Light orb', 5, 1.1, '', 0, 'Attaque simple, un peu plus forte.', 'Simple attack, a bit stronger.'],
+  ms3: ['Méditation profonde', 'Deep meditation', 0, 0, 'med', 2, 'Gratuit, une fois par jour où tu t\'entraînes : +2 points d\'énergie.', 'Free, once per training day: +2 energy points.'],
   gm: ['Poing de fer', 'Iron fist', 15, 1.25, 'unblk', 0, 'Grosse attaque qui ne peut pas être bloquée.', 'Big attack that cannot be blocked.'],
   gs: ['Marteau sacré', 'Holy hammer', 15, 1.2, 'team', .05, 'Attaque, et +5 % de dégâts pour l\'équipe pendant 24 h.', 'Attack, and +5% team damage for 24 h.'],
   gr: ['Charge', 'Charge', 15, 1.1, 'today', .3, '+30 % si tu t\'es entraîné aujourd\'hui.', '+30% if you trained today.'],
@@ -9084,9 +9095,9 @@ const RA_ATK = {
   ms: ['Éveil', 'Awakening', 15, 1, 'refund', 4, 'Attaque qui te redonne 4 points d\'énergie.', 'Attack that gives you back 4 energy points.']
 };
 const raName = k => RA_ATK[k] ? T(RA_ATK[k][0], RA_ATK[k][1]) : '?';
-function raList(cl) { // 3 attaques par classe ; hybrides : attaque de base de la 1re classe, soutien de la 2e, et leur attaque spéciale
+function raList(cl) { // 3 attaques propres à chaque classe
   if (PCL_K.includes(cl)) return [cl + '1', cl + '2', cl + '3'];
-  if (PCL[cl] && cl.length === 2) { const [a, b] = pclParts(cl); return [a + '1', b + '3', cl]; }
+  if (PCL[cl] && cl.length === 2) return [cl + '1', cl, cl + '3'];
   return ['g1', 'g2'];
 }
 function raW(wk) { const R = S.raidW = S.raidW || {}; Object.keys(R).forEach(k => { if (k < wkKey(new Date(Date.now() - 14 * 864e5))) delete R[k]; }); return R[wk] = R[wk] || {log: [], b: [], g: {}}; }
@@ -9149,7 +9160,7 @@ function raAttack(k) {
   if (A[4] === 'gift') { const o = st.rows.filter(x => !x.me && x.id && x.ra).sort((a, b) => a.r - b.r)[0]; if (!o) { toast(T('Personne à bénir : tes coéquipiers doivent avoir la dernière version.', 'Nobody to bless: your teammates need the latest version.')); return; } tgt = o; }
   const bi = raBossIdx(wk), hp = 1 - st.tot / st.goal, enr = hp <= raEnrAt(bi);
   const crit = Math.random() < ((A[4] === 'crit' ? A[5] : ['mr'].includes(clsCur()) ? .2 : .1) + .05 * talR('crit')) * (bi === 5 ? 2 : 1), blk = !st.pure && A[4] !== 'unblk' && Math.random() < Math.max(0, (enr ? .22 : .12) * (bi === 0 ? 2 : 1) - .04 * talR('grd') * (bi === 0 ? 2 : 1)), eq = eqCur();
-  const tm = bi === 1 ? (A[2] >= 15 ? 1.2 : A[2] <= 5 ? .8 : 1) : bi === 2 && raUnder() ? .5 : bi === 3 && (A[4] === 'trap' || (crit && !blk)) ? 1.25 : bi === 4 && ['m1', 'm2', 'gm'].includes(k) ? 1.3 : 1;
+  const tm = bi === 1 ? (A[2] >= 15 ? 1.2 : A[2] <= 5 ? .8 : 1) : bi === 2 && raUnder() ? .5 : bi === 3 && (A[4] === 'trap' || (crit && !blk)) ? 1.25 : bi === 4 && ['m1', 'm2', 'gm', 'gm3'].includes(k) ? 1.3 : 1;
   const d = Math.round(A[2] * RA_PT * raMult(k) * (1 + st.team + st.party) * (1 + st.trap) * (1 + .05 * talR('dmg') + (eq ? eq.bon : 0)) * tm * (crit && !blk ? 2 : 1) * (blk ? .25 : 1));
   const c = (A[4] === 'refund' ? A[2] - A[5] : A[2]) + (bi === 3 && blk ? 1 : 0), now = Date.now(); // Reine des araignées : le venin d'un blocage coûte 1 point
   W.log.push({t: now, k, d, c, cr: crit && !blk ? 1 : 0, bl: blk ? 1 : 0});
@@ -9216,9 +9227,15 @@ const STORY = {
   g: [['Le Serment de fer', 'The Iron Oath'], [['n', 2, 'Le maître d\'armes t\'attend. Prouve ta valeur : 2 séances.', 'The weapon master awaits. Prove yourself: 2 workouts.'], ['heavy', 15, 'Forge ta force dans le lourd : 15 séries de 6 reps ou moins.', 'Forge your strength: 15 sets of 6 reps or fewer.'], ['pr', 1, 'Un rival te défie. Bats 1 record.', 'A rival challenges you. Break 1 record.'], ['days', 4, 'La garde ne dort jamais : entraîne-toi 4 jours différents.', 'The guard never sleeps: train on 4 different days.'], ['heavy', 30, 'L\'épreuve finale : 30 séries lourdes.', 'The final trial: 30 heavy sets.']]],
   r: [['La Piste sans fin', 'The Endless Trail'], [['cm', 30, 'Une piste s\'ouvre dans la forêt : 30 min de cardio.', 'A trail opens in the forest: 30 min of cardio.'], ['n', 2, 'Suis les traces : 2 séances.', 'Follow the tracks: 2 workouts.'], ['cm', 60, 'La traque continue : 60 min de cardio.', 'The hunt goes on: 60 min of cardio.'], ['hirep', 8, 'Tiens la distance : 8 séries de 15 reps ou plus.', 'Go the distance: 8 sets of 15+ reps.'], ['cm', 120, 'La proie est en vue : 120 min de cardio.', 'The prey is in sight: 120 min of cardio.']]],
   m: [['Le Chemin du dojo', 'The Dojo Path'], [['days', 2, 'Le dojo t\'ouvre ses portes : 2 jours d\'entraînement.', 'The dojo opens its doors: 2 training days.'], ['days', 4, 'La discipline avant tout : 4 jours.', 'Discipline first: 4 days.'], ['pr', 1, 'Dépasse-toi : bats 1 record.', 'Surpass yourself: break 1 record.'], ['days', 6, 'Le maître t\'observe : 6 jours.', 'The master watches you: 6 days.'], ['days', 10, 'L\'illumination : 10 jours d\'entraînement.', 'Enlightenment: 10 training days.']]],
+  gm: [['L\'Ordre de la flamme', 'The Order of the Flame'], [['n', 2, 'L\'Ordre t\'accueille. Montre ta valeur : 2 séances.', 'The Order welcomes you. Show your worth: 2 workouts.'], ['heavy', 15, 'Porte l\'armure : 15 séries de 6 reps ou moins.', 'Bear the armor: 15 sets of 6 reps or fewer.'], ['days', 4, 'Le serment se tient : 4 jours d\'entraînement.', 'Keep the oath: 4 training days.'], ['pr', 1, 'Défends l\'honneur de l\'Ordre : bats 1 record.', 'Defend the Order\'s honor: break 1 record.'], ['heavy', 30, 'La flamme éternelle : 30 séries lourdes.', 'The eternal flame: 30 heavy sets.']]],
+  gs: [['Le Serment de lumière', 'The Oath of Light'], [['n', 2, 'Un village a besoin de toi : 2 séances.', 'A village needs you: 2 workouts.'], ['heavy', 10, 'Lève ton marteau : 10 séries lourdes.', 'Raise your hammer: 10 heavy sets.'], ['st', 2, 'Soigne les blessés : 2 séances d\'étirements.', 'Heal the wounded: 2 stretching sessions.'], ['varied', 1, 'Protège tout le monde : 1 séance de 6 exercices ou plus.', 'Protect everyone: 1 workout with 6+ exercises.'], ['heavy', 25, 'La lumière triomphe : 25 séries lourdes.', 'The light prevails: 25 heavy sets.']]],
+  gr: [['Les Trois Cents', 'The Three Hundred'], [['n', 2, 'L\'entraînement commence : 2 séances.', 'Training begins: 2 workouts.'], ['heavy', 10, 'Forge ton bouclier : 10 séries lourdes.', 'Forge your shield: 10 heavy sets.'], ['cm', 30, 'La marche vers le front : 30 min de cardio.', 'March to the front: 30 min of cardio.'], ['pr', 1, 'Tiens la ligne : bats 1 record.', 'Hold the line: break 1 record.'], ['cm', 90, 'La bataille légendaire : 90 min de cardio.', 'The legendary battle: 90 min of cardio.']]],
+  mr: [['La Voie silencieuse', 'The Silent Path'], [['days', 2, 'Disparais dans la nuit : 2 jours d\'entraînement.', 'Vanish into the night: 2 training days.'], ['cm', 20, 'Suis ta cible : 20 min de cardio.', 'Follow your target: 20 min of cardio.'], ['days', 5, 'Patience de l\'ombre : 5 jours.', 'Shadow patience: 5 days.'], ['hirep', 8, 'Frappe sans bruit : 8 séries de 15 reps ou plus.', 'Strike silently: 8 sets of 15+ reps.'], ['days', 9, 'Le maître des ombres : 9 jours.', 'Master of shadows: 9 days.']]],
+  rs: [['Le Cœur de la forêt', 'The Heart of the Forest'], [['cm', 20, 'La forêt t\'appelle : 20 min de cardio.', 'The forest calls you: 20 min of cardio.'], ['st', 2, 'Écoute la nature : 2 séances d\'étirements.', 'Listen to nature: 2 stretching sessions.'], ['cm', 60, 'Parcours les sentiers : 60 min de cardio.', 'Roam the trails: 60 min of cardio.'], ['st', 4, 'Fais refleurir la forêt : 4 séances d\'étirements.', 'Make the forest bloom: 4 stretching sessions.'], ['cm', 100, 'Le cœur bat à nouveau : 100 min de cardio.', 'The heart beats again: 100 min of cardio.']]],
+  ms: [['Les Mille Pas', 'The Thousand Steps'], [['days', 2, 'Le premier pas : 2 jours d\'entraînement.', 'The first step: 2 training days.'], ['st', 2, 'Souplesse de l\'esprit : 2 séances d\'étirements.', 'Flexible mind: 2 stretching sessions.'], ['days', 5, 'Le chemin continue : 5 jours.', 'The path goes on: 5 days.'], ['varied', 1, 'Harmonie : 1 séance de 6 exercices ou plus.', 'Harmony: 1 workout with 6+ exercises.'], ['st', 5, 'Le sommet : 5 séances d\'étirements.', 'The summit: 5 stretching sessions.']]],
   s: [['La Source de vie', 'The Wellspring'], [['st', 1, 'Une source cachée t\'appelle : 1 séance d\'étirements.', 'A hidden spring calls you: 1 stretching session.'], ['n', 2, 'Prends soin du corps : 2 séances.', 'Take care of the body: 2 workouts.'], ['st', 3, 'Purifie la source : 3 séances d\'étirements.', 'Purify the spring: 3 stretching sessions.'], ['varied', 1, 'Équilibre : 1 séance de 6 exercices ou plus.', 'Balance: 1 workout with 6+ exercises.'], ['st', 6, 'La source renaît : 6 séances d\'étirements.', 'The spring is reborn: 6 stretching sessions.']]]
 };
-const stBase = cl => PCL_K.includes(cl) ? cl : PCL[cl] && cl.length === 2 ? pclParts(cl)[0] : '';
+const stBase = cl => STORY[cl] ? cl : '';
 function stSince(a) {
   const H = S.history.filter(h => +new Date(h.date) >= a), pc = prCounts(), dd = new Set(); let heavy = 0, cm = 0, hirep = 0, varied = 0, pr = 0;
   H.forEach(h => { dd.add(dkey(new Date(h.date))); pr += pc.get(h.id) || 0; if (h.exercises.length >= 6) varied++; h.exercises.forEach(e => work(e.sets).forEach(x => { if (x.u === 'c') cm += +x.r || 0; else if (x.u !== 's' && +x.w > 0 && +x.r > 0 && +x.r <= 6) heavy++; else if (x.u !== 's' && +x.r >= 15) hirep++; })); });
@@ -9257,7 +9274,7 @@ function raStateTxt(bi, st) {
 }
 const raBossIdx = wk => Math.floor(+new Date(wk + 'T12:00:00') / (7 * 864e5)) % RAID_BOSS.length;
 /* Effets visuels des attaques sur le boss */
-const RA_FX = {g1: 'slash', g2: 'slash', g3: 'roar', r1: 'arrow', r2: 'arrow', r3: 'nature', m1: 'fire', m2: 'fire', m3: 'zen', s1: 'light', s2: 'light', s3: 'light', gm: 'fire', gs: 'holy', gr: 'slash', mr: 'shadow', rs: 'nature', ms: 'holy'};
+const RA_FX = {gm1: 'slash', gm3: 'fire', gs1: 'holy', gs3: 'light', gr1: 'slash', gr3: 'roar', mr1: 'shadow', mr3: 'shadow', rs1: 'nature', rs3: 'nature', ms1: 'holy', ms3: 'zen', g1: 'slash', g2: 'slash', g3: 'roar', r1: 'arrow', r2: 'arrow', r3: 'nature', m1: 'fire', m2: 'fire', m3: 'zen', s1: 'light', s2: 'light', s3: 'light', gm: 'fire', gs: 'holy', gr: 'slash', mr: 'shadow', rs: 'nature', ms: 'holy'};
 function raFx(el, k, blk) { if (!el) return; const f = document.createElement('span'); f.className = 'rdfx fx-' + (blk ? 'shield' : RA_FX[k] || 'slash'); el.appendChild(f); setTimeout(() => f.remove(), 1000); }
 /* Le boss contre-attaque : chaque jour terminé où l'équipe n'a rien fait depuis 2 jours, il regagne 6 % de ses PV (30 % au plus) */
 function raDays(wk) { // jours actifs (séance ou attaque) de la semaine
@@ -9298,13 +9315,19 @@ function raLoot(wk) {
     ${RB_ART[bi] ? `<div class="cosbn${bannerCls('rb' + bi)}" style="height:90px;width:100%;display:block;border-radius:12px;margin:8px 0"></div><p class="small">${T('Bannière débloquée', 'Banner unlocked')} : <b>${esc(T(RB_BN[bi][0], RB_BN[bi][1]))}</b> ${T('pour toi et pour ta guilde', 'for you and your guild')}</p>` : ''}<p class="small muted">${T('Choisis tes titres et bannières dans l\'Armurerie.', 'Pick your titles and banners in the Armory.')}</p><button class="btn primary block" data-act="close">${T('Super', 'Great')}</button></div>`), 1400);
 }
 /* ---------- Pouvoirs de classe : un par semaine, utilisé dans tes séances ---------- */
-const POW = {
+const POW = { // [mécanique, nom, nom en, description, description en]
   g: ['rage', 'Rage', 'Rage', 'Ta prochaine séance : chaque record rapporte le double d\'XP.', 'Your next workout: each record gives double XP.'],
   r: ['souffle', 'Second souffle', 'Second wind', 'Ta quête du jour ne peut pas être ratée aujourd\'hui.', 'Today\'s quest cannot be failed.'],
   m: ['disc', 'Discipline', 'Discipline', 'Ta série de semaines est protégée cette semaine, même si tu ne t\'entraînes pas.', 'Your week streak is protected this week, even if you do not train.'],
-  s: ['recup', 'Récupération', 'Recovery', 'Te propose une séance pour tes muscles reposés, et +50 % d\'XP sur ta prochaine séance.', 'Suggests a workout for your rested muscles, and +50% XP on your next workout.']
+  s: ['recup', 'Récupération', 'Recovery', 'Te propose une séance pour tes muscles reposés, et +50 % d\'XP sur ta prochaine séance.', 'Suggests a workout for your rested muscles, and +50% XP on your next workout.'],
+  gm: ['rage', 'Serment de fer', 'Iron oath', 'Ta prochaine séance : chaque record rapporte le double d\'XP.', 'Your next workout: each record gives double XP.'],
+  gs: ['boost', 'Bénédiction', 'Blessing', '+50 % d\'XP sur ta prochaine séance.', '+50% XP on your next workout.'],
+  gr: ['disc', 'Ne jamais reculer', 'Never retreat', 'Ta série de semaines est protégée cette semaine, même si tu ne t\'entraînes pas.', 'Your week streak is protected this week, even if you do not train.'],
+  mr: ['souffle', 'Disparition', 'Vanish', 'Ta quête du jour ne peut pas être ratée aujourd\'hui.', 'Today\'s quest cannot be failed.'],
+  rs: ['recup', 'Renouveau', 'Renewal', 'Te propose une séance pour tes muscles reposés, et +50 % d\'XP sur ta prochaine séance.', 'Suggests a workout for your rested muscles, and +50% XP on your next workout.'],
+  ms: ['boost', 'Illumination', 'Enlightenment', '+50 % d\'XP sur ta prochaine séance.', '+50% XP on your next workout.']
 };
-const powOpts = cl => PCL_K.includes(cl) ? [cl] : PCL[cl] && cl.length === 2 ? pclParts(cl) : [];
+const powOpts = cl => POW[cl] ? [cl] : [];
 const powCur = () => S.pow && S.pow.wk === wkKey(new Date()) ? S.pow : null;
 const powAgain = () => { const p = powCur(); return !!(p && p.used && !p.second && talR('pow')); };
 function powRow() {
@@ -9326,9 +9349,10 @@ function powUse(c) {
 function powFinish(h) { // fin de séance : Rage et Récupération s'appliquent à la séance suivante
   const p = powCur(); if (!p || p.used || !h || +new Date(h.date) < p.t - 6 * 3600e3) return 0;
   let xp = 0;
-  if (p.c === 'g') xp = (prCounts().get(h.id) || 0) * 40;
-  if (p.c === 's') xp = Math.round((100 + h.exercises.reduce((u, e) => u + work(e.sets).length, 0) * 5) * .5);
-  if (p.c !== 'g' && p.c !== 's') return 0;
+  const mech = POW[p.c] && POW[p.c][0];
+  if (mech === 'rage') xp = (prCounts().get(h.id) || 0) * 40;
+  if (mech === 'recup' || mech === 'boost') xp = Math.round((100 + h.exercises.reduce((u, e) => u + work(e.sets).length, 0) * 5) * .5);
+  if (!['rage', 'recup', 'boost'].includes(mech)) return 0;
   p.used = 1; save(); if (xp > 0) giveXp('pow', h.id, xp, T(`${POW[p.c][1]} : +${xp} XP`, `${POW[p.c][2]}: +${xp} XP`));
   return xp;
 }
@@ -9469,14 +9493,14 @@ const TITLES = [ // [groupe de médaille, palier (0 = premier), [fr, en]]
   ['qd', 3, ['Assidu de la Guilde', 'Guild regular']], ['qrow', 3, ['Discipline de fer', 'Iron discipline']], ['redeem', 0, ['Revenant', 'Revenant']],
   ['dg', 2, ['Nettoyeur de donjons', 'Dungeon cleaner']], ['boss', 0, ['Tueur de boss', 'Boss slayer']], ['boss', 3, ['Fléau des boss', 'Bane of bosses']],
   ['shs', 0, ['Forgeron légendaire', 'Legendary smith']], ['raid', 0, ['Compagnon de raid', 'Raid companion']], ['chw', 1, ['Duelliste', 'Duelist']],
-  ['stl', 0, ['Légende du Serment de fer', 'Legend of the Iron Oath'], 4], ['stl', 1, ['Légende de la Piste sans fin', 'Legend of the Endless Trail'], 4], ['stl', 2, ['Légende du Dojo', 'Legend of the Dojo'], 4], ['stl', 3, ['Légende de la Source', 'Legend of the Wellspring'], 4],
+  ['stl', 0, ['Légende du Serment de fer', 'Legend of the Iron Oath'], 4], ['stl', 1, ['Légende de la Piste sans fin', 'Legend of the Endless Trail'], 4], ['stl', 2, ['Légende du Dojo', 'Legend of the Dojo'], 4], ['stl', 3, ['Légende de la Source', 'Legend of the Wellspring'], 4], ['stl', 4, ['Flamme de l\'Ordre', 'Flame of the Order'], 4], ['stl', 5, ['Porteur de lumière', 'Lightbearer'], 4], ['stl', 6, ['L\'un des Trois Cents', 'One of the Three Hundred'], 4], ['stl', 7, ['Maître des ombres', 'Shadow master'], 4], ['stl', 8, ['Cœur de la forêt', 'Heart of the Forest'], 4], ['stl', 9, ['Celui des Mille Pas', 'Walker of a Thousand Steps'], 4],
   ['rl', 0, ['Briseur de forteresse', 'Fortress breaker'], 2], ['rl', 1, ['Fondeur de colosse', 'Colossus smelter'], 2], ['rl', 2, ['Chasseur des sables', 'Sand hunter'], 2], ['rl', 3, ['Tueur de la Reine', 'Queen slayer'], 2], ['rl', 4, ['Brise-glace', 'Icebreaker'], 2], ['rl', 5, ['Fléau des abysses', 'Bane of the deep'], 2], ['rmvp', 0, ['Héros de raid', 'Raid hero'], 3],
   ['sea', 0, ['Champion de saison', 'Season champion']], ['evt', 1, ['Fêtard de la Guilde', 'Guild reveler']], ['lvl', 9, ['Légende vivante', 'Living legend']],
   ['chs', 5, ['Pilleur de coffres', 'Chest raider'], 2], ['chs', 36, ['Seigneur du butin', 'Loot lord'], 4], ['chl', 10, ['Nécromancien', 'Necromancer'], 2], ['chd', 5, ['Dompteur de dragons', 'Dragon tamer'], 2], ['chd', 28, ['Tueur de wyrms', 'Wyrmslayer'], 4], ['chk', 5, ['Marin des abysses', 'Abyssal sailor'], 2], ['chk', 20, ['Seigneur des profondeurs', 'Lord of the deep'], 3], ['b3', 4, ['Dieu du fer', 'God of iron'], 4], ['pr', 4, ['Briseur de légendes', 'Legend breaker'], 4], ['boss', 4, ['Dévoreur de boss', 'Boss devourer'], 4], ['dg', 5, ['Seigneur des donjons', 'Dungeon lord'], 4], ['qd', 6, ['Élu de la Guilde', 'Chosen of the Guild'], 4], ['wk', 5, ['Inarrêtable', 'Unstoppable'], 4]];
 var CH_TT = {chs: 'mimic', chl: 'liche', chd: 'dragon', chk: 'kraken'};
 function titleList() { // titres débloqués selon tes médailles
   const me = medalsEarned();
-  return TITLES.map(([g, i, t]) => { if (g === 'stl') { const b = PCL_K[i]; return {id: g + i, t: T(t[0], t[1]), ok: stDone(b), how: T(`Termine l'histoire de classe ${pclName(b)}`, `Finish the ${pclName(b)} class story`)}; } if (g === 'rl') return {id: g + i, t: T(t[0], t[1]), ok: !!(S.raidLoot || {})['b' + i], how: T('Bats ce boss de raid avec ta guilde', 'Defeat this raid boss with your guild')}; if (g === 'rmvp') return {id: 'rmvp0', t: T(t[0], t[1]), ok: !!(S.raidLoot || {}).mvp, how: T('Fais le plus de dégâts d\'un raid réussi', 'Deal the most damage in a cleared raid')}; if (g === 'gm') return {id: 'gm0', t: T(t[0], t[1]), ok: cosReq({set: 'title'}).ok, how: ''}; if (CH_TT[g]) { const q = cosReq({fr: i, ft: CH_TT[g]}); return {id: g + i, t: T(t[0], t[1]), ok: q.ok, how: q.why}; } const d = g === 'n1' ? me.defs.find(x => x.id === 'n1') : me.defs.filter(x => x.g === g).sort((a, b) => a.v - b.v)[i]; return d ? {id: g + i, t: T(t[0], t[1]), ok: !!me.got[d.id], how: d.t} : null; }).filter(Boolean);
+  return TITLES.map(([g, i, t]) => { if (g === 'stl') { const b = PCL_ALL[i]; return {id: g + i, t: T(t[0], t[1]), ok: stDone(b), how: T(`Termine l'histoire de classe ${pclName(b)}`, `Finish the ${pclName(b)} class story`)}; } if (g === 'rl') return {id: g + i, t: T(t[0], t[1]), ok: !!(S.raidLoot || {})['b' + i], how: T('Bats ce boss de raid avec ta guilde', 'Defeat this raid boss with your guild')}; if (g === 'rmvp') return {id: 'rmvp0', t: T(t[0], t[1]), ok: !!(S.raidLoot || {}).mvp, how: T('Fais le plus de dégâts d\'un raid réussi', 'Deal the most damage in a cleared raid')}; if (g === 'gm') return {id: 'gm0', t: T(t[0], t[1]), ok: cosReq({set: 'title'}).ok, how: ''}; if (CH_TT[g]) { const q = cosReq({fr: i, ft: CH_TT[g]}); return {id: g + i, t: T(t[0], t[1]), ok: q.ok, how: q.why}; } const d = g === 'n1' ? me.defs.find(x => x.id === 'n1') : me.defs.filter(x => x.g === g).sort((a, b) => a.v - b.v)[i]; return d ? {id: g + i, t: T(t[0], t[1]), ok: !!me.got[d.id], how: d.t} : null; }).filter(Boolean);
 }
 const myTitle = () => { if (!GAME()) return ''; const k = clsCur(); return k ? pclName(k) + ' ' + pclMast(k).title : ''; }; // le titre affiché est celui de ta classe (maîtrise)
 const titleOf = id => { const x = TITLES.find(([g, i]) => g + i === id); return x ? T(x[2][0], x[2][1]) : ''; };
@@ -11957,7 +11981,7 @@ function obRender() {
     <p class="muted small" style="margin:8px 0 0">${EXP_WHAT()[d.exp]} ${T('Il monte tout seul au fil de tes séances.', 'It goes up on its own as you train.')}</p>
     ${nextBtn(d.game ? T('Continuer', 'Continue') : T('C\'est parti!', 'Let\'s go!') + ' 🚀')}`;
   else if (step === 'cls') { const sg = pclSuggest(); if (d.cls == null) d.cls = 'auto'; h = `${obDots()}<h2 class="ob-h2">${T('Ta classe', 'Your class')}</h2><p class="muted">${T('Elle donne des quêtes adaptées et +25 % d\'XP sur les séances de ton style. Le plus simple : la laisser se calculer d\'après ton entraînement.', 'It gives tailored quests and +25% XP on workouts in your style. Easiest: let it follow your training.')}</p>
-    <div style="margin-top:12px"><button class="ob-opt ${d.cls === 'auto' ? 'on' : ''}" data-act="ob-seg" data-k="cls" data-v="auto"><span class="ob-ic">${pclImg(sg ? sg.k : 'm', 40)}</span><span><b>${T('Automatique', 'Automatic')} · ${T('recommandé', 'recommended')}</b><small>${sg ? T(`Pour l'instant : ${pclName(sg.k)} (${sg.why})`, `For now: ${pclName(sg.k)} (${sg.why})`) : T('Ta classe se révélera après tes premières séances.', 'Your class will reveal itself after your first workouts.')}</small></span></button>${PCL_K.map(k => `<button class="ob-opt ${d.cls === k ? 'on' : ''}" data-act="ob-seg" data-k="cls" data-v="${k}"><span class="ob-ic">${pclImg(k, 40)}</span><span><b>${T('Objectif', 'Goal')} : ${esc(pclName(k))}</b><small>${esc(pclDesc(k))}</small></span></button>`).join('')}</div>
+    <div style="margin-top:12px"><button class="ob-opt ${d.cls === 'auto' ? 'on' : ''}" data-act="ob-seg" data-k="cls" data-v="auto"><span class="ob-ic">${pclImg(sg ? sg.k : 'm', 40)}</span><span><b>${T('Automatique', 'Automatic')} · ${T('recommandé', 'recommended')}</b><small>${sg ? T(`Pour l'instant : ${pclName(sg.k)} (${sg.why})`, `For now: ${pclName(sg.k)} (${sg.why})`) : T('Ta classe se révélera après tes premières séances.', 'Your class will reveal itself after your first workouts.')}</small></span></button>${PCL_ALL.map(k => `<button class="ob-opt ${d.cls === k ? 'on' : ''}" data-act="ob-seg" data-k="cls" data-v="${k}"><span class="ob-ic">${pclImg(k, 40)}</span><span><b>${T('Objectif', 'Goal')} : ${esc(pclName(k))}</b><small>${esc(pclDesc(k))}</small></span></button>`).join('')}</div>
     ${nextBtn(T('C\'est parti!', 'Let\'s go!') + ' 🚀')}`; }
   o.innerHTML = `<div class="ob-in obs-${step}">${back}${h}</div>`;
   try { iconize(o); } catch (e) {}
