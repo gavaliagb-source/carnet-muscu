@@ -162,7 +162,9 @@ canvas{width:100%;height:210px;display:block}
 .stat b{display:block;font-size:20px}
 .phfull{position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center}.phfull img{max-width:100%;max-height:100%;object-fit:contain}
 @keyframes gflash{0%,100%{box-shadow:0 0 0 0 transparent}30%{box-shadow:0 0 0 2px var(--accent),0 0 22px -4px var(--accent)}}.gflash{animation:gflash 1.6s ease 2;border-radius:12px}.gstrip .gshead{padding:6px 0;margin:-6px 0 0}
-.tabghost{position:fixed;left:0;right:0;bottom:0;z-index:4;overflow:hidden;pointer-events:none;background:var(--bg);visibility:hidden;transform:translateX(200%);contain:strict}.tabghost.on{visibility:visible;will-change:transform}.tabghost *{animation-play-state:paused!important;transition:none!important}
+/* Onglets voisins prêts juste hors de l'écran (déjà dessinés : rien à préparer au moment de glisser) */
+.tabghost{position:fixed;left:0;right:0;bottom:0;z-index:4;overflow:hidden;pointer-events:none;background:var(--bg);will-change:transform;contain:strict;transform:translateX(calc(100% + 40px))}.tabghost.gl{transform:translateX(calc(-100% - 40px))}.tabghost *{animation:none!important;transition:none!important}
+#app{will-change:transform}
 .bmrow{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px}.bmrow::-webkit-scrollbar{display:none}.bmrow .btn{flex:none;white-space:nowrap}
 .hist summary,summary.nomark{list-style:none;cursor:pointer}summary.nomark::-webkit-details-marker{display:none}
 .hist summary::-webkit-details-marker{display:none}
@@ -506,7 +508,7 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .sech{font-size:28px;line-height:1;padding:6px 10px;touch-action:none;cursor:grab;user-select:none;opacity:.8}
 .secinner{pointer-events:none;max-height:96px;overflow:hidden;opacity:.5;-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent)}
 .secw.drag{z-index:60;box-shadow:0 12px 32px #000b;background:var(--bg,#0d0f12);transition:none}
-.sectop{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 2px;background:var(--bg,#0d0f12)}
+.sectop{position:sticky;top:calc(52px + var(--sat));z-index:40;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 2px;background:var(--bg,#0d0f12)}
 .sechid{margin:10px 0;padding:10px;border:1px dashed var(--line);border-radius:12px}.sechid .btn{margin:0 6px 6px 0}
 .secw{-webkit-touch-callout:none}
 .clcard{padding:18px 16px}.clbig{font-size:64px;font-weight:800;text-align:center;letter-spacing:1px;font-variant-numeric:tabular-nums;line-height:1.1;margin:6px 0 10px}
@@ -6576,9 +6578,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.91.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.92.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.92.0', d: '2026-11-22', fr: ['Glissement entre onglets encore plus fluide : tous les onglets sont préparés en coulisse dès l\'ouverture de l\'appli (plus besoin de les visiter une fois), les onglets voisins sont déjà dessinés juste hors de l\'écran, et la page actuelle est prête à bouger avant même que tu glisses.'], en: ['Even smoother tab swipes: every tab is prepared in the background at launch, neighbor tabs are pre-drawn just off-screen, and the current page is ready to move before you swipe.']},
   {v: '9.91.3', d: '2026-11-22', fr: ['Glisser entre les onglets marche partout, comme dans les autres applis, même depuis une case où tu es en train d\'écrire : le clavier se ferme quand l\'onglet change.'], en: ['Tab swipe works everywhere like other apps, even from a box you are typing in: the keyboard closes when the tab changes.']},
   {v: '9.91.2', d: '2026-11-22', fr: ['Glisser entre les onglets marche aussi en partant d\'une case à remplir (pas faits, inclinaison…), sauf si tu es en train d\'écrire dedans.'], en: ['Tab swipe also works starting on an input box, unless you are typing in it.']},
   {v: '9.91.1', d: '2026-11-21', fr: ['Glisser entre les onglets marche maintenant aussi sur les rangées de boutons qui ne défilent pas (ex. « exercices qui stagnent », plan de la semaine, types de cardio quand ils tiennent à l\'écran).', 'Correction : une date de séance invalide ne peut plus bloquer l\'affichage.'], en: ['Tab swipe now also works over button rows that don\'t scroll (e.g. stalled exercises, week plan).', 'Fix: an invalid session date can no longer break the display.']},
@@ -10156,9 +10159,11 @@ setInterval(() => { if (swp && Date.now() - (swp.lt || swp.t) > 2500) swp = null
    On garde une copie figée du dernier affichage de chaque onglet principal, et les deux voisins de l'onglet
    courant sont préparés à l'avance (cachés). Pendant le glissement on ne fait que déplacer des images déjà
    prêtes : rien à construire, donc pas d'accroc. Le vrai onglet est construit une fois l'animation finie. */
-const TABH = {}, GH = {};
+const TABH = {}, GH = {};   // TABH[onglet] = {h: HTML figé, dv: version des données}
 let ghost = null, snapT = null;
 function swTabs() { return ['train', 'stretch', 'cardio', 'timers', ...(GAME() ? ['guild'] : []), 'profile']; }
+const snapOk = v => TABH[v] && TABH[v].dv === DV;
+/* Copie de l'onglet affiché (avec ses images déjà chargées) */
 function tabSnap() {
   if (stack.length !== 1 || modals.length || swp || swpAnim || foldActive()) return;
   const v = stack[0].v, a = $('#app'); if (!ROOT_TABS.includes(v) || !a || !a.firstElementChild) return;
@@ -10166,22 +10171,43 @@ function tabSnap() {
     const cl = a.cloneNode(true), cs = a.querySelectorAll('canvas'), cd = cl.querySelectorAll('canvas');
     cs.forEach((c, i) => { try { const im = document.createElement('img'); im.src = c.toDataURL(); im.style.cssText = `display:block;width:${c.clientWidth}px;height:${c.clientHeight}px`; cd[i].replaceWith(im); } catch (e) {} });
     cl.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
-    TABH[v] = cl.innerHTML;
+    TABH[v] = {h: cl.innerHTML, dv: DV};
   } catch (e) {}
+  tabPreAll();
+}
+/* Onglet pas encore ouvert (ou données changées) : on le construit en coulisse, sans rien afficher ni déclencher */
+function tabPre(v) {
+  if (!VIEWS[v]) return;
+  const st0 = stack, sT = window.setTimeout; let html = '';
+  try { stack = [{v}]; window.setTimeout = () => 0; html = VIEWS[v][1](); } catch (e) { html = ''; }
+  finally { window.setTimeout = sT; stack = st0; RC = {}; }
+  if (!html) return;
+  const d = document.createElement('div'); d.innerHTML = html;
+  try { iconize(d); iconizeAll(d); } catch (e) {}
+  d.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
+  TABH[v] = {h: d.innerHTML, dv: DV};
+}
+function tabPreAll() {
+  if (stack.length !== 1 || swp || swpAnim || modals.length || S.settings.swipe === false) return;
+  const T0 = swTabs(), i = T0.indexOf(stack[0].v); if (i < 0) return;
+  // d'abord les deux voisins (ceux qu'on peut atteindre en glissant), puis les autres
+  const order = [T0[i - 1], T0[i + 1], ...T0].filter((v, k, A) => v && v !== stack[0].v && A.indexOf(v) === k);
+  const v = order.find(x => !snapOk(x));
   ghostPrep();
+  if (v) { tabPre(v); ric(tabPreAll, {timeout: 2500}); }
 }
 function ghostEl(dest) {
   const el = document.createElement('div'); el.className = 'tabghost'; el.setAttribute('aria-hidden', 'true');
-  el.innerHTML = '<main>' + TABH[dest] + '</main>'; el.dataset.v = dest; el.dataset.h = String(TABH[dest].length);
+  el.innerHTML = '<main>' + TABH[dest].h + '</main>'; el.dataset.v = dest; el.dataset.dv = TABH[dest].dv;
   document.body.appendChild(el); return el;
 }
 function ghostPrep() {
   if (stack.length !== 1 || swp || swpAnim) return;
-  const T0 = swTabs(), i = T0.indexOf(stack[0].v), want = i < 0 ? [] : [T0[i - 1], T0[i + 1]].filter(v => v && TABH[v]);
-  Object.keys(GH).forEach(v => { if (!want.includes(v) || GH[v].dataset.h !== String(TABH[v].length)) { GH[v].remove(); delete GH[v]; } });
-  want.forEach(v => { if (!GH[v]) GH[v] = ghostEl(v); });
+  const T0 = swTabs(), i = T0.indexOf(stack[0].v), L = T0[i - 1], Rr = T0[i + 1], want = i < 0 ? [] : [L, Rr].filter(v => v && TABH[v]);
+  Object.keys(GH).forEach(v => { if (!want.includes(v) || GH[v].dataset.dv !== String(TABH[v].dv)) { GH[v].remove(); delete GH[v]; } });
+  want.forEach(v => { if (!GH[v]) GH[v] = ghostEl(v); GH[v].classList.toggle('gl', v === L); });
   const hb = document.querySelector('header'), top = (hb ? Math.round(hb.getBoundingClientRect().bottom) : 0) + 'px';
-  Object.values(GH).forEach(el => { el.style.top = top; });
+  Object.values(GH).forEach(el => { if (el.style.top !== top) el.style.top = top; });
 }
 function ghostFor(dest) {
   if (ghost && ghost.dest === dest) return ghost;
@@ -10189,7 +10215,7 @@ function ghostFor(dest) {
   if (!dest || dest === 'back' || !GH[dest] || foldActive()) return null;
   GH[dest].classList.add('on'); return (ghost = {el: GH[dest], dest});
 }
-function snapLater() { clearTimeout(snapT); if (stack.length === 1) snapT = setTimeout(() => ric(tabSnap, {timeout: 1500}), 350); }
+function snapLater() { clearTimeout(snapT); if (stack.length === 1) snapT = setTimeout(() => ric(tabSnap, {timeout: 1200}), 150); }
 function hScrollAt(el) { for (let n = el; n && n !== document.body && n.id !== 'app'; n = n.parentElement) { if (n.scrollWidth > n.clientWidth + 4) { const o = getComputedStyle(n).overflowX; if (o === 'auto' || o === 'scroll') return true; } } return false; }
 function swipeTarget(dx) {
   if (stack.length > 1) return dx > 0 ? 'back' : null;
