@@ -5958,12 +5958,12 @@ function weekDungeon0(ref) {
     {id: 'dur', ic: '⏱️', goal: Math.max(180, rnd5(hsDur(past) / wkN * 1.1, 15)), t: ['Accumule # d\'entraînement', 'Log # of training'], cur: hsDur, fmt: v => hm(v)}];
   if (hsVol(past) > 0) pool.push({id: 'vol', ic: '🏗️', goal: rnd5(hsVol(past) / wkN * 1.1, u === 'kg' ? 500 : 1000), t: [`Soulève # ${u} cette semaine`, `Lift # ${u} this week`], cur: hsVol});
   const DOOR = {n: ['Porte de l\'endurance', 'Door of endurance'], sets: ['Porte de la forge', 'Door of the forge'], pr: ['Porte du champion', 'Door of the champion'], dur: ['Porte du temps', 'Door of time'], vol: ['Porte du titan', 'Door of the titan']};
-  const d1 = pool[sd % pool.length], d2 = pool[(sd % pool.length + 1 + (sd >> 4) % (pool.length - 1)) % pool.length], pick = S.dgPick && S.dgPick[k];
+  const d1 = pool[sd % pool.length], d2 = pool[(sd % pool.length + 1 + (sd >> 4) % (pool.length - 1)) % pool.length], pk = S.dgPick && S.dgPick[k], pick = pk && (pk.id || pk), pkT = pk && (pk.t || Date.now()) || 0; // ancien choix sans date : on laisse changer
   const g = pick && pool.find(x => x.id === pick) || d1, doors = [d1, d2].map(x => ({id: x.id, n: T(DOOR[x.id][0], DOOR[x.id][1]), t: T(x.t[0], x.t[1]).replace('#', (x.fmt || (v => Math.round(v).toLocaleString(LOC())))(x.goal))})), hsW = S.history.filter(x => +new Date(x.date) >= +ws && +new Date(x.date) < +ws + 7 * 864e5), cur = g.cur(hsW);
   const fmt = g.fmt || (v => Math.round(v).toLocaleString(LOC()));
   const left = 7 - dayIdx(new Date());
   const rk = RKS[Math.min(5, sd % 3 + RKS.indexOf(hunterRankBase()))] || 'C';
-  return {k, ...g, cur, done: cur >= g.goal, fmt, left, rk, doors, picked: !!pick, text: T(g.t[0], g.t[1]).replace('#', fmt(g.goal))};
+  return {k, ...g, cur, done: cur >= g.goal, fmt, left, rk, doors, picked: !!pick, canSwap: !!pick && !S.history.some(x => +new Date(x.date) > pkT && +new Date(x.date) >= +ws), text: T(g.t[0], g.t[1]).replace('#', fmt(g.goal))};
 }
 const hunterRankBase = () => { const r = hunter().rk; return RKS.includes(r) ? r : 'S'; };
 const sysBar = (cur, goal) => `<div class="goal sysbar" style="margin:8px 0 4px"><div style="width:${Math.min(100, Math.round(cur / Math.max(1, goal) * 100))}%"></div></div>`;
@@ -6012,7 +6012,7 @@ function questCard(compact) {
   const qh = q.rest
     ? `<div class="qrow" data-gq="q"><span class="qic">${'🌙'}</span><div style="flex:1"><b>${T('Jour de repos', 'Rest day')}</b><div class="small muted">${T('La Guilde te laisse récupérer aujourd\'hui. Pas de quête.', 'The Guild lets you rest today. No quest.')}</div></div></div>`
     : `<div class="qrow" data-gq="q"><span class="qic">${q.ic}</span><div style="flex:1;min-width:0"><b>${esc(q.text)}</b>${q.id === 'pr' ? ` <button class="linkbtn small" data-act="pr-why">🔍 ${T('Quoi battre?', 'What to beat?')}</button>` : ''}${sysBar(q.cur, q.goal)}<div class="row between small muted"><span>${Math.min(q.cur, q.goal).toLocaleString(LOC())} / ${q.goal.toLocaleString(LOC())}</span><span>${q.done ? `<b style="color:var(--ok)">${T('ACCOMPLIE', 'COMPLETE')}</b>` : '+150 XP'}</span></div></div></div>`;
-  const dh = `<div class="qrow" data-gq="d" style="margin-top:12px"><span class="qic">${rkBadge(dg.rk, 'mrk lvrk')}</span><div style="flex:1;min-width:0"><b>${T('Donjon de rang', 'Rank')} ${dg.rk}${T('', ' dungeon')} · ${esc(dg.text)}</b>${!dg.picked && !dg.done && GAME() ? `<div class="small muted" style="margin:6px 0 4px">${T('Choisis ta porte pour cette semaine :', 'Pick your door for this week:')}</div><div class="rdatks">${dg.doors.map(d => `<button class="rdatk" data-act="dg-pick" data-k="${dg.k}" data-id="${d.id}"><b>${esc(d.n)}</b><span class="small muted">${esc(d.t)}</span></button>`).join('')}</div>` : ''}${dgMap(dg)}<div class="row between small muted"><span>${dg.fmt(Math.min(dg.cur, dg.goal))} / ${dg.fmt(dg.goal)}</span><span>${dg.done ? `<b style="color:var(--ok)">${T('DONJON NETTOYÉ', 'DUNGEON CLEARED')}</b>` : `${dg.left} ${T('j restants', 'days left')} · +500 XP`}</span></div></div></div>`;
+  const dh = `<div class="qrow" data-gq="d" style="margin-top:12px"><span class="qic">${rkBadge(dg.rk, 'mrk lvrk')}</span><div style="flex:1;min-width:0"><b>${T('Donjon de rang', 'Rank')} ${dg.rk}${T('', ' dungeon')} · ${esc(dg.text)}</b>${!dg.picked && !dg.done && GAME() ? `<div class="small muted" style="margin:6px 0 4px">${T('Choisis ta porte pour cette semaine :', 'Pick your door for this week:')}</div><div class="rdatks">${dg.doors.map(d => `<button class="rdatk" data-act="dg-pick" data-k="${dg.k}" data-id="${d.id}"><b>${esc(d.n)}</b><span class="small muted">${esc(d.t)}</span></button>`).join('')}</div>` : ''}${dgMap(dg)}${dg.canSwap && !dg.done ? `<button class="linkbtn small" data-act="dg-swap" data-k="${dg.k}">${T('Changer de porte', 'Change door')}</button>` : ''}<div class="row between small muted"><span>${dg.fmt(Math.min(dg.cur, dg.goal))} / ${dg.fmt(dg.goal)}</span><span>${dg.done ? `<b style="color:var(--ok)">${T('DONJON NETTOYÉ', 'DUNGEON CLEARED')}</b>` : `${dg.left} ${T('j restants', 'days left')} · +500 XP`}</span></div></div></div>`;
   const open = compact === 'full' || compact === 'inner' || S.settings.qOpen === true, bo = monthBoss();
   const pc = (a, b) => Math.min(100, Math.round(a / Math.max(1, b) * 100));
   const chip = (ic, label, pct, done) => `<span class="qchip ${done ? 'ok' : ''}" data-gsec="quests"><span class="qci">${ic}</span><span>${label}</span><i><b style="width:${done ? 100 : pct}%"></b></i></span>`;
@@ -6680,9 +6680,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.98.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.98.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.98.4', d: '2026-11-22', fr: ['Donjon : tu peux changer de porte tant que tu n\'as pas fait de séance depuis ton choix.'], en: ['Dungeon: you can change door as long as you have not trained since choosing.']},
   {v: '9.98.3', d: '2026-11-22', fr: ['Carte Statut allégée : pouvoir, histoire, talents et arme sont maintenant 4 petites tuiles. Touche une tuile pour voir le détail.'], en: ['Lighter Status card: power, story, talents and weapon are now 4 small tiles. Tap one for details.']},
   {v: '9.98.2', d: '2026-11-22', fr: ['Correction : le nom des armes s\'affichait avec du code au lieu du nom de l\'exercice.'], en: ['Fix: weapon names showed code instead of the exercise name.']},
   {v: '9.98.1', d: '2026-11-22', fr: ['Raid mieux équilibré : le cardio donne maintenant 1 point d\'énergie par 3 min (autant qu\'une série). Lumière du Soigneur un peu plus forte, Ronces du Druide aussi. Poing de fer, Charge, Assassinat et Éveil un peu moins forts. Méditation : +2 points, seulement un jour où tu t\'entraînes. Talent Endurance : +1 point par séance et par rang.'], en: ['Better raid balance: cardio now gives 1 energy point per 3 min. Light and Thorns a bit stronger; Iron fist, Charge, Assassinate and Awakening a bit weaker. Meditation: +2 points on training days only. Stamina talent: +1 point per workout per rank.']},
@@ -10808,7 +10809,8 @@ document.addEventListener('click', e => {
     case 'tal-reset': { const cl = clsCur(); if (cl && S.tal) { S.tal[cl] = {}; save(); } closeAll(); talOpen(); break; }
     case 'eq-open': eqOpen(); break;
     case 'eq-set': S.eq = b.dataset.n; save(); closeAll(); toast(T('Arme équipée', 'Weapon equipped')); if (document.querySelector('#app .raidbox')) raRefresh(); else render(); break;
-    case 'dg-pick': (S.dgPick = S.dgPick || {})[b.dataset.k] = b.dataset.id; save(); RC = {}; DV++; render(); toast(T('Porte choisie : bonne chance!', 'Door chosen: good luck!')); break;
+    case 'dg-swap': delete (S.dgPick || {})[b.dataset.k]; save(); RC = {}; DV++; render(); break;
+    case 'dg-pick': (S.dgPick = S.dgPick || {})[b.dataset.k] = {id: b.dataset.id, t: Date.now()}; save(); RC = {}; DV++; render(); toast(T('Porte choisie : bonne chance!', 'Door chosen: good luck!')); break;
     case 'fr-pub': frPublish(true).then(() => toast(FRS().pending ? T('⚠️ Pas réussi : réessaie', '⚠️ Didn\'t work: try again') : T('✅ Ta carte est à jour', '✅ Your card is up to date'))); break;
     case 'start-express': startExpress(b.dataset.rid); break;
     case 'title-set': S.settings.title = b.dataset.id; save(); armRefresh(); if (frOn()) frQueue(false); toast(b.dataset.id ? T(`🏷️ Titre : ${titleOf(b.dataset.id)}`, `🏷️ Title: ${titleOf(b.dataset.id)}`) : T('Titre retiré', 'Title removed')); break;
