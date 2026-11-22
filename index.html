@@ -6569,9 +6569,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.90.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.90.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.90.3', d: '2026-11-21', fr: ['Glisser entre les onglets est plus fluide : l\'ancienne page finit de glisser pendant que la nouvelle se prépare, au lieu de figer un instant.'], en: ['Swiping between tabs is smoother: the old page keeps sliding while the new one loads, instead of freezing.']},
   {v: '9.90.2', d: '2026-11-21', fr: ['Cardio en direct : l\'écran affiche ce que dit la montre (exercice démarré, permission manquante…) pour comprendre pourquoi les pas ou le pouls n\'arrivent pas.'], en: ['Live cardio: shows what the watch reports (exercise started, missing permission…) to see why steps or heart rate don\'t arrive.']},
   {v: '9.90.1', d: '2026-11-21', fr: ['Cardio sur tapis : la montre suit maintenant l\'exercice comme Samsung Health, pour que les pas continuent d\'arriver écran éteint (nouvelle appli montre).'], en: ['Treadmill cardio: the watch now tracks the exercise like Samsung Health, so steps keep coming with the screen off (new watch app).']},
   {v: '9.90.0', d: '2026-11-21', fr: ['Cardio en direct sur tapis : la montre compte tes pas. L\'appli en déduit ta distance et ta vitesse en direct (selon ta taille), les calories en tiennent compte, et la distance est déjà remplie à la fin. Demande de réinstaller l\'appli de la montre et d\'accepter « Activité physique ».'], en: ['Live treadmill cardio: your watch counts your steps. The app shows live distance and speed (from your height), uses them for calories, and pre-fills the distance at the end. Requires the new watch app and the “Physical activity” permission.']},
@@ -10157,7 +10158,8 @@ document.addEventListener('touchmove', e => {
   if (swp.lock !== 'h') return;
   if (!swipeTarget(dx)) { swp.dx = 0; const a = $('#app'); a.style.transform = ''; a.style.opacity = ''; return; }
   swp.dx = dx;
-  moving(); const a = $('#app'); if (!a.style.willChange) a.style.willChange = 'transform'; a.style.transition = 'none'; a.style.transform = `translateX(${dx * 0.6}px)`;
+  // Une seule mise à jour par image (le doigt envoie souvent plus d'événements que l'écran n'affiche d'images)
+  if (!swp.raf) swp.raf = requestAnimationFrame(() => { const s = swp; if (!s) return; s.raf = 0; if (s.lock !== 'h') return; moving(); const a = $('#app'); if (!a.style.willChange) a.style.willChange = 'transform, opacity'; a.style.transition = 'none'; a.style.transform = `translateX(${s.dx * 0.6}px)`; });
 }, {passive: true});
 document.addEventListener('touchend', () => {
   if (!swp) return;
@@ -10165,7 +10167,21 @@ document.addEventListener('touchend', () => {
   if (s.lock !== 'h') return;
   const dest = swipeTarget(s.dx), fast = Math.abs(s.dx) > 35 && Date.now() - s.t < 320;
   a.style.transition = 'transform .18s ease, opacity .18s ease';
-  if (dest && (Math.abs(s.dx) > 65 || fast)) {
+  if (s.raf) cancelAnimationFrame(s.raf);
+  if (dest && (Math.abs(s.dx) > 65 || fast) && a.animate) {
+    /* L'ancienne page finit de glisser pendant que la nouvelle se prépare : ces animations tournent hors du fil
+       principal, donc le mouvement reste fluide même si l'onglet met un peu de temps à se construire. */
+    swpAnim = true; const dir = s.dx > 0 ? 1 : -1, from = a.style.transform || 'none';
+    a.style.transition = 'none'; a.style.transform = ''; a.style.opacity = ''; a.style.willChange = 'transform, opacity';
+    const out = a.animate([{transform: from, opacity: 1}, {transform: `translateX(${dir * 40}%)`, opacity: 0}], {duration: 150, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards'});
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      try { if (dest === 'back') back(); else { setRoot(dest); render(); window.scrollTo(0, 0); } } catch (e) {}
+      out.cancel();
+      const inn = a.animate([{transform: `translateX(${-dir * 18}%)`, opacity: 0}, {transform: 'none', opacity: 1}], {duration: 190, easing: 'cubic-bezier(.2,.8,.2,1)'});
+      const done = () => { swpAnim = false; a.style.willChange = ''; a.style.transition = ''; swpReset(); };
+      inn.onfinish = done; inn.oncancel = done; setTimeout(done, 400);
+    }));
+  } else if (dest && (Math.abs(s.dx) > 65 || fast)) {
     // Nouvel onglet affiché tout de suite : il glisse en place depuis le côté (plus d'écran vide entre les deux)
     swpAnim = true; a.style.transition = 'none';
     if (dest === 'back') back(); else { setRoot(dest); render(); window.scrollTo(0, 0); }
