@@ -6680,9 +6680,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.98.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.98.5'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.98.5', d: '2026-11-22', fr: ['Guilde : la carte « Aujourd\'hui » se ferme et s\'ouvre comme les autres sections (ouverte par défaut). Fermée, elle montre juste le nombre de quêtes accomplies.'], en: ['Guild: the Today card can be collapsed like the other sections (open by default).']},
   {v: '9.98.4', d: '2026-11-22', fr: ['Donjon : tu peux changer de porte tant que tu n\'as pas fait de séance depuis ton choix.'], en: ['Dungeon: you can change door as long as you have not trained since choosing.']},
   {v: '9.98.3', d: '2026-11-22', fr: ['Carte Statut allégée : pouvoir, histoire, talents et arme sont maintenant 4 petites tuiles. Touche une tuile pour voir le détail.'], en: ['Lighter Status card: power, story, talents and weapon are now 4 small tiles. Tap one for details.']},
   {v: '9.98.2', d: '2026-11-22', fr: ['Correction : le nom des armes s\'affichait avec du code au lieu du nom de l\'exercice.'], en: ['Fix: weapon names showed code instead of the exercise name.']},
@@ -9678,7 +9679,7 @@ function statusCard() {
 /* Section de la Guilde : une ligne façon menu de jeu, qui s'ouvre en douceur (sans recharger la page) */
 const GSB = {};
 function gSec(id, ic, title, sub, body) {
-  const open = (S.settings.gOpen || {})[id]; GSB[id] = body; // section fermée : son contenu n'est construit qu'à l'ouverture
+  const open = (S.settings.gOpen || {})[id] ?? (id === 'today'); GSB[id] = body; // « Aujourd'hui » est ouvert par défaut // section fermée : son contenu n'est construit qu'à l'ouverture
   return `<details class="card sysw gwin gsw" data-gid="${id}" ${open ? 'open' : ''}><summary><span class="gswh"><span class="sysh" style="margin:0">[ ${title.toUpperCase()} ]</span><small>${sub}</small></span><span class="gchev">▾</span></summary><div class="gfb">${open ? body() : ''}</div></details>`;
 }
 const gLink = (v, ic, title, sub) => `<button class="btn tile gtile" data-act="go" data-v="${v}">${ic} <span><b>${title}</b><small>${sub}</small></span></button>`;
@@ -10009,7 +10010,7 @@ function vGuild() {
   const gOrd = gSecOrder().filter(id => !['quests', 'next', 'arm'].includes(id));
   const row = (act, v, title, sub) => `<button class="btn tile gtile grow" data-act="${act}" data-v="${v}"><span><b>${title}</b><small>${sub}</small></span><i>›</i></button>`;
   const coll = () => `<div class="glist2">${row('go', 'medals', T('Médailles', 'Medals'), `${Object.keys(medalsEarned().got).length} / ${medalsEarned().defs.length}`)}${row('go', 'bestiary', T('Bestiaire', 'Bestiary'), `${bWon} / ${BOSSES.length} ${T('boss vaincus', 'bosses beaten')}`)}${row('go', 'shadows', T('Arsenal', 'Arsenal'), `${sh} ${T(sh > 1 ? 'armes forgées' : 'arme forgée', sh > 1 ? 'weapons forged' : 'weapon forged')}`)}${row('go', 'murank', T('Rangs par muscle', 'Muscle ranks'), T('Tes points forts et faibles', 'Your strong and weak points'))}</div>`;
-  return `${statusCard()}${compCard()}<div class="card sysw gwin"><div class="sysh">[ ${T('AUJOURD\'HUI', 'TODAY')} ]</div>${chestPendBtn()}${eventCard()}${questCard('inner')}</div>
+  return `${statusCard()}${compCard()}${gSec('today', '', T('Aujourd\'hui', 'Today'), `${nd} / ${bo ? 3 : 2} ${T('accomplies', 'complete')}${chestsPending().length ? ' · ' + T('coffre à ouvrir', 'chest to open') : ''}`, () => chestPendBtn() + eventCard() + questCard('inner'))}
     ${secTop('g')}<div class="glist">${gOrd.filter(id => !(S.settings.gHide || []).includes(id)).map(id => secWrap('g', id, GSECS[id]())).join('')}
     ${gSec('coll', '🗂', T('Collection', 'Collection'), `${T('Armurerie', 'Armory')} ${aOk}/${aTot} · ${T('médailles, bestiaire…', 'medals, bestiary…')}`, () => `<div class="armbody">${armoryBody()}</div>${coll()}`)}
     ${secHidden('g')}${secEdit === 'g' ? '' : `<button class="linkbtn" style="margin:2px auto 0;display:block" data-act="gcust">${T('Personnaliser', 'Customize')}</button>`}</div><div class="grid2 gtiles">${gLink('friends', '👥', T('Amis et défis', 'Friends & challenges'), fr ? `${fr} ${T(fr > 1 ? 'amis' : 'ami', fr > 1 ? 'friends' : 'friend')}` : T('Ajoute tes chums', 'Add your buddies'))}
@@ -10692,7 +10693,7 @@ document.addEventListener('focusin', e => {
 /* ===================== Événements ===================== */
 document.addEventListener('click', e => {
   const gs = e.target.closest('[data-gsec]');
-  if (gs && e.target.closest('.gstrip')) { const sec = gs.dataset.gsec, gq = ['q', 'd', 'b'].includes(sec); if (sec !== 'status' && !gq) { S.settings.gOpen = S.settings.gOpen || {}; S.settings.gOpen[sec] = true; save(); } navAnim = false; setRoot('guild'); render(); window.scrollTo(0, 0); setTimeout(() => { const t = sec === 'status' ? document.getElementById('gstatus') : gq ? document.querySelector('#app [data-gq="' + sec + '"]') : document.querySelector('#app [data-gid="' + sec + '"]'); if (t && (gq || sec === 'status')) { t.classList.remove('gflash'); void t.offsetWidth; t.classList.add('gflash'); } if (t) { const hh = (document.querySelector('header') || {}).offsetHeight || 60, r = t.getBoundingClientRect(); window.scrollTo(0, sec === 'status' ? 0 : Math.max(0, scrollY + r.top - (gq ? Math.max(hh + 12, (innerHeight - r.height) / 2) : hh + 12))); } }, 80); return; }
+  if (gs && e.target.closest('.gstrip')) { const sec = gs.dataset.gsec, gq = ['q', 'd', 'b'].includes(sec); S.settings.gOpen = S.settings.gOpen || {}; if (gq && S.settings.gOpen.today === false) { S.settings.gOpen.today = true; save(); } if (sec !== 'status' && !gq) { S.settings.gOpen[sec] = true; save(); } navAnim = false; setRoot('guild'); render(); window.scrollTo(0, 0); setTimeout(() => { const t = sec === 'status' ? document.getElementById('gstatus') : gq ? document.querySelector('#app [data-gq="' + sec + '"]') : document.querySelector('#app [data-gid="' + sec + '"]'); if (t && (gq || sec === 'status')) { t.classList.remove('gflash'); void t.offsetWidth; t.classList.add('gflash'); } if (t) { const hh = (document.querySelector('header') || {}).offsetHeight || 60, r = t.getBoundingClientRect(); window.scrollTo(0, sec === 'status' ? 0 : Math.max(0, scrollY + r.top - (gq ? Math.max(hh + 12, (innerHeight - r.height) / 2) : hh + 12))); } }, 80); return; }
   const n = e.target.closest('[data-tab]');
   if (n) { const ti = ROOT_TABS.indexOf(n.dataset.tab), fi = ROOT_TABS.indexOf(stack[0].v); navAnim = false; const t0 = n.dataset.tab, same = stack.length === 1 && stack[0].v === t0; if (stack.length === 1) TABY[stack[0].v] = Math.round(scrollY); setRoot(t0); render(); const y0 = same ? 0 : (TABY[t0] || 0); window.scrollTo(0, y0); if (y0) setTimeout(() => window.scrollTo(0, y0), 60); return; } // onglets du bas : affichage net immédiat, sans fondu
   const b = e.target.closest('[data-act]'); if (!b) return;
