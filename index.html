@@ -710,7 +710,7 @@ nav button{font-size:11px;min-width:0;white-space:nowrap;overflow:visible;text-o
 .chbtn{border:1.5px solid var(--cc)!important;box-shadow:0 0 14px color-mix(in srgb,var(--cc) 45%,transparent);color:var(--text);animation:chB 1.8s ease-in-out infinite}.chbtn b{color:var(--cc)}@keyframes chB{50%{box-shadow:0 0 22px color-mix(in srgb,var(--cc) 70%,transparent)}}
 #chesto{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 38%,color-mix(in srgb,var(--cc) 30%,#07050d),#05040a 75%);color:#fff;text-align:center;padding:24px;animation:armF .3s ease}
 .chw{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center}.chtt{font-size:26px;font-weight:900;letter-spacing:3px;margin:6px 0 12px;color:var(--cc);text-shadow:0 0 16px var(--cc)}
-.rdcl{display:inline-flex;vertical-align:middle;margin-right:5px}.rdroles{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.rdbon{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:99px;border:1px solid var(--accent);color:var(--accent)}.rdinfo{margin-top:8px}.rdinfo summary{cursor:pointer;font-size:12.5px;font-weight:700}
+.rden{border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);border-radius:14px;padding:10px;margin:0 0 10px}.rdenv{font-size:12.5px;color:var(--accent)}.rdenv b{font-size:16px}.rdatks{display:grid;gap:6px;margin-top:8px}.rdatk{display:flex;flex-direction:column;gap:2px;text-align:left;width:100%;background:var(--card2,#ffffff0a);border:1px solid color-mix(in srgb,var(--text) 14%,transparent);border-radius:12px;padding:9px 11px;color:var(--text);font:inherit;cursor:pointer}.rdatk:active{transform:scale(.98)}.rdatk.off{opacity:.45}.rdcost{font-size:12px;font-weight:800;color:var(--accent);white-space:nowrap}.rdbon.warn{border-color:#ff4d4d;color:#ff4d4d}.bdmg.crit{color:#ffd54a;font-size:21px}.rdart{position:relative}.rdcl{display:inline-flex;vertical-align:middle;margin-right:5px}.rdroles{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.rdbon{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:99px;border:1px solid var(--accent);color:var(--accent)}.rdinfo{margin-top:8px}.rdinfo summary{cursor:pointer;font-size:12.5px;font-weight:700}
 .frw{position:relative;display:inline-block;width:var(--d);height:var(--d);margin:calc(var(--d) * .38)}.frw .avatar,.frw .frph{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:calc(var(--d) * .42);background:var(--accent);color:var(--accent-ink)}
 .frw .frimg{position:absolute;left:50%;top:50%;width:calc(var(--d) * 1.67);height:auto;transform:translate(-50%,-50%);pointer-events:none;-webkit-user-drag:none}
 .fra-rot .frimg{animation:frRot2 16s linear infinite}@keyframes frRot2{to{transform:translate(-50%,-50%) rotate(360deg)}}
@@ -6678,9 +6678,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.93.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.94.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.94.0', d: '2026-11-22', fr: ['Nouveau raid de guilde : tes séances te donnent de l\'énergie (1 point par série, 1 par 5 min de cardio, 1 par 3 min d\'étirements) et tu choisis toi-même tes attaques contre le boss.', 'Chaque classe a ses 3 attaques : Guerrier (Frappe, Coup puissant, Cri de guerre), Rôdeur (Flèche, Pluie de flèches, Piège), Moine (Paume de feu, Combo, Méditation), Soigneur (Lumière, Bénédiction, Purification). Les classes hybrides ont une attaque de chacune de leurs classes plus une attaque spéciale.', 'Le boss bloque parfois une attaque (plus souvent quand il est enragé), et certaines attaques font un coup critique. On voit le boss se faire frapper.', 'Journal du combat, et un bonus de XP pour celui qui donne le coup de grâce.'], en: ['New guild raid: your workouts give you energy (1 point per set, 1 per 5 min of cardio, 1 per 3 min of stretching) and you choose your own attacks against the boss.', 'Each class has 3 attacks; hybrid classes get one from each of their classes plus a special attack.', 'The boss sometimes blocks an attack (more often when enraged), and some attacks land critical hits.', 'Battle log, and bonus XP for the finishing blow.']},
   {v: '9.93.1', d: '2026-11-22', fr: ['Les 6 classes hybrides ont enfin leur personnage, en version homme et femme : Templier, Paladin, Spartiate, Ombre, Druide et Sage.'], en: ['The 6 hybrid classes now have their own character, in male and female versions: Templar, Paladin, Spartan, Shadow, Druid and Sage.']},
   {v: '9.93.0', d: '2026-11-22', fr: ['Nouvelles classes : ta classe se calcule toute seule d\'après tes 6 dernières semaines (Guerrier, Rôdeur, Moine, Soigneur) et devient hybride quand deux styles sont proches (Templier, Paladin, Spartiate, Ombre, Druide, Sage). Tu peux aussi fixer une classe comme objectif.', 'Ta classe sert à quelque chose : la quête du jour suit ton style (dont une nouvelle quête de cardio) et tu gagnes +25 % d\'XP sur les séances de ton style.', 'La maîtrise monte avec tes résultats (séries lourdes, cardio, jours actifs, étirements), plus avec le temps. Novice → Apprenti → Aguerri → Vétéran → Maître → Grand maître.', 'Tes amis et ta guilde voient ta vraie classe (fini « Mage » d\'un côté et « Moine » de l\'autre).'], en: ['New classes: your class is computed from your last 6 weeks (Warrior, Ranger, Monk, Healer) and becomes a hybrid when two styles are close (Templar, Paladin, Spartan, Shadow, Druid, Sage). You can also set a class as a goal.', 'Your class matters: the daily quest follows your style (incl. a new cardio quest) and you get +25% XP on workouts in your style.', 'Mastery grows with your results, not time.', 'Friends and guild see your real class.']},
   {v: '9.92.0', d: '2026-11-22', fr: ['Glissement entre onglets encore plus fluide : tous les onglets sont préparés en coulisse dès l\'ouverture de l\'appli (plus besoin de les visiter une fois), les onglets voisins sont déjà dessinés juste hors de l\'écran, et la page actuelle est prête à bouger avant même que tu glisses.'], en: ['Even smoother tab swipes: every tab is prepared in the background at launch, neighbor tabs are pre-drawn just off-screen, and the current page is ready to move before you swipe.']},
@@ -8986,51 +8987,152 @@ function seasonCard() {
     ${rows.map((r, i) => `<button class="frrk ${r.me ? 'me' : ''}" data-act="fr-who" data-c="${r.c}"><b class="frpos">${i === 0 && r.xp > 0 ? '👑' : i + 1}</b>${frAv(r.d, r.c, 'sm')}<span style="flex:1;min-width:0;text-align:left"><b>${esc(r.me ? T('Moi', 'Me') : r.d.name)}</b> ${seasonTrophies(r.d)}</span><span class="small"><b>${r.xp.toLocaleString(LOC())}</b> XP</span></button>`).join('')}
     ${champ ? `<p class="small" style="margin:8px 0 0">🏆 ${T(`Champion de ${monName(pm)}`, `${monName(pm)} champion`)} : <b>${esc(champ.me ? T('Toi!', 'You!') : champ.d.name)}</b></p>` : ''}</div>`;
 }
-/* ---------- Raid de guilde : reps de la semaine additionnées ---------- */
-const RAID_PER = 1500, RAID_XP = 400;
+/* ---------- Raid de guilde : tes séances donnent de l'énergie, tu choisis tes attaques de classe ---------- */
+const RAID_PER = 1500, RAID_XP = 400, RA_PT = 20, RA_KILL = 150; // PV par membre actif · dégâts par point d'énergie
 const wkKey = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return dkey(x); }; // toujours lundi, pour que tous les amis aient la même semaine
-function myWeekReps(wk) {
-  const a = +new Date(wk + 'T00:00:00'), b = a + 7 * 864e5;
+const wkRange = wk => { const a = +new Date(wk + 'T00:00:00'); return [a, a + 7 * 864e5]; };
+function myWeekReps(wk) { // ancienne règle (amis qui n'ont pas encore la mise à jour)
+  const [a, b] = wkRange(wk);
   return S.history.filter(h => { const t = +new Date(h.date); return t >= a && t < b; }).reduce((t, h) => t + h.exercises.reduce((u, e) => isCardio(e) ? u : u + work(e.sets).reduce((v, s) => v + (s.u === 's' || s.u === 'c' ? 0 : (+s.r || 0)), 0), 0), 0);
 }
+/* Attaques : [nom fr, nom en, coût, multiplicateur, effet, valeur, description fr, description en] */
+const RA_ATK = {
+  g1: ['Frappe', 'Strike', 5, 1, '', 0, 'Attaque simple.', 'Simple attack.'],
+  g2: ['Coup puissant', 'Power blow', 15, 1.35, '', 0, 'Grosse attaque : 35 % plus forte.', 'Big attack: 35% stronger.'],
+  g3: ['Cri de guerre', 'War cry', 10, .5, 'team', .1, '+10 % de dégâts pour toute l\'équipe pendant 24 h.', '+10% damage for the whole team for 24 h.'],
+  r1: ['Flèche', 'Arrow', 3, 1, '', 0, 'Petite attaque rapide, seulement 3 points.', 'Quick little attack, only 3 points.'],
+  r2: ['Pluie de flèches', 'Arrow rain', 12, 1.1, 'cardio', .3, '+30 % si tu as fait 20 min de cardio cette semaine.', '+30% if you did 20 min of cardio this week.'],
+  r3: ['Piège', 'Trap', 10, .5, 'trap', .15, 'Le boss prend +15 % de dégâts de tout le monde pendant 24 h.', 'The boss takes +15% damage from everyone for 24 h.'],
+  m1: ['Paume de feu', 'Fire palm', 5, 1, '', 0, 'Attaque simple.', 'Simple attack.'],
+  m2: ['Combo', 'Combo', 12, 1, 'streak', .1, '+10 % par jour d\'entraînement d\'affilée (jusqu\'à +50 %).', '+10% per training day in a row (up to +50%).'],
+  m3: ['Méditation', 'Meditation', 0, 0, 'med', 3, 'Gratuit, une fois par jour : +3 points d\'énergie.', 'Free, once a day: +3 energy points.'],
+  s1: ['Lumière', 'Light', 5, 1, '', 0, 'Attaque simple.', 'Simple attack.'],
+  s2: ['Bénédiction', 'Blessing', 10, .3, 'gift', 10, 'Donne 10 points d\'énergie au membre qui a fait le moins de dégâts.', 'Gives 10 energy points to the member with the least damage.'],
+  s3: ['Purification', 'Purify', 10, .5, 'pure', 1, 'Le boss ne peut plus bloquer pendant 24 h, pour toute l\'équipe.', 'The boss cannot block for 24 h, for the whole team.'],
+  gm: ['Poing de fer', 'Iron fist', 15, 1.4, 'unblk', 0, 'Grosse attaque qui ne peut pas être bloquée.', 'Big attack that cannot be blocked.'],
+  gs: ['Marteau sacré', 'Holy hammer', 15, 1.2, 'team', .05, 'Attaque, et +5 % de dégâts pour l\'équipe pendant 24 h.', 'Attack, and +5% team damage for 24 h.'],
+  gr: ['Charge', 'Charge', 15, 1.2, 'today', .4, '+40 % si tu t\'es entraîné aujourd\'hui.', '+40% if you trained today.'],
+  mr: ['Assassinat', 'Assassinate', 15, 1.2, 'crit', .5, '1 chance sur 2 de coup critique (double dégâts).', '1 in 2 chance of a critical hit (double damage).'],
+  rs: ['Ronces', 'Thorns', 15, 1.1, 'trap', .1, 'Attaque, et le boss prend +10 % de dégâts pendant 24 h.', 'Attack, and the boss takes +10% damage for 24 h.'],
+  ms: ['Éveil', 'Awakening', 15, 1.2, 'refund', 5, 'Attaque qui te redonne 5 points d\'énergie.', 'Attack that gives you back 5 energy points.']
+};
+const raName = k => RA_ATK[k] ? T(RA_ATK[k][0], RA_ATK[k][1]) : '?';
+function raList(cl) { // 3 attaques par classe ; hybrides : attaque de base de la 1re classe, soutien de la 2e, et leur attaque spéciale
+  if (PCL_K.includes(cl)) return [cl + '1', cl + '2', cl + '3'];
+  if (PCL[cl] && cl.length === 2) { const [a, b] = pclParts(cl); return [a + '1', b + '3', cl]; }
+  return ['g1', 'g2'];
+}
+function raW(wk) { const R = S.raidW = S.raidW || {}; Object.keys(R).forEach(k => { if (k < wkKey(new Date(Date.now() - 14 * 864e5))) delete R[k]; }); return R[wk] = R[wk] || {log: [], b: [], g: {}}; }
+function raEarn(wk) { // énergie gagnée par les séances de la semaine : 1 point par série, 1 par 5 min de cardio, 1 par 3 min d'étirements
+  const [a, b] = wkRange(wk); let p = 0;
+  S.history.forEach(h => { const t = +new Date(h.date); if (t < a || t >= b) return; h.exercises.forEach(e => work(e.sets).forEach(s => { p += s.u === 'c' ? (+s.r || 0) / 5 : 1; })); });
+  (S.stretchLog || []).forEach(x => { const t = +new Date(x.date); if (t >= a && t < b) p += (+x.sec || 0) / 180; });
+  return Math.floor(p);
+}
+const raDmg = wk => Math.round((S.raidW && S.raidW[wk] ? S.raidW[wk].log : []).reduce((a, x) => a + (+x.d || 0), 0));
+const raMyId = () => S.guild && (S.guild.mem || []).length ? S.guild.me : FRS().file;
+function raPub(wk) { // ce que je partage avec ma guilde / mes amis
+  const W = S.raidW && S.raidW[wk]; if (!W) return null; const now = Date.now();
+  return {d: raDmg(wk), b: (W.b || []).filter(x => x.u > now).slice(-6), g: W.g || {}, h: (W.log || []).filter(x => x.k !== 'm3').slice(-4).map(x => ({k: x.k, d: x.d, t: x.t, cr: x.cr ? 1 : 0, bl: x.bl ? 1 : 0})), kl: W.kill ? 1 : 0};
+}
+function raSafe(x) { // données de raid reçues d'un autre membre : on vérifie tout
+  x = safeIn(x); if (!x || typeof x !== 'object' || Array.isArray(x)) return null; const now = Date.now();
+  const b = (Array.isArray(x.b) ? x.b : []).slice(0, 8).map(y => ({k: ['team', 'trap', 'pure'].includes(y && y.k) ? y.k : '', v: Math.max(0, Math.min(.3, +y.v || 0)), u: Math.min(now + 25 * 3600e3, +y.u || 0)})).filter(y => y.k && y.u > now);
+  const g = {}; Object.entries(x.g && typeof x.g === 'object' ? x.g : {}).slice(0, 20).forEach(([k, v]) => { if (/^[\w-]{1,64}$/.test(k)) g[k] = Math.max(0, Math.min(200, Math.round(+v || 0))); });
+  const h = (Array.isArray(x.h) ? x.h : []).slice(-4).map(y => ({k: RA_ATK[y && y.k] ? y.k : '', d: Math.max(0, Math.min(5000, Math.round(+y.d || 0))), t: +y.t || 0, cr: y.cr ? 1 : 0, bl: y.bl ? 1 : 0})).filter(y => y.k);
+  return {b, g, h, kl: x.kl ? 1 : 0, d: Math.max(0, Math.round(+x.d || 0))};
+}
 const cardRd = (d, wk) => !d ? null : d.rd && d.rd.wk === wk ? d.rd.r : d.rdp && d.rdp.wk === wk ? d.rdp.r : (d.rd ? 0 : null);
+const cardRa = (d, wk) => d && d.rd && d.rd.wk === wk && d.rd.a ? raSafe(d.rd.a) : null;
 /* Raid : avec les membres de ta guilde (tout le monde voit le même raid), sinon avec tes amis.
-   Seuls ceux qui s'entraînent cette semaine comptent : chaque aventurier actif ajoute 1 500 reps de PV (2 au minimum). */
+   Chaque membre qui se bat ajoute 1 500 PV au boss (2 au minimum) ; une personne compte au plus pour 2 parts. */
 const gldReps = (m, wk) => m.rk === wk ? m.rp : m.qk === wk ? m.qp : 0;
 function raidState(wk) {
-  const g = S.guild && (S.guild.mem || []).length ? S.guild : null, rows = [{c: 'me', me: true, n: T('Moi', 'Me'), r: myWeekReps(wk), cl: clsCur(), lk: pclLook()}];
-  if (g) (g.mem || []).forEach(m => { if (m.uid !== g.me) rows.push({c: 'g:' + m.uid, n: m.n, r: Math.max(0, +gldReps(m, wk) || 0), rk: m.r, f: m.f, cl: m.cl, lk: m.lk}); });
-  else FRS().list.forEach(f => { const c = frData[f.c]; if (!c || !c.d) return; const r = cardRd(c.d, wk); if (r != null) rows.push({c: f.c, d: c.d, n: c.d.name, r, cl: c.d.hu && PCL[c.d.hu.k] ? c.d.hu.k : '', lk: c.d.hu && c.d.hu.v}); });
-  const act = rows.filter(x => x.r > 0);
-  act.forEach(x => { x.cap = RAID_PER * 2; x.e = Math.min(x.r * (x.cl === 'g' ? 1.25 : x.cl === 'r' ? 1.15 : x.cl === 'm' ? 1.1 : 1), x.cap); }); // rôles de classe : Guerrier ×1,25, Rôdeur ×1,15, Moine ×1,1
-  rows.forEach(x => { if (!(x.r > 0)) { x.cap = RAID_PER * 2; x.e = 0; } });
-  const kinds = new Set(act.filter(x => x.cl).map(x => x.cl)), sup = Math.min(3, Math.max(1, Math.ceil(act.length / 4))), heal = Math.min(sup, act.filter(x => x.cl === 's').length) * .08, party = kinds.size >= 4 ? .15 : kinds.size >= 3 ? .1 : 0, aura = Math.min(sup, act.filter(x => x.cl === 'm').length) * .05; // soutiens : 1 jusqu'à 4 au combat, 2 jusqu'à 8, 3 au-delà // Soigneur : −8 % de PV du boss (2 max) · équipe variée (3 classes) : +10 % de dégâts
-  const tot = act.reduce((a, x) => a + x.e, 0) * (1 + party + aura), goal = Math.round(RAID_PER * Math.max(2, act.length) * (1 - heal)); // une personne ne peut pas porter tout le groupe : max 2 parts chacun
-  return {rows: rows.sort((a, b) => b.r - a.r), act: act.length, tot, goal, heal, party, aura, sup, guild: g, done: act.length > 1 && tot >= goal};
+  const g = S.guild && (S.guild.mem || []).length ? S.guild : null, cw = wk === wkKey(new Date());
+  const rows = [{c: 'me', id: raMyId(), me: true, n: T('Moi', 'Me'), r: raDmg(wk), cl: clsCur(), lk: pclLook(), ra: raPub(wk)}];
+  if (g) (g.mem || []).forEach(m => { if (m.uid !== g.me) rows.push({c: 'g:' + m.uid, id: m.uid, n: m.n, r: Math.max(0, +gldReps(m, wk) || 0), rk: m.r, f: m.f, cl: m.cl, lk: m.lk, ra: m.ra && m.ra.wk === wk ? raSafe(m.ra) : null}); });
+  else FRS().list.forEach(f => { const c = frData[f.c]; if (!c || !c.d) return; const r = cardRd(c.d, wk); if (r != null) rows.push({c: f.c, id: f.c, d: c.d, n: c.d.name, r, cl: c.d.hu && PCL[c.d.hu.k] ? c.d.hu.k : '', lk: c.d.hu && c.d.hu.v, ra: cardRa(c.d, wk)}); });
+  const cap = RAID_PER * 2; rows.forEach(x => { x.cap = cap; x.e = Math.min(Math.max(0, +x.r || 0), cap); });
+  const act = rows.filter(x => x.r > 0), tot = act.reduce((a, x) => a + x.e, 0), goal = RAID_PER * Math.max(2, act.length);
+  const now = Date.now(), bf = rows.flatMap(x => x.ra ? x.ra.b || [] : []).filter(b => b.u > now);
+  const team = cw ? Math.min(.25, bf.filter(b => b.k === 'team').reduce((a, b) => a + b.v, 0)) : 0, trap = cw ? Math.min(.3, bf.filter(b => b.k === 'trap').reduce((a, b) => a + b.v, 0)) : 0, pure = cw && bf.some(b => b.k === 'pure');
+  const kinds = new Set(act.filter(x => x.cl).map(x => x.cl)), party = kinds.size >= 3 ? .1 : 0;
+  const killer = rows.find(x => x.ra && x.ra.kl);
+  return {rows: rows.sort((a, b) => b.r - a.r), act: act.length, tot, goal, team, trap, pure, party, guild: g, killer, done: act.length > 1 && tot >= goal};
 }
+function raGiftsIn(wk, st) { const id = raMyId(); return id ? (st || raidState(wk)).rows.reduce((a, x) => a + (!x.me && x.ra && x.ra.g ? +x.ra.g[id] || 0 : 0), 0) : 0; }
+function raAvail(wk, st) { const W = S.raidW && S.raidW[wk]; return Math.max(0, raEarn(wk) + raGiftsIn(wk, st) - (W ? W.log.reduce((a, x) => a + (+x.c || 0), 0) : 0)); }
+function raStreak() { const days = new Set(S.history.map(h => dkey(new Date(h.date)))); let n = 0; const d = new Date(); if (!days.has(dkey(d))) d.setDate(d.getDate() - 1); while (days.has(dkey(d)) && n < 30) { n++; d.setDate(d.getDate() - 1); } return n; }
+function raCardioMin(wk) { const [a, b] = wkRange(wk); let m = 0; S.history.forEach(h => { const t = +new Date(h.date); if (t >= a && t < b) h.exercises.forEach(e => work(e.sets).forEach(s => { if (s.u === 'c') m += +s.r || 0; })); }); return m; }
+function raMult(k) { // multiplicateur réel de l'attaque, avec son bonus si la condition est remplie
+  const A = RA_ATK[k]; let m = A[3];
+  if (A[4] === 'cardio' && raCardioMin(wkKey(new Date())) >= 20) m += A[5];
+  if (A[4] === 'streak') m += Math.min(.5, raStreak() * A[5]);
+  if (A[4] === 'today' && S.history.some(h => dkey(new Date(h.date)) === dkey(new Date()))) m += A[5];
+  return m;
+}
+function raAttack(k) {
+  const wk = wkKey(new Date()), st = raidState(wk), A = RA_ATK[k], W = raW(wk), today = dkey(new Date());
+  if (!A || !raList(clsCur()).includes(k) || st.rows.length < 2) return;
+  if (st.done) { toast(T('Le boss est déjà vaincu cette semaine.', 'The boss is already defeated this week.')); return; }
+  if (A[4] === 'med') { if (W.med === today) { toast(T('Déjà médité aujourd\'hui. Reviens demain.', 'Already meditated today. Come back tomorrow.')); return; } W.med = today; W.log.push({t: Date.now(), k, d: 0, c: -A[5]}); save(); render(); toast(T(`Méditation : +${A[5]} points d'énergie`, `Meditation: +${A[5]} energy points`)); raShare(); return; }
+  if (raAvail(wk, st) < A[2]) { toast(T('Pas assez d\'énergie : entraîne-toi pour en gagner.', 'Not enough energy: train to earn more.')); return; }
+  let tgt = '';
+  if (A[4] === 'gift') { const o = st.rows.filter(x => !x.me && x.id && x.ra).sort((a, b) => a.r - b.r)[0]; if (!o) { toast(T('Personne à bénir : tes coéquipiers doivent avoir la dernière version.', 'Nobody to bless: your teammates need the latest version.')); return; } tgt = o; }
+  const hp = 1 - st.tot / st.goal, enr = hp <= .5;
+  const crit = Math.random() < (A[4] === 'crit' ? A[5] : ['mr'].includes(clsCur()) ? .2 : .1), blk = !st.pure && A[4] !== 'unblk' && Math.random() < (enr ? .22 : .12);
+  const d = Math.round(A[2] * RA_PT * raMult(k) * (1 + st.team + st.party) * (1 + st.trap) * (crit && !blk ? 2 : 1) * (blk ? .25 : 1));
+  const c = A[4] === 'refund' ? A[2] - A[5] : A[2], now = Date.now();
+  W.log.push({t: now, k, d, c, cr: crit && !blk ? 1 : 0, bl: blk ? 1 : 0});
+  if (['team', 'trap', 'pure'].includes(A[4])) W.b.push({k: A[4], v: A[4] === 'pure' ? 0 : A[5], u: now + 24 * 3600e3});
+  if (tgt) W.g[tgt.id] = (W.g[tgt.id] || 0) + A[5];
+  const killNow = st.act > 1 && st.tot < st.goal && st.tot + Math.min(d, RAID_PER * 2) >= st.goal && !st.killer;
+  if (killNow) W.kill = 1;
+  save(); try { haptic(blk ? [20] : crit ? [30, 40, 60] : [30]); } catch (e) {}
+  render();
+  const el = document.querySelector('#app .rdart');
+  if (el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); const s = document.createElement('span'); s.className = 'bdmg' + (blk ? ' blk' : crit ? ' crit' : ''); s.textContent = blk ? T(`Bloqué −${d}`, `Blocked −${d}`) : `${crit ? T('Critique ', 'Critical ') : ''}−${d}`; el.appendChild(s); setTimeout(() => s.remove(), 1300); }
+  if (tgt) toast(T(`${tgt.n} reçoit ${A[5]} points d'énergie`, `${tgt.n} gets ${A[5]} energy points`));
+  else if (A[4] === 'pure') toast(T('Le boss ne peut plus bloquer pendant 24 h.', 'The boss cannot block for 24 h.'));
+  else if (A[4] === 'team') toast(T(`Toute l'équipe fait +${Math.round(A[5] * 100)} % de dégâts pendant 24 h.`, `The whole team deals +${Math.round(A[5] * 100)}% damage for 24 h.`));
+  else if (A[4] === 'trap') toast(T(`Le boss prend +${Math.round(A[5] * 100)} % de dégâts pendant 24 h.`, `The boss takes +${Math.round(A[5] * 100)}% damage for 24 h.`));
+  if (killNow) { const nm = RAID_BOSS[raBossIdx(wk)]; giveXp('rkill', wk, RA_KILL, T(`Coup de grâce sur ${nm[0]}! +${RA_KILL} XP`, `Finishing blow on ${nm[1]}! +${RA_KILL} XP`)); }
+  raidCheck(); raShare();
+}
+let raShT = 0;
+function raShare() { clearTimeout(raShT); raShT = setTimeout(() => { try { if (S.guild && typeof gldSync === 'function') gldSync(true); } catch (e) {} try { if (FRS().list.length && typeof frPublish === 'function') frPublish(true); } catch (e) {} }, 1500); }
 function raidCheck() {
   if (!GAME() || (!FRS().list.length && !S.guild)) return;
   const wk = wkKey(new Date()), pw = wkKey(new Date(+new Date(wk + 'T12:00:00') - 3 * 864e5));
   [pw, wk].forEach(w => { const st = raidState(w), mine = st.rows.find(x => x.me); if (st.done && mine && mine.r >= RAID_PER / 2) giveXp('raid', w, RAID_XP, T(`Raid réussi! +${RAID_XP} XP`, `Raid cleared! +${RAID_XP} XP`)); });
 }
+const raBossIdx = wk => Math.floor(+new Date(wk + 'T12:00:00') / (7 * 864e5)) % RAID_BOSS.length;
 const RAID_BOSS = [['la Forteresse vivante', 'the Living Fortress'], ['le Colosse de bronze', 'the Bronze Colossus'], ['le Ver des sables', 'the Sandworm'], ['la Reine des araignées', 'the Spider Queen'], ['le Géant de glace', 'the Frost Giant'], ['le Léviathan', 'the Leviathan']];
 function raidCard() {
   if (!GAME() || (!FRS().list.length && !S.guild)) return '';
   const wk = wkKey(new Date()), st = raidState(wk), fmt = v => Math.round(v).toLocaleString(LOC());
   if (st.rows.length < 2) return `<p class="small muted" style="margin:0">${st.guild ? T('Le raid commence dès qu\'un autre membre a rejoint ta guilde. Touche Inviter dans Ma guilde.', 'The raid starts as soon as another member joins your guild. Tap Invite in My guild.') : T('Le raid commence dès qu\'un de tes amis a l\'appli à jour.', 'The raid starts as soon as one of your friends has the app up to date.')}</p>`;
-  const n = Math.floor(+new Date(wk + 'T12:00:00') / (7 * 864e5)), bi = n % RAID_BOSS.length, nm = RAID_BOSS[bi], hp = st.done ? 0 : Math.max(0, 1 - st.tot / st.goal), ph = st.done ? 'dead' : hp <= .2 ? 'ago' : hp <= .5 ? 'enr' : '';
-  const left = Math.max(0, Math.ceil((+new Date(wk + 'T00:00:00') + 7 * 864e5 - Date.now()) / 864e5));
-  const row = r => { const on = r.r > 0, cap = r.cap, w = Math.min(100, Math.round(r.e / cap * 100));
-    return `<div class="rdm${on ? '' : ' off'}${r.me ? ' me' : ''}"><div class="row between small"><span class="rdn">${r.cl ? `<span class="rdcl" title="${esc(pclName(r.cl))}">${pclImg(r.cl, 22, r.lk)}</span>` : ''}${esc(r.n || '?')}${r.cl ? ` <span class="muted" style="font-size:11px">${esc(pclName(r.cl))}</span>` : ''}</span><span>${on ? `<b>${fmt(r.e)}</b>${r.r >= cap ? ` <span class="rdmax">${T('MAX', 'MAX')}</span>` : r.r >= RAID_PER ? ' <span class="rdok">✓</span>' : ''}` : `<span class="muted">${T('pas encore au combat', 'not in the fight yet')}</span>`}</span></div>${on ? `<div class="rdbar"><i style="width:${w}%"></i><b style="left:50%"></b></div>` : ''}</div>`; };
+  const bi = raBossIdx(wk), nm = RAID_BOSS[bi], hp = st.done ? 0 : Math.max(0, 1 - st.tot / st.goal), ph = st.done ? 'dead' : hp <= .2 ? 'ago' : hp <= .5 ? 'enr' : '';
+  const left = Math.max(0, Math.ceil((+new Date(wk + 'T00:00:00') + 7 * 864e5 - Date.now()) / 864e5)), en = raAvail(wk, st), cl = clsCur(), W = S.raidW && S.raidW[wk];
+  const last = r => { const h = r.ra && r.ra.h && r.ra.h[r.ra.h.length - 1]; return h ? `<span class="muted" style="font-size:11px">${esc(raName(h.k))}${h.bl ? ' · ' + T('bloqué', 'blocked') : h.cr ? ' · ' + T('critique', 'critical') : ''}</span>` : ''; };
+  const row = r => { const on = r.r > 0, w = Math.min(100, Math.round(r.e / r.cap * 100));
+    return `<div class="rdm${on ? '' : ' off'}${r.me ? ' me' : ''}"><div class="row between small"><span class="rdn">${r.cl ? `<span class="rdcl" title="${esc(pclName(r.cl))}">${pclImg(r.cl, 22, r.lk)}</span>` : ''}${esc(r.n || '?')}${r.cl ? ` <span class="muted" style="font-size:11px">${esc(pclName(r.cl))}</span>` : ''}${st.killer === r ? ` <span class="rdok" title="${T('Coup de grâce', 'Finishing blow')}">${T('Coup de grâce', 'Finishing blow')}</span>` : ''}</span><span>${on ? `<b>${fmt(r.e)}</b>${r.r >= r.cap ? ` <span class="rdmax">MAX</span>` : r.r >= RAID_PER ? ' <span class="rdok">✓</span>' : ''}` : `<span class="muted">${T('pas encore au combat', 'not in the fight yet')}</span>`}</span></div>${on ? `<div class="rdbar"><i style="width:${w}%"></i><b style="left:50%"></b></div>${last(r)}` : ''}</div>`; };
+  const atk = k => { const A = RA_ATK[k], med = A[4] === 'med', used = med && W && W.med === dkey(new Date()), cost = A[4] === 'refund' ? A[2] - A[5] : A[2], ok = !st.done && (med ? !used : en >= A[2]);
+    return `<button class="rdatk${ok ? '' : ' off'}" data-act="ra-atk" data-k="${k}"${ok ? '' : ' aria-disabled="true"'}><span class="row between"><b>${esc(raName(k))}</b><span class="rdcost">${med ? (used ? T('demain', 'tomorrow') : '+' + A[5]) : cost + ' ' + T('pts', 'pts')}</span></span><span class="small muted">${esc(T(A[6], A[7]))}</span></button>`; };
+  const fx = [st.team ? `<span class="rdbon">${T('Équipe', 'Team')} +${Math.round(st.team * 100)} %</span>` : '', st.trap ? `<span class="rdbon">${T('Piège', 'Trap')} +${Math.round(st.trap * 100)} %</span>` : '', st.pure ? `<span class="rdbon">${T('Purifié : ne bloque plus', 'Purified: no blocks')}</span>` : '', st.party ? `<span class="rdbon">${T('Équipe variée', 'Mixed party')} +10 %</span>` : '', ph === 'enr' || ph === 'ago' ? `<span class="rdbon warn">${T('Enragé : bloque plus souvent', 'Enraged: blocks more often')}</span>` : ''].join('');
+  const log = st.rows.flatMap(r => (r.ra && r.ra.h || []).map(h => ({...h, n: r.me ? T('Toi', 'You') : r.n}))).sort((a, b) => b.t - a.t).slice(0, 8);
   return `<div class="row between" style="margin-bottom:6px"><span class="small muted">${st.guild ? esc(st.guild.name || '') : T('Avec tes amis', 'With your friends')}</span><span class="small muted">${st.done ? `<b style="color:var(--ok)">${T('VAINCU', 'CLEARED')}</b>` : `${left} ${T('j restants', 'days left')} · +${RAID_XP} XP`}</span></div>
     <div class="bossmain"><span class="bart rdart ${ph}"><img src="boss/r${bi}.webp" alt="" decoding="async" draggable="false" onerror="this.parentNode.classList.add('noimg')"></span><div style="flex:1;min-width:0"><b class="bossn">${esc(T(nm[0], nm[1]).replace(/^./, c => c.toUpperCase()))}</b>${ph && ph !== 'dead' ? `<span class="bphase">${bossPhaseTxt(ph)}</span>` : ''}
-      <div class="small">${T(`Faites <b>${fmt(st.goal)} répétitions</b> ensemble avant dimanche soir.`, `Do <b>${fmt(st.goal)} reps</b> together before Sunday night.`)}</div></div></div>
+      <div class="small">${T(`Infligez <b>${fmt(st.goal)} dégâts</b> ensemble avant dimanche soir.`, `Deal <b>${fmt(st.goal)} damage</b> together before Sunday night.`)}</div></div></div>
     <div class="goal bossbar" style="margin-top:8px"><div style="width:${Math.round(hp * 100)}%"></div></div>
     <div class="row between small muted" style="margin-bottom:8px"><span>${T('PV', 'HP')} <b>${fmt(Math.max(0, st.goal - st.tot))}</b> / ${fmt(st.goal)}</span><span>${st.act} ${T(st.act > 1 ? 'aventuriers au combat' : 'aventurier au combat', st.act > 1 ? 'adventurers fighting' : 'adventurer fighting')}</span></div>
+    ${fx ? `<div class="rdroles" style="margin:0 0 10px">${fx}</div>` : ''}
+    ${st.done ? '' : `<div class="rden"><div class="row between"><b>${T('Tes attaques', 'Your attacks')}</b><span class="rdenv">${T('Énergie', 'Energy')} <b>${en}</b></span></div>
+      <div class="rdatks">${raList(cl).map(atk).join('')}</div>
+      <p class="muted" style="font-size:11.5px;margin:6px 0 0">${T('Tes séances donnent de l\'énergie : 1 point par série, 1 par 5 min de cardio, 1 par 3 min d\'étirements. Les points non utilisés sont perdus dimanche soir.', 'Your workouts give energy: 1 point per set, 1 per 5 min of cardio, 1 per 3 min of stretching. Unused points are lost on Sunday night.')}${cl ? '' : ' ' + T('Choisis une classe pour débloquer ses attaques.', 'Pick a class to unlock its attacks.')}</p></div>`}
     <div class="rdlist">${st.rows.map(row).join('')}</div>
-    <div class="rdroles">${st.heal ? `<span class="rdbon">${T('Soin', 'Healing')} −${Math.round(st.heal * 100)} % ${T('PV du boss', 'boss HP')}</span>` : ''}${st.aura ? `<span class="rdbon">${T('Concentration', 'Focus')} +${Math.round(st.aura * 100)} %</span>` : ''}${st.party ? `<span class="rdbon">${T('Équipe variée', 'Mixed party')} +${Math.round(st.party * 100)} %</span>` : ''}</div>
-    <details class="rdinfo"><summary>${T('Rôles des classes', 'Class roles')}</summary><div class="small muted" style="line-height:1.5"><span class="rdcl">${pclImg('g', 22)}</span><b>${T('Guerrier', 'Warrior')}</b> : ${T('ses reps font ×1,25 de dégâts', 'his reps deal ×1.25 damage')}<br><span class="rdcl">${pclImg('r', 22)}</span><b>${T('Rôdeur', 'Ranger')}</b> : ${T('ses reps font ×1,15 de dégâts', 'his reps deal ×1.15 damage')}<br><span class="rdcl">${pclImg('m', 22)}</span><b>${T('Moine', 'Monk')}</b> : ${T(`ses reps font ×1,1 de dégâts, et chaque moine actif donne +5 % de dégâts à toute l'équipe (${st.sup} au maximum avec ${st.act} au combat)`, `his reps deal ×1.1 damage, and each active monk gives +5% damage to the whole team (${st.sup} max with ${st.act} fighting)`)}<br><span class="rdcl">${pclImg('s', 22)}</span><b>${T('Soigneur', 'Healer')}</b> : ${T(`chaque soigneur actif retire 8 % des PV du boss (${st.sup} au maximum avec ${st.act} au combat)`, `each active healer removes 8% of the boss HP (${st.sup} max with ${st.act} fighting)`)}<br><b>${T('Équipe variée', 'Mixed party')}</b> : ${T('3 classes différentes au combat = +10 % de dégâts pour tous, les 4 classes = +15 %. Une équipe variée bat une équipe de guerriers.', '3 different classes fighting = +10% damage for everyone, all 4 classes = +15%. A mixed team beats a team of warriors.')}</div></details>
-    <p class="muted" style="font-size:11.5px;margin:8px 0 0">${T(`Chaque membre qui s'entraîne cette semaine ajoute ${fmt(RAID_PER)} PV au boss. Ta part est faite à ${fmt(RAID_PER)} reps (le trait) : personne ne peut porter le groupe seul.`, `Each member who trains this week adds ${fmt(RAID_PER)} HP to the boss. Your share is done at ${fmt(RAID_PER)} reps (the mark): nobody can carry the group alone.`)}${st.guild ? ' ' + T('Tous les membres de ta guilde voient ce même raid.', 'Everyone in your guild sees this same raid.') : ''}</p>`;
+    ${log.length ? `<details class="rdinfo"><summary>${T('Journal du combat', 'Battle log')}</summary><div class="small" style="line-height:1.6">${log.map(h => `<div><b>${esc(h.n || '?')}</b> : ${esc(raName(h.k))} <span class="muted">${h.bl ? T(`bloqué, −${fmt(h.d)}`, `blocked, −${fmt(h.d)}`) : h.cr ? T(`critique! −${fmt(h.d)}`, `critical! −${fmt(h.d)}`) : '−' + fmt(h.d)}</span></div>`).join('')}</div></details>` : ''}
+    <p class="muted" style="font-size:11.5px;margin:8px 0 0">${T(`Chaque membre qui se bat ajoute ${fmt(RAID_PER)} PV au boss. Ta part est faite à ${fmt(RAID_PER)} dégâts (le trait) : personne ne peut porter le groupe seul. Le boss bloque parfois une attaque (plus souvent quand il est enragé).`, `Each member who fights adds ${fmt(RAID_PER)} HP to the boss. Your share is done at ${fmt(RAID_PER)} damage (the mark): nobody can carry the group alone. The boss sometimes blocks an attack (more often when enraged).`)}</p>`;
 }
 /* ---------- Défis entre amis ---------- */
 const CH_KINDS = {vol: [['Le plus de volume', 'Most volume'], '🏋️'], sess: [['Le plus de séances', 'Most workouts'], '📅'], reps: [['Le plus de répétitions', 'Most reps'], '🔁']};
@@ -9122,7 +9224,7 @@ function frCmReceived() {
 function frSocial() {
   const fr = FRS(), now = new Date(), m = monKey(now), wk = wkKey(now), pw = wkKey(new Date(+new Date(wk + 'T12:00:00') - 3 * 864e5)), cp = {};
   chList().forEach(c => { if (+new Date(c.until) > Date.now() - 14 * 864e5) cp[c.id] = chMine(c); });
-  const o = {cm: (fr.cm || []).slice(-100), ch: (fr.ch || []).filter(c => +new Date(c.until) > Date.now() - 14 * 864e5), ca: Object.fromEntries(Object.entries(fr.chOk || {}).filter(([, t]) => Date.now() - new Date(t) < 21 * 864e5)), cn: (fr.chNo || []).slice(-30), cp, rd: {wk, r: myWeekReps(wk)}, rdp: {wk: pw, r: myWeekReps(pw)}};
+  const o = {cm: (fr.cm || []).slice(-100), ch: (fr.ch || []).filter(c => +new Date(c.until) > Date.now() - 14 * 864e5), ca: Object.fromEntries(Object.entries(fr.chOk || {}).filter(([, t]) => Date.now() - new Date(t) < 21 * 864e5)), cn: (fr.chNo || []).slice(-30), cp, rd: {wk, r: raDmg(wk), a: raPub(wk)}, rdp: {wk: pw, r: raDmg(pw)}};
   if (GAME()) { o.sx = {m, xp: seasonXp(m)}; o.sxp = {m: prevMon(m), xp: seasonXp(prevMon(m))}; o.cw = Object.keys(S.seasonWon || {}).filter(k => S.seasonWon[k]); }
   return o;
 }
@@ -9574,11 +9676,13 @@ async function gldSync(force) {
     if ((d.ban || []).includes(u.uid)) { S.guild = null; save(); toast(T('Tu as été retiré de la guilde.', 'You were removed from the guild.')); if (cur().v === 'guild') render(); return; }
     const hu = hunter(), wkk = dkey(weekStart(new Date()));
     const rk = wkKey(new Date()), qk = wkKey(new Date(+new Date(rk + 'T12:00:00') - 3 * 864e5));
-    const mdoc = {n: myNm().slice(0, 24), l: hu.lvl, r: hu.rk, f: myFrame(), x0: +g.x0 || 0, xp: hu.raw, wk: weekXp(), wkk, rp: myWeekReps(rk), rk, qp: myWeekReps(qk), qk, t: new Date().toISOString()}, mref = ref.collection('m').doc(u.uid);
-    if (clsCur() && !window.gldNoCl) { try { await mref.set({...mdoc, cl: clsCur(), lk: pclLook(), cv: pclMast(clsCur()).lv}); } catch (e) { window.gldNoCl = 1; await mref.set(mdoc); } } else await mref.set(mdoc); // la classe est ajoutée si les règles Firebase l'acceptent
+    const mdoc = {n: myNm().slice(0, 24), l: hu.lvl, r: hu.rk, f: myFrame(), x0: +g.x0 || 0, xp: hu.raw, wk: weekXp(), wkk, rp: raDmg(rk), rk, qp: raDmg(qk), qk, t: new Date().toISOString()}, mref = ref.collection('m').doc(u.uid);
+    const mcl = clsCur() && !window.gldNoCl ? {cl: clsCur(), lk: pclLook(), cv: pclMast(clsCur()).lv} : {}, mra = raPub(rk);
+    if (mra && !window.gldNoRa) { try { await mref.set({...mdoc, ...mcl, ra: {...mra, wk: rk}}); } catch (e) { window.gldNoRa = 1; } }
+    if (!mra || window.gldNoRa) { if (mcl.cl) { try { await mref.set({...mdoc, ...mcl}); } catch (e) { window.gldNoCl = 1; await mref.set(mdoc); } } else await mref.set(mdoc); } // classe et attaques ajoutées si les règles Firebase l'acceptent
     const ms = await ref.collection('m').limit(GLD_MAX + 5).get();
     g.name = String(d.name || g.name || '').slice(0, 30); g.emb = d.emb || '⚔️'; g.bn = d.bn || ''; g.owner = d.owner; g.me = u.uid;
-    g.mem = ms.docs.map(x => { const m = x.data() || {}; return {uid: x.id, n: String(m.n || '?').slice(0, 24), l: +m.l || 1, r: RKC[m.r] ? m.r : 'E', f: String(m.f || '').slice(0, 20), c: Math.max(0, (+m.xp || 0) - (+m.x0 || 0)), wk: m.wkk === wkk ? Math.max(0, +m.wk || 0) : 0, rp: Math.max(0, +m.rp || 0), rk: String(m.rk || ''), qp: Math.max(0, +m.qp || 0), qk: String(m.qk || ''), cl: PCL[m.cl] ? m.cl : '', lk: m.lk === 'f' ? 'f' : 'm', cv: Math.max(0, Math.min(PCL_LV.length - 1, +m.cv || 0))}; }).filter(m => !(d.ban || []).includes(m.uid));
+    g.mem = ms.docs.map(x => { const m = x.data() || {}; return {uid: x.id, n: String(m.n || '?').slice(0, 24), l: +m.l || 1, r: RKC[m.r] ? m.r : 'E', f: String(m.f || '').slice(0, 20), c: Math.max(0, (+m.xp || 0) - (+m.x0 || 0)), wk: m.wkk === wkk ? Math.max(0, +m.wk || 0) : 0, rp: Math.max(0, +m.rp || 0), rk: String(m.rk || ''), qp: Math.max(0, +m.qp || 0), qk: String(m.qk || ''), cl: PCL[m.cl] ? m.cl : '', lk: m.lk === 'f' ? 'f' : 'm', cv: Math.max(0, Math.min(PCL_LV.length - 1, +m.cv || 0)), ra: m.ra && typeof m.ra === 'object' ? {...m.ra, wk: String(m.ra.wk || '')} : null}; }).filter(m => !(d.ban || []).includes(m.uid));
     g.xpRaw = g.mem.reduce((a, m) => a + m.c, 0); g.xp = Math.round(g.xpRaw * gldScale(g.mem.length)); g.lvl = gldLvl(g.xp); S.gpeak = Math.max(+S.gpeak || 0, g.lvl); g.t = Date.now(); g.err = '';
     save(); RC = {}; DV++; try { raidCheck(); } catch (e) {} if (cur().v === 'guild' && !modals.length) render();
   } catch (e) { if (S.guild) { S.guild.err = String(e && e.message || e).slice(0, 140); saveLocal(); } } finally { gldBusy = 0; }
@@ -9717,7 +9821,7 @@ function vGuild() {
   const [aOk, aTot] = armoryCount(), sh = shadowArmy().length;
   let raidSub = T('Avec tes amis', 'With your friends'), seaSub = T('Avec tes amis', 'With your friends');
   if (S.guild) raidSub = T('Avec ta guilde', 'With your guild');
-  if (fr || S.guild) { try { const r = raidState(wkKey(new Date())); if (r.rows.length > 1) raidSub = `${Math.min(r.tot, r.goal).toLocaleString(LOC())} / ${r.goal.toLocaleString(LOC())} reps${r.done ? ' · ' + T('vaincu', 'cleared') : ''}`; const sr = seasonRows(monKey(new Date())), i = sr.findIndex(x => x.me); if (sr.length > 1) seaSub = `${T(i + 1 + (i ? 'e' : 'er'), '#' + (i + 1))} ${T('sur', 'of')} ${sr.length} · ${monName(monKey(new Date()))}`; } catch (e) {} }
+  if (fr || S.guild) { try { const r = raidState(wkKey(new Date())); if (r.rows.length > 1) raidSub = `${Math.round(Math.min(r.tot, r.goal)).toLocaleString(LOC())} / ${r.goal.toLocaleString(LOC())} ${T('PV', 'HP')}${r.done ? ' · ' + T('vaincu', 'cleared') : ''}`; const sr = seasonRows(monKey(new Date())), i = sr.findIndex(x => x.me); if (sr.length > 1) seaSub = `${T(i + 1 + (i ? 'e' : 'er'), '#' + (i + 1))} ${T('sur', 'of')} ${sr.length} · ${monName(monKey(new Date()))}`; } catch (e) {} }
   const noFr = `<p class="small muted" style="margin:0 0 10px">${T('Ajoute des amis pour combattre des boss de raid ensemble et te mesurer à eux chaque mois.', 'Add friends to fight raid bosses together and compete every month.')}</p><button class="btn sm" data-act="go" data-v="friends">${T('Mes amis', 'My friends')}</button>`;
   setTimeout(() => { gldSync(); revealCheck(); }, 500);
   const gS = S.guild, gSub = gS ? `${esc(gS.name || '')} · ${T('niv.', 'lv.')} ${gS.lvl || 1}` : T('Crée ou rejoins une guilde', 'Create or join a guild');
@@ -10521,6 +10625,7 @@ document.addEventListener('click', e => {
     case 'lb-tab': lbTab = b.dataset.t; lbData = null; render(); break;
     case 'lb-refresh': toast('↻'); lbLoad(true); break;
     case 'fr-refresh': toast('↻'); frLoad(true).then(() => { const bad = FRS().list.filter(f => f.err); if (bad.length) toast('⚠️ ' + bad.map(f => `${f.n} : ${f.err}`).join(' · ')); }); break;
+    case 'ra-atk': raAttack(el.dataset.k); break;
     case 'fr-pub': frPublish(true).then(() => toast(FRS().pending ? T('⚠️ Pas réussi : réessaie', '⚠️ Didn\'t work: try again') : T('✅ Ta carte est à jour', '✅ Your card is up to date'))); break;
     case 'start-express': startExpress(b.dataset.rid); break;
     case 'title-set': S.settings.title = b.dataset.id; save(); armRefresh(); if (frOn()) frQueue(false); toast(b.dataset.id ? T(`🏷️ Titre : ${titleOf(b.dataset.id)}`, `🏷️ Title: ${titleOf(b.dataset.id)}`) : T('Titre retiré', 'Title removed')); break;
