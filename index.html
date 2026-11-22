@@ -6569,9 +6569,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.90.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.90.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.90.1', d: '2026-11-21', fr: ['Cardio sur tapis : la montre suit maintenant l\'exercice comme Samsung Health, pour que les pas continuent d\'arriver écran éteint (nouvelle appli montre).'], en: ['Treadmill cardio: the watch now tracks the exercise like Samsung Health, so steps keep coming with the screen off (new watch app).']},
   {v: '9.90.0', d: '2026-11-21', fr: ['Cardio en direct sur tapis : la montre compte tes pas. L\'appli en déduit ta distance et ta vitesse en direct (selon ta taille), les calories en tiennent compte, et la distance est déjà remplie à la fin. Demande de réinstaller l\'appli de la montre et d\'accepter « Activité physique ».'], en: ['Live treadmill cardio: your watch counts your steps. The app shows live distance and speed (from your height), uses them for calories, and pre-fills the distance at the end. Requires the new watch app and the “Physical activity” permission.']},
   {v: '9.89.6', d: '2026-11-21', fr: ['Séance sur tapis : la fenêtre montre en direct les calories (et les pas) selon l\'inclinaison et la distance que tu entres.'], en: ['Treadmill session: the window shows calories (and steps) live as you enter incline and distance.']},
   {v: '9.89.5', d: '2026-11-21', fr: ['Cardio en direct : à la fin d\'une marche ou d\'une course sur tapis, l\'appli te demande l\'inclinaison moyenne (et la distance si tu veux) pour calculer des calories plus justes. Tu peux passer.'], en: ['Live cardio: after a treadmill walk or run, the app asks for the average incline (and distance) for more accurate calories. You can skip.']},
@@ -7940,7 +7941,7 @@ function wearState() {
       return {n: e.name, i: wearImg(e.name), alt: wearAlt(e.name, 6), s: sl.length || +e.sets || 0, rest: +e.rest === -1 ? 0 : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)), c: isCardio(e) || isTimed(e) ? 1 : 0, sl}; };
     return {on: 0, lang, acc, u: U(), kg: Math.round(bodyKg()), rw: +S.settings.restWarm > 0 ? +S.settings.restWarm : 45, rd: +S.settings.restDrop > 0 ? +S.settings.restDrop : 0, mine: wearMine(), rts: L.map(r => ({id: r.id, n: r.name, td: r.id === td ? 1 : 0, ex: (r.exercises || []).map(exOf)}))};
   }
-  const clS = A.cl ? (() => { const km = clKm(), min = Math.max(1, Math.round(clMs() / 60000)), cc = cardioCalc(CARDIO_KIND(A.exercises[0].name), min, A.cl.gps || (clStepsOn(A.cl) && A.cl.steps > 30) ? Math.round(km * 100) / 100 : '', '', bodyKg()); return {t0: A.cl.t0, pms: A.cl.pms || 0, pat: A.cl.pat || 0, g: A.cl.gps || clStepsOn(A.cl) ? 1 : 0, sp: A.cl.k === 'bike' || clStepsOn(A.cl) ? 1 : 0, km: Math.round(km * 100) / 100, kc: cc ? cc.kcal : 0, mx: clMaxHr()}; })() : null;
+  const clS = A.cl ? (() => { const km = clKm(), min = Math.max(1, Math.round(clMs() / 60000)), cc = cardioCalc(CARDIO_KIND(A.exercises[0].name), min, A.cl.gps || (clStepsOn(A.cl) && A.cl.steps > 30) ? Math.round(km * 100) / 100 : '', '', bodyKg()); return {t0: A.cl.t0, pms: A.cl.pms || 0, pat: A.cl.pat || 0, g: A.cl.gps || clStepsOn(A.cl) ? 1 : 0, k: A.cl.k, st: clStepsOn(A.cl) ? 1 : 0, sp: A.cl.k === 'bike' || clStepsOn(A.cl) ? 1 : 0, km: Math.round(km * 100) / 100, kc: cc ? cc.kcal : 0, mx: clMaxHr()}; })() : null;
   return {...(clS ? {cl: clS} : {}), on: 1, id: A.start, st: A.start, n: A.routineName || '', u: U(), lang, acc, kg: Math.round(bodyKg()), rw: +S.settings.restWarm > 0 ? +S.settings.restWarm : 45, rd: +S.settings.restDrop > 0 ? +S.settings.restDrop : 0, mine: wearMine(), re: timerEnd > Date.now() ? timerEnd : 0, rt: timerTot || 0,
     ex: A.exercises.map(e => ({n: e.name, i: wearImg(e.name), alt: wearAlt(e.name), rest: +e.rest === -1 ? 0 : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)), c: isCardio(e) || isTimed(e) ? 1 : 0,
       s: e.sets.map((x, si) => ({w: x.w === '' || x.w == null ? '' : +x.w, r: x.r !== '' && x.r != null ? +x.r : (+x.ph || 0), d: x.done ? 1 : 0, t: x.t || '', p: wearPrev(e, x, si)}))}))};
@@ -7996,7 +7997,7 @@ function wearCmd(d) {
     if (d.skip) stopTimer(); else if (+d.add && timerEnd > Date.now()) fakeAct('timer-add', {});
   } else if (d.a === 'st') {
     const c = A.cl; if (!clStepsOn(c) || (+d.t0 && +d.t0 !== c.t0)) return; const n = Math.max(0, Math.round(+d.n || 0)), dl = n - (c.stRaw || 0);
-    if (dl < 0) { c.stRaw = n; return; } if (c.pat) c.stOff = (c.stOff || 0) + dl; c.stRaw = n; c.steps = Math.max(0, n - (c.stOff || 0));
+    if (dl < 0) { c.stOff = n - (c.steps || 0); c.stRaw = n; return; } if (c.pat) c.stOff = (c.stOff || 0) + dl; c.stRaw = n; c.steps = Math.max(0, n - (c.stOff || 0));
     c.m = c.steps * (c.k === 'run' ? strideR() : strideW()); return;
   } else if (d.a === 'hr') {
     const b = Math.round(+d.bpm); if (!(b > 25 && b < 250)) return;
