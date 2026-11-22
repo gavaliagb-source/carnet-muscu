@@ -58,8 +58,11 @@ class HrService : Service(), SensorEventListener {
         override fun run() {
             WS.checkRest(this@HrService)
             // Écran éteint, la montre garde les pas en réserve : on les réclame toutes les 5 s.
-            if (WS.cl() != null && ++fl % 5 == 0) try { sm?.flush(this@HrService) } catch (e: Exception) {}
+            fl++
+            if (WS.cl() != null && fl % 5 == 0) try { sm?.flush(this@HrService) } catch (e: Exception) {}
             try { hsCheck() } catch (e: Throwable) {}
+            // Écran éteint, Health Services regroupe les données : on les réclame toutes les 10 s.
+            if (hsOn && fl % 10 == 0 && scr() == "off") try { HealthServices.getClient(this@HrService).exerciseClient.flushAsync() } catch (e: Throwable) {}
             if (!WS.on()) { stopSelf(); return }
             h.postDelayed(this, 1000)
         }
