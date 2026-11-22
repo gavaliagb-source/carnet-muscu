@@ -1724,7 +1724,18 @@ async function copy(t) {
   try { document.execCommand('copy'); toast('✅ Copié! Colle-le dans ton IA'); } catch (e) { toast('Copie impossible'); }
   ta.remove();
 }
+/* Partage d'un fichier : fenêtre « Partager » d'Android dans l'appli, du navigateur sinon, ou téléchargement */
+const blobB64 = b => new Promise((ok, ko) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = ko; r.readAsDataURL(b); });
+async function shareOut(file, title) { // 'shared' | 'dl' | 'abort' | 'none'
+  if (typeof isNative === 'function' && isNative()) {
+    const L = LV(); if (L && L.shareFile) { try { await L.shareFile({data: await blobB64(file), name: file.name, mime: file.type || 'application/octet-stream', title: title || ''}); return 'shared'; } catch (e) {} }
+    modal(`<h2>${T('Mise à jour nécessaire', 'Update needed')}</h2><p>${T('Pour partager ou enregistrer des fichiers depuis l\'appli, installe la dernière version de l\'APK. En attendant, ça marche depuis le navigateur.', 'To share or save files from the app, install the latest APK. Meanwhile, it works from the browser.')}</p><button class="btn primary block" data-act="close">OK</button>`); return 'none';
+  }
+  if (navigator.canShare && navigator.canShare({files: [file]})) { try { await navigator.share({files: [file], title: title || file.name}); return 'shared'; } catch (e) { if (e.name === 'AbortError') return 'abort'; } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); return 'dl';
+}
 async function shareText(t) {
+  try { const L = typeof isNative === 'function' && isNative() ? LV() : null; if (L && L.shareText) { await L.shareText({text: t}); return; } } catch (e) {}
   if (navigator.share) { try { await navigator.share({text: t}); return; } catch (e) { if (e.name === 'AbortError') return; } }
   copy(t);
 }
@@ -3032,9 +3043,7 @@ async function exportCsv() {
   });
   const name = `carnet-muscu-${new Date().toISOString().slice(0, 10)}.csv`;
   const file = new File(['﻿' + rows.join('\r\n')], name, {type: 'text/csv'});
-  if (navigator.canShare && navigator.canShare({files: [file]})) { try { await navigator.share({files: [file], title: name}); return; } catch (e) { if (e.name === 'AbortError') return; } }
-  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  toast(T(`✅ ${rows.length - 1} séries exportées`, `✅ ${rows.length - 1} sets exported`));
+  const r = await shareOut(file, name); if (r === 'dl') toast(T(`✅ ${rows.length - 1} séries exportées`, `✅ ${rows.length - 1} sets exported`));
 }
 async function exportData() {
   let photoData = {}; try { photoData = await phAll(); } catch (e) {}
@@ -3042,13 +3051,8 @@ async function exportData() {
   const name = `carnet-muscu-${new Date().toISOString().slice(0, 10)}.json`;
   const file = new File([data], name, {type: 'application/json'});
   const done = () => { S.settings.lastBackup = new Date().toISOString(); save(); if (cur().v === 'settings' || cur().v === 'train') render(); };
-  if (navigator.canShare && navigator.canShare({files: [file]})) {
-    try { await navigator.share({files: [file], title: name}); done(); toast(T('✅ Sauvegarde envoyée', '✅ Backup sent')); return; } catch (e) { if (e.name === 'AbortError') return; }
-  }
-  done();
-  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name;
-  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-  toast('✅ Fichier exporté');
+  const r = await shareOut(file, name);
+  if (r === 'shared' || r === 'dl') { done(); toast(r === 'dl' ? T('✅ Fichier exporté', '✅ File exported') : T('✅ Choisis où garder ta sauvegarde', '✅ Pick where to keep your backup')); }
 }
 function parseCsv(txt) {
   const rows = []; let row = [], f = '', q = false;
@@ -5176,9 +5180,7 @@ async function shareImage(hid) {
   } catch (e) { g.textAlign = 'left'; }
   const blob = await new Promise(r => c.toBlob(r, 'image/png'));
   const file = new File([blob], 'seance.png', {type: 'image/png'});
-  try { if (navigator.canShare && navigator.canShare({files: [file]})) { await navigator.share({files: [file]}); return; } } catch (e) { if (e.name === 'AbortError') return; }
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'seance-' + dkey(h.date) + '.png'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  toast(T('🖼️ Image enregistrée', '🖼️ Image saved'));
+  const r = await shareOut(new File([blob], 'seance-' + dkey(h.date) + '.png', {type: 'image/png'})); if (r === 'dl') toast(T('🖼️ Image téléchargée', '🖼️ Image downloaded'));
 }
 
 /* ----- Médailles ----- */
@@ -6210,8 +6212,7 @@ async function shareYearImage(y) {
   try { const hu = GAME() ? hunter() : null, nm = (S.settings.name || '').trim().split(' ')[0].slice(0, 16); g.fillStyle = txt; g.font = F(800, 44); g.fillText([nm, hu ? T(`Niv. ${hu.lvl} · Rang ${hu.rk}`, `Lv. ${hu.lvl} · Rank ${hu.rk}`) : ''].filter(Boolean).join('  ·  '), W / 2, H - 110); } catch (e) {}
   g.fillStyle = mut; g.font = F(500, 28); g.fillText(T('Ton entraînement devient une aventure', 'Turn your workouts into an adventure'), W / 2, H - 60);
   const blob = await new Promise(r => c.toBlob(r, 'image/png')), file = new File([blob], 'bilan-' + y + '.png', {type: 'image/png'});
-  try { if (navigator.canShare && navigator.canShare({files: [file]})) { await navigator.share({files: [file]}); return; } } catch (e) { if (e.name === 'AbortError') return; }
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast(T('Image enregistrée', 'Image saved'));
+  const r = await shareOut(file); if (r === 'dl') toast(T('Image téléchargée', 'Image downloaded'));
 }
 function yearText(y) {
   const st = yearStats(y);
@@ -6692,9 +6693,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.102.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.103.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.103.0', d: '2026-11-22', fr: ['Appli Android : « Partager mon bilan », l\'image de séance, l\'export CSV et la copie de sauvegarde ouvrent maintenant la fenêtre Partager d\'Android (Messenger, galerie, Drive…). Il faut la nouvelle version de l\'APK.'], en: ['Android app: sharing images and exporting files now opens the Android share sheet. Needs the new APK.']},
   {v: '9.102.1', d: '2026-11-22', fr: ['Encore moins de texte : bestiaire, séries par muscle, import, choix de classe, talents et armes ont aussi leur petit « i ».'], en: ['Even less text: bestiary, sets per muscle, import, class picker, talents and weapons also get an “i”.']},
   {v: '9.102.0', d: '2026-11-22', fr: ['Moins de texte à l\'écran : les longues explications sont maintenant derrière un petit bouton « i ». Touche-le pour lire l\'explication (activité, photos, cardio, récupération, rang musculaire, arsenal, sauvegardes, amis, classement, bonus de classe, énergie et règles du raid).'], en: ['Less text on screen: long explanations now sit behind a small “i” button.']},
   {v: '9.101.0', d: '2026-11-22', fr: ['Templier, Paladin, Spartiate, Ombre, Druide et Sage deviennent des classes à part entière : leur propre description, leurs 3 attaques de raid, leur pouvoir de la semaine et leur histoire en 5 chapitres avec un titre légendaire. Les 10 classes sont dans une seule liste.'], en: ['Templar, Paladin, Spartan, Shadow, Druid and Sage are now full classes with their own description, raid attacks, weekly power and story.']},
@@ -10043,7 +10045,7 @@ function gldInvite() {
 function gldInviteShare() {
   const g = S.guild; if (!g) return;
   const txt = T(`Rejoins ma guilde « ${g.name} » sur Runelift! Guilde → Ma guilde → Rejoindre, avec le code ${g.id}`, `Join my guild "${g.name}" on Runelift! Guild → My guild → Join, with the code ${g.id}`) + '\nhttps://gavaliagb-source.github.io/carnet-muscu/';
-  if (navigator.share) navigator.share({text: txt}).catch(() => {}); else { try { navigator.clipboard.writeText(txt); toast(T('Invitation copiée', 'Invite copied')); } catch (e) { toast(g.id); } }
+  if (isNative() && LV() && LV().shareText) LV().shareText({text: txt}).catch(() => {}); else if (navigator.share) navigator.share({text: txt}).catch(() => {}); else { try { navigator.clipboard.writeText(txt); toast(T('Invitation copiée', 'Invite copied')); } catch (e) { toast(g.id); } }
 }
 
 /* ----- Mode développeur : tous les boss et leurs états, pour vérifier les images et les effets ----- */
