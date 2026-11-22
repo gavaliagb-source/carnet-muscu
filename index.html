@@ -6775,9 +6775,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.107.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.107.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.107.1', d: '2026-11-22', fr: ['Demandes d\'ami plus sûres : la demande part toujours, même si le bonus d\'invitation ne peut pas être envoyé.'], en: ['Safer friend requests: the request always goes through, even if the invite bonus cannot be sent.']},
   {v: '9.107.0', d: '2026-11-22', fr: ['Inviter des amis rapporte : un ami qui découvre Runelift grâce à toi et t\'envoie sa première demande d\'ami donne 250 XP à vous deux. Nouveaux titres : Recruteur, Rassembleur et Chef de clan.', 'Rappels de raid hors de l\'appli : une notification quand ton équipe frappe le boss sans toi, et quand il reste 2 jours puis 1 jour avec de l\'énergie à dépenser.'], en: ['Inviting friends pays off: a friend who discovers Runelift through you and sends you their first friend request gives you both 250 XP. New titles: Recruiter, Rallier and Clan chief.', 'Raid reminders outside the app: a notification when your team hits the boss without you, and when 2 days then 1 day are left with energy to spend.']},
   {v: '9.106.0', d: '2026-11-22', fr: ['S\'entraîner avec un ami : sous chaque séance d\'un ami, « Faire cette séance avec mes poids » copie ses exercices, son nombre de séries et ses reps, avec TES charges (ta dernière fois sur chaque exercice). Quand un ami s\'entraîne en ce moment, le bouton « Rejoindre » dans « En direct » copie la séance qu\'il est en train de faire.'], en: ['Train with a friend: copy a friend\'s workout with your own weights, or join the workout they are doing right now.']},
   {v: '9.105.0', d: '2026-11-22', fr: ['Sons du jeu : chaque attaque de raid a son son (lame, coup lourd, flèches, feu, dague, marteau sacré, orbe, harpe…), le boss bloque avec un choc de bouclier, les critiques sonnent fort, chaque boss a son cri, et une fanfare joue quand le raid est gagné. Les boss du mois crient aussi quand tu les bats. Tu peux couper ces sons dans Réglages.'], en: ['Game sounds: every raid attack, block, critical hit and boss has its own sound, with a fanfare when the raid is won. You can turn them off in Settings.']},
@@ -11944,7 +11945,8 @@ async function frReqSend(id, name, h) {
   if ((fr.reqIn || []).some(r => r.uid === id)) return frReqAccept(id);
   const ref = refNew() ? 1 : 0; if (ref) S.refBy = id;
   fr.reqOut = (fr.reqOut || []).filter(r => r.uid !== id); fr.reqOut.push({uid: id, name: name || '', h: h || '', t: new Date().toISOString()}); save(); fbAllowSync();
-  try { await fbDb().collection('inbox').doc(id).collection('m').add({from: u.uid, type: 'req', name: myNm(), h: myH(), t: new Date().toISOString(), ...(ref ? {ref: 1} : {})}); toast(T(`📨 Demande envoyée${name ? ' à ' + name : ''}`, `📨 Request sent${name ? ' to ' + name : ''}`)); }
+  try { const box = fbDb().collection('inbox').doc(id).collection('m'), msg = {from: u.uid, type: 'req', name: myNm(), h: myH(), t: new Date().toISOString()};
+    if (ref) { try { await box.add({...msg, ref: 1}); } catch (e) { await box.add(msg); } } else await box.add(msg); /* règles qui refusent « ref » : la demande part quand même */ toast(T(`📨 Demande envoyée${name ? ' à ' + name : ''}`, `📨 Request sent${name ? ' to ' + name : ''}`)); }
   catch (e) { toast('⚠️ ' + e.message); }
   frSearchRender();
 }
