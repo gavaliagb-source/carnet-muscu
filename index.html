@@ -6001,10 +6001,10 @@ function dailyQuest0(d, extra) {
       cur: hs => hs.some(h => h.exercises.some(e => norm(e.name) === norm(x.n) && exBest(e) > x.pb + 1e-9)) ? 1 : 0};
   };
   const vst = u === 'kg' ? 50 : 100;
-  const volp = () => P && pVol >= vs ? {id: 'volp', ic: '🏗️', goal: Math.ceil(pVol * 1.02 / vst) * vst, t: [`Soulève plus que la dernière fois : # ${u}`, `Lift more than last time: # ${u}`], cur: hsVol} : null;
+  const volp = pin => { const g = pin > 0 ? pin : P && pVol >= vs ? Math.ceil(pVol * 1.02 / vst) * vst : 0; return g ? {id: 'volp', pk: 'volp|' + g, ic: '🏗️', goal: g, t: [`Soulève plus que la dernière fois : # ${u}`, `Lift more than last time: # ${u}`], cur: hsVol} : null; }; // objectif gardé dans qPick
   const stretch = () => ({id: 'stretch', ic: '🧘', goal: 1, t: ['Fais une séance d\'étirements', 'Do a stretching session'], cur: () => (S.stretchLog || []).filter(x => dkey(x.date) === k).length});
   const NEWQ = {over, volp, stretch};
-  const byId = id => id === 'cmin' ? cmin() : String(id).startsWith('over|') ? over(String(id).slice(5)) : NEWQ[id] ? NEWQ[id]() : pool.find(x => x.id === id && x.goal != null);
+  const byId = id => id === 'cmin' ? cmin() : String(id).startsWith('over|') ? over(String(id).slice(5)) : String(id).startsWith('volp|') ? volp(+String(id).slice(5)) : NEWQ[id] ? NEWQ[id]() : pool.find(x => x.id === id && x.goal != null);
   const today = dkey(new Date()) === k, qp = (S.qPick || {})[k];
   let q = qp ? byId(qp) : null;
   if (!q) {
@@ -6813,9 +6813,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.111.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.111.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.111.1', d: '2026-11-22', fr: ['Quête « Soulève plus que la dernière fois » : l\'objectif reste le même jusqu\'à la vérification du lendemain, même si tu as fait une autre routine que prévu.'], en: ['“Lift more than last time” quest: the goal stays the same until it is checked the next day, even if you did a different routine than planned.']},
   {v: '9.111.0', d: '2026-11-22', fr: ['Cardio sur tapis : après la séance, Runelift relit tes pas dans Health Connect et corrige la distance si la montre a décroché en cours de route. Nouvelle autorisation « pas » dans Réglages → Health Connect.', 'Montre : la permission « Activité physique » est redemandée à chaque cardio tant qu\'elle manque, et les deux compteurs de pas de la montre tournent en même temps (le plus fiable gagne).'], en: ['Treadmill cardio: after the workout, Runelift reads your steps from Health Connect and fixes the distance if the watch dropped out. New “steps” permission in Settings → Health Connect.', 'Watch: the “Physical activity” permission is asked again at each cardio while it is missing, and both step counters of the watch run at the same time (the most reliable wins).']},
   {v: '9.110.0', d: '2026-11-22', fr: ['Jusqu\'à 3 photos par séance (écran de fin et historique). Touche une photo pour l\'agrandir, ou le ✕ pour la retirer.', 'Fin de séance : si l\'appli se recharge pendant que l\'appareil photo est ouvert, l\'écran revient avec ton coffre à ouvrir. Une mise à jour n\'est plus installée tant qu\'une fenêtre est ouverte.'], en: ['Up to 3 photos per workout (end screen and history). Tap a photo to enlarge it, or the ✕ to remove it.', 'End of workout: if the app reloads while the camera is open, the screen comes back with your chest to open. An update is no longer installed while a window is open.']},
   {v: '9.109.1', d: '2026-11-22', fr: ['Quête « Bats ta dernière fois » : l\'exercice choisi reste le même jusqu\'à la vérification du lendemain.'], en: ['“Beat last time” quest: the chosen exercise stays the same until it is checked the next day.']},
