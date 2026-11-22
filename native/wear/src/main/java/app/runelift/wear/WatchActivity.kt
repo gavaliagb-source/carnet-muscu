@@ -242,6 +242,8 @@ class WatchActivity : Activity() {
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) need.add(Manifest.permission.POST_NOTIFICATIONS)
         if (Build.VERSION.SDK_INT >= 36 && checkSelfPermission("android.permission.health.READ_HEART_RATE") != PackageManager.PERMISSION_GRANTED) need.add("android.permission.health.READ_HEART_RATE")
         val p = getSharedPreferences("rl", MODE_PRIVATE)
+        val actOk = Build.VERSION.SDK_INT < 29 || checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
+        if (!actOk && !p.getBoolean("askedAct", false)) { p.edit().putBoolean("askedAct", true).apply(); need.add(Manifest.permission.ACTIVITY_RECOGNITION); requestPermissions(need.toTypedArray(), 3); return }
         if (need.isNotEmpty() && !p.getBoolean("asked", false)) { p.edit().putBoolean("asked", true).apply(); requestPermissions(need.toTypedArray(), 3) }
     }
 

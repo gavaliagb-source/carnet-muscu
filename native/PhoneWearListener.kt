@@ -31,7 +31,7 @@ class PhoneWearListener : WearableListenerService() {
             notify(false); return
         }
         if (p != null) Handler(Looper.getMainLooper()).post { p.deliver(j) }
-        else if (a != "hello") RLWearPlugin.queue(this, j)
+        else if (a != "hello" && a != "st") RLWearPlugin.queue(this, j)
         if (a == "import" && (p == null || !RLWearPlugin.fg)) notify(true)
         else if (!RLWearPlugin.fg && a == "start") notify(false)
     }

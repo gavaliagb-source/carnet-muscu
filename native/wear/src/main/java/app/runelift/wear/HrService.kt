@@ -25,6 +25,10 @@ class HrService : Service(), SensorEventListener {
     private var wl: PowerManager.WakeLock? = null
     private val h = Handler(Looper.getMainLooper())
     private var lastSent = 0L
+    private var stBase = -1f
+    private var stT0 = 0L
+    private var stLast = -1
+    private var stSent = 0L
     private val tick = object : Runnable {
         override fun run() {
             WS.checkRest(this@HrService)
@@ -68,6 +72,9 @@ class HrService : Service(), SensorEventListener {
         try {
             sm = getSystemService(SENSOR_SERVICE) as SensorManager
             sm?.getDefaultSensor(Sensor.TYPE_HEART_RATE)?.let { sm?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
+            // Pas (cardio sur tapis) : le téléphone en déduit la distance et la vitesse.
+            if (Build.VERSION.SDK_INT < 29 || checkSelfPermission(android.Manifest.permission.ACTIVITY_RECOGNITION) == android.content.pm.PackageManager.PERMISSION_GRANTED)
+                sm?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)?.let { sm?.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL, 0) }
         } catch (e: Exception) {}
         try {
             wl = (getSystemService(POWER_SERVICE) as PowerManager).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "runelift:workout")
@@ -79,6 +86,7 @@ class HrService : Service(), SensorEventListener {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_NOT_STICKY
 
     override fun onSensorChanged(ev: SensorEvent) {
+        if (ev.sensor.type == Sensor.TYPE_STEP_COUNTER && ev.values.isNotEmpty()) { steps(ev.values[0]); return }
         if (ev.sensor.type != Sensor.TYPE_HEART_RATE || ev.values.isEmpty()) return
         val b = ev.values[0].toInt()
         if (b < 30 || b > 230) return
@@ -87,6 +95,18 @@ class HrService : Service(), SensorEventListener {
         if (now - lastSent >= 5000) {
             lastSent = now
             WS.hr(this, b, now)
+        }
+    }
+
+    private fun steps(v: Float) {
+        val c = WS.cl() ?: return
+        val t0 = c.optLong("t0")
+        if (t0 != stT0 || stBase < 0 || v < stBase) { stT0 = t0; stBase = v; stLast = -1 }
+        val n = (v - stBase).toInt()
+        val now = System.currentTimeMillis()
+        if (n != stLast && now - stSent >= 3000) {
+            stLast = n; stSent = now
+            WS.send(this, JSONObject().put("a", "st").put("n", n).put("t0", t0).put("t", now))
         }
     }
 
