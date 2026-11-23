@@ -654,12 +654,15 @@ label.srow,.srow.sbtn{cursor:pointer}
 #tour{position:fixed;inset:0;z-index:9000;touch-action:none}
 #tour .tspot{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.72);border:2px solid var(--accent);transition:all .3s ease;pointer-events:none}
 #tour .tspot.none{width:0!important;height:0!important;border:0;left:50%!important;top:40%!important}
-#tour .tbub{position:fixed;left:16px;right:16px;max-width:420px;margin:0 auto;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:16px;padding:16px 16px 12px;box-shadow:0 10px 40px rgba(0,0,0,.5);transition:top .3s ease}
-#tour .tbub h3{margin:0 0 6px;font-size:1.08em}
-#tour .tbub p{margin:0 0 12px;line-height:1.45}
-#tour .tdots{display:flex;gap:5px}
-#tour .tdots i{width:6px;height:6px;border-radius:3px;background:var(--line)}
-#tour .tdots i.on{background:var(--accent);width:16px}
+#tour .tbub{position:fixed;left:16px;right:16px;max-width:420px;margin:0 auto;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:14px 16px 0;box-shadow:0 14px 44px rgba(0,0,0,.55);transition:top .3s ease;overflow:visible}
+#tour .tbub::before{content:'';position:absolute;left:calc(var(--ax,50%) - 9px);width:18px;height:18px;background:var(--card);border:1px solid var(--line);transform:rotate(45deg);display:none}
+#tour .tbub.down::before{display:block;top:-10px;border-right:0;border-bottom:0}#tour .tbub.up::before{display:block;bottom:-10px;border-left:0;border-top:0}
+#tour .thd{display:flex;align-items:center;gap:10px;margin-bottom:8px}#tour .thd h3{margin:0;font-size:1.05em;flex:1;line-height:1.25}
+#tour .tnum{color:var(--muted);font-size:12px;font-weight:700;flex:none}
+#tour .tbub p{margin:0 0 12px;line-height:1.5;font-size:14.5px;color:color-mix(in srgb,var(--text) 88%,var(--muted))}
+#tour .tft{display:flex;align-items:center;gap:6px;padding-bottom:12px}#tour .tskip{background:none;border:0;color:var(--muted);font:inherit;font-weight:600;font-size:14px;padding:8px 4px;cursor:pointer}
+#tour .tprev{display:flex;align-items:center;justify-content:center;padding:8px 10px}
+#tour .tbar{height:3px;margin:0 -16px;background:var(--line);border-radius:0 0 18px 18px;overflow:hidden}#tour .tbar i{display:block;height:100%;background:var(--accent);transition:width .3s ease}
 
 /* Assistant IA */
 .aiopt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;padding:12px 14px;margin:0 0 8px;background:var(--card2);border:1px solid var(--line);border-radius:14px;color:var(--text);font:inherit;cursor:pointer}
@@ -7063,9 +7066,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.119.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.120.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.120.0', d: '2026-11-23', fr: ['Visites guidées refaites : textes à jour, nouveau look (icône, étape 3 / 8, petite flèche vers ce qu\'on montre) et plus d\'émojis.', 'La visite de la Guilde passe maintenant par ses 4 onglets (Aujourd\'hui, Raid, Classements, Collection), avec les ligues. Nouvelles étapes : séance générée, cardio en direct, fil d\'amis, défis et confidentialité.', 'Les fenêtres automatiques n\'apparaissent plus par-dessus une visite.'], en: ['Guided tours redone: up-to-date text, new look (icon, step 3 / 8, small arrow toward what is shown) and no more emojis.', 'The Guild tour now goes through its 4 tabs (Today, Raid, Rankings, Collection), with leagues. New steps: generated workout, live cardio, friends feed, challenges and privacy.', 'Automatic pop-ups no longer appear over a tour.']},
   {v: '9.119.0', d: '2026-11-23', fr: ['Accueil : plus de programme mis d\'office. Tu choisis comment commencer : un programme prêt (ceux qui vont avec tes jours sont marqués « Pour toi »), créer le tien, ou importer tes données d\'une autre appli (Hevy, Strong, FitNotes…) avec tes routines recréées.', 'Le programme prêt choisi à l\'accueil remplit aussi ton horaire de la semaine.'], en: ['Welcome: no more program set for you. You choose how to start: a ready-made program (the ones that fit your days are marked “For you”), create your own, or import your data from another app (Hevy, Strong, FitNotes…) with your routines rebuilt.', 'The ready-made program chosen at welcome also fills your weekly schedule.']},
   {v: '9.118.1', d: '2026-11-23', fr: ['Mode test : « Aperçu de l\'accueil » montre tout le parcours d\'un nouveau compte, sans connexion et sans rien changer.'], en: ['Test mode: “Welcome preview” shows the whole new-account flow, without signing in and without changing anything.']},
   {v: '9.118.0', d: '2026-11-23', fr: ['Nouvel accueil pour les nouveaux : 4 écrans qui présentent Runelift (aventure, boss de guilde, amis, programme), puis la connexion Google.', 'Création du profil plus simple : objectif, niveau et jours dans une même étape, la classe se choisit toute seule, et un dernier écran montre ton programme de départ jour par jour.'], en: ['New welcome for new users: 4 screens that introduce Runelift (adventure, guild bosses, friends, program), then Google sign-in.', 'Simpler profile setup: goal, level and days in one step, your class is picked for you, and a last screen shows your starting program day by day.']},
@@ -7305,83 +7309,87 @@ const newsPending = () => !!S.settings.seenVer && verCmp(APP_VERSION, S.settings
 function checkNews() {
   if (!S.settings.onboarded) { S.settings.seenVer = APP_VERSION; saveLocal(); return; }
   if (!S.settings.seenVer) { S.settings.seenVer = '7.2.1'; }
-  if (newsPending() && S.settings.newsDay !== dkey(new Date())) setTimeout(() => { if (!modals.length && !$('#ob')) openNews(false); }, 700);
+  if (newsPending() && S.settings.newsDay !== dkey(new Date())) setTimeout(() => { if (!modals.length && !$('#ob') && !$('#tour')) openNews(false); }, 700);
 }
 
 
 /* ===================== Visite guidée ===================== */
+/* Chaque étape : ic (icône), sel (ce qu'on montre, facultatif), tab (onglet à ouvrir), gtab (sous-onglet de la Guilde), t (titre), d (texte) */
 const TOURS = {
   main: [
-    {t: ['🧭 Petite visite', '🧭 Quick tour'], d: ['Les bases en 30 secondes. Les autres onglets ont leur propre petite visite, la première fois que tu les ouvres.', 'The basics in 30 seconds. The other tabs have their own short tour the first time you open them.']},
-    {tab: 'train', sel: '.card.today, [data-act="sched-edit"]', t: ['📅 Ton horaire', '📅 Your schedule'], d: ['Planifie ta semaine (lundi : Push, mardi : repos…) ou un cycle Push/Pull/Legs. La séance du jour s\'affiche ici, prête à lancer.', 'Plan your week (Monday: Push, Tuesday: rest…) or a Push/Pull/Legs cycle. Today\'s workout shows up here, ready to start.']},
-    {tab: 'train', sel: '[data-act="start-empty"]', t: ['➕ Séance libre', '➕ Free workout'], d: ['Commence sans routine et ajoute tes exercices au fur et à mesure.', 'Start without a routine and add exercises as you go.']},
-    {tab: 'train', sel: '[data-act="new-routine"]', t: ['📋 Tes routines', '📋 Your routines'], d: ['Crée une routine avec tes exercices, séries, reps, charges et temps de repos. Plus de 1 000 exercices avec leurs muscles.', 'Build a routine with your exercises, sets, reps, weights and rest times. Over 1,000 exercises with their muscles.']},
-    {tab: 'train', sel: '[data-act="ai-menu"]', t: ['🤖 Assistant IA', '🤖 AI assistant'], d: ['Crée un programme sur mesure ou fais améliorer le tien. L\'appli te guide étape par étape avec ChatGPT, Claude ou Gemini.', 'Create a custom program or improve yours. The app guides you step by step with ChatGPT, Claude or Gemini.']},
-    {tab: 'train', sel: '.folder .fhead', t: ['📁 Dossiers', '📁 Folders'], d: ['Range tes routines par programme. <b>Appuie longtemps</b> sur une routine pour en sélectionner plusieurs (déplacer, supprimer, changer l\'ordre). Le menu ⋯ a les autres options.', 'Organize routines by program. <b>Long-press</b> a routine to select several (move, delete, reorder). The ⋯ menu has the other options.']},
-    {sel: 'nav', t: ['🧭 Les onglets', '🧭 The tabs'], d: ['Étirements, Cardio, Intervalles, Guilde et Profil : ouvre-les quand tu veux, chacun te montrera ses trucs la première fois.', 'Stretching, Cardio, Intervals, Guild and Profile: open them anytime, each one will show you its tricks the first time.']},
-    {when: () => !(cbOn() || FRS().fb), t: ['💾 Ta sauvegarde', '💾 Your backup'], d: ['Tes données restent dans ton téléphone. Le plus simple : Réglages → Sauvegarde → <b>Se connecter avec Google</b>, et tout se sauvegarde tout seul après chaque séance.', 'Your data stays on your phone. Easiest: Settings → Backup → <b>Sign in with Google</b>, and everything is saved automatically after each workout.']},
-    {tab: 'train', t: ['💪 C\'est à toi!', '💪 Your turn!'], d: ['Lance ta première séance : on te montrera les trucs utiles pendant l\'entraînement. Tu peux revoir toutes les visites dans Réglages → Général → Visites guidées.', 'Start your first workout: we\'ll show you the useful tricks during the session. Replay any tour in Settings → General → Guided tours.']}
-  ],
-  stretch: [
-    {sel: '[data-act="st-go"]', t: ['🧘 Étirements guidés', '🧘 Guided stretching'], d: ['Touche une routine pour la lancer : chaque étirement s\'affiche avec une image et un minuteur, avec un bip pour changer de côté.', 'Tap a routine to start it: each stretch shows with a picture and a timer, with a beep to switch sides.']},
-    {sel: '[data-act="st-menu"]', t: ['⋯ Options', '⋯ Options'], d: ['Modifier, dupliquer, partager avec un ami ou supprimer. <b>Appuie longtemps</b> sur une routine pour changer l\'ordre ou en sélectionner plusieurs.', 'Edit, duplicate, share with a friend or delete. <b>Long-press</b> a routine to reorder or select several.']},
-    {sel: '[data-act="st-new"]', t: ['➕ Ta propre routine', '➕ Your own routine'], d: ['Choisis tes étirements, leur durée et s\'ils se font des deux côtés.', 'Pick your stretches, their duration and whether they\'re done on both sides.']},
-    {sel: '[data-act="pcode"]', t: ['📥 Code reçu', '📥 Code received'], d: ['Un ami t\'a envoyé une routine? Colle son message ici pour l\'ajouter.', 'A friend sent you a routine? Paste their message here to add it.']}
-  ],
-  cardio: [
-    {sel: '[data-act="me-edit"]', t: ['👤 Tes infos', '👤 Your info'], d: ['Entre ton poids, ta grandeur, ton âge et ton sexe une seule fois : les calories et les pas sont calculés pour toi.', 'Enter your weight, height, age and sex once: calories and steps are calculated for you.']},
-    {sel: '.cvkinds', t: ['🚶 Ton activité', '🚶 Your activity'], d: ['Tapis, course, vélo, elliptique, escaliers, rameur ou corde. Glisse pour voir les autres.', 'Treadmill, run, bike, elliptical, stairs, rower or jump rope. Swipe to see the others.']},
-    {sel: '#cvin', t: ['👣 Tes chiffres', '👣 Your numbers'], d: ['Sur le tapis, entre tes pas et l\'inclinaison (ex. 1 000 pas à 15 %) : tu vois l\'équivalent en pas à plat, en km et en calories. Ou choisis « Temps et vitesse ».', 'On the treadmill, enter your steps and incline (e.g. 1,000 steps at 15%): you see the flat-ground equivalent in steps, km and calories. Or choose “Time & speed”.']},
-    {sel: '[data-act="cv-save"]', t: ['💾 Garde-le', '💾 Save it'], d: ['Ajoute-le à ton historique. Pendant une séance, le bouton « Ajouter du cardio » fait la même chose à la fin de ton entraînement.', 'Add it to your history. During a workout, the “Add cardio” button does the same at the end of your session.']}
-  ],
-  timers: [
-    {sel: '[data-act="chr-open"]', t: ['⏱ Chronomètre', '⏱ Stopwatch'], d: ['Un chrono simple, qui continue même si tu changes d\'onglet.', 'A simple stopwatch that keeps running even if you switch tabs.']},
-    {sel: '[data-act="tm-go"]', t: ['▶ Minuteurs', '▶ Timers'], d: ['Tabata, HIIT, EMOM… Touche ▶ pour lancer : bips, vibrations et notifications sur la montre à chaque changement.', 'Tabata, HIIT, EMOM… Tap ▶ to start: beeps, vibrations and watch notifications at each change.']},
-    {sel: '[data-act="tm-new"]', t: ['➕ Ton minuteur', '➕ Your timer'], d: ['Crée un minuteur sur mesure : temps d\'effort, de repos, nombre de tours et blocs.', 'Build a custom timer: work time, rest time, rounds and blocks.']},
-    {sel: '[data-act="tm-menu"]', t: ['⋯ Options', '⋯ Options'], d: ['Modifier, dupliquer, partager ou supprimer. <b>Appuie longtemps</b> pour changer l\'ordre ou en sélectionner plusieurs.', 'Edit, duplicate, share or delete. <b>Long-press</b> to reorder or select several.']}
-  ],
-  profile: [
-    {sel: '[data-act="avatar"]', t: ['📷 Ta photo', '📷 Your photo'], d: ['Ajoute une photo de profil, prise sur le moment ou dans ton album.', 'Add a profile photo, taken now or from your album.']},
-    {sel: '[data-act="bw-quick"]', t: ['⚖️ Ton poids', '⚖️ Your weight'], d: ['Note ton poids en 2 secondes et suis ta courbe. « Mesures et photos » garde tes mensurations et tes photos de progrès (incluses dans ta sauvegarde privée).', 'Log your weight in 2 seconds and follow your curve. “Measures & photos” keeps your measurements and progress photos (included in your private backup).']},
-    {sel: '.frcard', t: ['👥 Amis', '👥 Friends'], d: ['Suis les entraînements de tes amis et réagis à leurs séances. Une petite visite t\'attend là aussi.', 'Follow your friends\' workouts and react to their sessions. A short tour waits there too.']},
-    {sel: '[data-act="pf-metric"]', t: ['📈 Ta progression', '📈 Your progress'], d: ['Durée, volume ou reps par semaine. Touche une barre pour le détail, glisse pour voir avant.', 'Time, volume or reps per week. Tap a bar for details, swipe to see earlier.']},
-    {sel: '[data-act="go"][data-v="stats"]', t: ['📊 Tableau de bord', '📊 Dashboard'], d: ['Statistiques, records par exercice, calendrier, médailles et récupération musculaire.', 'Stats, records per exercise, calendar, medals and muscle recovery.']},
-    {sel: '[data-act="go"][data-v="history"]', t: ['🕓 Historique', '🕓 History'], d: ['Toutes tes séances. Touche une séance pour la modifier, ajouter une photo, la partager ou la mettre dans un dossier. Tu as oublié d\'en noter une? Ajoute-la là avec la bonne date.', 'All your workouts. Tap one to edit it, add a photo, share it or put it in a folder. Forgot to log one? Add it there with the right date.']},
-    {sel: '#hdr [data-v="settings"]', t: ['⚙️ Réglages', '⚙️ Settings'], d: ['Sauvegarde Google, son, vibration, montre, couleurs, langue… et toutes les visites guidées.', 'Google backup, sound, vibration, watch, colors, language… and all the guided tours.']}
-  ],
-  friends: [
-    {sel: '[data-act="fr-start"], [data-act="fr-code"]', t: ['👥 Partage', '👥 Sharing'], d: ['Active le partage avec Google : tes amis verront tes séances, tes records et ta série 🔥. Ton poids corporel et tes mesures ne sont jamais partagés, et tes photos seulement si tu le choisis.', 'Turn on sharing with Google: friends will see your workouts, records and 🔥 streak. Your body weight and measurements are never shared, and photos only if you choose.']},
-    {sel: '#frsq, [data-act="fr-add"]', t: ['＋ Ajouter un ami', '＋ Add a friend'], d: ['Cherche ton ami avec son <b>@pseudo</b> ou son nom, puis touche <b>Ajouter</b>. Il reçoit une demande : dès qu\'il accepte, vous voyez vos séances. Ses demandes à toi arrivent dans la cloche 🔔.', 'Search your friend by <b>@username</b> or name, then tap <b>Add</b>. They get a request: once they accept, you see each other\'s workouts. Requests to you arrive in the bell 🔔.']},
-    {t: ['🔥 Le fil', '🔥 The feed'], d: ['Les séances de tes amis s\'affichent ici. Réagis avec 🔥 💪 👏 : ils le verront la prochaine fois qu\'ils ouvrent l\'appli. Dans « Ce que tes amis voient », tu peux cacher tes poids ou rendre une séance privée.', 'Your friends\' workouts show here. React with 🔥 💪 👏: they\'ll see it next time they open the app. In “What friends see”, you can hide your weights or make a workout private.']}
-  ],
-  body: [
-    {sel: '[data-act="ph-add"]', t: ['📸 Photos de progrès', '📸 Progress photos'], d: ['Une photo par semaine, prise sur le moment ou dans ton album. Compare deux dates côte à côte. Elles sont dans ta sauvegarde privée. Touche une photo pour la partager avec tes amis, si tu veux.', 'One photo a week, taken now or from your album. Compare two dates side by side. They are in your private backup. Tap a photo to share it with your friends, if you want.']},
-    {sel: '[data-act="body-save"]', t: ['📏 Mensurations', '📏 Measurements'], d: ['Poids, tour de taille, bras, poitrine… Note-les de temps en temps pour voir tes courbes.', 'Weight, waist, arms, chest… Log them from time to time to see your curves.']}
-  ],
-  guild: [
-    {t: ['⚔️ Bienvenue dans la Guilde', '⚔️ Welcome to the Guild'], d: ['Chaque séance te donne de l\'XP : monte de niveau et de rang (E → D → C → B → A → S), accomplis des quêtes et débloque des récompenses. Tout se fait tout seul en t\'entraînant.', 'Every workout gives you XP: level up and rank up (E → D → C → B → A → S), complete quests and unlock rewards. It all happens just by training.']},
-    {sel: '#gstatus', t: ['📊 Ton statut', '📊 Your status'], d: ['Ton niveau, ton rang et ta classe (selon ta façon de t\'entraîner). Touche la barre d\'XP pour voir d\'où vient ton XP.', 'Your level, rank and class (based on how you train). Tap the XP bar to see where your XP comes from.']},
-    {sel: '[data-gid="next"]', t: ['🎯 Objectifs', '🎯 Goals'], d: ['Les prochaines récompenses que tu es proche de débloquer, et ce qu\'il te reste à faire.', 'The next rewards you\'re close to unlocking, and what\'s left to do.']},
-    {sel: '[data-gid="quests"]', t: ['🏆 Quêtes', '🏆 Quests'], d: ['Une quête par jour, un donjon par semaine, un boss par mois. Attention : une quête du jour ratée te coûte de l\'XP.', 'A quest a day, a dungeon a week, a boss a month. Careful: a missed daily quest costs you XP.']},
-    {sel: '[data-gid="raid"]', t: ['🛡️ Raid', '🛡️ Raid'], d: ['Avec tes amis : faites ensemble un nombre de reps dans la semaine pour vaincre le boss et gagner de l\'XP.', 'With your friends: do a number of reps together during the week to beat the boss and earn XP.']},
-    {sel: '[data-gid="season"]', t: ['👑 Saison', '👑 Season'], d: ['Chaque mois, celui qui gagne le plus d\'XP parmi tes amis remporte le trophée de la saison.', 'Every month, whoever earns the most XP among your friends wins the season trophy.']},
-    {sel: '[data-gid="arm"]', t: ['🛡️ Armurerie', '🛡️ Armory'], d: ['Titres, cadres, bannières, blasons, effets et thèmes. Touche une récompense pour la voir et savoir comment l\'obtenir.', 'Titles, frames, banners, crests, effects and themes. Tap a reward to preview it and see how to get it.']},
-    {sel: '.gtiles', t: ['🗺️ Le reste', '🗺️ The rest'], d: ['Ton arsenal, tes rangs par muscle, tes médailles, tes amis et le classement mondial.', 'Your arsenal, muscle ranks, medals, friends and the world ranking.']}
+    {ic: 'compass', t: ['Bienvenue dans Runelift', 'Welcome to Runelift'], d: ['Voici l\'essentiel en 30 secondes. Chaque onglet a aussi sa petite visite, la première fois que tu l\'ouvres.', 'Here are the basics in 30 seconds. Each tab also has its own short tour the first time you open it.']},
+    {ic: 'calendar', tab: 'train', sel: '.card.today, [data-act="sched-edit"]', t: ['Ta semaine', 'Your week'], d: ['La séance prévue aujourd\'hui s\'affiche ici, prête à lancer. Touche pour changer ton horaire : des jours fixes ou un cycle (Push, Pull, Legs…).', 'Today\'s planned workout shows up here, ready to start. Tap to change your schedule: fixed days or a cycle (Push, Pull, Legs…).']},
+    {ic: 'spark', tab: 'train', sel: '[data-act="gen-open"]', t: ['Une séance faite pour aujourd\'hui', 'A workout made for today'], d: ['Pas d\'idée? L\'appli te propose une séance selon tes muscles reposés et ce que tu as moins travaillé cette semaine.', 'No idea? The app suggests a workout from your rested muscles and what you trained less this week.']},
+    {ic: 'plus', tab: 'train', sel: '[data-act="start-empty"]', t: ['Séance libre', 'Free workout'], d: ['Commence sans routine et ajoute tes exercices au fur et à mesure.', 'Start without a routine and add exercises as you go.']},
+    {ic: 'clip', tab: 'train', sel: '[data-act="new-routine"]', t: ['Tes routines', 'Your routines'], d: ['Crée une routine : exercices, séries, répétitions, charges et repos. Plus de 1 000 exercices, avec leurs muscles et leurs animations.', 'Build a routine: exercises, sets, reps, weights and rest. Over 1,000 exercises, with their muscles and animations.']},
+    {ic: 'bot', tab: 'train', sel: '[data-act="ai-menu"]', t: ['Assistant IA', 'AI assistant'], d: ['Crée un programme sur mesure ou fais améliorer le tien. L\'appli te guide étape par étape avec ChatGPT, Claude ou Gemini.', 'Create a custom program or improve yours. The app guides you step by step with ChatGPT, Claude or Gemini.']},
+    {ic: 'folder', tab: 'train', sel: '.folder .fhead', t: ['Dossiers', 'Folders'], d: ['Range tes routines par programme. <b>Appuie longtemps</b> sur une routine pour en sélectionner plusieurs : déplacer, supprimer, changer l\'ordre.', 'Organize your routines by program. <b>Long-press</b> a routine to select several: move, delete, reorder.']},
+    {ic: 'compass', sel: 'nav', t: ['Les onglets', 'The tabs'], d: ['Étirements, Cardio, Intervalles, Guilde et Profil. Chacun te montre ses trucs la première fois que tu l\'ouvres.', 'Stretching, Cardio, Intervals, Guild and Profile. Each one shows you its tricks the first time you open it.']},
+    {ic: 'flag', tab: 'train', t: ['À toi de jouer', 'Your turn'], d: ['Lance ta première séance : une courte visite te montrera comment noter tes séries. Tu peux revoir toutes les visites dans Réglages → Aide.', 'Start your first workout: a short tour will show you how to log your sets. Replay any tour in Settings → Help.']}
   ],
   wo: [
-    {sel: '.setrow input[data-in="w"]', t: ['🏋️ Charge et reps', '🏋️ Weight and reps'], d: ['Entre ta charge et tes reps. La colonne « Précédent » montre ta dernière fois : touche-la pour la recopier.', 'Enter your weight and reps. The “Previous” column shows last time: tap it to copy it.']},
-    {sel: '.setrow .check', t: ['✓ Coche ta série', '✓ Check your set'], d: ['Le minuteur de repos démarre tout seul (avec bip et notification sur la montre) et la page descend vers la prochaine série.', 'The rest timer starts by itself (with a beep and a watch notification) and the page scrolls to your next set.']},
-    {sel: '.setrow .nb', t: ['🔢 Type de série', '🔢 Set type'], d: ['Touche le numéro pour en faire un échauffement, un drop set ou une série à l\'échec, ou pour ajouter un RIR et une note.', 'Tap the number to make it a warm-up, drop set or failure set, or to add RIR and a note.']},
-    {sel: '[data-act="ex-menu"]', t: ['⋯ Options de l\'exercice', '⋯ Exercise options'], d: ['Remplacer l\'exercice, faire un superset, changer le repos, convertir kg ↔ lb sur une machine…', 'Replace the exercise, make a superset, change rest, convert kg ↔ lb on a machine…']},
-    {sel: '.cardiobtn', t: ['🏃 Cardio', '🏃 Cardio'], d: ['Tapis, vélo ou elliptique à la fin? Ajoute-le ici : calories et pas équivalents sont calculés pour toi.', 'Treadmill, bike or elliptical at the end? Add it here: calories and equivalent steps are calculated for you.']},
-    {sel: '#hdr [data-act="finish"]', t: ['🏁 Terminer', '🏁 Finish'], d: ['À la fin, touche Terminer : tu verras ta durée, tes records et une image à partager. Bon entraînement!', 'When done, tap Finish: you\'ll see your time, your records and an image to share. Have a great workout!']}
+    {ic: 'dumbbell', sel: '.setrow input[data-in="w"]', t: ['Charge et répétitions', 'Weight and reps'], d: ['Entre ta charge et tes reps. La colonne « Précédent » montre ta dernière fois : touche-la pour la recopier.', 'Enter your weight and reps. The “Previous” column shows last time: tap it to copy it.']},
+    {ic: 'check', sel: '.setrow .check', t: ['Coche ta série', 'Check your set'], d: ['Le repos démarre tout seul, avec un bip et une notification (aussi sur ta montre), et la page passe à ta série suivante.', 'Rest starts on its own, with a beep and a notification (on your watch too), and the page moves to your next set.']},
+    {ic: 'hash', sel: '.setrow .nb', t: ['Type de série', 'Set type'], d: ['Touche le numéro pour en faire un échauffement, un drop set ou une série à l\'échec, ou pour ajouter un RIR et une note.', 'Tap the number to make it a warm-up, drop set or failure set, or to add RIR and a note.']},
+    {ic: 'more', sel: '[data-act="ex-menu"]', t: ['Options de l\'exercice', 'Exercise options'], d: ['Remplacer l\'exercice, faire un superset, changer le repos, convertir kg ↔ lb sur une machine…', 'Replace the exercise, make a superset, change rest, convert kg ↔ lb on a machine…']},
+    {ic: 'heart', sel: '.cardiobtn', t: ['Cardio', 'Cardio'], d: ['Tapis, vélo ou elliptique à la fin? Ajoute-le ici : les calories et les pas sont calculés pour toi.', 'Treadmill, bike or elliptical at the end? Add it here: calories and steps are calculated for you.']},
+    {ic: 'flag', sel: '#hdr [data-act="finish"]', t: ['Terminer', 'Finish'], d: ['À la fin, touche Terminer : tu verras ta durée, tes records et une image à partager. Tu peux aussi ajouter jusqu\'à 3 photos de ta séance.', 'When done, tap Finish: you\'ll see your time, your records and an image to share. You can also add up to 3 photos of your workout.']}
+  ],
+  stretch: [
+    {ic: 'yoga', sel: '[data-act="st-go"]', t: ['Étirements guidés', 'Guided stretching'], d: ['Touche une routine pour la lancer : chaque étirement s\'affiche avec une image et un minuteur, et un bip t\'avertit de changer de côté.', 'Tap a routine to start it: each stretch shows with a picture and a timer, and a beep tells you to switch sides.']},
+    {ic: 'more', sel: '[data-act="st-menu"]', t: ['Options', 'Options'], d: ['Modifier, dupliquer, partager avec un ami ou supprimer. <b>Appuie longtemps</b> sur une routine pour changer l\'ordre ou en sélectionner plusieurs.', 'Edit, duplicate, share with a friend or delete. <b>Long-press</b> a routine to reorder or select several.']},
+    {ic: 'plus', sel: '[data-act="st-new"]', t: ['Ta propre routine', 'Your own routine'], d: ['Choisis tes étirements, leur durée et s\'ils se font des deux côtés.', 'Pick your stretches, their duration and whether they\'re done on both sides.']},
+    {ic: 'down', sel: '[data-act="pcode"]', t: ['Routine reçue', 'Routine received'], d: ['Un ami t\'a envoyé une routine? Colle son message ici pour l\'ajouter.', 'A friend sent you a routine? Paste their message here to add it.']}
+  ],
+  cardio: [
+    {ic: 'user', sel: '[data-act="me-edit"]', t: ['Tes infos', 'Your info'], d: ['Ton poids, ta taille, ton âge et ton sexe, une seule fois : les calories et les pas sont calculés pour toi.', 'Your weight, height, age and sex, just once: calories and steps are calculated for you.']},
+    {ic: 'play', sel: '[data-act="cl-start"]', t: ['Cardio en direct', 'Live cardio'], d: ['Lance ton cardio en direct : chrono, distance par GPS dehors, et tes pas et ton pouls avec ta montre.', 'Start your cardio live: timer, GPS distance outdoors, and your steps and heart rate with your watch.']},
+    {ic: 'crun', sel: '.cvkinds', t: ['Déjà fait? Convertis-le', 'Already done? Convert it'], d: ['Tapis, course, vélo, elliptique, escaliers, rameur ou corde. Glisse pour voir les autres.', 'Treadmill, run, bike, elliptical, stairs, rower or jump rope. Swipe to see the others.']},
+    {ic: 'cwalk', sel: '#cvin', t: ['Tes chiffres', 'Your numbers'], d: ['Sur le tapis, entre tes pas et la pente : tu vois l\'équivalent en pas à plat, en km et en calories. Ou choisis « Temps et vitesse ».', 'On the treadmill, enter your steps and incline: you see the flat-ground equivalent in steps, km and calories. Or choose “Time & speed”.']},
+    {ic: 'save', sel: '[data-act="cv-save"]', t: ['Garde-le', 'Save it'], d: ['Ajoute-le à ton historique. Pendant une séance de muscu, le bouton « Ajouter du cardio » fait la même chose.', 'Add it to your history. During a strength workout, the “Add cardio” button does the same.']}
+  ],
+  timers: [
+    {ic: 'clock', sel: '[data-act="chr-open"]', t: ['Chronomètre', 'Stopwatch'], d: ['Un chrono simple, avec des tours, qui continue même si tu changes d\'onglet.', 'A simple stopwatch with laps that keeps running even if you switch tabs.']},
+    {ic: 'timer', sel: '[data-act="tm-go"]', t: ['Minuteurs', 'Timers'], d: ['Tabata, HIIT, EMOM… Touche ▶ pour lancer : bip, vibration et notification sur ta montre à chaque changement.', 'Tabata, HIIT, EMOM… Tap ▶ to start: beep, vibration and a notification on your watch at each change.']},
+    {ic: 'plus', sel: '[data-act="tm-new"]', t: ['Ton minuteur', 'Your timer'], d: ['Crée un minuteur sur mesure : temps d\'effort, de repos, nombre de tours et blocs.', 'Build a custom timer: work time, rest time, rounds and blocks.']},
+    {ic: 'more', sel: '[data-act="tm-menu"]', t: ['Options', 'Options'], d: ['Modifier, dupliquer, partager ou supprimer. <b>Appuie longtemps</b> pour changer l\'ordre ou en sélectionner plusieurs.', 'Edit, duplicate, share or delete. <b>Long-press</b> to reorder or select several.']}
+  ],
+  profile: [
+    {ic: 'camera', sel: '[data-act="avatar"]', t: ['Ta photo', 'Your photo'], d: ['Ajoute une photo de profil, prise sur le moment ou dans ton album.', 'Add a profile photo, taken now or from your album.']},
+    {ic: 'scale', sel: '[data-act="bw-quick"]', t: ['Ton poids', 'Your weight'], d: ['Note ton poids en 2 secondes et suis ta courbe. « Mesures et photos » garde tes mensurations et tes photos de progrès.', 'Log your weight in 2 seconds and follow your curve. “Measures & photos” keeps your measurements and progress photos.']},
+    {ic: 'users', sel: '.frcard', t: ['Amis', 'Friends'], d: ['Suis les séances de tes amis, encourage-les et lance-leur des défis. Une petite visite t\'attend là aussi.', 'Follow your friends\' workouts, cheer them on and challenge them. A short tour waits there too.']},
+    {ic: 'chart', sel: '[data-act="pf-metric"]', t: ['Ta progression', 'Your progress'], d: ['Durée, volume ou reps par semaine. Touche une barre pour le détail, glisse pour voir avant.', 'Time, volume or reps per week. Tap a bar for details, swipe to see earlier.']},
+    {ic: 'trophy', sel: '[data-act="go"][data-v="stats"]', t: ['Statistiques', 'Stats'], d: ['Records par exercice, calendrier, médailles, rangs par muscle, bilan du mois et de l\'année.', 'Records per exercise, calendar, medals, muscle ranks, monthly and yearly recap.']},
+    {ic: 'calendar', sel: '[data-act="go"][data-v="history"]', t: ['Historique', 'History'], d: ['Toutes tes séances. Touche-en une pour la modifier, ajouter une photo ou la partager. Tu as oublié d\'en noter une? Ajoute-la avec la bonne date.', 'All your workouts. Tap one to edit it, add a photo or share it. Forgot to log one? Add it with the right date.']},
+    {ic: 'gear', sel: '#hdr [data-v="settings"]', t: ['Réglages', 'Settings'], d: ['Tous tes réglages, avec une recherche : unités, repos, son, notifications, apparence, sauvegarde. Les visites guidées sont dans Aide.', 'All your settings, with search: units, rest, sound, notifications, appearance, backup. Guided tours are in Help.']}
+  ],
+  friends: [
+    {ic: 'users', sel: '[data-act="fr-start"], [data-act="fr-code"]', t: ['Ce que tu partages', 'What you share'], d: ['Tes amis voient tes séances, tes records et ta série de semaines. Ton poids et tes mesures ne sont jamais partagés, et tes photos seulement si tu le choisis.', 'Friends see your workouts, records and weekly streak. Your weight and measurements are never shared, and photos only if you choose.']},
+    {ic: 'plus', sel: '#frsq, [data-act="fr-add"]', t: ['Ajouter un ami', 'Add a friend'], d: ['Cherche ton ami avec son <b>@pseudo</b> ou son nom, puis touche <b>Ajouter</b>. Dès qu\'il accepte, vous voyez vos séances. Les demandes reçues arrivent dans la cloche.', 'Search your friend by <b>@username</b> or name, then tap <b>Add</b>. Once they accept, you see each other\'s workouts. Requests you get arrive in the bell.']},
+    {ic: 'flame', sel: '.frpost', t: ['Le fil', 'The feed'], d: ['Les séances de tes amis arrivent ici. Touche la flamme pour les encourager, commente, ou « Faire cette séance » pour la refaire ou l\'enregistrer comme routine.', 'Your friends\' workouts show up here. Tap the flame to cheer them on, comment, or “Do this workout” to redo it or save it as a routine.']},
+    {ic: 'swords', sel: '[data-act="ch-new"]', when: () => !!document.querySelector('[data-act="ch-new"]'), t: ['Défis', 'Challenges'], d: ['Lance un défi à un ami : le plus de volume, de séances, de reps, ou un duel de classe.', 'Challenge a friend: most volume, workouts, reps, or a class duel.']},
+    {ic: 'lock', sel: '.frpriv', when: () => !!document.querySelector('.frpriv'), t: ['Ce que tes amis voient', 'What friends see'], d: ['Cache tes charges, rends une séance privée, et retrouve ici les personnes que tu as bloquées.', 'Hide your weights, make a workout private, and find the people you blocked here.']}
+  ],
+  body: [
+    {ic: 'camera', sel: '[data-act="ph-add"]', t: ['Photos de progrès', 'Progress photos'], d: ['Une photo par semaine, prise sur le moment ou dans ton album. Compare deux dates côte à côte. Elles restent privées, sauf si tu choisis d\'en partager une avec tes amis.', 'One photo a week, taken now or from your album. Compare two dates side by side. They stay private, unless you choose to share one with your friends.']},
+    {ic: 'ruler', sel: '[data-act="body-save"]', t: ['Mensurations', 'Measurements'], d: ['Poids, tour de taille, bras, poitrine… Note-les de temps en temps pour voir tes courbes.', 'Weight, waist, arms, chest… Log them from time to time to see your curves.']}
+  ],
+  guild: [
+    {ic: 'swords', gtab: 'day', t: ['Bienvenue dans la Guilde', 'Welcome to the Guild'], d: ['Chaque séance te donne de l\'XP : monte de niveau et de rang (E, D, C, B, A, S), accomplis des quêtes et débloque des récompenses. Tout se fait en t\'entraînant.', 'Every workout gives you XP: level up and rank up (E, D, C, B, A, S), complete quests and unlock rewards. It all happens just by training.']},
+    {ic: 'chart', gtab: 'day', sel: '#gstatus', t: ['Ton statut', 'Your status'], d: ['Ton niveau, ton rang et ta classe, choisie selon ta façon de t\'entraîner. Touche la barre d\'XP pour voir d\'où vient ton XP.', 'Your level, rank and class, picked from how you train. Tap the XP bar to see where your XP comes from.']},
+    {ic: 'zap', gtab: 'day', sel: '.ctiles', t: ['Ta classe', 'Your class'], d: ['Ton pouvoir de la semaine, ton histoire, tes talents et ton arme. Ils changent tes quêtes et tes attaques de raid.', 'Your power of the week, your story, your talents and your weapon. They shape your quests and your raid attacks.']},
+    {ic: 'target', gtab: 'day', sel: '[data-gid="today"]', t: ['Aujourd\'hui', 'Today'], d: ['Tes quêtes du jour, le donjon de la semaine et le boss du mois. Attention : une quête du jour ratée te coûte de l\'XP.', 'Your daily quests, the dungeon of the week and the boss of the month. Careful: a missed daily quest costs you XP.']},
+    {ic: 'shield', gtab: 'raid', sel: '[data-gid="myguild"]', t: ['Raid de guilde', 'Guild raid'], d: ['Crée ou rejoins une guilde avec tes amis. Vos séances donnent des attaques : ensemble, faites tomber le boss de la semaine.', 'Create or join a guild with your friends. Your workouts give attacks: together, take down the boss of the week.']},
+    {ic: 'trophy', gtab: 'rank', sel: '[data-gid="league"]', t: ['Ligues de la semaine', 'Weekly leagues'], d: ['Chaque semaine, tu affrontes les aventuriers de ta ligue. Seule l\'XP de la semaine compte : le haut du classement monte de ligue, le bas descend.', 'Each week, you face the adventurers in your league. Only this week\'s XP counts: the top moves up a league, the bottom moves down.']},
+    {ic: 'crown', gtab: 'rank', sel: '[data-gid="season"]', t: ['Saison du mois', 'Season of the month'], d: ['Chaque mois, celui qui gagne le plus d\'XP parmi tes amis remporte le trophée de la saison.', 'Every month, whoever earns the most XP among your friends wins the season trophy.']},
+    {ic: 'gem', gtab: 'coll', sel: '[data-gid="coll"]', t: ['Collection', 'Collection'], d: ['Titres, cadres, bannières, blasons, effets et thèmes. Touche une récompense pour la voir et savoir comment l\'obtenir.', 'Titles, frames, banners, crests, effects and themes. Tap a reward to preview it and see how to get it.']}
   ]
 };
 let tourSt = null;
 function tourStart(k) {
   if (tourSt) return;
   S.settings.tour = S.settings.tour || {}; S.settings.tour[k] = 1; saveLocal();
-  tourSt = {k, i: 0, L: TOURS[k].filter(st => (!st.when || st.when()) && (k !== 'guild' || !st.sel || [...[...document.querySelectorAll(st.sel)].filter(e => !e.closest('.tabghost'))].find(e => !e.closest('.tabghost'))))};
+  tourSt = {k, i: 0, gt0: S.settings.gTab, L: TOURS[k].filter(st => !st.when || st.when())};
   const el = document.createElement('div'); el.id = 'tour';
   el.innerHTML = '<div class="tspot none"></div><div class="tbub"></div>';
   el.addEventListener('click', e => {
@@ -7390,28 +7398,37 @@ function tourStart(k) {
   });
   document.body.appendChild(el); tourGo(0);
 }
-function tourEnd() { const el = $('#tour'); if (el) el.remove(); const k = tourSt && tourSt.k; tourSt = null; if (k === 'main' && cur().v !== 'train') { setRoot('train'); render(); window.scrollTo(0, 0); } }
+function tourEnd() {
+  const el = $('#tour'); if (el) el.remove(); const k = tourSt && tourSt.k, gt0 = tourSt && tourSt.gt0; tourSt = null;
+  if (k === 'guild' && S.settings.gTab !== gt0 && cur().v === 'guild') { S.settings.gTab = gt0; render(); window.scrollTo(0, 0); }
+  if (k === 'main' && cur().v !== 'train') { setRoot('train'); render(); window.scrollTo(0, 0); }
+}
 function tourGo(i) {
   const L = tourSt.L; if (i >= L.length) return tourEnd(); if (i < 0) i = 0;
   tourSt.i = i; const st = L[i];
   if (st.tab && (stack.length > 1 || stack[0].v !== st.tab)) { setRoot(st.tab); render(); window.scrollTo(0, 0); }
+  if (st.gtab && cur().v === 'guild' && S.settings.gTab !== st.gtab) { S.settings.gTab = st.gtab; render(); window.scrollTo(0, 0); }
   const find = () => st.sel ? [...[...document.querySelectorAll(st.sel)].filter(e => !e.closest('.tabghost'))].find(x => x.offsetParent !== null || getComputedStyle(x).position === 'fixed') : null;
   const tg = find();
-  if (tg && !tg.closest('nav, header')) { const r = tg.getBoundingClientRect(); if (r.top < 70 || r.bottom > innerHeight - 220) tg.scrollIntoView({block: 'center'}); }
-  setTimeout(() => tourPlace(find()), tg ? 260 : 0);
+  if (tg && !tg.closest('nav, header')) { const r = tg.getBoundingClientRect(); if (r.top < 70 || r.bottom > innerHeight - 240) tg.scrollIntoView({block: r.height > innerHeight * .45 ? 'start' : 'center'}); }
+  setTimeout(() => tourPlace(find()), tg ? 280 : 0);
 }
 function tourPlace(tg) {
   const box = $('#tour'); if (!box || !tourSt) return;
-  const L = tourSt.L, i = tourSt.i, st = L[i], sp = box.querySelector('.tspot'), bub = box.querySelector('.tbub');
-  bub.innerHTML = `<h3>${T(st.t[0], st.t[1])}</h3><p>${T(st.d[0], st.d[1])}</p>
-    <div class="row between"><div class="tdots">${L.map((_, j) => `<i class="${j === i ? 'on' : ''}"></i>`).join('')}</div>
-    <div class="row" style="gap:6px">${i < L.length - 1 ? `<button class="btn sm ghost" data-tour="skip">${T('Passer', 'Skip')}</button>` : ''}${i ? `<button class="btn sm" data-tour="prev">←</button>` : ''}<button class="btn sm primary" data-tour="next">${i < L.length - 1 ? T('Suivant', 'Next') : T('Terminé', 'Done')}</button></div></div>`;
-  if (!tg) { sp.className = 'tspot none'; bub.style.top = Math.max(80, innerHeight * .32) + 'px'; return; }
-  const r = tg.getBoundingClientRect(), pd = 6;
+  const L = tourSt.L, i = tourSt.i, st = L[i], sp = box.querySelector('.tspot'), bub = box.querySelector('.tbub'), last = i === L.length - 1;
+  bub.innerHTML = `<div class="thd"><span class="stile" style="--h:var(--accent)">${ic(st.ic || 'compass', 18)}</span><h3>${T(st.t[0], st.t[1])}</h3>${L.length > 1 ? `<span class="tnum">${i + 1} / ${L.length}</span>` : ''}</div><p>${T(st.d[0], st.d[1])}</p>
+    <div class="tft">${last ? '' : `<button class="tskip" data-tour="skip">${T('Passer', 'Skip')}</button>`}<span style="flex:1"></span>${i ? `<button class="btn sm tprev" data-tour="prev" aria-label="${T('Précédent', 'Previous')}">${ic('back', 16)}</button>` : ''}<button class="btn sm primary" data-tour="next">${last ? T('Terminé', 'Done') : T('Suivant', 'Next')}</button></div>
+    <div class="tbar"><i style="width:${Math.round((i + 1) / L.length * 100)}%"></i></div>`;
+  bub.classList.remove('up', 'down');
+  if (!tg) { sp.className = 'tspot none'; bub.style.top = Math.max(80, innerHeight * .3) + 'px'; return; }
+  const r = tg.getBoundingClientRect(), pd = 6, big = r.height > innerHeight * .5;
   sp.className = 'tspot';
-  Object.assign(sp.style, {left: (r.left - pd) + 'px', top: (r.top - pd) + 'px', width: (r.width + pd * 2) + 'px', height: (r.height + pd * 2) + 'px'});
-  const bh = bub.offsetHeight || 170;
-  bub.style.top = (r.bottom + pd + 14 + bh < innerHeight - 10 ? r.bottom + pd + 14 : Math.max(10, r.top - pd - 14 - bh)) + 'px';
+  const top = Math.max(4, r.top - pd), bot = Math.min(innerHeight - 4, r.bottom + pd);
+  Object.assign(sp.style, {left: (r.left - pd) + 'px', top: top + 'px', width: (r.width + pd * 2) + 'px', height: Math.max(20, bot - top) + 'px'});
+  const bh = bub.offsetHeight || 190, below = bot + 16 + bh < innerHeight - 10, above = top - 16 - bh > 10;
+  let y; if (below) { y = bot + 16; bub.classList.add('down'); } else if (above) { y = top - 16 - bh; bub.classList.add('up'); } else y = big ? innerHeight - bh - 24 : Math.max(10, innerHeight - bh - 24);
+  bub.style.top = y + 'px';
+  const br = bub.getBoundingClientRect(); bub.style.setProperty('--ax', Math.max(22, Math.min(br.width - 22, r.left + r.width / 2 - br.left)) + 'px');
 }
 addEventListener('resize', () => { if (tourSt) tourGo(tourSt.i); });
 const TOUR_VIEW = {stretch: 'stretch', cardio: 'cardio', timers: 'timers', profile: 'profile', friends: 'friends', measures: 'body', guild: 'guild'};
@@ -7420,7 +7437,7 @@ function maybeTourView(v) {
   const k = TOUR_VIEW[v];
   if (!k || tourSt || modals.length || cur().v !== v || !S.settings.onboarded || (S.settings.tour || {})[k]) return;
   if (k !== 'body' && k !== 'friends' && stack.length > 1) return;
-  if (k === 'guild' && !document.querySelector('#gstatus')) return; // Guilde vide (aucune séance) : la visite attendra la 1re séance
+  if (k === 'guild' && !S.history.length) return; // Guilde vide (aucune séance) : la visite attendra la 1re séance
   tourStart(k);
 }
 function tourReplay(k) {
@@ -9419,7 +9436,7 @@ function lgResult(h, n = 0) {
 function lgCard() {
   if (!GAME()) return '';
   const info = ib(T('Ligues de la semaine', 'Weekly leagues'), T(`Chaque semaine, tu es groupé avec les aventuriers de ta ligue (${LG.map(x => x[0]).join(', ')}). Seule l'XP gagnée cette semaine compte. Dimanche soir, le haut 20 % monte d'une ligue et, s'il y a au moins ${LG_MIN} aventuriers actifs, le bas 20 % descend. Le podium gagne 300, 200 et 100 XP. Ton nom et ton niveau sont visibles par les autres participants.`, `Each week you are grouped with the adventurers of your league (${LG.map(x => x[1]).join(', ')}). Only XP earned this week counts. On Sunday night the top 20% move up a league and, if at least ${LG_MIN} adventurers are active, the bottom 20% move down. The podium wins 300, 200 and 100 XP. Your name and level are visible to the other players.`));
-  if (!S.settings.lbOn) return `<div class="card sysw gwin" style="margin-bottom:12px"><div class="gswh" style="margin-bottom:8px"><span class="sysh" style="margin:0">[ ${T('LIGUES DE LA SEMAINE', 'WEEKLY LEAGUES')} ]</span>${info}</div>
+  if (!S.settings.lbOn) return `<div class="card sysw gwin" data-gid="league" style="margin-bottom:12px"><div class="gswh" style="margin-bottom:8px"><span class="sysh" style="margin:0">[ ${T('LIGUES DE LA SEMAINE', 'WEEKLY LEAGUES')} ]</span>${info}</div>
     <p class="small" style="margin:0 0 10px">${T('Affronte chaque semaine des aventuriers de ton niveau, même sans amis inscrits. Les meilleurs montent de ligue, de Bronze jusqu\'à Légende.', 'Face adventurers of your level every week, even without friends on the app. The best move up, from Bronze all the way to Legend.')}</p>
     <button class="btn primary block" data-act="lb-on">${T('Rejoindre les ligues', 'Join the leagues')}</button></div>`;
   const L = lgS(); setTimeout(() => { lgRoll().then(() => lgJoin()).then(() => lgLoad(false)); }, 0);
@@ -9433,7 +9450,7 @@ function lgCard() {
     body = R.map((r, i) => `${i === 0 && up && act ? `<div class="lgzone up">▲ ${T('Zone de montée', 'Promotion zone')}</div>` : ''}${i === up && up && act > up ? '<div class="lgcut"></div>' : ''}${dn && i === act - dn ? `<div class="lgzone dn">▼ ${T('Zone de descente', 'Demotion zone')}</div>` : ''}<div class="lgrow${r.me ? ' me' : ' tap'}${up && i < up && r.x > 0 ? ' lgu' : ''}${dn && i >= act - dn && i < act ? ' lgd' : ''}"${r.me ? '' : ` data-act="usr" data-u="${esc(r.id)}" data-n="${esc(r.n || '')}" data-x="league"`}><b class="lgp">${i + 1}</b><span style="flex:1;min-width:0"><b>${esc(r.me ? T('Moi', 'Me') : r.n || '?')}</b>${r.e ? ' <span class="emb">' + embSvg(r.e) + '</span>' : ''}<br><span class="muted small">${T('Niv.', 'Lv.')} ${r.l || 1}</span></span><b>${(r.x || 0).toLocaleString(LOC())} XP</b></div>`).join('')
       + (R.length < 2 ? `<p class="small muted" style="margin:10px 0 0">${T('Tu es seul dans ta ligue pour l\'instant. D\'autres aventuriers vont te rejoindre.', 'You are alone in your league for now. Other adventurers will join you.')}</p>` : '');
   }
-  return `<div class="card sysw gwin" style="margin-bottom:12px;border-color:color-mix(in srgb,${lc} 45%,var(--line))"><div class="gswh" style="margin-bottom:8px"><span class="sysh" style="margin:0">[ ${T('LIGUES DE LA SEMAINE', 'WEEKLY LEAGUES')} ]</span>${info}</div>${head}${body}</div>`;
+  return `<div class="card sysw gwin" data-gid="league" style="margin-bottom:12px;border-color:color-mix(in srgb,${lc} 45%,var(--line))"><div class="gswh" style="margin-bottom:8px"><span class="sysh" style="margin:0">[ ${T('LIGUES DE LA SEMAINE', 'WEEKLY LEAGUES')} ]</span>${info}</div>${head}${body}</div>`;
 }
 
 /* ===== Mise à jour forcée : si une version plus récente est en ligne, l'appli se recharge toute seule (jamais pendant une séance) ===== */
@@ -10966,7 +10983,7 @@ function vFriends() {
   return `${meCard}${hLine}${reqIn}${friends}${liveCard()}${chCard()}${frRanking()}
     <div class="row between" style="margin:14px 0 8px"><b>${T('Fil des amis', 'Friends feed')}</b>${fr.list.length ? `<button class="btn sm ghost" data-act="fr-refresh">↻ ${T('Actualiser', 'Refresh')}</button>` : ''}</div>
     ${feedHtml}
-    ${frOn() ? `<details class="card"><summary><b>🔒 ${T('Ce que tes amis voient', 'What friends see')}</b></summary>
+    ${frOn() ? `<details class="card frpriv"><summary><b>🔒 ${T('Ce que tes amis voient', 'What friends see')}</b></summary>
       <label class="row" style="gap:10px;margin:10px 0"><input type="checkbox" data-act="fr-now" ${fr.noW ? 'checked' : ''} style="width:auto"> ${T('Cacher les poids soulevés', 'Hide weights lifted')}</label>
       <p class="muted small" style="margin:0 0 6px">${T('Touche une séance pour la rendre privée :', 'Tap a workout to make it private:')}</p>
       ${S.history.slice(-8).reverse().map(x => `<button class="btn sm block" style="justify-content:space-between;margin-top:6px" data-act="fr-hide" data-id="${x.id}"><span>${esc(x.routineName || '')} · ${dateFr(x.date)}</span><span>${(fr.hide || []).includes(x.id) ? '🔒 ' + T('privée', 'private') : '👁 ' + T('visible', 'visible')}</span></button>`).join('')}
@@ -13087,8 +13104,8 @@ function maybeTourMain() {
   S.settings.tourPending = false; saveLocal(); tourStart('main');
 }
 if (!S.settings.onboarded) openOnboard('new');
-else if (isIOS && !isStandalone() && !S.settings.iosHintOff) setTimeout(() => { if (!modals.length && !$('#ob')) iosHint(); }, 1200);
-if (S.settings.onboarded) setTimeout(() => { if (!S.settings.sex && !S.settings.obAsk && !S.active && !modals.length && !$('#ob') && S.history.length) { S.settings.obAsk = true; saveLocal(); modal(`<div style="text-align:center"><div style="font-size:46px">🧍</div><h2 style="margin:4px 0">${T('Nouveau : ton profil', 'New: your profile')}</h2></div><p class="small">${T('Ajoute ton sexe, ton âge, ta taille et ton objectif pour voir ton IMC et tes <b>besoins en calories</b>. Ça reste privé : tes amis ne le voient pas.', 'Add your sex, age, height and goal to see your BMI and <b>calorie needs</b>. It stays private.')}</p><button class="btn primary block" data-act="ob-edit">${T('Compléter (30 secondes)', 'Complete (30 seconds)')}</button><button class="btn block" data-act="close" style="margin-top:8px">${T('Plus tard', 'Later')}</button>`); } }, 3500);
+else if (isIOS && !isStandalone() && !S.settings.iosHintOff) setTimeout(() => { if (!modals.length && !$('#ob') && !$('#tour')) iosHint(); }, 1200);
+if (S.settings.onboarded) setTimeout(() => { if (!S.settings.sex && !S.settings.obAsk && !S.active && !modals.length && !$('#ob') && !$('#tour') && S.history.length) { S.settings.obAsk = true; saveLocal(); modal(`<div style="text-align:center"><div style="font-size:46px">🧍</div><h2 style="margin:4px 0">${T('Nouveau : ton profil', 'New: your profile')}</h2></div><p class="small">${T('Ajoute ton sexe, ton âge, ta taille et ton objectif pour voir ton IMC et tes <b>besoins en calories</b>. Ça reste privé : tes amis ne le voient pas.', 'Add your sex, age, height and goal to see your BMI and <b>calorie needs</b>. It stays private.')}</p><button class="btn primary block" data-act="ob-edit">${T('Compléter (30 secondes)', 'Complete (30 seconds)')}</button><button class="btn block" data-act="close" style="margin-top:8px">${T('Plus tard', 'Later')}</button>`); } }, 3500);
 checkNews();
 if (S.settings.onboarded) setTimeout(checkImport, 450);
 setTimeout(restResume, 200);
