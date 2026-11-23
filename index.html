@@ -874,6 +874,11 @@ html.moving :is(.fra-rot .frimg,.fra-pulse .frimg,.fra-sheen::after,.frsp){anima
 .ob-opt.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--card))}
 .ob-rad{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);box-sizing:border-box;flex:none;margin-left:auto;transition:border .15s}
 .on>.ob-rad,.on>span>.ob-rad{border:6px solid var(--accent)}
+.ob-in label.ob-tog{display:flex;background:var(--card);border:1px solid var(--line);border-radius:14px;margin:10px 0 0;text-transform:none;letter-spacing:0;font-size:15px;font-weight:400;color:var(--text)}
+.ob-tag{font-style:normal;font-size:11px;font-weight:800;color:var(--accent-ink);background:var(--accent);border-radius:99px;padding:2px 7px;margin-left:6px;vertical-align:2px}
+.ob-prx{display:block;margin-top:8px;color:var(--muted);font-size:12.5px;line-height:1.5}.ob-prx b{display:inline;color:var(--text);font-weight:700}
+.ob-good{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
+.ob-opt+label{margin-top:22px}
 .ob-chips{display:flex;gap:6px}.ob-chips button{flex:1;padding:12px 0;border-radius:12px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:800;font-size:15px;font-family:inherit;cursor:pointer}.ob-chips button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .ob-mode{display:block;width:100%;text-align:left;border-radius:18px;padding:14px;margin-bottom:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-family:inherit;cursor:pointer;overflow:hidden}
 .ob-mode.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--card))}
@@ -3442,7 +3447,7 @@ function importFile(file) {
     try {
       if (/\.csv$/i.test(file.name) || /^﻿?"?title"?,/i.test(txt)) {
         const hevy = /exercise_title/i.test(txt.split(/\r?\n/)[0]);
-        const n = hevy ? importHevyCsv(txt) : importOtherCsv(txt); save(); render(); toast(T(`✅ ${n} séances importées`, `✅ ${n} workouts imported`) + (hevy ? ' (Hevy)' : '') + (importBad ? T(` · ${importBad} ignorées (date illisible)`, ` · ${importBad} skipped (unreadable date)`) : ''));
+        const n = hevy ? importHevyCsv(txt) : importOtherCsv(txt); save(); render(); if (obSt) { obSt.imp = (obSt.imp || 0) + n; obRender(); return; } toast(T(`✅ ${n} séances importées`, `✅ ${n} workouts imported`) + (hevy ? ' (Hevy)' : '') + (importBad ? T(` · ${importBad} ignorées (date illisible)`, ` · ${importBad} skipped (unreadable date)`) : ''));
         if (n) setTimeout(() => modal(`<h2>✅ ${T(`${n} séances importées`, `${n} workouts imported`)}</h2><p>${T('Veux-tu recréer tes routines à partir de tes dernières séances? Chaque séance différente (ex. Push, Pull, Legs) devient une routine avec tes dernières charges, prête à continuer.', 'Do you want to rebuild your routines from your latest workouts? Each different workout (e.g. Push, Pull, Legs) becomes a routine with your latest weights, ready to continue.')}</p>
           <button class="btn primary block" data-act="h2r-after-import">📁 ${T('Oui, créer mes routines', 'Yes, create my routines')}</button><button class="btn block" data-act="close" style="margin-top:8px">${T('Plus tard', 'Later')}</button>`), 600);
         return;
@@ -3450,7 +3455,7 @@ function importFile(file) {
       const d = JSON.parse(txt);
       if (!d || !Array.isArray(d.routines) || !Array.isArray(d.history)) throw new Error('format');
       if (!confirm(`Remplacer tes données actuelles par ce fichier (${d.history.length} séances, ${d.routines.length} routines)?`)) return;
-      restoreAll(d);
+      restoreAll(d); if (obSt) obClose(); // une sauvegarde Runelift complète : l'accueil n'a plus de raison d'être
       save(); applyTheme(); setRoot('train'); render(); toast('✅ Données importées');
       if (d.photoData) phRestore(d.photoData).then(n => { if (n) { render(); toast(T(`✅ Données et ${n} photo${n > 1 ? 's' : ''} importées`, `✅ Data and ${n} photo${n > 1 ? 's' : ''} imported`)); } });
     } catch (e) { toast('⚠️ Fichier non reconnu'); }
@@ -5408,13 +5413,17 @@ function progRs(pr) {
   rs.forEach(r => { r.name = PROG_RT_EN[r.name] || r.name; r.exercises.forEach(e => { const fr = e.name, en = PROG_EN[fr]; if (!en) return; const id = LIBBYNAME[norm(PROG_LINK[fr] || '')] || (S.links || {})[norm(fr)] || libId(fr); e.name = en; if (id) e._lk = id; }); });
   return rs;
 }
-function addProgram(k) {
-  const pr = PROGRAMS.find(x => x[0] === k); if (!pr) return;
+function progInstall(k) {
+  const pr = PROGRAMS.find(x => x[0] === k); if (!pr) return null;
   let f = progName(pr), i = 2; while (folders().includes(f)) f = `${progName(pr)} ${i++}`;
-  if (!S.folders.includes(f)) S.folders.push(f);
+  if (!S.folders.includes(f)) S.folders.push(f); S.links = S.links || {};
   Object.entries(PROG_LINK).forEach(([n, l]) => { const id = LIBBYNAME[norm(l)]; if (id && !(norm(n) in S.links)) { S.links[norm(n)] = id; autoMemo.delete(norm(n)); } });
-  progRs(pr).forEach(r => { r.exercises.forEach(e => { if (e._lk) { S.links = S.links || {}; const kk = norm(e.name); if (!(kk in S.links)) { S.links[kk] = e._lk; autoMemo.delete(kk); } delete e._lk; } }); S.routines.push({id: uid(), name: r.name, folder: f, exercises: r.exercises}); });
-  save(); closeAll(); setRoot('train'); render(); toast(T(`📚 Programme ajouté dans « ${f} »`, `📚 Program added to “${f}”`));
+  const rs = progRs(pr).map(r => { r.exercises.forEach(e => { if (e._lk) { const kk = norm(e.name); if (!(kk in S.links)) { S.links[kk] = e._lk; autoMemo.delete(kk); } delete e._lk; } }); return {id: uid(), name: r.name, folder: f, exercises: r.exercises}; });
+  S.routines.push(...rs); return {f, rs};
+}
+function addProgram(k) {
+  const r = progInstall(k); if (!r) return;
+  save(); closeAll(); setRoot('train'); render(); toast(T(`📚 Programme ajouté dans « ${r.f} »`, `📚 Program added to “${r.f}”`));
 }
 
 /* ----- Records d'une séance ----- */
@@ -7054,9 +7063,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.118.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.119.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.119.0', d: '2026-11-23', fr: ['Accueil : plus de programme mis d\'office. Tu choisis comment commencer : un programme prêt (ceux qui vont avec tes jours sont marqués « Pour toi »), créer le tien, ou importer tes données d\'une autre appli (Hevy, Strong, FitNotes…) avec tes routines recréées.', 'Le programme prêt choisi à l\'accueil remplit aussi ton horaire de la semaine.'], en: ['Welcome: no more program set for you. You choose how to start: a ready-made program (the ones that fit your days are marked “For you”), create your own, or import your data from another app (Hevy, Strong, FitNotes…) with your routines rebuilt.', 'The ready-made program chosen at welcome also fills your weekly schedule.']},
   {v: '9.118.1', d: '2026-11-23', fr: ['Mode test : « Aperçu de l\'accueil » montre tout le parcours d\'un nouveau compte, sans connexion et sans rien changer.'], en: ['Test mode: “Welcome preview” shows the whole new-account flow, without signing in and without changing anything.']},
   {v: '9.118.0', d: '2026-11-23', fr: ['Nouvel accueil pour les nouveaux : 4 écrans qui présentent Runelift (aventure, boss de guilde, amis, programme), puis la connexion Google.', 'Création du profil plus simple : objectif, niveau et jours dans une même étape, la classe se choisit toute seule, et un dernier écran montre ton programme de départ jour par jour.'], en: ['New welcome for new users: 4 screens that introduce Runelift (adventure, guild bosses, friends, program), then Google sign-in.', 'Simpler profile setup: goal, level and days in one step, your class is picked for you, and a last screen shows your starting program day by day.']},
   {v: '9.117.2', d: '2026-11-23', fr: ['Apparence : « Écran déplié » devient « Deux colonnes sur grand écran », avec une explication claire. L\'option n\'apparaît que sur une tablette ou un téléphone pliable ouvert.'], en: ['Appearance: “Unfolded screen” is now “Two columns on large screens”, with a clear explanation. The option only shows on a tablet or an unfolded phone.']},
@@ -7859,6 +7869,19 @@ function h2rModal(ids) {
   const sel = $('#h2f'), nf = $('#h2nf');
   sel.addEventListener('change', () => { nf.style.display = sel.value === '__new' ? '' : 'none'; if (sel.value === '__new') nf.focus(); });
 }
+function h2rMake(hh, n, f) { // une séance de l'historique devient une routine (mêmes exercices, séries et charges)
+  return {id: uid(), name: n, folder: f, exercises: hh.exercises.map(e => {
+    const o = {name: e.name, sets: 0, reps: '', weight: '', note: '', sl: e.sets.map(s => { const x = {w: s.w, r: String(s.r)}; if (s.t === 'W' || s.t === 'D') x.t = s.t; if (s.u) x.u = s.u; return x; })};
+    if (e.ss) o.ss = e.ss; if (e.rest) o.rest = e.rest; return syncSummary(o);
+  })};
+}
+function h2rNames() { const m = new Map(); S.history.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(x => { const k = norm(x.routineName || ''); if (k && !m.has(k)) m.set(k, x); }); return [...m.values()]; }
+function h2rAuto(f) { // à l'accueil, sans fenêtre : la dernière séance de chaque nom devient une routine
+  const hs = h2rNames(); if (!hs.length) return 0; if (!folders().includes(f)) { S.folders = S.folders || []; S.folders.push(f); }
+  const taken = new Set(S.routines.filter(r => inFolder(r, f)).map(r => norm(r.name)));
+  hs.reverse().forEach(hh => { let n = hh.routineName, base = n, k = 2; while (taken.has(norm(n))) n = `${base} (${k++})`; taken.add(norm(n)); S.routines.push(h2rMake(hh, n, f)); });
+  return hs.length;
+}
 function h2rApply() {
   const sel = $('#h2f'); let f = sel.value === '__new' ? ($('#h2nf').value || '').trim() : sel.value;
   if (!f) { toast(T('Écris le nom du nouveau dossier', 'Type the new folder name')); return; }
@@ -7869,10 +7892,7 @@ function h2rApply() {
     let n = one ? (($('#h2n') || {}).value || '').trim() || hh.routineName : hh.routineName, base = n, k = 2;
     while (taken.has(norm(n))) n = `${base} (${k++})`;
     taken.add(norm(n));
-    S.routines.push({id: uid(), name: n, folder: f, exercises: hh.exercises.map(e => {
-      const o = {name: e.name, sets: 0, reps: '', weight: '', note: '', sl: e.sets.map(s => { const x = {w: s.w, r: String(s.r)}; if (s.t === 'W' || s.t === 'D') x.t = s.t; if (s.u) x.u = s.u; return x; })};
-      if (e.ss) o.ss = e.ss; if (e.rest) o.rest = e.rest; return syncSummary(o);
-    })});
+    S.routines.push(h2rMake(hh, n, f));
   });
   S.settings.folded = S.settings.folded || {}; delete S.settings.folded[f];
   save(); closeAll(); if (selH) selHEnd(); else render();
@@ -11954,7 +11974,7 @@ document.addEventListener('click', e => {
     case 'sel-move': selMove(); break;
     case 'sel-move-to': selMoveTo(b.dataset.f); break;
     case 'sel-move-new': { const nf = (prompt(T('Nom du nouveau dossier :', 'New folder name:')) || '').trim(); if (nf) selMoveTo(nf); break; }
-    case 'ai-guide': aiGuide(b.dataset.k, b.dataset.f || null); break;
+    case 'ai-guide': if (obSt && obSt.mode === 'demo') { toast(T('Dans l\'aperçu, rien n\'est importé', 'Nothing is imported in the preview')); break; } aiGuide(b.dataset.k, b.dataset.f || null); break;
     case 'aig-open': { const g = AI_KINDS[aiG && aiG.k], base = AI_URL[b.dataset.ai]; if (!g || !base) break; const t = g.prompt();
       if (!t) { toast(T('Aucune séance dans les 30 derniers jours', 'No workouts in the last 30 days')); break; }
       const q = encodeURIComponent(t), url = b.dataset.ai !== 'gemini' && q.length < 6000 ? base + '?q=' + q : base;
@@ -12018,7 +12038,7 @@ document.addEventListener('click', e => {
     case 'ag-login': agLogin(); break;
     case 'ag-later': agLater = Date.now() + 15 * 60e3; { const g = document.getElementById('authgate'); if (g) g.remove(); } break;
     case 'ob-noacc': obSt.i = 1; obRender(); break;
-    case 'ob-back': obCollect(); obSt.i = Math.max(0, obSt.i - 1); if (obSt.steps[obSt.i] === 'home' && obSt.steps.includes('back')) obSt.steps = ['home', 'prof', 'toi', 'obj', 'style', 'ready']; obRender(); break;
+    case 'ob-back': obCollect(); obSt.i = Math.max(0, obSt.i - 1); if (obSt.steps[obSt.i] === 'home' && obSt.steps.includes('back')) obSt.steps = ['home', 'prof', 'toi', 'obj', 'style', 'prog', 'ready']; obRender(); break;
     case 'ob-later': obClose(); break;
     case 'ob-skip': obSt.i++; obRender(); break;
     case 'ob-next': obCollect(); if (obSt.steps[obSt.i] === 'prof' && !obSt.d.name.trim()) { toast(T('Écris ton nom', 'Enter your name')); break; }
@@ -12026,7 +12046,7 @@ document.addEventListener('click', e => {
     case 'ob-seg': { obCollect(); const k = b.dataset.k, v = b.dataset.v; obSt.d[k] = k === 'game' ? v === '1' : k === 'days' ? +v : v; obRender(); break; }
     case 'ob-avatar': obCollect(); pickImage(async f => { try { obSt.d.avatar = await shrinkImg(f, 240, .82); obRender(); } catch (e) { toast('⚠️ ' + e.message); } }, true); break;
     case 'ob-restore': { const done = () => { obClose(); try { frLoad(); } catch (e) {} }; cbRestore(false).then(done, done); break; }
-    case 'ob-fresh': if (!confirm(T('Repartir à zéro? Ta sauvegarde en ligne sera remplacée par ce nouveau carnet vide à la fin.', 'Start fresh? Your online backup will be replaced by this new empty log at the end.'))) break; obSt.steps = ['home', 'prof', 'toi', 'obj', 'style', 'ready']; obSt.i = 1; obRender(); break;
+    case 'ob-fresh': if (!confirm(T('Repartir à zéro? Ta sauvegarde en ligne sera remplacée par ce nouveau carnet vide à la fin.', 'Start fresh? Your online backup will be replaced by this new empty log at the end.'))) break; obSt.steps = ['home', 'prof', 'toi', 'obj', 'style', 'prog', 'ready']; obSt.i = 1; obRender(); break;
     case 'ob-edit': closeAll(); openOnboard('edit'); break;
     case 'ob-demo': closeAll(); openOnboard('demo'); break;
     case 'wl-lang': if (obSt && obSt.mode === 'demo') { S.settings.lang = b.dataset.v; obRender(); break; } if (b.dataset.v !== (isEN() ? 'en' : 'fr')) { S.settings.lang = b.dataset.v; save(); location.reload(); } break;
@@ -12314,7 +12334,7 @@ document.addEventListener('click', e => {
     case 'export-csv': exportCsv(); break;
     case 'plate-tog': { const u = U(), own = (S.settings.plates = S.settings.plates || {})[u] || PLATES[u].slice(), v = +b.dataset.v; S.settings.plates[u] = own.includes(v) ? own.filter(x => x !== v) : [...own, v]; save(); render(); break; }
     case 'plate-reset': if (S.settings.plates) delete S.settings.plates[U()]; save(); render(); break;
-    case 'import': $('#fileIn').click(); break;
+    case 'import': if (obSt && obSt.mode === 'demo') { toast(T('Dans l\'aperçu, rien n\'est importé', 'Nothing is imported in the preview')); break; } $('#fileIn').click(); break;
     case 'reset': openReset(); break;
     case 'reset-go': closeAll(); S = migrate(seed()); save(); stack = [{v: 'train'}]; render(); toast(T('Tout a été effacé sur ce téléphone', 'Everything was erased on this phone')); break;
   }
@@ -12785,7 +12805,7 @@ function obEl() { let o = document.getElementById('ob'); if (!o) { o = document.
 function openOnboard(mode = 'new') {
   const st = S.settings, lastW = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)).pop();
   const demo = mode === 'demo';
-  obSt = {mode, i: 0, steps: mode === 'edit' ? ['toi', 'obj'] : demo ? ['home', 'prof', 'pseudo', 'toi', 'obj', 'style', 'ready'] : ['home', 'prof', 'toi', 'obj', 'style', 'ready'], u: null, lang0: st.lang,
+  obSt = {mode, i: 0, steps: mode === 'edit' ? ['toi', 'obj'] : demo ? ['home', 'prof', 'pseudo', 'toi', 'obj', 'style', 'prog', 'ready'] : ['home', 'prof', 'toi', 'obj', 'style', 'prog', 'ready'], u: null, lang0: st.lang, seedIds: mode === 'new' && !S.history.length ? S.routines.map(r => r.id) : [],
     d: {name: st.name || '', avatar: st.avatar || '', unit: U(), sex: st.sex || '', age: ageOf() || '', dob: st.dob || '', ht: st.ht || '', w: lastW ? lastW.w : '', obj: st.obj || 'muscle', days: +st.goal || 4, game: st.game !== false, exp: st.exp || 'int', cls: 'auto'}};
   if (demo) obSt.d = {name: '', avatar: '', unit: U(), sex: '', age: '', dob: '', ht: '', w: '', obj: 'muscle', days: 4, game: true, exp: 'int', cls: 'auto'}; // aperçu : comme un tout nouveau compte, rien n'est enregistré
   if (mode === 'new') fbLoad().catch(() => {}); // prêt pour que la fenêtre Google s'ouvre tout de suite au toucher
@@ -12825,6 +12845,15 @@ function obCarInit() {
   ['touchstart', 'pointerdown', 'wheel'].forEach(ev => c.addEventListener(ev, () => { obCarTouch = Date.now(); }, {passive: true}));
   obCarT = setInterval(() => { const c2 = document.getElementById('obcar'); if (!c2) { clearInterval(obCarT); return; } if (Date.now() - obCarTouch < 7000 || document.hidden) return; c2.scrollTo({left: ((at() + 1) % n) * c2.clientWidth, behavior: 'smooth'}); }, 4500);
 }
+/* Programme de départ : programmes prêts, les plus adaptés à tes jours (et ton niveau) d'abord */
+const OB_PDAYS = {ppl: [3, 6], ul: [4], phul: [4], arnold: [6], fb: [3], bro: [5], beg2: [2], s5: [3], db: [3], pplul: [5], ulf: [3]};
+const OB_PLAN = {2: [0, 3], 3: [0, 2, 4], 4: [0, 1, 3, 4], 5: [0, 1, 2, 3, 4], 6: [0, 1, 2, 3, 4, 5]};
+function obProgs(d) {
+  const days = +d.days || 4, beg = d.exp === 'beg';
+  const sc = k => ((OB_PDAYS[k] || []).includes(days) ? 2 : 0) + (beg && ['beg2', 'fb', 's5', 'db'].includes(k) ? 1 : 0) - (beg && ['arnold', 'bro', 'phul', 'pplul'].includes(k) ? 1 : 0);
+  return PROGRAMS.map(p => ({p, k: p[0], s: sc(p[0])})).sort((a, b) => b.s - a.s);
+}
+function obSched(rs, days) { const sc = ['rest', 'rest', 'rest', 'rest', 'rest', 'rest', 'rest']; (OB_PLAN[days] || OB_PLAN[4]).forEach((di, i) => { sc[di] = rs[i % rs.length].id; }); return sc; }
 function obRender() {
   if (!obSt) return; const o = obEl(), d = obSt.d, step = obSt.steps[obSt.i], edit = obSt.mode === 'edit';
   const n = obSt.steps.filter(s => s !== 'home').length, k = obSt.steps.slice(0, obSt.i + 1).filter(s => s !== 'home').length;
@@ -12872,12 +12901,28 @@ function obRender() {
     <button class="ob-mode ${d.game ? '' : 'on'}" data-act="ob-seg" data-k="game" data-v=""><span class="ob-mhd">${sTile('book', '#94a3b8', 20)}<b>${T('Mode Classique', 'Classic mode')}</b><i class="ob-rad"></i></span><span class="ob-mtx">${T('Juste ton carnet : séances, records et statistiques. Sans jeu.', 'Just your log: workouts, records and stats. No game.')}</span></button></div>
     ${d.game ? `<p class="ob-hint">${T('Ta classe se choisit toute seule d\'après tes séances. Tu pourras la changer dans la Guilde.', 'Your class is picked for you based on your workouts. You can change it in the Guild.')}</p>` : ''}
     ${nextBtn(T('Continuer', 'Continue'))}`;
-  else if (step === 'ready') { const prog = obSt.mode === 'demo' || (!S.history.length && !S.settings.xferDone); let sp = null; if (prog) { try { sp = starterProgram(d.obj, +d.days || 4, d.exp || 'int'); } catch (e) {} }
-    const gl = OB_GOALS().find(x => x[0] === d.obj);
-    h = `<div class="ob-done">${ic('check', 34)}</div>${title(`${T('Tout est prêt', 'All set')}${d.name.trim() ? ', ' + esc(d.name.trim().split(/\s+/)[0]) : ''}!`, sp ? T('Voici ton programme de départ. Tu pourras le modifier quand tu veux.', 'Here is your starting program. You can change it anytime.') : T('Ton carnet est prêt.', 'Your log is ready.'))}
-    ${sp ? `<div class="ob-wk">${OB_DAYS().map((x, i) => `<span class="${sp.sched[i] !== 'rest' ? 'on' : ''}"><small>${x}</small><i></i></span>`).join('')}</div>
-      <div class="sgrp" style="margin-top:14px">${sp.rs.map(r => sInfo(esc(r.name), sp.sched.map((v, i) => v === r.id ? OB_DAY3()[i] : '').filter(Boolean).join(' · '), r.exercises.length + ' ' + T('exercices', 'exercises'))).join('')}</div>
-      <p class="snote">${gl ? esc(gl[2]) + ' · ' : ''}${EXP_NAME(d.exp)} · ${+d.days || 4} ${T('séances par semaine', 'workouts per week')}</p>` : ''}
+  else if (step === 'prog') { const st = d.start || 'pre', L = obProgs(d); if (!d.prog || !PROGRAMS.some(x => x[0] === d.prog)) d.prog = L[0].k;
+    const opt = (k, icn, hue, t, s) => `<button class="ob-opt ${st === k ? 'on' : ''}" data-act="ob-seg" data-k="start" data-v="${k}">${sTile(icn, hue, 20)}<span><b>${t}</b><small>${s}</small></span><i class="ob-rad"></i></button>`;
+    const mine = S.routines.filter(r => !(obSt.seedIds || []).includes(r.id)).length;
+    h = `${title(T('Ton programme', 'Your program'), T('Comment veux-tu commencer?', 'How do you want to start?'))}
+    <div style="margin-top:16px">${opt('pre', 'book', '#60a5fa', T('Choisir un programme prêt', 'Pick a ready-made program'), T('PPL, Upper / Lower, Full body… prêts à utiliser.', 'PPL, Upper / Lower, Full body… ready to use.'))}
+    ${opt('own', 'pencil', '#c6f135', T('Créer mon propre programme', 'Create my own program'), T('Tu crées tes routines toi-même, ou avec l\'assistant IA.', 'Build your routines yourself, or with the AI assistant.'))}
+    ${opt('imp', 'down', '#4ade80', T('Importer d\'une autre appli', 'Import from another app'), T('Hevy, Strong, FitNotes… Ramène tout ton historique.', 'Hevy, Strong, FitNotes… Bring your whole history.'))}</div>
+    ${st === 'pre' ? `<label>${T('Programmes prêts', 'Ready-made programs')}</label>${L.map(({p, k, s}) => { const on = d.prog === k; return `<button class="ob-opt ob-pr ${on ? 'on' : ''}" data-act="ob-seg" data-k="prog" data-v="${k}"><span><b>${esc(progName(p))}${s >= 2 ? ` <em class="ob-tag">${T('Pour toi', 'For you')}</em>` : ''}</b><small>${T(p[2], p[3])}</small>${on ? `<span class="ob-prx">${progRs(p).map(r => `<b>${esc(r.name)}</b> · ${esc(r.exercises.slice(0, 3).map(e => e.name.replace(/\s*\([^)]*\)/g, '')).join(', '))}${r.exercises.length > 3 ? '…' : ''}`).join('<br>')}</span>` : ''}</span><i class="ob-rad"></i></button>`; }).join('')}
+      <p class="ob-hint">${T('« Pour toi » : fait pour ' + (+d.days || 4) + ' séances par semaine.', '“For you”: made for ' + (+d.days || 4) + ' workouts per week.')} ${T('Les charges se remplissent à ta première séance.', 'Weights get filled in at your first workout.')}</p>` : ''}
+    ${st === 'own' ? `<div class="ob-note">${ic('bulb', 16)}<span>${T(`Après l'accueil, dans l'onglet ${d.game ? 'Muscu' : 'Entraînement'} : « Nouv. routine » pour la créer toi-même, ou « Assistant IA » pour qu'une IA te la prépare.`, 'After setup, in the Workout tab: “New routine” to build it yourself, or “AI assistant” to have an AI prepare it.')}</span></div>` : ''}
+    ${st === 'imp' ? `${obSt.imp ? `<div class="ob-note ob-good">${ic('check', 16)}<span>${T(`${obSt.imp} séances importées`, `${obSt.imp} workouts imported`)}${mine ? T(` · ${mine} routines`, ` · ${mine} routines`) : ''}</span></div>
+      <label class="srow ob-tog"><span class="stx"><b>${T('Recréer mes routines', 'Rebuild my routines')}</b><small>${T(`À partir de tes dernières séances : ${h2rNames().length} routine${h2rNames().length > 1 ? 's' : ''} (${esc(h2rNames().slice(0, 4).map(x => x.routineName).join(', '))}${h2rNames().length > 4 ? '…' : ''})`, `From your latest workouts: ${h2rNames().length} routine${h2rNames().length > 1 ? 's' : ''} (${esc(h2rNames().slice(0, 4).map(x => x.routineName).join(', '))}${h2rNames().length > 4 ? '…' : ''})`)}</small></span><input type="checkbox" class="tgl" id="ob_h2r" ${d.h2r !== false ? 'checked' : ''}></label>` : ''}<div class="sgrp sbox" style="margin-top:14px">${importHelp()}</div>` : ''}
+    ${nextBtn(T('Continuer', 'Continue'))}`; }
+  else if (step === 'ready') { const st = d.start || 'pre', pr = st === 'pre' && PROGRAMS.find(x => x[0] === d.prog), days = +d.days || 4;
+    let rs = null, sc = null; if (pr) { rs = progRs(pr).map(r => ({...r, id: uid()})); sc = obSched(rs, days); }
+    const sub = pr ? T(`Ton programme : ${progName(pr)}. Tu pourras le modifier quand tu veux.`, `Your program: ${progName(pr)}. You can change it anytime.`)
+      : st === 'imp' ? (obSt.imp ? T(`${obSt.imp} séances importées : ton historique est prêt.`, `${obSt.imp} workouts imported: your history is ready.`) + (d.h2r !== false && h2rNames().length ? ' ' + T(`${h2rNames().length} routine${h2rNames().length > 1 ? 's' : ''} recréée${h2rNames().length > 1 ? 's' : ''} dans « Mes routines ».`, `${h2rNames().length} routine${h2rNames().length > 1 ? 's' : ''} rebuilt in “My routines”.`) : '') : T('Tu pourras importer tes données plus tard dans Réglages → Importer et exporter.', 'You can import your data later in Settings → Import and export.'))
+      : T(`Ton carnet est prêt. Crée ta première routine dans l'onglet ${d.game ? 'Muscu' : 'Entraînement'}.`, 'Your log is ready. Create your first routine in the Workout tab.');
+    h = `<div class="ob-done">${ic('check', 34)}</div>${title(`${T('Tout est prêt', 'All set')}${d.name.trim() ? ', ' + esc(d.name.trim().split(/\s+/)[0]) : ''}!`, sub)}
+    ${rs ? `<div class="ob-wk">${OB_DAYS().map((x, i) => `<span class="${sc[i] !== 'rest' ? 'on' : ''}"><small>${x}</small><i></i></span>`).join('')}</div>
+      <div class="sgrp" style="margin-top:14px">${rs.map(r => sInfo(esc(r.name), sc.map((v, i) => v === r.id ? OB_DAY3()[i] : '').filter(Boolean).join(' · ') || T('en alternance', 'rotating'), r.exercises.length + ' ' + T('exercices', 'exercises'))).join('')}</div>
+      <p class="snote">${days} ${T('séances par semaine · tu peux changer ton horaire dans l\'onglet ' + (d.game ? 'Muscu' : 'Entraînement') + '.', 'workouts per week · you can change your schedule in the Workout tab.')}</p>` : ''}
     ${d.game ? `<div class="ob-note">${ic('swords', 16)}<span>${T('Ta première séance t\'inscrit à la Guilde : niveau, rang, quêtes et boss.', 'Your first workout signs you up to the Guild: level, rank, quests and bosses.')}</span></div>` : ''}
     ${nextBtn(T('Commencer', 'Let\'s go'))}`; }
   clearInterval(obCarT);
@@ -12894,6 +12939,7 @@ function obCollect() {
   const ft = v('ob_ft'), inch = v('ob_in'); if (ft != null) { const t = (+ft || 0) * 30.48 + (+inch || 0) * 2.54; d.ht = t > 50 && t < 260 ? Math.round(t * 10) / 10 : ''; }
   const w = v('ob_w'); if (w != null) d.w = +w > 0 ? +w : '';
   const hi = document.getElementById('hin'); if (hi) d.h = hNorm(hi.value);
+  const hr = document.getElementById('ob_h2r'); if (hr) d.h2r = hr.checked;
 }
 function obApply() {
   const d = obSt.d, st = S.settings;
@@ -12908,7 +12954,7 @@ async function obGoogle() {
   if (!u || !obSt) return; obSt.u = u;
   if (!obSt.d.name && u.displayName) obSt.d.name = u.displayName.trim().split(/\s+/)[0];
   try { const m = await cbMeta(u.uid); if (m && (m.sess || m.rout)) { let name = ''; try { const ud = await fbDb().collection('users').doc(u.uid).get(); name = ud.exists ? ud.data().name || '' : ''; } catch (e) {} obSt.bk = {sess: m.sess || 0, rout: m.rout || 0, name}; obSt.steps = ['home', 'back']; obSt.i = 1; obRender(); return; } } catch (e) {}
-  obSt.steps = ['home', 'prof', 'pseudo', 'toi', 'obj', 'style', 'ready']; obSt.i = 1; obRender();
+  obSt.steps = ['home', 'prof', 'pseudo', 'toi', 'obj', 'style', 'prog', 'ready']; obSt.i = 1; obRender();
 }
 /* Compte Google : amis + sauvegarde activés tout seuls, sans fenêtre de code */
 async function obCloudOn(u, h) {
@@ -12965,7 +13011,9 @@ function obFinish() {
   if (obSt && obSt.mode === 'demo') { obClose(); toast(T('Fin de l\'aperçu : rien n\'a été changé', 'End of preview: nothing was changed')); return; }
   const u = obSt && obSt.u, mode = obSt && obSt.mode, obSt0h = obSt && obSt.d.h; obApply(); S.settings.onboarded = true; if (mode === 'new' && obSt.d.game && obSt.d.cls && (obSt.d.cls === 'auto' || PCL[obSt.d.cls]) && !(S.pcl && S.pcl.mode)) pclSet(obSt.d.cls);
   if (mode === 'new') { S.settings.tourPending = true;
-    if (!S.history.length && !S.settings.xferDone) { const sp = starterProgram(S.settings.obj, +S.settings.goal || 4, S.settings.exp || 'int'); S.routines = sp.rs; S.schedule = sp.sched; S.settings.starter = 1; } }
+    const seed = new Set(obSt.seedIds || []); if (seed.size) { S.routines = S.routines.filter(r => !seed.has(r.id)); if (S.schedule) S.schedule = S.schedule.map(x => seed.has(x) ? '' : x); }
+    if ((obSt.d.start || 'pre') === 'pre' && obSt.d.prog) { const r = progInstall(obSt.d.prog); if (r) S.schedule = obSched(r.rs, +S.settings.goal || 4); }
+    if (obSt.d.start === 'imp' && obSt.imp && obSt.d.h2r !== false) h2rAuto(T('Mes routines', 'My routines')); }
   save(); obClose(); applyTheme(); render();
   if (mode === 'edit') { toast(T('✅ Profil mis à jour', '✅ Profile updated')); if (frOn()) frQueue(false); return; }
   toast(T(`💪 Bienvenue ${S.settings.name || ''}!`, `💪 Welcome ${S.settings.name || ''}!`).replace(' !', '!'));
