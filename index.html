@@ -174,6 +174,16 @@ canvas{width:100%;height:210px;display:block}
 .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px;margin-bottom:12px;gap:3px}
 .seg button{flex:1;background:none;border:0;color:var(--muted);padding:9px 4px;border-radius:9px;font-size:14px;font-weight:600}
 .seg button.on{background:var(--card2);color:var(--accent)}
+.frpost{padding:14px 14px 10px}.frh{display:flex;gap:10px;align-items:center}.frhn{flex:1;min-width:0}.frt{margin:12px 0 8px;font-size:18px;line-height:1.25}
+.frst{display:flex;gap:22px;margin:0 0 4px}.frst div{display:flex;flex-direction:column;gap:1px}.frst small{color:var(--muted);font-size:11.5px}.frst b{font-size:16px}.frst .hot b{color:#f5c542}
+.frexl{display:flex;flex-direction:column;gap:8px;margin-top:12px}.frer{display:flex;align-items:center;gap:10px;font-size:13.5px;line-height:1.3}.frer>span:not(.th){flex:1;min-width:0}.frer .th{flex:none}
+.frpr{font-size:10px;font-weight:800;background:#f5c54226;color:#f5c542;border-radius:6px;padding:1px 5px;margin-left:2px;letter-spacing:.04em}
+.fracts{display:flex;gap:4px;margin-top:12px;border-top:1px solid var(--line);padding-top:6px}.fract{display:inline-flex;align-items:center;gap:6px;background:none;border:0;color:var(--muted);padding:8px 10px;border-radius:10px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}.fract:active{background:var(--card2)}.fract.on{color:#fb923c}.fract.go{margin-left:auto;color:var(--accent)}.fract.pop .ico{animation:frpop .45s ease}@keyframes frpop{40%{transform:scale(1.45)}100%{transform:scale(1)}}
+.frlk{display:flex;align-items:center;gap:8px;background:none;border:0;padding:4px 2px;font:inherit;color:inherit;cursor:pointer;text-align:left}.frstk{display:inline-flex}.frstk .frav.xs{margin-left:-6px}.frstk .frav.xs:first-child{margin-left:0}.frav.xs{width:22px;height:22px;font-size:10px;border:2px solid var(--card);line-height:18px}
+.frcms{margin-top:6px;padding:8px 10px;background:var(--card2);border-radius:12px;display:flex;flex-direction:column;gap:4px;cursor:pointer}
+.frday{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:18px 4px 8px}
+.frcml{margin:12px 0;max-height:55vh;overflow:auto;display:flex;flex-direction:column;gap:12px}.frcmi{display:flex;gap:10px;align-items:flex-start}.frcma{margin-top:2px}
+.frcmin{display:flex;gap:8px;align-items:flex-end}.frcmin textarea{flex:1;min-height:44px;resize:none}.frcmin .btn{height:44px;width:48px;padding:0;flex:none}
 .recc{border-color:color-mix(in srgb,var(--rc) 45%,var(--line))}.recring{--p:0;width:64px;height:64px;border-radius:50%;flex:none;display:grid;place-items:center;grid-auto-flow:column;align-content:center;justify-content:center;background:radial-gradient(closest-side,var(--card) 79%,transparent 80% 100%),conic-gradient(var(--rc) calc(var(--p)*1%),var(--card2) 0)}.recring b{font-size:21px;line-height:1}.recring small{font-size:11px;margin-left:1px;color:var(--muted)}
 .lgrow{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--line)}.lgrow.me{background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:10px}.lgrow .lgp{width:26px;text-align:center;font-weight:800}.lgzone{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 4px 2px}.lgzone.up{color:#4ade80}.lgzone.dn{color:#f87171}.lgcut{height:2px;background:color-mix(in srgb,#4ade80 40%,transparent);margin:4px 0}.lgrow.lgu .lgp{color:#4ade80}.lgrow.lgd .lgp{color:#f87171}.lgbadge{display:inline-flex;align-items:center;gap:6px;font-weight:800;color:var(--lc)}.lgbadge i{width:14px;height:14px;border-radius:4px;background:var(--lc);transform:rotate(45deg);display:inline-block}
 .phv{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;margin-top:10px;scrollbar-width:none;border-radius:14px}.phv::-webkit-scrollbar{display:none}.phv img{flex:0 0 100%;width:100%;max-height:72vh;object-fit:contain;scroll-snap-align:center;background:var(--card2);border-radius:14px;min-height:200px}.phvd{display:flex;justify-content:center;gap:6px;margin-top:10px}.phvd i{width:7px;height:7px;border-radius:50%;background:var(--line)}.phvd i.on{background:var(--accent)}
@@ -6817,9 +6827,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.112.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.113.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.113.0', d: '2026-11-22', fr: ['Nouveau fil des amis : chaque séance a un titre, ses stats (durée, volume, records), la photo et les exercices avec leur image, regroupés par jour (Aujourd\'hui, Hier…).', 'Encouragements : un seul bouton flamme, avec qui a encouragé (Max, Sarah et 2 autres). Commentaires : aperçu sous la séance, réponses à un ami, et suppression de tes commentaires.'], en: ['New friends feed: each workout has a title, its stats (time, volume, records), the photo and the exercises with their image, grouped by day (Today, Yesterday…).', 'Cheers: a single flame button, showing who cheered (Max, Sarah and 2 others). Comments: preview under the workout, replies to a friend, and deleting your comments.']},
   {v: '9.112.2', d: '2026-11-22', fr: ['Photos de séance en grand : glisse vers la gauche ou la droite pour passer d\'une photo à l\'autre (avec 1 / 3 et des points en dessous).'], en: ['Workout photos full size: swipe left or right to go from one photo to the next (with 1 / 3 and dots below).']},
   {v: '9.112.1', d: '2026-11-22', fr: ['Statut : ton titre entre « » reste sur une seule ligne (le » ne tombe plus tout seul à la ligne).'], en: ['Status: your title in quotes stays on one line.']},
   {v: '9.112.0', d: '2026-11-22', fr: ['Ligues de la semaine (Guilde → Classements) : affronte des aventuriers de ton niveau, même sans amis inscrits. Le haut 20 % monte de ligue chaque dimanche soir, de Bronze jusqu\'à Légende, et le podium gagne de l\'XP. Nouveaux titres de ligue.', 'Récupération du matin (onglet Muscu) : un score sur 100 calculé avec ton sommeil, ton pouls au repos et ta variabilité cardiaque dans Health Connect, avec un conseil pour ta séance. Demande le nouvel APK du téléphone et les autorisations dans Réglages → Health Connect.'], en: ['Weekly leagues (Guild → Rankings): face adventurers of your level, even without friends on the app. The top 20% move up a league every Sunday night, from Bronze to Legend, and the podium wins XP. New league titles.', 'Morning recovery (Lifting tab): a score out of 100 from your sleep, resting pulse and heart rate variability in Health Connect, with advice for your workout. Needs the new phone APK and the permissions in Settings → Health Connect.']},
@@ -8116,7 +8127,8 @@ function frSess(hs, i) {
     } else o.r = Math.max(...ws.map(s => +s.r || 0));
     return o;
   }).filter(Boolean);
-  return {id: hs.id, n: hs.routineName || T('Séance', 'Workout'), d: hs.date, dur: hs.duration || 0, ex, pr};
+  const vol = fr.noW ? 0 : Math.round(hs.exercises.reduce((a, e) => a + work(e.sets).filter(x => x.u !== 'c' && x.u !== 's').reduce((t, x) => t + (+x.w || 0) * (+x.r || 0), 0), 0));
+  return {id: hs.id, n: hs.routineName || T('Séance', 'Workout'), d: hs.date, dur: hs.duration || 0, ex, pr, ...(vol > 0 ? {v: vol, vu: U()} : {})};
 }
 const frPhShared = id => !!(S.settings.fr && (S.settings.fr.ph || []).includes(id));
 const frSmallC = new Map();
@@ -9224,8 +9236,8 @@ function frExLine(o) {
   const nm = esc(o.n);
   if (o.k === 'c') return `${nm} · ${o.r} min${o.st ? ` · ${(Math.round(o.st / 10) * 10).toLocaleString(LOC())} ${T('pas', 'steps')}` : ''}`;
   if (o.k === 's') return `${nm} · ${o.r} s`;
-  if (o.w) { let w = o.w; if (o.u && o.u !== U()) w = Math.round(U() === 'kg' ? w / 2.20462 : w * 2.20462); return `${nm} · <b>${w} ${U()} × ${o.r}</b>${o.pr ? ' 🏆' : ''}`; }
-  if (o.r) return `${nm} · ${o.r} reps${o.pr ? ' 🏆' : ''}`;
+  if (o.w) { let w = o.w; if (o.u && o.u !== U()) w = Math.round(U() === 'kg' ? w / 2.20462 : w * 2.20462); return `${nm} · <b>${w} ${U()} × ${o.r}</b>${o.pr ? ' <span class="frpr">PR</span>' : ''}`; }
+  if (o.r) return `${nm} · ${o.r} reps${o.pr ? ' <span class="frpr">PR</span>' : ''}`;
   return `${nm} · ${o.ns} ${T('séries', 'sets')}`;
 }
 const FR_EMO = ['🔥', '💪', '👏'];
@@ -9239,16 +9251,40 @@ function friFill() {
   ims.forEach(im => friObs.observe(im));
 }
 const frImg = (f, s, src) => `<img ${src ? `data-fri="${friKey(src)}" decoding="async"` : `data-ph="${s.phId || s.id}"`} alt="" data-act="fr-phbig" data-c="${f.c}" style="width:100%;max-height:55vh;object-fit:cover;border-radius:12px;margin-top:10px;display:block;cursor:zoom-in;background:var(--card2);min-height:120px">`;
+/* ---------- Carte de séance du fil (inspirée de Hevy et Strava) : en-tête, titre, stats, photo, exercices, actions ---------- */
+const FRX = new Set(); // séances dont on a ouvert tous les exercices
+function frStats(s) {
+  const st = [[T('Durée', 'Time'), hm(s.dur)]];
+  if (s.v) { let v = +s.v; if (s.vu && s.vu !== U()) v = U() === 'kg' ? v / 2.20462 : v * 2.20462; st.push([T('Volume', 'Volume'), `${Math.round(v).toLocaleString(LOC())} ${U()}`]); }
+  else { const ns = (s.ex || []).reduce((a, o) => a + (+o.ns || 0), 0); if (ns) st.push([T('Séries', 'Sets'), ns]); }
+  st.push([T('Records', 'Records'), s.pr || 0]);
+  return `<div class="frst">${st.map(([l, v], i) => `<div${i === st.length - 1 && s.pr ? ' class="hot"' : ''}><small>${l}</small><b>${v}</b></div>`).join('')}</div>`;
+}
+function frHead(f, d, s, sub) {
+  return `<div class="frh">${frAv(d, f.c)}<div class="frhn"><b class="tap" data-act="fr-who" data-c="${f.c}">${esc(f.me ? T('Moi', 'Me') : d.name)}</b> ${frLv(d)}<div class="muted small">${frAgo(s.d)}${sub ? ' · ' + sub : ''}</div></div></div>`;
+}
 function frPost({f, d, s}) {
   if (s.ph) return frPhotoPost({f, d, s});
   if (f.me && s.phId) setTimeout(phFill, 0);
-  const ex = s.ex || [], more = ex.length - 5;
-  return `<div class="card frpost"><div class="row" style="gap:10px;align-items:center">${frAv(d, f.c)}
-      <div style="flex:1;min-width:0"><b>${esc(d.name)}</b> ${frLv(d)} <span class="muted small">· ${frAgo(s.d)}</span><br><span class="small">💪 ${T('a fait', 'did')} <b>${esc(s.n)}</b> · ${hm(s.dur)}${s.pr ? ` · 🏆 ${s.pr} record${s.pr > 1 ? 's' : ''}` : ''}</span></div></div>
+  const ex = s.ex || [], k = f.c + '|' + s.id, open = FRX.has(k), sh = open ? ex : ex.slice(0, 4);
+  return `<article class="card frpost">${frHead(f, d, s)}
+    <h3 class="frt">${esc(s.n)}</h3>${frStats(s)}
     ${s.img ? frImg(f, s, s.img) : f.me && s.phId ? frImg(f, s) : ''}
-    <div class="frex">${ex.slice(0, 5).map(o => `<div>${frExLine(o)}</div>`).join('')}${more > 0 ? `<div class="muted">+ ${more} ${T('autre' + (more > 1 ? 's' : ''), 'more')}</div>` : ''}</div>
-    ${f.me ? '' : `<button class="btn sm block frtrain" data-act="fr-train" data-c="${esc(f.c)}" data-s="${esc(s.id)}">${T('Faire cette séance avec mes poids', 'Do this workout with my weights')}</button>`}
-    ${frReactRow(f, s)}${frCmRow(f, s)}</div>`;
+    <div class="frexl">${sh.map(o => `<div class="frer">${thumb(o.n, 34)}<span>${frExLine(o)}</span></div>`).join('')}
+      ${ex.length > 4 ? `<button class="linkbtn small" data-act="fr-more" data-k="${esc(k)}">${open ? T('Voir moins', 'Show less') : T(`Voir les ${ex.length} exercices`, `See all ${ex.length} exercises`)}</button>` : ''}</div>
+    ${frActs(f, s)}${frCmRow(f, s)}</article>`;
+}
+/* Barre d'actions : encourager, commenter, refaire la séance — puis qui a encouragé */
+function frLikers(who) {
+  const n = who.length; if (!n) return '';
+  return n === 1 ? T(`${who[0]} a encouragé`, `${who[0]} cheered`) : n === 2 ? T(`${who[0]} et ${who[1]} ont encouragé`, `${who[0]} and ${who[1]} cheered`) : T(`${who[0]}, ${who[1]} et ${n - 2} autre${n > 3 ? 's' : ''} ont encouragé`, `${who[0]}, ${who[1]} and ${n - 2} other${n > 3 ? 's' : ''} cheered`);
+}
+function frActs(f, s) {
+  const owner = f.me ? FRS().file : f.c, r = frReacts(owner, s.id), who = [...new Set(Object.values(r).flat())], nc = frComments(owner, s.id).length;
+  const mine = !f.me && (FRS().re || []).find(x => x.to === f.c && x.s === s.id);
+  const like = f.me ? `<span class="fract">${ic('flame', 18)}<span>${who.length || ''}</span></span>` : `<button class="fract lk${mine ? ' on' : ''}" data-act="fr-react" data-c="${f.c}" data-s="${esc(s.id)}" data-e="${mine ? mine.e : '🔥'}" aria-label="${T('Encourager', 'Cheer')}">${ic('flame', 18)}<span>${who.length || ''}</span></button>`;
+  return `<div class="fracts">${like}<button class="fract" data-act="fr-cm" data-c="${owner}" data-s="${esc(s.id)}" aria-label="${T('Commenter', 'Comment')}">${ic('chat', 18)}<span>${nc || ''}</span></button>${f.me || s.ph ? '' : `<button class="fract go" data-act="fr-train" data-c="${esc(f.c)}" data-s="${esc(s.id)}">${ic('repeat', 18)}<span>${T('Faire cette séance', 'Do this workout')}</span></button>`}</div>
+    ${who.length ? `<button class="frlk" data-act="fr-likers" data-c="${owner}" data-s="${esc(s.id)}"><span class="frstk">${who.slice(0, 3).map(nm => `<span class="frav xs">${esc((String(nm).replace(/^@/, '') || '?')[0].toUpperCase())}</span>`).join('')}</span><span class="small muted">${esc(frLikers(who))}</span></button>` : ''}`;
 }
 function frReactRow(f, s) {
   if (f.me) { const r = frReacts(FRS().file, s.id), ks = Object.keys(r); return `<div class="small muted" style="margin-top:10px">${ks.length ? ks.map(e => `${e} ${r[e].length}`).join('  ') + ' · ' + esc([...new Set(Object.values(r).flat())].join(', ')) : T('Pas encore de réaction', 'No reactions yet')}</div>`; }
@@ -9259,10 +9295,9 @@ function frReactRow(f, s) {
 const rkFrame = (rk, f) => GAME() && rk && RKC[rk] ? ` rkf rkf-${String(rk).replace('+', 'p')}${f && FRAMES.some(x => x.id === f) ? ' frm-' + f : ''}" style="--rkc:${RKC[rk]}` : '';
 const frAv = (d, c, cls = '') => d.av ? `<img class="frav ${cls}${rkFrame(d.hu && d.hu.r, d.hu && d.hu.f)}" src="${esc(d.av)}" alt="" data-act="fr-who" data-c="${c}">` : `<span class="frav ${cls}${rkFrame(d.hu && d.hu.r, d.hu && d.hu.f)}" data-act="fr-who" data-c="${c}">${esc((String(d.name || '').replace(/^@/, '') || '?')[0].toUpperCase())}</span>`;
 function frPhotoPost({f, d, s}) {
-  return `<div class="card frpost"><div class="row" style="gap:10px;align-items:center">${frAv(d, f.c)}
-      <div style="flex:1;min-width:0"><b>${esc(d.name)}</b> <span class="muted small">· ${dateFr(s.d)}</span><br><span class="small">📸 ${T('a partagé une photo de progrès', 'shared a progress photo')}</span></div></div>
+  return `<article class="card frpost">${frHead(f, d, s, T('photo de progrès', 'progress photo'))}
     ${f.me ? (setTimeout(phFill, 0), frImg(f, s)) : frImg(f, s, s.ph.img)}
-    ${frReactRow(f, s)}${frCmRow(f, s)}</div>`;
+    ${frActs(f, s)}${frCmRow(f, s)}</article>`;
 }
 /* ===================== Social : commentaires, défis, raid de guilde, saisons ===================== */
 const xpBonus = (m) => (S.xpb || []).filter(x => !m || String(x.d || '').slice(0, 7) === m).reduce((a, x) => a + (+x.xp || 0), 0);
@@ -9801,22 +9836,29 @@ function chPaint() {
 /* ---------- Commentaires ---------- */
 function frComments(owner, sid) {
   const fr = FRS(), out = [];
-  (fr.cm || []).forEach(x => { if (x.to === owner && x.s === sid) out.push({n: T('Toi', 'You'), t: x.t, d: x.d, me: 1}); });
-  fr.list.forEach(f => { const d = frData[f.c] && frData[f.c].d; (d && d.cm || []).forEach(x => { if (x.to === owner && x.s === sid) out.push({n: d.name, t: x.t, d: x.d}); }); });
+  (fr.cm || []).forEach(x => { if (x.to === owner && x.s === sid) out.push({n: T('Toi', 'You'), t: x.t, d: x.d, r: x.r, me: 1, av: S.settings.avatar}); });
+  fr.list.forEach(f => { const d = frData[f.c] && frData[f.c].d; (d && d.cm || []).forEach(x => { if (x.to === owner && x.s === sid) out.push({n: d.name, t: x.t, d: x.d, r: x.r, av: d.av}); }); });
   return out.sort((a, b) => (a.d || '').localeCompare(b.d || ''));
 }
 function frCmRow(f, s) {
-  const owner = f.me ? FRS().file : f.c, cs = frComments(owner, s.id), sh = cs.slice(-2);
-  return `${sh.length ? `<div class="frcm">${cs.length > 2 ? `<div class="muted small">… ${cs.length - 2} ${T('autre' + (cs.length > 3 ? 's' : ''), 'more')}</div>` : ''}${sh.map(c => `<div class="small"><b>${esc(c.n)}</b> ${esc(c.t)}</div>`).join('')}</div>` : ''}
-    <button class="linkbtn small" style="margin-top:6px" data-act="fr-cm" data-c="${owner}" data-s="${esc(s.id)}">💬 ${cs.length ? T('Voir / répondre', 'View / reply') : T('Commenter', 'Comment')}</button>`;
+  const owner = f.me ? FRS().file : f.c, cs = frComments(owner, s.id), sh = cs.slice(-2); if (!cs.length) return '';
+  return `<div class="frcms tap" data-act="fr-cm" data-c="${owner}" data-s="${esc(s.id)}">${cs.length > 2 ? `<div class="muted small">${T(`Voir les ${cs.length} commentaires`, `See all ${cs.length} comments`)}</div>` : ''}${sh.map(c => `<div class="small"><b>${esc(c.n)}</b> ${c.r ? `<span class="muted">@${esc(c.r)}</span> ` : ''}${esc(c.t)}</div>`).join('')}</div>`;
 }
-function frCmOpen(owner, sid) {
+const cmAv = c => c.av ? `<img class="frav sm" src="${esc(c.av)}" alt="">` : `<span class="frav sm">${esc((String(c.n).replace(/^@/, '') || '?')[0].toUpperCase())}</span>`;
+function frCmOpen(owner, sid, reply) {
   const cs = frComments(owner, sid);
-  modal(`<div class="row between"><h2 style="margin:0">💬 ${T('Commentaires', 'Comments')}</h2><button class="btn sm" data-act="close">✕</button></div>
-    <div style="margin:10px 0">${cs.length ? cs.map(c => `<div class="frcm" style="margin-top:6px"><b>${esc(c.n)}</b> <span class="muted small">· ${c.d ? frAgo(c.d) : ''}</span><br>${esc(c.t)}</div>`).join('') : `<p class="muted small">${T('Pas encore de commentaire. Sois le premier!', 'No comments yet. Be the first!')}</p>`}</div>
-    <textarea id="cmin" maxlength="200" rows="2" placeholder="${T('Ex. : Malade ton PR! 🔥', 'E.g. Sick PR! 🔥')}" data-noic></textarea>
-    <button class="btn primary block" style="margin-top:8px" data-act="fr-cm-send" data-c="${owner}" data-s="${esc(sid)}">${T('Envoyer', 'Send')}</button>`);
-  setTimeout(() => { const t = $('#cmin'); if (t) t.focus(); }, 80);
+  modal(`<div class="row between"><h2 style="margin:0">${T('Commentaires', 'Comments')}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <div class="frcml">${cs.length ? cs.map(c => `<div class="frcmi">${cmAv(c)}<div style="flex:1;min-width:0"><div class="small"><b>${esc(c.n)}</b> <span class="muted">· ${c.d ? frAgo(c.d) : ''}</span></div><div>${c.r ? `<span class="muted">@${esc(c.r)}</span> ` : ''}${esc(c.t)}</div>
+      <div class="frcma">${c.me ? `<button class="linkbtn small" data-act="fr-cm-del" data-c="${owner}" data-s="${esc(sid)}" data-d="${esc(c.d || '')}">${T('Supprimer', 'Delete')}</button>` : `<button class="linkbtn small" data-act="fr-cm-rep" data-c="${owner}" data-s="${esc(sid)}" data-n="${esc(c.n)}">${T('Répondre', 'Reply')}</button>`}</div></div></div>`).join('') : `<p class="muted small">${T('Pas encore de commentaire. Sois le premier!', 'No comments yet. Be the first!')}</p>`}</div>
+    ${reply ? `<div class="small muted" style="margin-bottom:4px">${T('Réponse à', 'Replying to')} <b>${esc(reply)}</b> · <button class="linkbtn small" data-act="fr-cm" data-c="${owner}" data-s="${esc(sid)}">${T('Annuler', 'Cancel')}</button></div>` : ''}
+    <div class="frcmin"><textarea id="cmin" maxlength="200" rows="1" placeholder="${reply ? T(`Répondre à ${esc(reply)}…`, `Reply to ${esc(reply)}…`) : T('Écris un commentaire…', 'Write a comment…')}" data-noic></textarea>
+    <button class="btn primary" data-act="fr-cm-send" data-c="${owner}" data-s="${esc(sid)}" data-r="${esc(reply || '')}" aria-label="${T('Envoyer', 'Send')}">${ic('share', 18)}</button></div>`);
+  setTimeout(() => { const t = $('#cmin'); if (t) t.focus(); const l = document.querySelector('.frcml'); if (l) l.scrollTop = l.scrollHeight; }, 80);
+}
+function frLikersOpen(owner, sid) {
+  const r = frReacts(owner, sid), who = [...new Set(Object.values(r).flat())];
+  modal(`<div class="row between"><h2 style="margin:0">${T('Encouragements', 'Cheers')}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <div style="margin-top:10px">${who.map(n => `<div class="frcmi" style="align-items:center">${cmAv({n})}<b style="flex:1">${esc(n)}</b>${ic('flame', 16)}</div>`).join('')}</div>`);
 }
 function frCmReceived() {
   const fr = FRS(), out = []; if (!fr.file) return out;
@@ -10543,7 +10585,9 @@ function vFriends() {
     : `<button class="btn primary block" data-act="fr-add" style="margin-bottom:12px">＋ ${T('Ajouter un ami', 'Add a friend')}</button>`;
   const recHtml = rec.length ? `<div class="card"><span class="muted small">❤️ ${T('Réactions à tes séances', 'Reactions to your workouts')}</span>${rec.map(x => `<div class="small" style="margin-top:6px">${x.e} <b>${esc(x.n)}</b> · ${esc(x.h.routineName || '')} <span class="muted">(${dateFr(x.h.date)})</span></div>`).join('')}</div>` : '';
   const feedL = fr.list.length ? feed : []; // sans ami, pas besoin de revoir toutes ses propres séances ici
-  const feedHtml = feedL.length ? feedL.map(frPost).join('') : fr.list.length ? `<p class="muted center" style="margin:30px 0">${T('Tes amis n\'ont pas encore de séance partagée.', 'Your friends have no shared workouts yet.')}</p>`
+  const dayLab = d => { const k = dkey(new Date(d)), t = dkey(new Date()), y = dkey(new Date(Date.now() - 864e5)); return k === t ? T('Aujourd\'hui', 'Today') : k === y ? T('Hier', 'Yesterday') : dateFr(d); };
+  let lastDay = '';
+  const feedHtml = feedL.length ? feedL.map(x => { const k = dkey(new Date(x.s.d)), h = k !== lastDay ? `<div class="frday">${esc(dayLab(x.s.d))}</div>` : ''; lastDay = k; return h + frPost(x); }).join('') : fr.list.length ? `<p class="muted center" style="margin:30px 0">${T('Tes amis n\'ont pas encore de séance partagée.', 'Your friends have no shared workouts yet.')}</p>`
     : `<p class="muted center" style="margin:30px 16px">${T('Ajoute un ami avec son @pseudo pour voir ses séances ici.', 'Add a friend with their @username to see their workouts here.')}</p>`;
   setTimeout(socialCheck, 0);
   const cmRec = frCmReceived(), cmHtml = cmRec.length ? `<div class="card"><span class="muted small">💬 ${T('Commentaires reçus', 'Comments received')}</span>${cmRec.map(x => `<div class="small" style="margin-top:6px"><b>${esc(x.n)}</b> : ${esc(x.t)} <span class="muted">· ${x.d ? frAgo(x.d) : ''}</span></div>`).join('')}</div>` : '';
@@ -11405,13 +11449,18 @@ document.addEventListener('click', e => {
     case 'fr-cm': frCmOpen(b.dataset.c, b.dataset.s); break;
     case 'fr-cm-send': { const t = (($('#cmin') || {}).value || '').trim().slice(0, 200); if (!t) break; const fr = FRS();
       if (!frOn()) { toast(T('💡 Active le partage pour que tes amis voient tes commentaires', '💡 Turn on sharing so friends see your comments')); break; }
-      fr.cm = fr.cm || []; fr.cm.push({to: b.dataset.c, s: b.dataset.s, t, d: new Date().toISOString()}); save(); closeModal(); frCmOpen(b.dataset.c, b.dataset.s); render(); frQueue(true); break; }
+      fr.cm = fr.cm || []; fr.cm.push({to: b.dataset.c, s: b.dataset.s, t, d: new Date().toISOString(), ...(b.dataset.r ? {r: b.dataset.r.slice(0, 40)} : {})}); save(); closeModal(); frCmOpen(b.dataset.c, b.dataset.s); render(); frQueue(true); break; }
+    case 'fr-cm-rep': closeModal(); frCmOpen(b.dataset.c, b.dataset.s, b.dataset.n); break;
+    case 'fr-cm-del': { const fr = FRS(); if (!confirm(T('Supprimer ce commentaire?', 'Delete this comment?'))) break; fr.cm = (fr.cm || []).filter(x => !(x.to === b.dataset.c && x.s === b.dataset.s && (x.d || '') === b.dataset.d)); save(); closeModal(); frCmOpen(b.dataset.c, b.dataset.s); render(); frQueue(true); break; }
+    case 'fr-likers': frLikersOpen(b.dataset.c, b.dataset.s); break;
+    case 'fr-more': { const k = b.dataset.k; if (FRX.has(k)) FRX.delete(k); else FRX.add(k); render(); break; }
     case 'fr-now': FRS().noW = b.checked; save(); frQueue(false); break;
     case 'fr-hide': { const fr = FRS(), id = b.dataset.id; fr.hide = fr.hide || []; const i = fr.hide.indexOf(id); if (i >= 0) fr.hide.splice(i, 1); else fr.hide.push(id); save(); render(); frQueue(false); break; }
     case 'fr-react': { const fr = FRS(), {c, s, e} = b.dataset; fr.re = fr.re || []; const i = fr.re.findIndex(x => x.to === c && x.s === s);
       if (i >= 0 && fr.re[i].e === e) fr.re.splice(i, 1); else { if (i >= 0) fr.re.splice(i, 1); fr.re.push({to: c, s, e, d: new Date().toISOString()}); }
       save();
-      { const row = b.closest('.row'); if (row && b.closest('.modal')) { const tmp = document.createElement('div'); tmp.innerHTML = frReactRow({c}, {id: s}); const nw = tmp.firstElementChild; row.replaceWith(nw); try { iconize(nw); } catch (e2) {} } else render(); }
+      if (b.classList.contains('lk')) { const on = fr.re.some(x => x.to === c && x.s === s); b.classList.toggle('on', on); b.dataset.e = on ? fr.re.find(x => x.to === c && x.s === s).e : '🔥'; const n = [...new Set(Object.values(frReacts(c, s)).flat())].length, sp = b.querySelector('span'); if (sp) sp.textContent = n || ''; if (on) { b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); } if (!b.closest('.modal')) setTimeout(render, 450); }
+      else { const row = b.closest('.row'); if (row && b.closest('.modal')) { const tmp = document.createElement('div'); tmp.innerHTML = frReactRow({c}, {id: s}); const nw = tmp.firstElementChild; row.replaceWith(nw); try { iconize(nw); } catch (e2) {} } else render(); }
       if (S.settings.haptic !== false) haptic(15);
       if (frOn()) frQueue(true); else if (!fr.nagRe) { fr.nagRe = 1; save(); setTimeout(() => toast(T('💡 Active le partage pour que tes amis voient tes réactions', '💡 Turn on sharing so friends see your reactions')), 400); } break; }
     case 'fr-who': { const me = b.dataset.c === 'me' || b.dataset.c === FRS().file, c = me ? 'me' : b.dataset.c;
