@@ -381,6 +381,7 @@ html.moving :is(.rkf,.pfhead,.frhero,.armit,.chbtn,.cpw,.frm-glow,[class*="bn-"]
 .gqt .gcta{align-self:flex-start;margin-top:7px}.gnoen{display:flex;align-items:center;gap:5px;color:var(--muted)!important;margin-top:2px}
 .gchips em{white-space:nowrap}
 @media (max-width:370px){.ghart{width:108px}.ghart img{width:124px;height:124px}.ghlv b{font-size:26px}}
+.sidenote{display:flex;align-items:center;gap:5px;color:var(--accent)!important;cursor:pointer}
 .gsum2{cursor:pointer;position:relative;padding:14px 16px}.gsum2:active{transform:scale(.99)}
 .gsh{text-align:left!important;margin:0 0 10px!important;font-size:12px!important;letter-spacing:3px!important}
 .gsum2 .chev{color:var(--muted);display:flex;flex:none}
@@ -1623,6 +1624,12 @@ const incr = () => +S.settings.inc > 0 ? +S.settings.inc : (S.settings.unit === 
 /* Petits muscles (épaules, bras) : saut plus petit par défaut. Modifiable par exercice. */
 const SMALL_MUS = ['delts', 'biceps', 'triceps', 'forearms', 'abductors', 'adductors'];
 function isDB(name) { const L = typeof libEntry === 'function' ? libEntry(name) : null; return (L && L.eq === 'dumbbell') || /halt[eè]re|dumbbell/i.test(name); }
+/* Charge écrite par côté : tu écris les disques d'un seul côté, l'appli garde le vrai total (côté × 2 + barre) pour le volume, les records et les stats */
+const sideOf = n => { const x = (S.side || {})[norm(n || '')]; return x && x.on ? x : null; };
+const sideBarDef = n => /barre|barbell|smith|\bez\b|trap bar|hex/i.test(n || '') && !/halt[eè]re|dumbbell|poulie|c[aâ]ble|cable/i.test(n || '') ? (S.settings.bar != null ? +S.settings.bar : (U() === 'kg' ? 20 : 45)) : 0;
+const wShow = (n, w) => { const x = sideOf(n); if (!x || w === '' || w == null || isNaN(+w)) return w; const v = (+w - (+x.bar || 0)) / 2; return v >= 0 ? String(Math.round(v * 100) / 100) : String(w); };
+const wSave = (n, v) => { const x = sideOf(n); if (!x || v === '' || v == null) return v; const t = +String(v).replace(',', '.'); return isNaN(t) ? v : String(Math.round((t * 2 + (+x.bar || 0)) * 100) / 100); };
+const sideNote = n => { const x = sideOf(n); return x ? T(`Charge écrite par côté${+x.bar ? ` · barre ${dec1(+x.bar)} ${U()}` : ''} : le total est calculé pour toi`, `Weight written per side${+x.bar ? ` · bar ${dec1(+x.bar)} ${U()}` : ''}: the total is calculated for you`) : ''; };
 function incFor(name) {
   const v = (S.incs || {})[norm(name)]; if (+v > 0) return +v;
   const L = typeof libEntry === 'function' ? libEntry(name) : null;
@@ -2110,6 +2117,17 @@ function openSetMenu(sets, si, name, onchange) {
       <button class="btn primary" style="flex:1" data-act="close">OK</button>
     </div>`, {onclose: () => { if (setCtx && setCtx.onchange) setCtx.onchange(); }});
 }
+function sideMenu(n) { // « Comment tu écris la charge » : total ou par côté
+  const x = (S.side || {})[norm(n)] || {}, on = !!x.on, bar = x.bar != null ? +x.bar : sideBarDef(n), bars = U() === 'kg' ? [0, 10, 15, 20] : [0, 15, 25, 35, 45];
+  const hist = S.history.reduce((a, h) => a + (h.exercises || []).filter(e => norm(e.name) === norm(n)).reduce((b, e) => b + e.sets.filter(st => st.sc == null && +st.w > 0).length, 0), 0);
+  const conv = S.history.reduce((a, h) => a + (h.exercises || []).filter(e => norm(e.name) === norm(n)).reduce((b, e) => b + e.sets.filter(st => st.sc != null).length, 0), 0);
+  return `<label>${T('Comment tu écris la charge', 'How you write the weight')}</label>
+    <div class="seg"><button class="${on ? '' : 'on'}" data-act="side-set" data-n="${esc(n)}" data-v="">${T('Le total', 'The total')}</button><button class="${on ? 'on' : ''}" data-act="side-set" data-n="${esc(n)}" data-v="1">${T('Un seul côté', 'One side')}</button></div>
+    ${on ? `<label>${T('Barre ou machine à vide', 'Empty bar or machine')}</label><div class="chips">${bars.map(v => `<button class="chip ${bar === v ? 'on' : ''}" data-act="side-bar" data-n="${esc(n)}" data-v="${v}">${v ? dec1(v) + ' ' + U() : T('Aucune', 'None')}</button>`).join('')}</div>
+      <p class="small muted" style="margin:6px 0 0">${T(`Ex. : 50 de chaque côté${bar ? ` + barre de ${dec1(bar)}` : ''} = ${dec1(100 + bar)} ${U()}. Ton volume, tes records et tes stats utilisent le total.`, `E.g. 50 on each side${bar ? ` + ${dec1(bar)} bar` : ''} = ${dec1(100 + bar)} ${U()}. Your volume, records and stats use the total.`)}</p>
+      ${hist ? `<button class="btn sm block" style="margin-top:8px" data-act="side-conv" data-n="${esc(n)}">${T(`Mes anciennes séances étaient aussi par côté : corriger ${hist} séries`, `My past workouts were also per side: fix ${hist} sets`)}</button>` : ''}` : ''}
+    ${conv ? `<button class="linkbtn small" style="margin-top:6px" data-act="side-unconv" data-n="${esc(n)}">${T(`Annuler la correction des anciennes séances (${conv} séries)`, `Undo the fix of past workouts (${conv} sets)`)}</button>` : ''}`;
+}
 function openExMenu(ei) {
   const e = S.active.exercises[ei];
   const next = S.active.exercises[ei + 1];
@@ -2125,6 +2143,7 @@ function openExMenu(ei) {
       ${e.ss ? `<button class="btn" data-act="ex-ss-off" data-e="${ei}">⛓ Retirer du superset</button>` : ''}
       ${S.active.exercises.length > 1 ? `<button class="btn" data-act="wo-ss-pick" data-e="${ei}">⛓ Superset avec…</button>` : ''}
     </div>
+    ${sideMenu(e.name)}
     <label>${T('Augmentation de charge suggérée pour cet exercice', 'Suggested weight increase for this exercise')}</label>
     <div class="chips">${INC_OPTS().map(v => `<button class="chip ${incFor(e.name) === v ? 'on' : ''}" data-act="inc-set" data-n="${esc(e.name)}" data-v="${v}">+${dec1(v)} ${U()}</button>`).join('')}</div>
     <label>Repos après chaque série de cet exercice</label>
@@ -2740,11 +2759,11 @@ function vRoutines() {
     </div>`;
 }
 let sw = null;
-function prevCell(prev, s, k) {
+function prevCell(prev, s, k, n) {
   if (!prev) return '—';
   const list = s.t === 'W' ? prev.filter(x => x.t === 'W') : prev.filter(x => x.t !== 'W');
   const p = list[k]; if (!p) return '—';
-  return p.u === 's' ? fmtSec(p.r) : `${p.w === '' || p.w == null ? BWL() : DN(p.w)}×${p.r}`;
+  return p.u === 's' ? fmtSec(p.r) : `${p.w === '' || p.w == null ? BWL() : DN(wShow(n, p.w))}×${p.r}`;
 }
 function vWorkout() {
   const a = S.active;
@@ -2766,17 +2785,18 @@ function vWorkout() {
       ${!last ? '<div class="last">Première fois</div>' : ''}
       ${stagBtn(e.name, ei)}
       ${bossLine(e.name, ei)}
+      ${sideOf(e.name) ? `<div class="last sidenote" data-act="ex-menu" data-e="${ei}">${ic('scale', 13)} ${sideNote(e.name)}</div>` : ''}
       ${e.mach ? `<div class="last">⚖️ ${T('Machine', 'Machine')}${CLN()} ${dec1(e.mach.v)} ${e.mach.u} = ${dec1(e.mach.u === 'kg' ? e.mach.v * KG : e.mach.v / KG)} ${U()}</div>` : ''}
-      ${(() => { const sg = suggestFor(e); return sg ? `<div class="sug"><span>💡 Haut de la fourchette atteint (${esc(sg.from)}). Essaie <b>${dec1(sg.top)} ${U()}${sg.bw ? ' de lest' : ''}</b>.${(() => { const lw = Math.max(...e.sets.filter(s => s.t !== 'W').map(s => +s.w || 0)); return lw > 0 && (sg.top - lw) / lw > 0.1 ? `<br><span class="small muted">${T('Gros saut : vise d\'abord le bas de ta plage de reps avec la nouvelle charge.', 'Big jump: aim for the bottom of your rep range with the new weight first.')}</span>` : ''; })()}</span><span class="row" style="gap:4px;flex-direction:column"><button class="btn primary sm" data-act="apply-sug" data-e="${ei}">Appliquer</button><button class="linkbtn small" data-act="inc-menu" data-e="${ei}">${isDB(e.name) && +S.settings.dbStep > 0 ? T('haltères ', 'dumbbells ') + dec1(+S.settings.dbStep) : '+' + dec1(incFor(e.name))} ${U()} ⚙️</button></span></div>` : ''; })()}
-      <div class="colhead w5"><span>#</span><span>${S.settings.prevMode === 'best' ? T('Meilleur', 'Best') : 'Précédent'}</span><span>${U()}</span><span>${tm ? 'Sec' : 'Reps'}</span><span></span></div>
+      ${(() => { const sg = suggestFor(e); return sg ? `<div class="sug"><span>💡 Haut de la fourchette atteint (${esc(sg.from)}). Essaie <b>${dec1(sg.top)} ${U()}${sg.bw ? ' de lest' : ''}</b>${sideOf(e.name) && !sg.bw ? ` (${dec1(+wShow(e.name, sg.top))} ${T('par côté', 'per side')})` : ''}.${(() => { const lw = Math.max(...e.sets.filter(s => s.t !== 'W').map(s => +s.w || 0)); return lw > 0 && (sg.top - lw) / lw > 0.1 ? `<br><span class="small muted">${T('Gros saut : vise d\'abord le bas de ta plage de reps avec la nouvelle charge.', 'Big jump: aim for the bottom of your rep range with the new weight first.')}</span>` : ''; })()}</span><span class="row" style="gap:4px;flex-direction:column"><button class="btn primary sm" data-act="apply-sug" data-e="${ei}">Appliquer</button><button class="linkbtn small" data-act="inc-menu" data-e="${ei}">${isDB(e.name) && +S.settings.dbStep > 0 ? T('haltères ', 'dumbbells ') + dec1(+S.settings.dbStep) : '+' + dec1(incFor(e.name))} ${U()} ⚙️</button></span></div>` : ''; })()}
+      <div class="colhead w5"><span>#</span><span>${S.settings.prevMode === 'best' ? T('Meilleur', 'Best') : 'Précédent'}</span><span>${sideOf(e.name) ? U() + T('/côté', '/side') : U()}</span><span>${tm ? 'Sec' : 'Reps'}</span><span></span></div>
       ${e.sets.map((s, si) => {
         const k = s.t === 'W' ? wu++ : wi++;
         const running = sw && sw.ei === ei && sw.si === si;
         const chk = tm && !s.done && (s.r === '' || s.r == null) ? (running ? `<span id="swv">${fmtSec((Date.now() - sw.t0) / 1000)}</span>` : '▶') : '✓';
         return `<div class="setrow w5 ${s.done ? 'done' : ''}">
           <button class="nb t-${s.t || 'N'} ${s.n || (s.rir != null && s.rir !== '') ? 'hasn' : ''}" data-act="set-menu" data-e="${ei}" data-s="${si}" aria-label="Type, RIR et note de la série">${s.t === 'W' ? 'É' : s.t === 'D' ? 'D' : wi}</button>
-          <button class="prev" data-act="use-prev" data-e="${ei}" data-s="${si}" aria-label="Reprendre la performance précédente">${prevCell(prev, s, k)}</button>
-          <input inputmode="decimal" value="${esc(s.w)}" placeholder="—" data-in="w" data-e="${ei}" data-s="${si}">
+          <button class="prev" data-act="use-prev" data-e="${ei}" data-s="${si}" aria-label="Reprendre la performance précédente">${prevCell(prev, s, k, e.name)}</button>
+          <input inputmode="decimal" value="${esc(wShow(e.name, s.w))}" placeholder="—" data-in="w" data-e="${ei}" data-s="${si}">
           <input inputmode="numeric" value="${esc(s.r)}" placeholder="${esc(s.ph)}" data-in="r" data-e="${ei}" data-s="${si}">
           <button class="check ${running ? 'run' : ''} ${s.done && s.pr ? 'pr' : ''} ${justChk === ei + '-' + si ? 'pop' : ''}" data-act="done" data-e="${ei}" data-s="${si}" aria-label="${tm ? 'Chrono / valider' : 'Valider la série'}">${s.done && s.pr ? '🏆' : chk}</button>
         </div>${s.n || (s.rir != null && s.rir !== '') ? `<div class="last">${s.rir != null && s.rir !== '' ? 'RIR ' + esc(s.rir) + ' ' : ''}${s.n ? '📝 ' + esc(s.n) : ''}</div>` : ''}`;
@@ -3306,7 +3326,7 @@ function editorHtml() {
       <div class="colhead"><span></span><span>${U()}</span><span>Reps</span><span></span></div>
       ${e.sets.map((s, si) => `<div class="setrow">
         <button class="nb t-${s.t || 'N'} ${s.n ? 'hasn' : ''}" data-act="ed-set-menu" data-e="${ei}" data-s="${si}">${s.t === 'W' ? 'É' : s.t === 'D' ? 'D' : si + 1}</button>
-        <input inputmode="decimal" value="${esc(s.w)}" placeholder="—" data-edw="w" data-e="${ei}" data-s="${si}">
+        <input inputmode="decimal" value="${esc(wShow(e.name, s.w))}" placeholder="—" data-edw="w" data-e="${ei}" data-s="${si}">
         <input inputmode="numeric" value="${esc(s.r)}" data-edw="r" data-e="${ei}" data-s="${si}">
         <button class="check" data-act="ed-set-del" data-e="${ei}" data-s="${si}">🗑</button></div>`).join('')}
       <div class="row" style="margin-top:8px"><button class="btn sm" data-act="ed-add-set" data-e="${ei}">＋ Série</button></div>
@@ -6527,7 +6547,7 @@ function vFocus() {
     ${!allDone && s.t !== 'W' && !resting ? bossLine(e.name, ei) : ''}
     ${resting ? `<div class="frest"><span class="small muted">${T('Repos', 'Rest')}</span><b id="ftv" data-act="bigtimer">${Math.floor(left / 60)}:${pad2(left % 60)}</b><div class="row" style="gap:8px;justify-content:center"><button class="btn sm" data-act="timer-sub">−15 s</button><button class="btn sm" data-act="timer-add">+30 s</button><button class="btn sm primary" data-act="timer-stop">${T('Passer', 'Skip')}</button></div></div>` : ''}
     ${allDone ? '' : `<div class="fgrid">
-      <div class="fbox"><span class="small muted">${U()}</span><div class="fstep"><button class="btn" data-act="f-step" data-k="w" data-d="-1" data-e="${ei}" data-s="${si}">−</button><input inputmode="decimal" value="${esc(s.w)}" placeholder="—" data-in="w" data-e="${ei}" data-s="${si}"><button class="btn" data-act="f-step" data-k="w" data-d="1" data-e="${ei}" data-s="${si}">+</button></div></div>
+      <div class="fbox"><span class="small muted">${sideOf(e.name) ? U() + T(' par côté', ' per side') : U()}</span><div class="fstep"><button class="btn" data-act="f-step" data-k="w" data-d="-1" data-e="${ei}" data-s="${si}">−</button><input inputmode="decimal" value="${esc(wShow(e.name, s.w))}" placeholder="—" data-in="w" data-e="${ei}" data-s="${si}"><button class="btn" data-act="f-step" data-k="w" data-d="1" data-e="${ei}" data-s="${si}">+</button></div></div>
       <div class="fbox"><span class="small muted">${tm ? T('Secondes', 'Seconds') : 'Reps'}</span><div class="fstep"><button class="btn" data-act="f-step" data-k="r" data-d="-1" data-e="${ei}" data-s="${si}">−</button><input inputmode="numeric" value="${esc(s.r)}" placeholder="${esc(s.ph)}" data-in="r" data-e="${ei}" data-s="${si}"><button class="btn" data-act="f-step" data-k="r" data-d="1" data-e="${ei}" data-s="${si}">+</button></div></div></div>
     <button class="btn primary block fdone" data-act="done" data-e="${ei}" data-s="${si}">✓ ${T('Valider la série', 'Log the set')}</button>`}
   </div>` + exit;
@@ -7119,9 +7139,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.122.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.123.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.123.0', d: '2026-11-23', fr: ['Charge par côté : si tu écris seulement le poids d\'un côté (ex. 50 lb au bench), touche ⋯ sur l\'exercice, puis « Comment tu écris la charge » → « Un seul côté » et choisis le poids de la barre. Tu continues d\'écrire 50, l\'appli calcule le vrai total (50 × 2 + barre) pour le volume, les records et les stats.', 'Tes anciennes séances peuvent être corrigées d\'un coup, et tu peux annuler.'], en: ['Per-side load: if you only write the weight of one side (e.g. 50 lb on bench), tap ⋯ on the exercise, then “How you write the weight” → “One side” and pick the bar weight. You keep writing 50, the app works out the real total (50 × 2 + bar) for volume, records and stats.', 'Your past sessions can be fixed in one go, and you can undo it.']},
   {v: '9.122.1', d: '2026-11-23', fr: ['Guilde : le bouton « Choisir ma porte » passe sous le titre du donjon, le raid sans énergie affiche une simple ligne au lieu d\'une grosse barre, les pastilles du statut tiennent sur une ligne, et « Amis et défis » n\'est plus en double.'], en: ['Guild: the “Pick my door” button moves under the dungeon title, the raid without energy shows a simple line instead of a big bar, the status badges fit on one line, and “Friends & challenges” is no longer duplicated.']},
   {v: '9.122.0', d: '2026-11-23', fr: ['Guilde : retour du style jeu sur les cartes. Ton personnage en grand avec ton rang et ton niveau, le boss du raid en grand avec un bouton Attaquer quand tu as de l\'énergie, « Choisir ma porte » directement sur le donjon, le podium de ta ligue et de la saison, et ta carte d\'aventurier en haut de Collection.'], en: ['Guild: the game look is back on the cards. Your character shown big with your rank and level, the raid boss shown big with an Attack button when you have energy, “Pick my door” right on the dungeon, the podium of your league and season, and your adventurer card at the top of Collection.']},
   {v: '9.121.0', d: '2026-11-23', fr: ['Guilde épurée : chaque onglet montre de petites cartes résumé (ton personnage, tes quêtes, le boss du raid, ta guilde, ta ligue, la saison). Touche une carte pour ouvrir sa page complète. Rien n\'a été enlevé.', 'Collection devient une liste simple : Armurerie, Médailles, Bestiaire, Arsenal et Rangs par muscle.', 'Une notification de raid ouvre directement le combat.'], en: ['Cleaner Guild: each tab shows small summary cards (your character, your quests, the raid boss, your guild, your league, the season). Tap a card to open its full page. Nothing was removed.', 'Collection becomes a simple list: Armory, Medals, Bestiary, Arsenal and Muscle ranks.', 'A raid notification opens the fight directly.']},
@@ -8597,21 +8618,21 @@ function wearAlt(n, k = 8) { try { return altExercises(n, k).map(L => ({n: L.nam
 function wearMine() { try { return myNames().slice(0, 40).map(n => ({n, i: wearImg(n)})); } catch (e) { return []; } }
 function wearAcc() { try { return getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#c6f135'; } catch (e) { return '#c6f135'; } }
 function wearPrev(e, x, si) {
-  try { const pv = prevFor(e.name); if (!pv || !pv.length) return ''; const L = x.t === 'W' ? pv.filter(y => y.t === 'W') : pv.filter(y => y.t !== 'W'); const k = e.sets.slice(0, si).filter(y => (y.t === 'W') === (x.t === 'W')).length, p = L[k]; if (!p) return ''; return (p.w === '' || p.w == null ? '' : (+p.w) + ' ' + U() + ' ') + '× ' + p.r; } catch (er) { return ''; }
+  try { const pv = prevFor(e.name); if (!pv || !pv.length) return ''; const L = x.t === 'W' ? pv.filter(y => y.t === 'W') : pv.filter(y => y.t !== 'W'); const k = e.sets.slice(0, si).filter(y => (y.t === 'W') === (x.t === 'W')).length, p = L[k]; if (!p) return ''; return (p.w === '' || p.w == null ? '' : (+wShow(e.name, p.w)) + ' ' + U() + ' ') + '× ' + p.r; } catch (er) { return ''; }
 }
 function wearState() {
   const A = S.active, lang = isEN() ? 'en' : 'fr', acc = wearAcc();
   if (!A) {
     let td = ''; try { const p = weekPlan()[dayIdx(new Date())]; if (p && p.r && p.r.id && !p.done) td = p.r.id; } catch (e) {}
     const rs = S.routines.slice(0, 20), L = td ? [...rs.filter(r => r.id === td), ...rs.filter(r => r.id !== td)] : rs;
-    const exOf = e => { let sl = []; try { const ss = mkSetsFromRoutine(e, lastFor(e.name)); sl = ss.map((x, si) => ({w: x.w === '' || x.w == null ? '' : +x.w, r: +x.r || +x.ph || 0, t: x.t || '', p: wearPrev({name: e.name, sets: ss}, x, si)})); } catch (er) {}
+    const exOf = e => { let sl = []; try { const ss = mkSetsFromRoutine(e, lastFor(e.name)); sl = ss.map((x, si) => ({w: x.w === '' || x.w == null ? '' : +wShow(e.name, x.w), r: +x.r || +x.ph || 0, t: x.t || '', p: wearPrev({name: e.name, sets: ss}, x, si)})); } catch (er) {}
       return {n: e.name, i: wearImg(e.name), alt: wearAlt(e.name, 6), s: sl.length || +e.sets || 0, rest: +e.rest === -1 ? 0 : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)), c: isCardio(e) || isTimed(e) ? 1 : 0, sl}; };
     return {on: 0, lang, acc, u: U(), kg: Math.round(bodyKg()), rw: +S.settings.restWarm > 0 ? +S.settings.restWarm : 45, rd: +S.settings.restDrop > 0 ? +S.settings.restDrop : 0, mine: wearMine(), rts: L.map(r => ({id: r.id, n: r.name, td: r.id === td ? 1 : 0, ex: (r.exercises || []).map(exOf)}))};
   }
   const clS = A.cl ? (() => { const km = clKm(), min = Math.max(1, Math.round(clMs() / 60000)), cc = cardioCalc(CARDIO_KIND(A.exercises[0].name), min, A.cl.gps || (clStepsOn(A.cl) && A.cl.steps > 30) ? Math.round(km * 100) / 100 : '', '', bodyKg()); return {t0: A.cl.t0, pms: A.cl.pms || 0, pat: A.cl.pat || 0, g: A.cl.gps || clStepsOn(A.cl) ? 1 : 0, k: A.cl.k, st: clStepsOn(A.cl) ? 1 : 0, sp: A.cl.k === 'bike' || clStepsOn(A.cl) ? 1 : 0, km: Math.round(km * 100) / 100, kc: cc ? cc.kcal : 0, mx: clMaxHr()}; })() : null;
   return {...(clS ? {cl: clS} : {}), on: 1, id: A.start, st: A.start, n: A.routineName || '', u: U(), lang, acc, kg: Math.round(bodyKg()), rw: +S.settings.restWarm > 0 ? +S.settings.restWarm : 45, rd: +S.settings.restDrop > 0 ? +S.settings.restDrop : 0, mine: wearMine(), re: timerEnd > Date.now() ? timerEnd : 0, rt: timerTot || 0,
     ex: A.exercises.map(e => ({n: e.name, i: wearImg(e.name), alt: wearAlt(e.name), rest: +e.rest === -1 ? 0 : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)), c: isCardio(e) || isTimed(e) ? 1 : 0,
-      s: e.sets.map((x, si) => ({w: x.w === '' || x.w == null ? '' : +x.w, r: x.r !== '' && x.r != null ? +x.r : (+x.ph || 0), d: x.done ? 1 : 0, t: x.t || '', p: wearPrev(e, x, si)}))}))};
+      s: e.sets.map((x, si) => ({w: x.w === '' || x.w == null ? '' : +wShow(e.name, x.w), r: x.r !== '' && x.r != null ? +x.r : (+x.ph || 0), d: x.done ? 1 : 0, t: x.t || '', p: wearPrev(e, x, si)}))}))};
 }
 /* Montre : l'état n'est recalculé que si une montre est jumelée, quand l'appli ne fait rien, et seulement s'il a pu changer
    (avant : après chaque affichage, ce qui bloquait le téléphone juste après un changement d'onglet). */
@@ -8654,7 +8675,7 @@ function wearCmd(d) {
   if (d.a === 'done') {
     const e = A.exercises[+d.e], x = e && e.sets[+d.s];
     if (x && !x.done) {
-      if (d.w != null && d.w !== '' && !isNaN(+d.w)) x.w = String(+d.w);
+      if (d.w != null && d.w !== '' && !isNaN(+d.w)) x.w = String(wSave(e.name, String(+d.w)));
       if (d.r != null && +d.r > 0) x.r = String(Math.round(+d.r));
       fakeAct('done', {e: +d.e, s: +d.s});
     }
@@ -8683,7 +8704,7 @@ function wearImport(x) {
   const rt = S.routines.find(r => r.id === x.rid), keep = S.active;
   S.active = {routineId: rt ? rt.id : null, routineName: x.n || T('Séance montre', 'Watch workout'), start: x.st || x.id, endAt: +x.end > new Date(x.st || x.id).getTime() ? +x.end : Date.now(), wid: x.id, hrl: Array.isArray(x.hr) ? x.hr : [],
     exercises: x.ex.map(e => { const r = rt && (rt.exercises || []).find(y => y.name === e.n) || {}; return {name: e.n, orig: e.n, n0: (e.s || []).length, ss: r.ss, rest: r.rest, note: '', target: {...r},
-      sets: (e.s || []).map(z => ({w: z.w === '' || z.w == null ? '' : String(z.w), r: z.d ? String(z.r) : '', ph: String(z.r || ''), done: !!z.d, ...(z.t ? {t: z.t} : {})}))}; })};
+      sets: (e.s || []).map(z => ({w: z.w === '' || z.w == null ? '' : String(wSave(e.n, String(z.w))), r: z.d ? String(z.r) : '', ph: String(z.r || ''), done: !!z.d, ...(z.t ? {t: z.t} : {})}))}; })};
   const c0 = window.confirm; window.confirm = () => true;
   try { fakeAct('finish', {}); } finally { window.confirm = c0; }
   if (S.active && S.active.wid === x.id) S.active = null;
@@ -12071,6 +12092,7 @@ document.addEventListener('click', e => {
     case 'f-step': { const A2 = S.active; if (!A2) break; const s2 = A2.exercises[ei].sets[si], k2 = b.dataset.k, tm2 = isTimed(A2.exercises[ei]);
       const step = k2 === 'w' ? (+S.settings.inc > 0 ? +S.settings.inc : U() === 'kg' ? 2.5 : 5) : tm2 ? 5 : 1;
       const base = s2[k2] === '' || s2[k2] == null ? (k2 === 'r' ? +s2.ph || 0 : 0) : +String(s2[k2]).replace(',', '.') || 0;
+      const sn = A2.exercises[ei].name; if (k2 === 'w' && sideOf(sn)) { const b0 = +wShow(sn, s2.w) || 0, st2 = U() === 'kg' ? 1.25 : 2.5; s2.w = wSave(sn, String(Math.max(0, Math.round((b0 + +b.dataset.d * st2) * 100) / 100))); save(); render(); break; }
       s2[k2] = String(Math.max(0, Math.round((base + +b.dataset.d * step) * 100) / 100)); save(); render(); break; }
     case 'cmp-m': cmpM = +b.dataset.m; render(); break;
     case 'bigtimer': bigTimerOpen(); break;
@@ -12385,6 +12407,21 @@ document.addEventListener('click', e => {
     case 'st-type': { const s = setCtx.sets[setCtx.si]; if (b.dataset.t === 'N') delete s.t; else s.t = b.dataset.t; document.querySelectorAll('#sttypes .btn').forEach(x => x.classList.toggle('on', x === b)); break; }
     case 'st-del': { snap(); setCtx.sets.splice(setCtx.si, 1); closeModal(); undoToast(T('Série supprimée', 'Set deleted')); break; }
     case 'ex-menu': openExMenu(ei); break;
+    case 'side-set': { const n = b.dataset.n, k = norm(n); S.side = S.side || {}; const x = S.side[k] = S.side[k] || {}; x.on = !!b.dataset.v; if (x.bar == null) x.bar = sideBarDef(n); save(); closeAll();
+      const old = x.on ? S.history.reduce((a, h) => a + (h.exercises || []).filter(e => norm(e.name) === k).reduce((c, e) => c + e.sets.filter(st => st.sc == null && +st.w > 0).length, 0), 0) : 0;
+      if (old) { modal(`<h2 style="margin-top:0">${T('Et tes anciennes séances?', 'And your past workouts?')}</h2><p class="small">${T(`Tu as ${old} séries de <b>${esc(n)}</b> dans ton historique. Les avais-tu aussi écrites avec un seul côté?`, `You have ${old} sets of <b>${esc(n)}</b> in your history. Did you also write them with one side only?`)}</p>
+        <p class="small muted">${T(`Si oui, on les corrige (charge × 2${+x.bar ? ' + barre de ' + dec1(+x.bar) : ''}) pour que tes records et tes stats soient justes. Tu pourras annuler.`, `If so, we fix them (weight × 2${+x.bar ? ' + ' + dec1(+x.bar) + ' bar' : ''}) so your records and stats are right. You can undo it.`)}</p>
+        <button class="btn primary block" data-act="side-conv" data-n="${esc(n)}" data-q="1">${T('Oui, les corriger', 'Yes, fix them')}</button><button class="btn block" style="margin-top:8px" data-act="side-keep" data-n="${esc(n)}">${T('Non, j\'écrivais le total', 'No, I wrote the total')}</button>`); render(); break; }
+      if (S.active) { const i = S.active.exercises.findIndex(e => norm(e.name) === k); if (i >= 0) openExMenu(i); } render(); break; }
+    case 'side-keep': { const k = norm(b.dataset.n); closeAll(); if (S.active) { const i = S.active.exercises.findIndex(e => norm(e.name) === k); if (i >= 0) openExMenu(i); } render(); break; }
+    case 'side-bar': { const n = b.dataset.n, k = norm(n); S.side = S.side || {}; const x = S.side[k] = S.side[k] || {on: true}; x.bar = +b.dataset.v; save(); closeAll(); if (S.active) { const i = S.active.exercises.findIndex(e => norm(e.name) === k); if (i >= 0) openExMenu(i); } render(); break; }
+    case 'side-conv': { const n = b.dataset.n, k = norm(n), x = sideOf(n); if (!x) break; let c = 0;
+      if (!b.dataset.q && !confirm(T(`Corriger tes anciennes séances de ${n}? Chaque charge devient : charge × 2${+x.bar ? ' + ' + dec1(+x.bar) : ''}. Tu pourras annuler.`, `Fix your past ${n} workouts? Each weight becomes: weight × 2${+x.bar ? ' + ' + dec1(+x.bar) : ''}. You can undo it.`))) break;
+      S.history.forEach(h => (h.exercises || []).forEach(e => { if (norm(e.name) !== k) return; e.sets.forEach(st => { if (st.sc == null && +st.w > 0) { st.sc = st.w; st.w = String(Math.round((+st.w * 2 + (+x.bar || 0)) * 100) / 100); c++; } }); }));
+      save(); toast(T(`${c} séries corrigées`, `${c} sets fixed`)); closeAll(); if (S.active) { const i = S.active.exercises.findIndex(e => norm(e.name) === k); if (i >= 0) openExMenu(i); } render(); break; }
+    case 'side-unconv': { const k = norm(b.dataset.n); let c = 0;
+      S.history.forEach(h => (h.exercises || []).forEach(e => { if (norm(e.name) !== k) return; e.sets.forEach(st => { if (st.sc != null) { st.w = st.sc; delete st.sc; c++; } }); }));
+      save(); toast(T(`${c} séries remises comme avant`, `${c} sets restored`)); closeAll(); if (S.active) { const i = S.active.exercises.findIndex(e => norm(e.name) === k); if (i >= 0) openExMenu(i); } render(); break; }
     case 'ex-replace': closeModal(); openPicker({title: `Remplacer « ${A.exercises[ei].name} »`, alt: A.exercises[ei].name, cb: p => replaceExercise(ei, p)}); break;
     case 'ex-ss': {
       const list = A.exercises, e = list[ei], nx = list[ei + 1];
@@ -12514,10 +12551,10 @@ document.addEventListener('input', e => {
   if (t.dataset.phd) { const p = (S.photos || []).find(x => x.id === t.dataset.phd); if (p && t.value) { p.d = t.value; save(); } }
   if (t.dataset.in && S.active) {
     const s = S.active.exercises[+t.dataset.e].sets[+t.dataset.s];
-    s[t.dataset.in] = t.value.replace(',', '.'); save();
+    s[t.dataset.in] = t.dataset.in === 'w' ? wSave(S.active.exercises[+t.dataset.e].name, t.value.replace(',', '.')) : t.value.replace(',', '.'); save();
     const ce = S.active.exercises[+t.dataset.e]; if (isCardio(ce)) { const l = document.getElementById('cl' + t.dataset.e + '_' + t.dataset.s); if (l) l.innerHTML = cardioLine(ce, s); }
   }
-  if (t.dataset.edw && draft) { draft.exercises[+t.dataset.e].sets[+t.dataset.s][t.dataset.edw] = t.value.replace(',', '.'); }
+  if (t.dataset.edw && draft) { const de = draft.exercises[+t.dataset.e], ds = de.sets[+t.dataset.s], tv = t.value.replace(',', '.'); ds[t.dataset.edw] = t.dataset.edw === 'w' ? wSave(de.name, tv) : tv; if (t.dataset.edw === 'w' && ds.sc != null) { if (sideOf(de.name)) ds.sc = tv; else delete ds.sc; } }
   if (t.dataset.edm && draft) {
     const k = t.dataset.edm;
     if (k === 'date') { const d = new Date(t.value); if (!isNaN(d)) draft.date = d.toISOString(); } else draft[k] = t.value;
