@@ -176,6 +176,7 @@ canvas{width:100%;height:210px;display:block}
 .seg button.on{background:var(--card2);color:var(--accent)}
 .recc{border-color:color-mix(in srgb,var(--rc) 45%,var(--line))}.recring{--p:0;width:64px;height:64px;border-radius:50%;flex:none;display:grid;place-items:center;grid-auto-flow:column;align-content:center;justify-content:center;background:radial-gradient(closest-side,var(--card) 79%,transparent 80% 100%),conic-gradient(var(--rc) calc(var(--p)*1%),var(--card2) 0)}.recring b{font-size:21px;line-height:1}.recring small{font-size:11px;margin-left:1px;color:var(--muted)}
 .lgrow{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--line)}.lgrow.me{background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:10px}.lgrow .lgp{width:26px;text-align:center;font-weight:800}.lgzone{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 4px 2px}.lgzone.up{color:#4ade80}.lgzone.dn{color:#f87171}.lgcut{height:2px;background:color-mix(in srgb,#4ade80 40%,transparent);margin:4px 0}.lgrow.lgu .lgp{color:#4ade80}.lgrow.lgd .lgp{color:#f87171}.lgbadge{display:inline-flex;align-items:center;gap:6px;font-weight:800;color:var(--lc)}.lgbadge i{width:14px;height:14px;border-radius:4px;background:var(--lc);transform:rotate(45deg);display:inline-block}
+.phv{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;margin-top:10px;scrollbar-width:none;border-radius:14px}.phv::-webkit-scrollbar{display:none}.phv img{flex:0 0 100%;width:100%;max-height:72vh;object-fit:contain;scroll-snap-align:center;background:var(--card2);border-radius:14px;min-height:200px}.phvd{display:flex;justify-content:center;gap:6px;margin-top:10px}.phvd i{width:7px;height:7px;border-radius:50%;background:var(--line)}.phvd i.on{background:var(--accent)}
 .sphg{display:grid;gap:6px;margin-bottom:8px}.sphg.n2{grid-template-columns:1fr 1fr}.sphg.n3{grid-template-columns:1fr 1fr 1fr}.sph{position:relative;display:block}.sph img{width:100%;height:200px;object-fit:cover;border-radius:12px;display:block;background:var(--card2);cursor:zoom-in}.sphg.n2 .sph img{height:170px}.sphg.n3 .sph img{height:130px}.sphx{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:28px;padding:0}
 .gseg{margin-bottom:12px}.gseg button{font-size:13px;padding:9px 2px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
@@ -2631,7 +2632,7 @@ function histCard(h, open) {
       <div class="row between"><div><h3>${esc(h.routineName)}</h3><span class="muted small">${new Date(h.date).toLocaleDateString(LOC(), {weekday: 'long', day: 'numeric', month: 'long'})} · ${hm(h.duration)}${h.hr ? ` · ${IC('heart', '♥', 12)} ${h.hr.avg}` : ''}</span></div><span class="tag">${h.exercises.length} ${h.exercises.length > 1 ? T('exos', 'exercises') : T('exo', 'exercise')} ▾</span></div>
     </summary>
     <ul class="exlist">${h.exercises.map(e => `<li><span class="row" style="gap:8px;align-items:flex-start">${thumb(e.name, 28)}<span>${exl(e.name)}${e.ss ? ` <span class="sspill sm" ${ssSty(e)}>Superset</span>` : ''}${e.note ? `<br><span class="small muted">📝 ${esc(e.note)}</span>` : ''}${e.sets.map((s, i) => s.n ? `<br><span class="small muted">Série ${i + 1} : ${esc(s.n)}</span>` : '').join('')}</span></span><span class="tag">${e.sets.map(s => fmtSet(s, true)).join(', ')}</span></li>`).join('')}</ul>
-    ${hrBlock(h)}${hPhs(h).length ? `<div class="sphg n${hPhs(h).length}" style="margin:4px 0 10px">${hPhs(h).map(id => `<span class="sph"><img data-ph="${id}" alt="" data-act="hist-phbig" data-hid="${h.id}"></span>`).join('')}</div>` : ''}
+    ${hrBlock(h)}${hPhs(h).length ? `<div class="sphg n${hPhs(h).length}" style="margin:4px 0 10px">${hPhs(h).map(id => `<span class="sph"><img data-ph="${id}" alt="" data-act="hist-phbig" data-hid="${h.id}" data-id="${id}"></span>`).join('')}</div>` : ''}
     <div class="row hacts"><button class="btn sm" data-act="hist-edit" data-hid="${h.id}">✏️ Modifier</button>
     ${hPhs(h).length < PH_SESS ? `<button class="btn sm" data-act="hist-ph" data-hid="${h.id}">📷 ${T('Photo', 'Photo')}${hPhs(h).length ? ` (${hPhs(h).length} / ${PH_SESS})` : ''}</button>` : ''}${h.ph ? `<button class="btn sm" data-act="hist-phrm" data-hid="${h.id}">✕ ${T(hPhs(h).length > 1 ? 'Photos' : 'Photo', hPhs(h).length > 1 ? 'Photos' : 'Photo')}</button>` : ''}
     <button class="btn sm" data-act="hist-sharemenu" data-hid="${h.id}">📤 ${T('Partager', 'Share')}</button>
@@ -6816,9 +6817,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.112.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.112.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.112.2', d: '2026-11-22', fr: ['Photos de séance en grand : glisse vers la gauche ou la droite pour passer d\'une photo à l\'autre (avec 1 / 3 et des points en dessous).'], en: ['Workout photos full size: swipe left or right to go from one photo to the next (with 1 / 3 and dots below).']},
   {v: '9.112.1', d: '2026-11-22', fr: ['Statut : ton titre entre « » reste sur une seule ligne (le » ne tombe plus tout seul à la ligne).'], en: ['Status: your title in quotes stays on one line.']},
   {v: '9.112.0', d: '2026-11-22', fr: ['Ligues de la semaine (Guilde → Classements) : affronte des aventuriers de ton niveau, même sans amis inscrits. Le haut 20 % monte de ligue chaque dimanche soir, de Bronze jusqu\'à Légende, et le podium gagne de l\'XP. Nouveaux titres de ligue.', 'Récupération du matin (onglet Muscu) : un score sur 100 calculé avec ton sommeil, ton pouls au repos et ta variabilité cardiaque dans Health Connect, avec un conseil pour ta séance. Demande le nouvel APK du téléphone et les autorisations dans Réglages → Health Connect.'], en: ['Weekly leagues (Guild → Rankings): face adventurers of your level, even without friends on the app. The top 20% move up a league every Sunday night, from Bronze to Legend, and the podium wins XP. New league titles.', 'Morning recovery (Lifting tab): a score out of 100 from your sleep, resting pulse and heart rate variability in Health Connect, with advice for your workout. Needs the new phone APK and the permissions in Settings → Health Connect.']},
   {v: '9.111.5', d: '2026-11-22', fr: ['Fin du cardio sur tapis : sous les calories, ton vrai nombre de pas, puis ce que ça vaut à plat avec ta pente (ex. 127 pas, avec la pente de 15 % = ≈ 339 pas à plat).'], en: ['End of treadmill cardio: under the calories, your real step count, then what it is worth on flat ground with your incline (e.g. 127 steps, with a 15% incline = ≈ 339 flat steps).']},
@@ -7778,6 +7780,17 @@ const phDel = id => phTx('readwrite', st => st.delete(id));
 const phCache = {};
 async function phSrc(id) { if (phCache[id]) return phCache[id]; try { const d = await phGet(id); if (d) phCache[id] = d; return d || ''; } catch (e) { return ''; } }
 function phFill() { document.querySelectorAll('img[data-ph]').forEach(async im => { if (!im.src || im.src === location.href) { const d = await phSrc(im.dataset.ph); if (d) im.src = d; } }); }
+/* Photos d'une séance en grand : on glisse de l'une à l'autre */
+function phView(hid, id, src) {
+  const h = S.history.find(x => x.id === hid), L = hPhs(h); if (!L.length) { if (src) modal(`<img src="${src}" alt="" style="width:100%;border-radius:14px;display:block">`); return; }
+  const i0 = Math.max(0, L.indexOf(id));
+  modal(`<div class="row between"><b>${esc(h.routineName || T('Séance', 'Workout'))}</b><span class="row" style="gap:10px">${L.length > 1 ? `<span class="small muted" id="phvn">${i0 + 1} / ${L.length}</span>` : ''}<button class="btn sm" data-act="close">✕</button></span></div>
+    <div class="phv" id="phv">${L.map(x => `<img data-ph="${x}" alt="">`).join('')}</div>
+    ${L.length > 1 ? `<div class="phvd">${L.map((x, i) => `<i class="${i === i0 ? 'on' : ''}"></i>`).join('')}</div>` : ''}`);
+  phFill();
+  setTimeout(() => { const v = $('#phv'); if (!v) return; v.scrollLeft = i0 * v.clientWidth;
+    v.addEventListener('scroll', () => { const i = Math.round(v.scrollLeft / Math.max(1, v.clientWidth)), n = $('#phvn'); if (n) n.textContent = `${i + 1} / ${L.length}`; document.querySelectorAll('.phvd i').forEach((d, j) => d.classList.toggle('on', j === i)); }, {passive: true}); }, 30);
+}
 /* Photo attachée à une séance (h.ph = id de l'image dans IndexedDB) */
 function addSessionPhoto(hid) {
   pickImage(async f => {
@@ -7801,7 +7814,7 @@ function sessPhBox(hid) {
   const L = hPhs(hh);
   if (!L.length) return `<button class="btn block" data-act="hist-ph" data-hid="${hid}" style="margin-bottom:8px">📷 ${T('Ajouter une photo à ta séance', 'Add a photo to your workout')}</button>`;
   setTimeout(phFill, 0);
-  return `<div class="sphg n${L.length}">${L.map(id => `<span class="sph"><img data-ph="${id}" alt="" data-act="sph-big" data-id="${id}"><button class="sphx" data-act="sph-rm" data-hid="${hid}" data-id="${id}" aria-label="${T('Retirer', 'Remove')}">✕</button></span>`).join('')}</div>
+  return `<div class="sphg n${L.length}">${L.map(id => `<span class="sph"><img data-ph="${id}" alt="" data-act="sph-big" data-hid="${hid}" data-id="${id}"><button class="sphx" data-act="sph-rm" data-hid="${hid}" data-id="${id}" aria-label="${T('Retirer', 'Remove')}">✕</button></span>`).join('')}</div>
     ${L.length < PH_SESS ? `<button class="btn block" data-act="hist-ph" data-hid="${hid}" style="margin-bottom:8px">📷 ${T('Ajouter une photo', 'Add a photo')} (${L.length} / ${PH_SESS})</button>` : ''}`;
 }
 async function addProgressPhoto() {
@@ -11844,8 +11857,7 @@ document.addEventListener('click', e => {
     case 'hist-ph': addSessionPhoto(b.dataset.hid); break;
     case 'hist-phrm': { const hh = S.history.find(x => x.id === b.dataset.hid), L = hPhs(hh); if (!L.length || !confirm(L.length > 1 ? T('Retirer les photos de cette séance?', 'Remove the photos from this workout?') : T('Retirer la photo de cette séance?', 'Remove the photo from this workout?'))) break; L.forEach(id => { phDel(id).catch(() => {}); delete phCache[id]; cpGone(id); }); delete hh.ph; delete hh.phx; save(); render(); if (frOn()) frPublish(true); break; }
     case 'sph-rm': { const hh = S.history.find(x => x.id === b.dataset.hid), id = b.dataset.id; if (!hh || !hPhs(hh).includes(id) || !confirm(T('Retirer cette photo?', 'Remove this photo?'))) break; hPhDrop(hh, id); phDel(id).catch(() => {}); delete phCache[id]; cpGone(id); save(); const box = $('#sessph'); if (box) box.innerHTML = sessPhBox(hh.id); if (frOn()) frPublish(true); break; }
-    case 'sph-big': modal(`<div class="row between"><b>${T('Photo', 'Photo')}</b><button class="btn sm" data-act="close">✕</button></div><img src="${b.src}" alt="" style="width:100%;border-radius:14px;margin-top:10px;display:block">`); break;
-    case 'hist-phbig': modal(`<div class="row between"><b>${esc((S.history.find(x => x.id === b.dataset.hid) || {}).routineName || '')}</b><button class="btn sm" data-act="close">✕</button></div><img src="${b.src}" alt="" style="width:100%;border-radius:14px;margin-top:10px;display:block">`); break;
+    case 'sph-big': case 'hist-phbig': phView(b.dataset.hid, b.dataset.id, b.src); break;
     case 'new-past-ok': createPast(); break;
     case 'ed-set-menu': openSetMenu(draft.exercises[ei].sets, si, draft.exercises[ei].name, () => showEditor()); break;
     case 'ed-set-del': draft.exercises[ei].sets.splice(si, 1); showEditor(); break;
