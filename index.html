@@ -6855,9 +6855,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.116.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.116.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.116.3', d: '2026-11-22', fr: ['Correction : la fenêtre de fin de semaine des ligues (montée, descente, podium) plantait au lieu de s\'afficher.'], en: ['Fix: the end-of-week league window (promotion, demotion, podium) crashed instead of showing.']},
   {v: '9.116.2', d: '2026-11-22', fr: ['Correction des ligues : ton score de la semaine passée comptait celui de la semaine en cours (risque de descente le lundi), et les plafonds anti-triche ne s\'appliquaient pas.'], en: ['League fix: your last-week score used the current week (risk of demotion on Mondays), and the anti-cheat caps were not applied.']},
   {v: '9.116.1', d: '2026-11-22', fr: ['Supprimer mon compte efface aussi tes photos partagées et ta fiche sociale en ligne. Politique de confidentialité mise à jour (Health Connect, ligues, signalements, règles de conduite).'], en: ['Delete my account also erases your shared photos and your social card online. Privacy policy updated (Health Connect, leagues, reports, conduct rules).']},
   {v: '9.116.0', d: '2026-11-22', fr: ['Amis encore plus légers : encouragements, commentaires, défis, raid et séance en direct passent par une petite fiche à part. Un « j\'aime » ne renvoie plus toute ta fiche à tes amis.', 'Correction : les photos de progrès de tes amis s\'affichent de nouveau dans le fil.'], en: ['Even lighter friends: cheers, comments, challenges, raid and live workout go through a small separate card. A like no longer resends your whole card to your friends.', 'Fix: your friends\' progress photos show in the feed again.']},
@@ -9182,7 +9183,8 @@ async function lgRoll() { // nouvelle semaine : on regarde où j'ai fini la sema
   } catch (e) {} finally { lgRolling = false; }
 }
 function lgResult(h, n = 0) {
-  if (!h) return; if (modals.length || S.active) { if (n < 40) setTimeout(() => lgResult(h, n + 1), 5000); return; } // une autre fenêtre est ouverte : on attend son tour const up = h.mv > 0, dn = h.mv < 0, nt = h.t + h.mv;
+  if (!h) return; if (modals.length || S.active) { if (n < 40) setTimeout(() => lgResult(h, n + 1), 5000); return; } // une autre fenêtre est ouverte : on attend son tour
+  const up = h.mv > 0, dn = h.mv < 0, nt = Math.max(0, Math.min(LG.length - 1, h.t + h.mv));
   modal(`<div style="text-align:center"><div class="sysh">[ ${T('FIN DE LA SEMAINE', 'END OF THE WEEK')} ]</div><h2 style="margin:6px 0">${esc(T('Ligue ' + LG[h.t][0], LG[h.t][1] + ' League'))}</h2>
     <p>${h.r ? T(`Tu finis <b>${h.r}${h.r === 1 ? 'er' : 'e'}</b> sur ${h.n}`, `You finish <b>#${h.r}</b> of ${h.n}`) : T('Tu ne t\'es pas entraîné cette semaine-là.', 'You did not train that week.')}${h.g ? ` · <b>+${h.g} XP</b>` : ''}</p>
     <p class="lgbadge" style="--lc:${LG[nt][2]};justify-content:center;font-size:18px"><i></i>${up ? T(`Tu montes en ligue ${lgName(nt)}!`, `You move up to the ${lgName(nt)} league!`) : dn ? T(`Tu descends en ligue ${lgName(nt)}.`, `You drop to the ${lgName(nt)} league.`) : T(`Tu restes en ligue ${lgName(nt)}.`, `You stay in the ${lgName(nt)} league.`)}</p>
