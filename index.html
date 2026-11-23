@@ -569,6 +569,58 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .setsec .sic{width:40px;height:40px;border-radius:12px;background:var(--card2);display:flex;align-items:center;justify-content:center;color:var(--accent);flex:none;font-size:20px}
 .setsec .chev{color:var(--muted);font-size:22px;transition:transform .2s}.setsec[open] .chev{transform:rotate(90deg)}
 .setsec .secb{padding:0 16px 16px;border-top:1px solid var(--line)}.setsec .secb>.card{background:var(--card2);margin:12px 0 0}
+/* Réglages : listes groupées, interrupteurs, sélecteurs */
+.sprof{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-radius:18px;color:var(--text);text-align:left;font:inherit;cursor:pointer}
+.sprof .sav{width:52px;height:52px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;flex:none;overflow:hidden}
+.sprof .sav img{width:100%;height:100%;object-fit:cover}
+.sprof .stx b{font-size:17px}.sprof .chev{color:var(--muted);display:flex}
+.ssrch{position:relative;margin:14px 0 0}.ssrch>.ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.ssrch input{padding:11px 12px 11px 40px;border-radius:12px;background:var(--card);-webkit-appearance:none;appearance:none}
+.ssrch input::-webkit-search-cancel-button{filter:grayscale(1)}
+.sban{display:flex;align-items:center;gap:12px;width:100%;margin:14px 0 0;padding:12px 14px;border-radius:16px;border:1px solid color-mix(in srgb,#60a5fa 45%,var(--line));background:color-mix(in srgb,#60a5fa 10%,var(--card));color:var(--text);text-align:left;font:inherit;cursor:pointer}
+.sban .chev{color:var(--muted);display:flex}
+.shd{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:22px 6px 8px}
+.sgrp{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+#setres>.sgrp,#setmain>.sgrp:first-child,.spg>.sgrp:first-child,.spg>p+.sgrp{margin-top:14px}
+.spg>.shd:first-child{margin-top:8px}
+.srow{display:flex;align-items:center;gap:12px;width:100%;min-height:54px;margin:0;padding:11px 14px;background:none;border:0;border-radius:0;color:var(--text);text-align:left;font:inherit;font-size:15px;box-sizing:border-box;text-decoration:none;position:relative}
+label.srow,.srow.sbtn{cursor:pointer}
+.srow.col{flex-direction:column;align-items:stretch;gap:10px}
+.srow .stx,.sban .stx,.sprof .stx,.shero .stx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.stx b{font-weight:600;font-size:15px;line-height:1.3}
+.stx small{color:var(--muted);font-size:12.5px;line-height:1.4;font-weight:400}
+.srow .sval{color:var(--muted);font-size:14px;max-width:48%;text-align:right;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3;flex:none}
+.srow .chev{color:var(--muted);flex:none;display:flex;margin-right:-4px}
+.srow.sbtn:active,label.srow:active{background:var(--card2)}
+.sgrp>*+.srow::before,.sgrp>*+.sdet::before{content:'';position:absolute;top:0;left:14px;right:0;border-top:1px solid var(--line)}
+.sgrp>*+.srow:has(>.stile)::before{left:58px}
+.srow.sbtn.go .stx b{color:var(--accent)}
+.srow.dng .stx b{color:var(--danger)}
+.stile{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none;color:var(--h);background:color-mix(in srgb,var(--h) 17%,transparent)}
+.shero .stile{width:46px;height:46px;border-radius:13px}
+.shero{padding:16px}.shero .stx b{font-size:16px}
+.srow.ss select{position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;padding:0;border:0;cursor:pointer;font-size:16px}
+.tgl{-webkit-appearance:none;appearance:none;width:50px;height:30px;min-width:50px;padding:0;margin:0;border:0;border-radius:99px;background:var(--line);position:relative;cursor:pointer;transition:background .2s;flex:none}
+.tgl::after{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0005;transition:transform .2s}
+.tgl:checked{background:var(--accent)}.tgl:checked::after{transform:translateX(20px)}
+.tgl:focus-visible,.sseg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.sinp{width:84px;flex:none;text-align:right;padding:8px 10px;border-radius:10px}
+.sseg{display:flex;background:var(--card2);border-radius:11px;padding:3px;gap:3px;flex:none}
+.sseg label{flex:1;position:relative;margin:0;display:block;font-size:inherit;color:inherit}
+.sseg input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.sseg span{display:block;text-align:center;padding:7px 12px;border-radius:9px;font-size:13.5px;font-weight:600;color:var(--muted);white-space:nowrap;cursor:pointer;transition:background .15s,color .15s}
+.sseg.sm span{padding:7px 11px}
+.sseg input:checked+span{background:var(--accent);color:var(--accent-ink)}
+.srow.col .sseg span{padding:9px 4px}
+.snote{color:var(--muted);font-size:12.5px;line-height:1.45;margin:8px 8px 0}
+.sbox{padding:14px}.sbox>.card{background:var(--card2)}.sbox>:first-child{margin-top:0}.sgrp.sbox>*+*{border-top:0}
+.sbox .chips{margin:8px 0 0}
+.sdet{margin:10px 2px 0;font-size:13px;color:var(--muted)}.sdet>summary{cursor:pointer;padding:4px 6px;font-weight:600;color:var(--text)}
+.sdet ol{margin:8px 0 0;padding-left:22px;line-height:1.45}.sdet>.card{margin-top:8px}
+.sfoot{text-align:center;color:var(--muted);font-size:12px;line-height:1.5;margin:26px 0 8px}
+.shl{animation:shl 1.8s ease}@keyframes shl{0%,45%{background:color-mix(in srgb,var(--accent) 20%,transparent)}100%{background:transparent}}
+@media (max-width:360px){.sseg.sm span{padding:7px 8px}.srow .sval{max-width:40%}}
+.spg>.sgrp+.sgrp,.spg>.snote+.sgrp,.spg>.sdet+.sgrp,.spg>.sgrp+.sdet+.sgrp,#setmain>.sgrp+.sgrp,#setmain>.sban+.sgrp{margin-top:14px}
 .stgif{width:min(70vw,260px);aspect-ratio:1;margin:0 auto;border-radius:16px;overflow:hidden;background:#fff}.stgif img{width:100%;height:100%;object-fit:contain}
 .stside{font-weight:700;color:var(--accent);min-height:20px}
 .tmstrip{display:flex;gap:4px;margin:12px 0 4px;overflow:hidden;border-radius:8px}.tmb{color:#fff;padding:8px 6px;text-align:center;min-width:0;border-radius:6px}.tmb span{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase;opacity:.95}.tmb b{font-size:15px;font-variant-numeric:tabular-nums}
@@ -2904,124 +2956,221 @@ function saveBody() {
   save(); render(); scrollTo({top: 0}); toast('✅ Mesure enregistrée');
 }
 
-/* ----- Réglages ----- */
-let secOpen = new Set();
-const setSec = (id, icon, emo, title, sub, body) => `<details class="card setsec" data-sec="${id}" ${secOpen.has(id) ? 'open' : ''}><summary><span class="sic">${IC(icon, emo, 22)}</span><span style="flex:1;min-width:0"><b>${title}</b><br><span class="muted small">${sub}</span></span><span class="chev">›</span></summary><div class="secb">${body}</div></details>`;
-function vSettings() {
-  if (!cloudOn() && !vSettings.done) { vSettings.done = 1; secOpen.add('cloud'); }
-  return setSec('gen', 'user', '👤', T('Général', 'General'), T('Nom, langue, objectif, navigation', 'Name, language, goal, navigation'), `
-      <label>${T('Style de l\'appli', 'App style')}</label>
-      <select data-set="gameMode"><option value="1" ${GAME() ? 'selected' : ''}>${T('Mode jeu : XP, niveaux, rangs, quêtes', 'Game mode: XP, levels, ranks, quests')}</option><option value="0" ${GAME() ? '' : 'selected'}>${T('Classique : carnet simple, sans jeu', 'Classic: simple log, no game')}</option></select>
-      <p class="muted small" style="margin:4px 0 0">${T('En Classique, l\'XP et ton niveau continuent de se calculer en arrière-plan : si tu actives le mode jeu plus tard, tu retrouves ton vrai niveau.', 'In Classic, XP and your level keep being calculated in the background: if you turn game mode on later, you get your real level back.')}</p>
-      <label>${T('Taille du texte', 'Text size')}</label>
-      <select data-set="fontScale">${[['sm', T('Petit', 'Small')], ['', T('Normal', 'Normal')], ['lg', T('Grand', 'Large')], ['xl', T('Très grand', 'Extra large')]].map(([v, l]) => `<option value="${v}" ${(S.settings.fontScale || '') === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
-      <label>${T('Premier jour de la semaine', 'First day of the week')}</label>
-      <select data-set="weekSun"><option value="" ${sunFirst() ? '' : 'selected'}>${T('Lundi', 'Monday')}</option><option value="1" ${sunFirst() ? 'selected' : ''}>${T('Dimanche', 'Sunday')}</option></select>
-      ${isIOS && !isStandalone() ? `<button class="btn block" data-act="ios-install" style="margin:12px 0 4px">📱 ${T('Installer sur l\'iPhone', 'Install on iPhone')}</button>` : ''}
-      <details class="card" style="margin:12px 0 4px"><summary><b>🎓 ${T('Visites guidées', 'Guided tours')}</b></summary>
-        <div class="menu" style="margin-top:8px">${TOUR_LIST.map(([k, ic, n]) => `<button class="btn block" data-act="tour" data-k="${k}" style="text-align:left">${ic} ${T(n[0], n[1])}${(S.settings.tour || {})[k] ? '' : ` <span class="muted small">· ${T('pas encore vue', 'not seen yet')}</span>`}</button>`).join('')}</div></details>
-      <button class="btn block" data-act="news" style="margin:8px 0 4px">🆕 ${T('Nouveautés', 'What\'s new')} <span class="muted small">· v${APP_VERSION}</span>${newsPending() ? '<i class="armdot"></i>' : ''}</button>
-      <label>Nom affiché sur le profil</label>
-      <input data-set="name" value="${esc(S.settings.name || '')}" placeholder="Ton nom">
-      <button class="btn block" data-act="ob-edit" style="margin-top:8px;text-align:left">🧍 ${T('Mes infos : sexe, âge, taille, objectif', 'My info: sex, age, height, goal')}</button>
-      <label>Langue / Language</label>
-      <select data-set="lang" data-notr="1"><option value="fr" ${isEN() ? '' : 'selected'}>Français</option><option value="en" ${isEN() ? 'selected' : ''}>English</option></select>
-      <label>Objectif de séances par semaine</label>
-      <select data-set="goal">${[0, 1, 2, 3, 4, 5, 6, 7].map(n => `<option value="${n}" ${(+S.settings.goal || 0) === n ? 'selected' : ''}>${n ? n : 'Aucun'}</option>`).join('')}</select>
-      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="swipe" ${S.settings.swipe !== false ? 'checked' : ''}> ${T('Glisser pour changer de page (Entraînement ⇄ Profil, retour)', 'Swipe to switch pages (Workout ⇄ Profile, back)')}</label>`) +
-  setSec('wo', 'dumbbell', '🏋️', T('Séance', 'Workout'), T('Unité, repos, charges, alertes', 'Unit, rest, weights, alerts'), `
-      <label>Unité</label>
-      <select data-set="unit"><option value="lb" ${U() === 'lb' ? 'selected' : ''}>lb (mensurations en po)</option><option value="kg" ${U() === 'kg' ? 'selected' : ''}>kg (mensurations en cm)</option></select>
-      <label>${T('Distance (cardio)', 'Distance (cardio)')}</label>
-      <select data-set="dist"><option value="km" ${kmU() === 'km' ? 'selected' : ''}>km</option><option value="mi" ${kmU() === 'mi' ? 'selected' : ''}>${T('milles (mi)', 'miles (mi)')}</option></select>
-      <label>Repos par défaut (secondes)</label>
-      <input inputmode="numeric" data-set="rest" value="${S.settings.rest}">
-      <div class="grid2"><div><label>${T('Après un échauffement', 'After a warm-up')}</label><select data-set="restWarm">${[30, 45, 60, 90, 120].map(v => `<option value="${v}" ${(+S.settings.restWarm || 45) === v ? 'selected' : ''}>${fmtRest(v)}</option>`).join('')}</select></div>
-      <div><label>${T('Après un drop set', 'After a drop set')}</label><select data-set="restDrop"><option value="">${T('Comme l\'exercice', 'Same as exercise')}</option>${[30, 60, 90, 120, 180].map(v => `<option value="${v}" ${+S.settings.restDrop === v ? 'selected' : ''}>${fmtRest(v)}</option>`).join('')}</select></div></div>
-      <label>${T('Entre les exercices d\'un superset', 'Between superset exercises')}</label>
-      <select data-set="restSS"><option value="">${T('Aucun repos (enchaîner)', 'No rest (go straight)')}</option>${[10, 15, 20, 30, 45, 60].map(v => `<option value="${v}" ${+S.settings.restSS === v ? 'selected' : ''}>${fmtRest(v)}</option>`).join('')}</select>
-      <label>Augmentation de charge suggérée (${U()})</label>
-      <input inputmode="decimal" data-set="inc" value="${incr()}">
-      <label>${T('Haltères de ton gym (écart entre deux haltères)', 'Your gym’s dumbbells (step between two dumbbells)')}</label>
-      <select data-set="dbStep"><option value="">${T('Pas d\'arrondi', 'No rounding')}</option>${(U() === 'kg' ? [1, 2, 2.5] : [2.5, 5]).map(v => `<option value="${v}" ${+S.settings.dbStep === v ? 'selected' : ''}>${T('De ' + dec1(v) + ' en ' + dec1(v), 'Every ' + dec1(v))} ${U()}</option>`).join('')}</select>
-      <p class="muted small" style="margin:2px 0 0">${T('Les suggestions de charge aux haltères tombent toujours sur un haltère qui existe.', 'Dumbbell weight suggestions always land on a dumbbell that exists.')}</p>
-      <label>${T('Colonne « Précédent » pendant la séance', '“Previous” column during workouts')}</label>
-      <select data-set="prevMode"><option value="">${T('Ma dernière séance', 'My last workout')}</option><option value="best" ${S.settings.prevMode === 'best' ? 'selected' : ''}>${T('Ma meilleure performance', 'My best performance')}</option></select>
-      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="bwVol" ${S.settings.bwVol !== false ? 'checked' : ''}> <span>${T('Compter mon poids de corps dans le volume (tractions, dips, pompes…)', 'Count my bodyweight in volume (pull-ups, dips, push-ups…)')}<br><span class="muted small">${S.body.some(b => +b.w > 0) ? T('Utilise ton poids dans Mesures.', 'Uses your weight from Measures.') : T('Ajoute ton poids dans Profil → Mesures pour l\'activer.', 'Add your weight in Profile → Measures to use it.')}</span></span></label>
-      <label>${T('Disques de ton gym (calculateur)', 'Your gym’s plates (calculator)')}</label>
-      <div class="chips">${PLATES_ALL[U()].map(v => { const own = (S.settings.plates || {})[U()] || PLATES[U()]; return `<button class="chip ${own.includes(v) ? 'on' : ''}" data-act="plate-tog" data-v="${v}">${dec1(v)}</button>`; }).join('')}${(S.settings.plates || {})[U()] ? `<button class="chip" data-act="plate-reset">↺</button>` : ''}</div>
-      <label>${T('Barre par défaut', 'Default bar')}</label>
-      <select data-set="bar">${(U() === 'kg' ? [20, 15, 10, 0] : [45, 35, 25, 15, 0]).map(b => `<option value="${b}" ${(S.settings.bar != null ? +S.settings.bar : (U() === 'kg' ? 20 : 45)) === b ? 'selected' : ''}>${b ? b + ' ' + U() : T('Aucune (machine)', 'None (machine)')}</option>`).join('')}</select>
-      <p class="muted small" style="margin:2px 0 0">${T('Épaules et bras : +2,5 lb par défaut. Change-le par exercice avec ⚙️ dans la séance.', 'Shoulders and arms: +2.5 lb by default. Change it per exercise with ⚙️ during the workout.')}</p>
-      <label>${T('Intensité de tes séries', 'How hard you train your sets')}</label>
-      <select data-set="effort">${EFFORTS().map(([k, l]) => `<option value="${k}" ${(S.settings.effort || 'normal') === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
-      <p class="muted small" style="margin:2px 0 0">${T('« À l\'échec » : seulement la dernière série des exercices d\'isolation et des machines est marquée F. Les gros mouvements lourds (squat, soulevé de terre…) restent à 1-2 reps en réserve, c\'est plus sûr et aussi efficace. L\'IA suit la même logique.', '“To failure”: only the last set of isolation and machine exercises is marked F. Heavy compound lifts (squat, deadlift…) stay at 1-2 reps in reserve, which is safer and just as effective. The AI follows the same logic.')}</p>
-      <button class="btn sm" data-act="smart-all" style="margin-top:8px">⚡ ${T('Appliquer le plan auto à toutes mes routines', 'Apply the auto plan to all my routines')}</button>
-      <label class="row" style="margin:10px 0 4px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="stagOn" ${S.settings.stagOff ? '' : 'checked'}> ⚠️ ${T('Alertes de plateau', 'Plateau alerts')}</label>
-      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="autoScroll" ${S.settings.autoScroll !== false ? 'checked' : ''}> ${T('↓ Aller à l\'exercice suivant après la dernière série (et alterner en superset)', '↓ Jump to the next exercise after the last set (and alternate in supersets)')}</label>
-      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="wake" ${S.settings.wake === true ? 'checked' : ''}> <span>📱 Garder l'écran allumé pendant la séance<br><span class="muted small">Consomme de la batterie, pas nécessaire pour le bip.</span></span></label>
-      <button class="btn sm" data-act="plates-free" style="margin-top:10px">🧮 Calculateur de disques</button>`) +
-  setSec('snd', 'timer', '⏱', T('Minuteur et son', 'Timer and sound'), T('Bip, volume, vibration', 'Beep, volume, vibration'), `
-      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="sound" ${S.settings.sound !== false ? 'checked' : ''}> 🔔 Bip à la fin du repos (3-2-1 puis bip final)</label>
-      ${GAME() ? `<label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="sfx" ${S.settings.sfx !== false ? 'checked' : ''}> ⚔️ ${T('Sons du jeu (attaques et boss)', 'Game sounds (attacks and bosses)')}</label>` : ''}
-      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="notif" ${S.settings.notif === true ? 'checked' : ''}> <span>⌚ ${T('Notifications pour ma montre', 'Notifications for my watch')}<br><span class="muted small">${T('Fin du repos + prochaine série. Ta Galaxy Watch vibre et affiche la notification.', 'End of rest + next set. Your Galaxy Watch vibrates and shows the notification.')}</span></span></label>
-      ${S.settings.notif === true ? `<label class="row" style="margin-top:6px;color:var(--text);font-size:14px;padding-left:32px"><input type="checkbox" style="width:20px;height:20px" data-set="notifStart" ${S.settings.notifStart !== false ? 'checked' : ''}> ${T('Aussi au début du repos (silencieuse, avec l\'heure de fin)', 'Also at the start of rest (silent, with end time)')}</label>
-      <button class="btn sm" data-act="test-notif" style="margin-top:8px">⌚ ${T('Tester la notification (8 s, écran éteint)', 'Test the notification (8 s, screen off)')}</button>
-      <details class="muted small" style="margin-top:8px"><summary>${T('La montre ne reçoit rien?', 'Watch gets nothing?')}</summary><ol style="margin:6px 0 0;padding-left:18px">
+/* ===================== Réglages =====================
+   Page principale : liste groupée comme les réglages d'un téléphone (avec recherche).
+   Chaque ligne ouvre une sous-page (vue 'setp', k = clé de SETP). Les contrôles gardent data-set / data-act : mêmes gestionnaires qu'avant. */
+let secOpen = new Set(), setQ = '';
+const onSet = () => cur().v === 'settings' || cur().v === 'setp';
+const CHEV = '<svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+const CHUD = '<svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>';
+const sTxt = s => String(s || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+const sLab = (t, sub) => `<span class="stx"><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</span>`;
+const sTog = (k, on, t, sub = '') => `<label class="srow" data-st="${esc(sTxt(t))}">${sLab(t, sub)}<input type="checkbox" class="tgl" data-set="${k}" ${on ? 'checked' : ''}></label>`;
+const sSel = (k, t, opts, v, sub = '') => { const o = opts.find(([x]) => String(x) === String(v)) || opts[0];
+  return `<label class="srow ss" data-st="${esc(sTxt(t))}">${sLab(t, sub)}<span class="sval">${o ? o[1] : ''}</span><span class="chev">${CHUD}</span><select data-set="${k}" aria-label="${esc(sTxt(t))}">${opts.map(([x, l]) => `<option value="${x}" ${String(x) === String(v) ? 'selected' : ''}>${sTxt(l)}</option>`).join('')}</select></label>`; };
+const sSeg = (k, t, opts, v, sub = '', wide = false, x = '') => `<div class="srow ${wide ? 'col' : ''}" data-st="${esc(sTxt(t))}" ${x}>${sLab(t, sub)}<div class="sseg${wide ? '' : ' sm'}" role="radiogroup" aria-label="${esc(sTxt(t))}">${opts.map(([o, l]) => `<label><input type="radio" name="sg-${k}" data-set="${k}" value="${o}" ${String(o) === String(v) ? 'checked' : ''}><span>${l}</span></label>`).join('')}</div></div>`;
+const sInp = (k, t, v, sub = '', at = '') => `<label class="srow" data-st="${esc(sTxt(t))}">${sLab(t, sub)}<input class="sinp" data-set="${k}" value="${esc(String(v ?? ''))}" ${at}></label>`;
+const sTile = (k, h, sz = 18) => `<span class="stile" style="--h:${h || 'var(--accent)'}">${ic(k, sz)}</span>`;
+const sBtn = (act, t, o = {}) => `<button class="srow sbtn${o.dng ? ' dng' : o.nochev ? ' go' : ''}" data-act="${act}" ${o.x || ''} data-st="${esc(sTxt(t))}">${o.ic ? sTile(o.ic, o.h) : ''}${sLab(t, o.sub)}${o.val != null && o.val !== '' ? `<span class="sval">${o.val}</span>` : ''}${o.nochev ? '' : `<span class="chev">${CHEV}</span>`}</button>`;
+const sLink = (href, t, o = {}) => `<a class="srow sbtn" href="${href}" ${o.blank ? 'target="_blank" rel="noopener"' : ''} data-st="${esc(sTxt(t))}">${o.ic ? sTile(o.ic, o.h) : ''}${sLab(t, o.sub)}${o.val ? `<span class="sval">${o.val}</span>` : ''}<span class="chev">${CHEV}</span></a>`;
+const sInfo = (t, v, sub = '') => `<div class="srow" data-st="${esc(sTxt(t))}">${sLab(t, sub)}<span class="sval">${v}</span></div>`;
+const sGrp = (h, rows, note = '') => `${h ? `<div class="shd">${h}</div>` : ''}<div class="sgrp">${rows}</div>${note ? `<p class="snote">${note}</p>` : ''}`;
+const sBox = (h, html, note = '') => `${h ? `<div class="shd">${h}</div>` : ''}<div class="sgrp sbox">${html}</div>${note ? `<p class="snote">${note}</p>` : ''}`;
+const sWarn = t => `<p class="snote" style="color:var(--warm)">${t}</p>`;
+
+function setProfil() {
+  return sGrp('', sInp('name', T('Nom affiché', 'Display name'), S.settings.name || '', T('Sur ton profil et pour tes amis', 'On your profile and for your friends'), `placeholder="${T('Ton nom', 'Your name')}" autocomplete="off" style="width:150px"`) +
+      sBtn('ob-edit', T('Mes infos', 'My info'), {sub: T('Sexe, âge, taille, objectif', 'Sex, age, height, goal')}) +
+      sSel('goal', T('Séances par semaine', 'Workouts per week'), [0, 1, 2, 3, 4, 5, 6, 7].map(n => [n, n ? String(n) : T('Aucun objectif', 'No goal')]), +S.settings.goal || 0, T('Ton objectif de la semaine', 'Your weekly goal')));
+}
+function setSeance() {
+  const rest = +S.settings.rest || 150, rl = [30, 45, 60, 75, 90, 105, 120, 150, 180, 210, 240, 300]; if (!rl.includes(rest)) rl.push(rest); rl.sort((a, b) => a - b);
+  const bw = S.body.some(b => +b.w > 0) ? T('Utilise ton poids noté dans Mesures (tractions, dips, pompes…)', 'Uses your weight from Measures (pull-ups, dips, push-ups…)') : T('Ajoute ton poids dans Profil → Mesures pour l\'activer.', 'Add your weight in Profile → Measures to use it.');
+  return sGrp(T('Unités', 'Units'), sSeg('unit', T('Poids', 'Weight'), [['lb', 'lb'], ['kg', 'kg']], U(), T('Mensurations en po ou en cm', 'Measurements in in or cm')) +
+      sSeg('dist', T('Distance (cardio)', 'Distance (cardio)'), [['km', 'km'], ['mi', T('milles', 'miles')]], kmU())) +
+    sGrp(T('Repos', 'Rest'), sSel('rest', T('Repos par défaut', 'Default rest'), rl.map(v => [v, fmtRest(v)]), rest) +
+      sSel('restWarm', T('Après un échauffement', 'After a warm-up'), [30, 45, 60, 90, 120].map(v => [v, fmtRest(v)]), +S.settings.restWarm || 45) +
+      sSel('restDrop', T('Après un drop set', 'After a drop set'), [['', T('Comme l\'exercice', 'Same as exercise')], ...[30, 60, 90, 120, 180].map(v => [v, fmtRest(v)])], S.settings.restDrop ?? '') +
+      sSel('restSS', T('Entre deux exercices d\'un superset', 'Between superset exercises'), [['', T('Aucun (enchaîner)', 'None (go straight)')], ...[10, 15, 20, 30, 45, 60].map(v => [v, fmtRest(v)])], S.settings.restSS ?? '')) +
+    sGrp(T('Pendant la séance', 'During the workout'), sSel('prevMode', T('Colonne « Précédent »', '“Previous” column'), [['', T('Ma dernière séance', 'My last workout')], ['best', T('Ma meilleure performance', 'My best performance')]], S.settings.prevMode || '') +
+      sTog('autoScroll', S.settings.autoScroll !== false, T('Passer à l\'exercice suivant', 'Go to the next exercise'), T('Après la dernière série (et alterner en superset)', 'After the last set (and alternate in supersets)')) +
+      sTog('wake', S.settings.wake === true, T('Garder l\'écran allumé', 'Keep the screen on'), T('Consomme de la batterie, pas nécessaire pour le bip.', 'Uses battery, not needed for the beep.')) +
+      sTog('stagOn', !S.settings.stagOff, T('Alertes de plateau', 'Plateau alerts')) +
+      sTog('bwVol', S.settings.bwVol !== false, T('Poids de corps dans le volume', 'Bodyweight in volume'), bw)) +
+    sGrp(T('Intensité', 'Intensity'), sSel('effort', T('Intensité de tes séries', 'How hard you train your sets'), EFFORTS(), S.settings.effort || 'normal') +
+      sBtn('smart-all', T('Appliquer le plan auto à toutes mes routines', 'Apply the auto plan to all my routines'), {nochev: true}),
+      T('« À l\'échec » : seulement la dernière série des exercices d\'isolation et des machines est marquée F. Les gros mouvements lourds (squat, soulevé de terre…) restent à 1-2 reps en réserve, c\'est plus sûr et aussi efficace. L\'IA suit la même logique.', '“To failure”: only the last set of isolation and machine exercises is marked F. Heavy compound lifts (squat, deadlift…) stay at 1-2 reps in reserve, which is safer and just as effective. The AI follows the same logic.'));
+}
+function setCharges() {
+  const own = (S.settings.plates || {})[U()] || PLATES[U()];
+  return sGrp(T('Progression', 'Progression'), sInp('inc', T('Augmentation suggérée', 'Suggested increase'), incr(), U(), 'inputmode="decimal"'),
+      T('Épaules et bras : +2,5 lb par défaut. Change-le par exercice avec l\'engrenage pendant la séance.', 'Shoulders and arms: +2.5 lb by default. Change it per exercise with the gear during the workout.')) +
+    sGrp(T('Matériel de ton gym', 'Your gym’s equipment'), sSel('dbStep', T('Haltères', 'Dumbbells'), [['', T('Pas d\'arrondi', 'No rounding')], ...(U() === 'kg' ? [1, 2, 2.5] : [2.5, 5]).map(v => [v, T('De ' + dec1(v) + ' en ' + dec1(v), 'Every ' + dec1(v)) + ' ' + U()])], S.settings.dbStep ?? '', T('Écart entre deux haltères', 'Step between two dumbbells')) +
+      sSel('bar', T('Barre par défaut', 'Default bar'), (U() === 'kg' ? [20, 15, 10, 0] : [45, 35, 25, 15, 0]).map(b => [b, b ? b + ' ' + U() : T('Aucune (machine)', 'None (machine)')]), S.settings.bar != null ? +S.settings.bar : (U() === 'kg' ? 20 : 45)) +
+      `<div class="srow col" data-st="${esc(T('Disques', 'Plates'))}">${sLab(T('Disques', 'Plates'), T('Ceux de ton gym, pour le calculateur', 'Those at your gym, for the calculator'))}<div class="chips" style="margin:0">${PLATES_ALL[U()].map(v => `<button class="chip ${own.includes(v) ? 'on' : ''}" data-act="plate-tog" data-v="${v}">${dec1(v)}</button>`).join('')}${(S.settings.plates || {})[U()] ? `<button class="chip" data-act="plate-reset" aria-label="${T('Remettre par défaut', 'Reset')}">↺</button>` : ''}</div></div>` +
+      sBtn('plates-free', T('Calculateur de disques', 'Plate calculator')),
+      T('Les suggestions de charge aux haltères tombent toujours sur un haltère qui existe.', 'Dumbbell weight suggestions always land on a dumbbell that exists.'));
+}
+function setSon() {
+  const vol = S.settings.beepVol ?? 70;
+  return sGrp(T('Fin du repos', 'End of rest'), sTog('sound', S.settings.sound !== false, T('Bip à la fin du repos', 'Beep at the end of rest'), T('3-2-1 puis bip final', '3-2-1 then final beep')) +
+      sSel('beepSnd', T('Son du bip', 'Beep sound'), Object.entries(SOUNDS).map(([k, s]) => [k, T(s.fr, s.en)]), S.settings.beepSnd || 'classique') +
+      `<div class="srow col" data-st="${esc(T('Volume du bip', 'Beep volume'))}"><span class="stx"><b>${T('Volume du bip', 'Beep volume')} <span id="bvl" class="muted" style="font-weight:500">${vol} %</span></b></span><input type="range" min="0" max="100" step="5" value="${vol}" data-bvol="1" style="--p:${vol}%;margin:0"></div>` +
+      sBtn('test-beep', T('Tester le son', 'Test the sound'), {nochev: true}) + sBtn('test-lock', T('Tester écran éteint', 'Test with screen off'), {sub: T('Éteins l\'écran : le bip sonne dans 10 s', 'Turn the screen off: it beeps in 10 s'), nochev: true}),
+      T('Le volume dépend aussi du volume « média » de ton téléphone.', 'Volume also depends on your phone’s media volume.')) +
+    sGrp(T('Vibration', 'Vibration'), sTog('haptic', S.settings.haptic !== false, T('Vibrer quand je coche une série', 'Vibrate when I check a set')) + sBtn('test-vib', T('Tester la vibration', 'Test vibration'), {nochev: true}),
+      (isIOS ? T('iPhone : la vibration demande iOS 18 ou plus récent, et « Retour haptique système » activé (Réglages → Sons et vibrations). ', 'iPhone: vibration needs iOS 18 or newer, with “System Haptics” on (Settings → Sounds & Haptics). ') : '') + T('Rien senti? Le cell ne doit pas être en mode <b>Muet</b> : mets-le en mode Vibreur ou Son. Vérifie aussi Réglages → Sons et vibrations → Intensité des vibrations → « Retour tactile ».', 'Felt nothing? The phone must not be on <b>Mute</b>: use Vibrate or Sound mode. Also check Settings → Sounds and vibration → Vibration intensity → “Touch feedback”.')) +
+    (GAME() ? sGrp(T('Jeu', 'Game'), sTog('sfx', S.settings.sfx !== false, T('Sons du jeu', 'Game sounds'), T('Attaques et boss', 'Attacks and bosses'))) : '');
+}
+function setNotifs() {
+  const n = S.settings.notif === true, r = S.settings.remind === true;
+  return sGrp(T('Pendant la séance', 'During the workout'), sTog('notif', n, T('Notifications de fin de repos', 'End-of-rest notifications'), T('Fin du repos et prochaine série, sur ton téléphone et ta montre.', 'End of rest and next set, on your phone and watch.')) +
+      (n ? sTog('notifStart', S.settings.notifStart !== false, T('Aussi au début du repos', 'Also at the start of rest'), T('Silencieuse, avec l\'heure de fin', 'Silent, with the end time')) +
+        sBtn('test-notif', T('Tester la notification', 'Test the notification'), {sub: T('Éteins l\'écran : elle arrive dans 8 s', 'Turn the screen off: it arrives in 8 s'), nochev: true}) : '')) +
+    (n ? `<details class="sdet"><summary>${T('La montre ne reçoit rien?', 'Watch gets nothing?')}</summary><ol>
         ${isIOS ? `<li>${T('<b>iPhone / Apple Watch</b> : l\'appli doit être installée sur l\'écran d\'accueil, et les notifications permises dans Réglages → Notifications → Runelift. La montre les reçoit quand le iPhone est verrouillé.', '<b>iPhone / Apple Watch</b>: the app must be installed on the home screen, with notifications allowed in Settings → Notifications → Runelift. The watch gets them when the iPhone is locked.')}</li>` : ''}
         <li>${T('App <b>Galaxy Wearable</b> → Paramètres de la montre → Notifications → Paramètres des notifications de l\'application : active <b>Chrome</b>.', '<b>Galaxy Wearable</b> app → Watch settings → Notifications → App notification settings: turn on <b>Chrome</b>.')}</li>
-        <li>${T('Même écran : « Afficher les notifications du téléphone sur la montre » → choisis <b>Toujours</b>. Sinon, la montre n\'en reçoit que quand l\'écran du cell est éteint.', 'Same screen: “Show phone notifications on watch” → choose <b>Always</b>. Otherwise the watch only gets them when the phone screen is off.')}</li>
+        <li>${T('Même écran : « Afficher les notifications du téléphone sur la montre » → choisis <b>Toujours</b>. Sinon, la montre n\'en reçoit que quand l\'écran du cell est éteint.', 'Same screen: “Show phone notifications on watch” → choose <b>Always</b>. Otherwise the watch only gets them when the phone screen is off.')}</li>
         <li>${T('Réglages du téléphone → Applications → Chrome → Notifications : permises, et la catégorie du site Runelift permise.', 'Phone Settings → Apps → Chrome → Notifications: allowed, including the Runelift site category.')}</li>
-        <li>${T('Pas de mode <b>Ne pas déranger</b> ni de mode Sommeil sur la montre ou le cell.', 'No <b>Do not disturb</b> or Sleep mode on the watch or phone.')}</li></ol></details>` : ''}
-      <label>${T('Son du bip', 'Beep sound')}</label>
-      <select data-set="beepSnd">${Object.entries(SOUNDS).map(([k, s]) => `<option value="${k}" ${(S.settings.beepSnd || 'classique') === k ? 'selected' : ''}>${T(s.fr, s.en)}</option>`).join('')}</select>
-      <label>${T('Volume du bip', 'Beep volume')}${CLN()} <b id="bvl">${S.settings.beepVol ?? 70} %</b></label>
-      <input type="range" min="0" max="100" step="5" value="${S.settings.beepVol ?? 70}" data-bvol="1" style="--p:${S.settings.beepVol ?? 70}%">
-      <p class="muted small" style="margin:2px 0 0">${T('Le volume dépend aussi du volume « média » de ton téléphone.', 'Volume also depends on your phone’s media volume.')}</p>
-      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="haptic" ${S.settings.haptic !== false ? 'checked' : ''}> ${T('📳 Petite vibration quand je coche une série', '📳 Small vibration when I check a set')}</label>
-      ${isIOS ? `<p class="muted small" style="margin:6px 0 0">${T('iPhone : la vibration demande iOS 18 ou plus récent, et « Retour haptique système » activé (Réglages → Sons et vibrations).', 'iPhone: vibration needs iOS 18 or newer, with “System Haptics” on (Settings → Sounds & Haptics).')}</p>` : ''}
-      <button class="btn sm" data-act="test-vib" style="margin-top:8px">📳 ${T('Tester la vibration', 'Test vibration')}</button>
-      <p class="muted small" style="margin:4px 0 0">${T('Rien senti? Le cell ne doit pas être en mode <b>Muet</b> (haut-parleur barré) : mets-le en mode Vibreur ou Son. Vérifie aussi Réglages → Sons et vibrations → Intensité des vibrations → « Retour tactile ».', 'Felt nothing? The phone must not be on <b>Mute</b> (crossed speaker): use Vibrate or Sound mode. Also check Settings → Sounds and vibration → Vibration intensity → “Touch feedback”.')}</p>
-      <div class="row wrap" style="margin-top:10px"><button class="btn sm" data-act="test-beep">🔊 Tester le son</button><button class="btn sm" data-act="test-lock">🔒 Test écran éteint (10 s)</button></div>`) +
-  setSec('remind', 'bell', '🔔', T('Rappels d\'entraînement', 'Workout reminders'), T('Jours sans séance, séances prévues', 'Days off, planned workouts'), `
-      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="remind" ${S.settings.remind === true ? 'checked' : ''}> ${T('M\'envoyer des rappels', 'Send me reminders')}</label>
-      ${S.settings.remind === true ? `${notifOn() ? '' : `<p class="small" style="color:var(--warm);margin:6px 0 0">⚠️ ${T('Active aussi « Notifications pour ma montre » dans Minuteur et son, sinon les rappels ne peuvent pas s\'afficher.', 'Also turn on “Notifications for my watch” in Timer and sound, or reminders can\'t show.')}</p>`}
-      <label style="margin-top:12px">${T('Me rappeler après', 'Remind me after')}</label><select data-set="remindGap">${[2, 3, 4, 5, 7].map(n => `<option value="${n}" ${(+S.settings.remindGap || 3) === n ? 'selected' : ''}>${n} ${T('jours sans séance', 'days without a workout')}</option>`).join('')}</select>
-      <label class="row" style="margin-top:10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="remindPlan" ${S.settings.remindPlan !== false ? 'checked' : ''}> ${T('Les jours prévus dans mon horaire', 'On days planned in my schedule')}</label>
-      <label style="margin-top:12px">${T('Pas avant', 'Not before')}</label><select data-set="remindHour">${[6, 8, 10, 12, 14, 15, 16, 17, 18, 19, 20].map(n => `<option value="${n}" ${(S.settings.remindHour == null ? 17 : +S.settings.remindHour) === n ? 'selected' : ''}>${n} h</option>`).join('')}</select>
-      <button class="btn sm" data-act="remind-test" style="margin-top:10px">🔔 ${T('Tester le rappel', 'Test the reminder')}</button>
-      <p class="muted small" style="margin:8px 0 0">${T('C\'est le téléphone qui choisit le moment exact, environ une fois par jour, même quand l\'appli est fermée. Ça demande que l\'appli soit installée (Chrome ⋮ → Installer l\'appli). Si tu t\'es entraîné aujourd\'hui, aucun rappel.', 'The phone picks the exact time, about once a day, even when the app is closed. The app must be installed (Chrome ⋮ → Install app). If you trained today, no reminder.')}</p>` : ''}`) +
-  setSec('look', 'palette', '🎨', T('Apparence', 'Appearance'), T('Thème, couleurs, fond, icônes', 'Theme, colors, background, icons'), `<p class="muted small" style="margin:4px 0 0">Thèmes prêts à utiliser :</p>
-      <div class="grid2" style="margin-top:10px">${THEMES.map(([k, l, c]) => `<button class="btn sm ${(S.settings.theme || 'oled') === k ? 'on' : ''}" style="text-align:left" data-act="theme" data-t="${k}"><span class="sw" style="background:${c}"></span>${l}</button>`).join('')}</div>
-      ${myThemesHtml()}
-      <label style="margin-top:16px">Couleur des boutons (personnalisée)</label>
-      <div class="chips">${ACCENTS.map(c => `<button class="chip" data-act="accent-pick" data-c="${c}" style="background:${c};border-color:${S.settings.accent === c ? 'var(--text)' : c};width:34px;height:34px;padding:0" aria-label="Couleur ${c}"></button>`).join('')}</div>
+        <li>${T('Pas de mode <b>Ne pas déranger</b> ni de mode Sommeil sur la montre ou le cell.', 'No <b>Do not disturb</b> or Sleep mode on the watch or phone.')}</li></ol></details>` : '') +
+    sGrp(T('Rappels d\'entraînement', 'Workout reminders'), sTog('remind', r, T('M\'envoyer des rappels', 'Send me reminders'), T('Jours sans séance et séances prévues', 'Days off and planned workouts')) +
+      (r ? sSel('remindGap', T('Me rappeler après', 'Remind me after'), [2, 3, 4, 5, 7].map(d => [d, d + ' ' + T('jours sans séance', 'days without a workout')]), +S.settings.remindGap || 3) +
+        sTog('remindPlan', S.settings.remindPlan !== false, T('Les jours prévus dans mon horaire', 'On days planned in my schedule')) +
+        sSel('remindHour', T('Pas avant', 'Not before'), [6, 8, 10, 12, 14, 15, 16, 17, 18, 19, 20].map(h => [h, h + ' h']), S.settings.remindHour == null ? 17 : +S.settings.remindHour) +
+        sBtn('remind-test', T('Tester le rappel', 'Test the reminder'), {nochev: true}) : ''),
+      r ? T('C\'est le téléphone qui choisit le moment exact, environ une fois par jour, même quand l\'appli est fermée. Ça demande que l\'appli soit installée. Si tu t\'es entraîné aujourd\'hui, aucun rappel.', 'The phone picks the exact time, about once a day, even when the app is closed. The app must be installed. If you trained today, no reminder.') : '') +
+    (r && !notifOn() ? sWarn(T('Active aussi « Notifications de fin de repos » plus haut, sinon les rappels ne peuvent pas s\'afficher.', 'Also turn on “End-of-rest notifications” above, or reminders can\'t show.')) : '');
+}
+function setPhone() {
+  const st = phoneSt || {};
+  if (!phoneSt && !phoneBody.wait) { phoneBody.wait = 1; LV().status().then(x => { phoneSt = x || {}; render(); }, () => { phoneSt = {}; }); }
+  return (st.notif === false ? sWarn(T('Les notifications de Runelift sont bloquées. Ouvre Paramètres Android → Applications → Runelift → Notifications.', 'Runelift notifications are blocked. Open Android Settings → Apps → Runelift → Notifications.')) : '') +
+    sGrp('', sTog('lockOn', S.settings.lockOn !== false, T('Séance et repos sur l\'écran verrouillé', 'Workout and rest on the lock screen'), T('Compte à rebours du repos avec « +30 s » et « Passer », sans ouvrir l\'appli.', 'Rest countdown with “+30 s” and “Skip”, without opening the app.')) +
+      sTog('bgNotif', S.settings.bgNotif !== false, T('Nouvelles de mes amis, même appli fermée', 'News from my friends, even with the app closed'), T('Séance terminée par un ami, demande d\'ami, défi, encouragement. Le téléphone vérifie environ toutes les 15 minutes.', 'A friend finished a workout, friend request, challenge, cheer. The phone checks about every 15 minutes.'))) +
+    sGrp(T('Widget', 'Widget'), sInfo(T('Widget Runelift', 'Runelift widget'), st.widgets ? T('Installé', 'Added') : '', T('Appui long sur l\'écran d\'accueil → Widgets → Runelift : ta routine du jour, ta série de semaines et un bouton pour commencer.', 'Long-press your home screen → Widgets → Runelift: today\'s routine, your weekly streak and a start button.')));
+}
+function setWatch() {
+  if (!wearSt) { wearBody(); return sGrp('', sInfo(T('Montre', 'Watch'), '', T('Recherche de ta montre…', 'Looking for your watch…'))); }
+  const ok = wearSt.nodes > 0, nm = (wearSt.names || []).join(', ');
+  return sGrp('', sInfo(ok && nm ? esc(nm) : T('Ta montre', 'Your watch'), ok ? `<span style="color:var(--accent)">${T('Connectée', 'Connected')}</span>` : T('Non connectée', 'Not connected'), wearSeen ? T('Appli Runelift active sur la montre', 'Runelift app active on the watch') : '') +
+      sBtn('wear-refresh', T('Vérifier la connexion', 'Check connection'), {nochev: true}),
+    T('Avec l\'appli Runelift installée sur ta montre : démarre une routine depuis la montre, vois l\'exercice et la série en cours, ajuste la charge et les répétitions (écran ou lunette), coche tes séries au poignet, termine ta séance, le repos vibre sur la montre et ta fréquence cardiaque s\'affiche en direct pendant la séance. Ouvre Runelift sur la montre après avoir lancé ta séance sur le téléphone.', 'With the Runelift app installed on your watch: start a routine from the watch, see the current exercise and set, adjust weight and reps (screen or bezel), check sets from your wrist, finish your workout, rest vibrates on the watch and your heart rate shows live during the workout. Open Runelift on the watch after starting your workout on the phone.'));
+}
+function setGeneral() {
+  return sGrp('', sSeg('gameMode', T('Style de l\'appli', 'App style'), [['1', T('Mode jeu', 'Game mode')], ['0', T('Classique', 'Classic')]], GAME() ? '1' : '0', GAME() ? T('XP, niveaux, rangs, quêtes, guilde', 'XP, levels, ranks, quests, guild') : T('Un carnet simple, sans jeu', 'A simple log, no game')) +
+      sSeg('lang', 'Langue / Language', [['fr', 'Français'], ['en', 'English']], isEN() ? 'en' : 'fr', '', false, 'data-notr="1"') +
+      sSeg('weekSun', T('Premier jour de la semaine', 'First day of the week'), [['', T('Lundi', 'Monday')], ['1', T('Dimanche', 'Sunday')]], sunFirst() ? '1' : '') +
+      sTog('swipe', S.settings.swipe !== false, T('Glisser pour changer de page', 'Swipe to switch pages'), T('Entraînement ⇄ Profil, et vers la droite pour revenir', 'Workout ⇄ Profile, and right to go back')),
+      T('En Classique, l\'XP et ton niveau continuent de se calculer en arrière-plan : si tu actives le mode jeu plus tard, tu retrouves ton vrai niveau.', 'In Classic, XP and your level keep being calculated in the background: if you turn game mode on later, you get your real level back.')) +
+    (isIOS && !isStandalone() ? sGrp('', sBtn('ios-install', T('Installer sur l\'iPhone', 'Install on iPhone'), {ic: 'phone'})) : '');
+}
+function setLook() {
+  return sBox(T('Thème', 'Theme'), `<div class="grid2">${THEMES.map(([k, l, c]) => `<button class="btn sm ${(S.settings.theme || 'oled') === k ? 'on' : ''}" style="text-align:left" data-act="theme" data-t="${k}"><span class="sw" style="background:${c}"></span>${l}</button>`).join('')}</div>${myThemesHtml()}`) +
+    sBox(T('Couleurs', 'Colors'), `<div class="stx"><b>${T('Boutons', 'Buttons')}</b></div>
+      <div class="chips">${ACCENTS.map(c => `<button class="chip" data-act="accent-pick" data-c="${c}" style="background:${c};border-color:${S.settings.accent === c ? 'var(--text)' : c};width:34px;height:34px;padding:0" aria-label="${T('Couleur', 'Color')} ${c}"></button>`).join('')}</div>
       <div class="row" style="margin-top:6px"><button class="btn cpbtn" data-act="cpick" data-k="accent" aria-label="${T('Choisir une couleur', 'Pick a color')}"><span style="background:${S.settings.accent || 'var(--accent)'}"></span></button>
-      <span class="small muted" style="flex:1">${S.settings.accent ? 'Couleur perso : ' + esc(S.settings.accent) : 'Couleur du thème'}</span>
-      ${S.settings.accent ? '<button class="btn sm" data-act="accent-reset">Remettre celle du thème</button>' : ''}</div>
-      <label class="row" style="margin-top:14px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="fold" ${S.settings.fold !== false ? 'checked' : ''}> ${T('Écran déplié : séance à gauche, chrono et historique à droite', 'Unfolded screen: workout on the left, timer and history on the right')}</label>
-      <label style="margin-top:16px">${T('Couleur du fond (personnalisée)', 'Background color (custom)')}</label>
+      <span class="small muted" style="flex:1">${S.settings.accent ? T('Couleur perso : ', 'Custom color: ') + esc(S.settings.accent) : T('Couleur du thème', 'Theme color')}</span>
+      ${S.settings.accent ? `<button class="btn sm" data-act="accent-reset">${T('Remettre celle du thème', 'Use the theme\'s')}</button>` : ''}</div>
+      <div class="stx" style="margin-top:16px"><b>${T('Fond', 'Background')}</b></div>
       <div class="chips">${BGS.map(c => `<button class="chip" data-act="bg-pick" data-c="${c}" style="background:${c};border-color:${S.settings.bg === c ? 'var(--accent)' : '#8886'};border-width:2px;width:34px;height:34px;padding:0" aria-label="${T('Fond', 'Background')} ${c}"></button>`).join('')}</div>
       <div class="row" style="margin-top:6px"><button class="btn cpbtn" data-act="cpick" data-k="bg" aria-label="${T('Choisir la couleur du fond', 'Pick the background color')}"><span style="background:${S.settings.bg || 'var(--bg)'}"></span></button>
       <span class="small muted" style="flex:1">${S.settings.bg ? T('Fond perso : ', 'Custom background: ') + esc(S.settings.bg) : T('Fond du thème', 'Theme background')}</span>
-      ${S.settings.bg ? `<button class="btn sm" data-act="bg-reset">${T('Remettre celui du thème', "Use the theme's")}</button>` : ''}</div>`) +
-  setSec('import', 'down', '📥', T('Importer d\'une autre appli', 'Import from another app'), T('Hevy, Strong, FitNotes…', 'Hevy, Strong, FitNotes…'), `${importHelp()}`) +
-  (WR() ? setSec('watch', 'watch', '⌚', T('Montre', 'Watch'), T('Appli Runelift sur Galaxy Watch / Wear OS', 'Runelift app on Galaxy Watch / Wear OS'), wearBody()) : '') +
-  (LV() ? setSec('phone', 'bell', '📱', T('Téléphone Android', 'Android phone'), T('Écran verrouillé, widget, nouvelles des amis', 'Lock screen, widget, friends news'), phoneBody()) : '') +
-  (HC() ? setSec('health', 'heart', '❤️', T('Santé Android', 'Android health'), hcOn() ? T('Health Connect activé', 'Health Connect on') : T('Health Connect, Samsung Health, montre', 'Health Connect, Samsung Health, watch'), hcBody()) : '') +
-  setSec('cloud', 'cloud', '💾', T('Sauvegarde', 'Backup'), cbOn() ? T('☁️ Automatique activée', '☁️ Automatic backup on') : gdOn() ? T('☁️ Google Drive activé', '☁️ Google Drive on') : cloudOn() ? T('☁️ Automatique activée', '☁️ Automatic backup on') : S.settings.lastBackup ? T('Dernière : ', 'Last: ') + ago(S.settings.lastBackup) : T('⚠️ Jamais sauvegardé', '⚠️ Never backed up'), `${cbCard()}${simpleBackupCard()}${gdOn() || cloudOn() ? `<details class="card" style="padding:10px 12px"><summary class="small"><b>${T('Ancienne sauvegarde (plus nécessaire)', 'Old backup (no longer needed)')}</b></summary>${gdOn() ? gdCard() : ''}${cloudOn() ? cloudCard() : ''}</details>` : ''}
-      <p class="muted small" style="margin:12px 0 0">${T('Import depuis Hevy et Strong', 'Import from Hevy and Strong')}${ib(T('Importer', 'Import'), T('Importer accepte aussi l\'export CSV de Hevy, Strong et des autres applis (date, exercice, poids, reps).', 'Import also accepts CSV exports from Hevy, Strong and other apps (date, exercise, weight, reps).'))}</p>
-      <button class="btn block" data-act="export-csv" style="margin-top:10px">📊 ${T('Exporter pour Excel / Google Sheets (CSV)', 'Export for Excel / Google Sheets (CSV)')}</button>`) +
-  setSec('ai', 'spark', '🤖', T('IA et partage', 'AI and sharing'), T('Bilan pour l\'IA, envoyer l\'appli à un ami', 'AI summary, send the app to a friend'), `
-      <h3>${T('Bilan pour l\'IA', 'AI summary')}</h3>
-      <p class="muted small">Copie tes 30 derniers jours de séances pour demander une analyse ou des ajustements.</p>
-      <button class="btn block" data-act="ai-history">🤖 Envoyer mon historique à l'IA</button>
-      <h3 style="margin-top:14px">📤 ${T('Partager l\'appli', 'Share the app')}</h3>
-      <p class="muted small" style="margin:4px 0 8px">Envoie le lien et les instructions à un ami. Chacun garde ses propres données sur son téléphone.</p>
-      <button class="btn block" data-act="share-app">📤 Envoyer l'appli à un ami</button>`) +
-  setSec('data', 'trash', '🗑', T('Données et compte', 'Data & account'), T('Confidentialité, tout effacer, supprimer mon compte', 'Privacy, erase everything, delete my account'), `<p class="muted small">${T('Efface toutes tes séances, routines et mesures de ce téléphone. Exporte d\'abord si tu veux les garder.', 'Erases all your workouts, routines and measurements from this phone. Export first if you want to keep them.')}</p><label class="row" style="margin:0 0 10px;color:var(--text);font-size:15px"><input type="checkbox" style="width:22px;height:22px" data-set="bugOn" ${S.settings.bugOff ? '' : 'checked'}> ${T('Envoyer les rapports d\'erreur automatiquement', 'Send error reports automatically')}</label><p class="muted small" style="margin:-6px 0 12px">${T('Seulement le message d\'erreur, l\'écran, la version et le type de téléphone. Jamais tes séances.', 'Only the error message, the screen, the version and the phone type. Never your workouts.')}</p><button class="btn danger block" data-act="reset">Tout effacer</button><div style="height:14px"></div><a class="btn block" href="privacy.html" target="_blank" rel="noopener" style="display:flex;width:100%;justify-content:center;text-decoration:none;box-sizing:border-box">🔒 ${T('Politique de confidentialité', 'Privacy policy')}</a><button class="btn danger block" style="margin-top:8px" data-act="acc-del">⚠️ ${T('Supprimer mon compte', 'Delete my account')}</button>`) +
-  `${S.settings.lab ? `<button class="btn block" data-act="lab" style="margin:8px 0">🧪 ${T('Mode test (compagnons)', 'Test mode (companions)')}</button><button class="btn block" data-act="lab-cls" style="margin:8px 0">🧪 ${T('Mode test (classes et coffres)', 'Test mode (classes and chests)')}</button><button class="btn block" data-act="lab-frames" style="margin:8px 0">🧪 ${T('Mode test (cadres peints)', 'Test mode (painted frames)')}</button><button class="btn block" data-act="bug-list" style="margin:8px 0">🐞 ${T('Rapports de bugs', 'Bug reports')}</button><button class="btn block" data-act="go" data-v="bosslab" style="margin:8px 0">${T('Galerie des boss', 'Boss gallery')}</button>` : ''}<p class="muted small" style="text-align:center" data-act="ver-tap">Runelift v${APP_VERSION} · ${S.history.length} ${T('séances', 'workouts')} · ${S.routines.length} routines<br>Animations © Gym visual · base exercises-dataset</p>`;
+      ${S.settings.bg ? `<button class="btn sm" data-act="bg-reset">${T('Remettre celui du thème', 'Use the theme\'s')}</button>` : ''}</div>`) +
+    sGrp(T('Affichage', 'Display'), sSeg('fontScale', T('Taille du texte', 'Text size'), [['sm', T('Petit', 'Small')], ['', 'Normal'], ['lg', T('Grand', 'Large')], ['xl', T('Très grand', 'X-Large')]], S.settings.fontScale || '', '', true) +
+      sTog('fold', S.settings.fold !== false, T('Écran déplié', 'Unfolded screen'), T('Séance à gauche, chrono et historique à droite', 'Workout on the left, timer and history on the right')));
 }
+const TOUR_IC = {main: 'dumbbell', wo: 'checksq', stretch: 'yoga', cardio: 'heart', timers: 'timer', profile: 'chart', body: 'camera', friends: 'users', guild: 'swords'};
+function setAide() {
+  return sGrp(T('Visites guidées', 'Guided tours'), TOUR_LIST.map(([k, , n]) => sBtn('tour', T(n[0], n[1]), {x: `data-k="${k}"`, ic: TOUR_IC[k] || 'bookopen', sub: (S.settings.tour || {})[k] ? '' : T('Pas encore vue', 'Not seen yet')})).join('')) +
+    sGrp('Runelift', sBtn('news', T('Nouveautés', 'What\'s new'), {ic: 'spark', val: `v${APP_VERSION}${newsPending() ? ' <i class="armdot"></i>' : ''}`}) +
+      sLink('mailto:runelift.app@gmail.com', T('Nous écrire', 'Contact us'), {ic: 'mail', sub: 'runelift.app@gmail.com'}));
+}
+function setCloud() {
+  const c = S.cb || {}, on = cbOn(), lb = S.settings.lastBackup;
+  const st = on ? (c.last ? T('Sauvegardé ', 'Backed up ') + ago(c.last) : T('Pas encore sauvegardé', 'Not backed up yet')) : T('Tout se sauvegarde tout seul, en privé. Sur un nouveau téléphone, connecte-toi et tout revient.', 'Everything backs up on its own, privately. On a new phone, sign in and everything comes back.');
+  return `<div class="sgrp shero"><div class="row" style="gap:14px;align-items:center">${sTile('cloud', '#60a5fa', 24)}<span class="stx"><b>${on ? T('Sauvegarde automatique activée', 'Automatic backup on') : T('Sauvegarde automatique', 'Automatic backup')}</b><small>${st}</small></span></div>
+      ${c.err && on ? `<p class="snote" style="color:var(--warm);margin:10px 0 0">${esc(c.err)}</p>` : ''}${on ? '' : `<button class="btn primary block" data-act="cb-on" style="margin-top:12px">${T('Activer', 'Turn on')}</button>`}</div>` +
+    sGrp('', (on ? sBtn('cb-push', T('Sauvegarder maintenant', 'Back up now'), {ic: 'up', h: '#60a5fa', nochev: true}) : '') +
+      sBtn('cb-restore', T('Restaurer ma sauvegarde', 'Restore my backup'), {ic: 'down', h: '#60a5fa'}) +
+      (on ? sInfo(T('Photos sauvegardées', 'Photos backed up'), `${(c.phUp || []).length} / ${PH_MAX}`, c.phFull ? T('Limite atteinte : les plus récentes d\'abord', 'Limit reached: most recent first') : c.phErr ? esc(c.phErr) : '') + sBtn('cb-off', T('Désactiver', 'Turn off'), {dng: true, nochev: true}) : ''),
+      T(`Privé : toi seul peux lire ta sauvegarde. Tes photos aussi (jusqu'à ${PH_MAX}).`, `Private: only you can read your backup. Your photos too (up to ${PH_MAX}).`)) +
+    sGrp(T('Copie en fichier', 'File copy'), sBtn('export', T('Créer un fichier', 'Create a file'), {ic: 'file', h: '#94a3b8', sub: T('Toutes tes données, à garder où tu veux : Google Drive, Fichiers ou courriel.', 'All your data, kept wherever you want: Google Drive, Files or email.'), val: lb ? ago(lb) : '', nochev: true}) +
+      sBtn('import', T('Restaurer un fichier', 'Restore from a file'), {ic: 'down', h: '#94a3b8'}),
+      on ? '' : T('Sans sauvegarde automatique, l\'appli te rappelle de faire une copie une fois par semaine.', 'Without automatic backup, the app reminds you to make a copy once a week.')) +
+    (gdOn() || cloudOn() ? `<details class="sdet"><summary>${T('Ancienne sauvegarde (plus nécessaire)', 'Old backup (no longer needed)')}</summary>${gdOn() ? gdCard() : ''}${cloudOn() ? cloudCard() : ''}</details>` : '');
+}
+function setImport() {
+  return sBox(T('Importer d\'une autre appli', 'Import from another app'), importHelp()) +
+    sGrp(T('Exporter', 'Export'), sBtn('export-csv', T('Exporter pour Excel / Google Sheets', 'Export for Excel / Google Sheets'), {ic: 'file', h: '#4ade80', sub: T('Fichier CSV avec toutes tes séries', 'CSV file with all your sets'), nochev: true}));
+}
+function setAi() {
+  return sGrp(T('Bilan pour l\'IA', 'AI summary'), sBtn('ai-history', T('Envoyer mon historique à l\'IA', 'Send my history to the AI'), {ic: 'bot', sub: T('Copie tes 30 derniers jours de séances pour demander une analyse ou des ajustements.', 'Copies your last 30 days of workouts to ask for an analysis or adjustments.')})) +
+    sGrp(T('Partager l\'appli', 'Share the app'), sBtn('share-app', T('Envoyer l\'appli à un ami', 'Send the app to a friend'), {ic: 'share', sub: T('Le lien et les instructions. Chacun garde ses propres données.', 'The link and instructions. Everyone keeps their own data.')}));
+}
+function setData() {
+  return sGrp(T('Confidentialité', 'Privacy'), sTog('bugOn', !S.settings.bugOff, T('Rapports d\'erreur automatiques', 'Automatic error reports'), T('Seulement le message d\'erreur, l\'écran, la version et le type de téléphone. Jamais tes séances.', 'Only the error message, the screen, the version and the phone type. Never your workouts.')) +
+      sLink('privacy.html', T('Politique de confidentialité', 'Privacy policy'), {blank: true})) +
+    sGrp(T('Effacer', 'Erase'), sBtn('reset', T('Tout effacer sur ce téléphone', 'Erase everything on this phone'), {dng: true, sub: T('Séances, routines et mesures. Crée d\'abord une copie si tu veux les garder.', 'Workouts, routines and measurements. Make a copy first if you want to keep them.'), nochev: true}) +
+      sBtn('acc-del', T('Supprimer mon compte', 'Delete my account'), {dng: true, sub: T('Ton compte et tes données en ligne', 'Your account and your online data'), nochev: true}));
+}
+const SETP = {
+  profil: {t: () => T('Profil', 'Profile'), ic: 'user', h: '#60a5fa', b: setProfil, kw: 'nom name infos info sexe sex age taille height objectif goal'},
+  seance: {t: () => T('Séance', 'Workout'), ic: 'dumbbell', h: '#4ade80', b: setSeance, v: () => `${U()} · ${fmtRest(+S.settings.rest || 150)}`, kw: 'unite unit lb kg km milles miles repos rest superset precedent previous intensite intensity echec failure rir plateau ecran screen'},
+  charges: {t: () => T('Charges et matériel', 'Weights and equipment'), ic: 'scale', h: '#fb923c', b: setCharges, v: () => `+${dec1(incr())} ${U()}`, kw: 'augmentation increment halteres dumbbells barre bar disques plates calculateur calculator'},
+  son: {t: () => T('Minuteur et son', 'Timer and sound'), ic: 'vol', h: '#2dd4bf', b: setSon, v: () => S.settings.sound !== false ? T('Bip activé', 'Beep on') : T('Bip coupé', 'Beep off'), kw: 'bip beep son sound volume vibration haptique minuteur timer'},
+  notifs: {t: () => T('Notifications et rappels', 'Notifications and reminders'), ic: 'bell', h: '#f87171', b: setNotifs, v: () => S.settings.notif === true || S.settings.remind === true ? T('Activées', 'On') : T('Désactivées', 'Off'), kw: 'notification rappel reminder montre watch'},
+  watch: {t: () => T('Montre', 'Watch'), ic: 'watch', h: '#a78bfa', on: () => !!WR(), b: setWatch, v: () => wearSt ? (wearSt.nodes > 0 ? T('Connectée', 'Connected') : T('Non connectée', 'Not connected')) : '', kw: 'galaxy wear os montre watch', noidx: 1},
+  phone: {t: () => T('Téléphone Android', 'Android phone'), ic: 'phone', h: '#a78bfa', on: () => !!LV(), b: setPhone, kw: 'ecran verrouille lock screen widget amis friends'},
+  health: {t: () => T('Santé Android', 'Android health'), ic: 'heart', h: '#f472b6', on: () => !!HC(), b: () => sBox('', hcBody()), v: () => hcOn() ? T('Activée', 'On') : T('Désactivée', 'Off'), kw: 'health connect samsung health sante pas steps sommeil sleep cardiaque heart', noidx: 1},
+  general: {t: () => T('Général', 'General'), ic: 'gear', h: '#94a3b8', b: setGeneral, v: () => GAME() ? T('Mode jeu', 'Game mode') : T('Classique', 'Classic'), kw: 'mode jeu game classique classic langue language francais english semaine week lundi dimanche glisser swipe'},
+  look: {t: () => T('Apparence', 'Appearance'), ic: 'palette', h: '#f472b6', b: setLook, v: () => { const t = THEMES.find(([k]) => k === (S.settings.theme || 'oled')); return t ? t[1] : ''; }, kw: 'theme couleur color fond background texte text taille size police font sombre dark clair light'},
+  aide: {t: () => T('Aide', 'Help'), ic: 'bookopen', h: '#facc15', b: setAide, v: () => `v${APP_VERSION}${newsPending() ? ' <i class="armdot"></i>' : ''}`, kw: 'visites guidees tours tutoriel tutorial nouveautes whats new contact support courriel email'},
+  cloud: {t: () => T('Sauvegarde', 'Backup'), ic: 'cloud', h: '#60a5fa', b: setCloud, v: () => cbOn() || cloudOn() ? T('Automatique', 'Automatic') : gdOn() ? 'Google Drive' : S.settings.lastBackup ? ago(S.settings.lastBackup) : `<span style="color:var(--warm)">${T('Jamais', 'Never')}</span>`, kw: 'sauvegarde backup restaurer restore fichier file google drive'},
+  import: {t: () => T('Importer et exporter', 'Import and export'), ic: 'down', h: '#4ade80', b: setImport, kw: 'importer import exporter export hevy strong fitnotes csv excel sheets'},
+  ai: {t: () => T('IA et partage', 'AI and sharing'), ic: 'spark', h: '#c6f135', b: setAi, kw: 'ia ai chatgpt claude gemini partager share ami friend'},
+  data: {t: () => T('Confidentialité et compte', 'Privacy and account'), ic: 'shield', h: '#94a3b8', b: setData, kw: 'confidentialite privacy effacer erase supprimer delete compte account rapports reports erreur error'}
+};
+const SET_GRP = () => [[T('Entraînement', 'Training'), ['seance', 'charges', 'son', 'notifs']], [T('Appareils', 'Devices'), ['watch', 'phone', 'health']], [T('Appli', 'App'), ['general', 'look', 'aide']], [T('Données', 'Data'), ['cloud', 'import', 'ai']], [T('Compte', 'Account'), ['data']]];
+const setOk = k => SETP[k] && (!SETP[k].on || SETP[k].on());
+const setRow = k => { const p = SETP[k]; let v = ''; try { v = p.v ? p.v() : ''; } catch (e) {} return sBtn('setp', p.t(), {x: `data-k="${k}"`, ic: p.ic, h: p.h, val: v}); };
+function setIdx() {
+  const a = [], dec = document.createElement('textarea');
+  for (const k of Object.keys(SETP)) {
+    if (!setOk(k)) continue; const p = SETP[k]; a.push({k, t: p.t(), kw: p.kw || ''});
+    if (p.noidx) continue;
+    let h = ''; try { h = p.b(); } catch (e) {}
+    const seen = new Set(); for (const m of h.matchAll(/data-st="([^"]*)"/g)) { dec.innerHTML = m[1]; const t = dec.value; if (t && !seen.has(t)) { seen.add(t); a.push({k, t, st: t}); } }
+  }
+  return a;
+}
+function setResHtml(q) {
+  const n = norm(q); if (!n) return '';
+  const hits = setIdx().filter(x => norm(x.t + ' ' + (x.kw || '')).includes(n)).slice(0, 30);
+  return hits.length ? sGrp('', hits.map(x => `<button class="srow sbtn" data-act="setp" data-k="${x.k}" data-hl="${esc(x.st || '')}">${x.st ? '' : sTile(SETP[x.k].ic, SETP[x.k].h)}${sLab(esc(x.t), x.st ? esc(SETP[x.k].t()) : '')}<span class="chev">${CHEV}</span></button>`).join(''))
+    : `<p class="snote" style="text-align:center;margin:28px 0">${T('Aucun réglage trouvé', 'No setting found')}</p>`;
+}
+function setSearch(q) {
+  setQ = q; const r = $('#setres'), m = $('#setmain'); if (!r || !m) return;
+  r.innerHTML = setResHtml(q); m.hidden = !!norm(q);
+}
+function vSettings() {
+  const nm = (S.settings.name || '').trim(); let em = ''; try { const u = firebase.auth().currentUser; em = u && u.email || ''; } catch (e) {}
+  const back = !cbOn() && !cloudOn() && !gdOn() && (!S.settings.lastBackup || Date.now() - new Date(S.settings.lastBackup) > 7 * 864e5);
+  return `<button class="sprof" data-act="setp" data-k="profil"><span class="sav">${S.settings.avatar ? `<img src="${S.settings.avatar}" alt="">` : esc((nm[0] || '?').toUpperCase())}</span>${sLab(esc(nm || T('Ton profil', 'Your profile')), em ? esc(em) : T('Nom, infos, objectif de la semaine', 'Name, info, weekly goal'))}<span class="chev">${CHEV}</span></button>
+    <div class="ssrch">${ic('search', 18)}<input id="setq" type="search" value="${esc(setQ)}" placeholder="${T('Rechercher un réglage', 'Search settings')}" autocomplete="off" enterkeyhint="search"></div>
+    <div id="setres">${setResHtml(setQ)}</div>
+    <div id="setmain" ${norm(setQ) ? 'hidden' : ''}>
+    ${back ? `<button class="sban" data-act="setp" data-k="cloud">${sTile('cloud', '#60a5fa', 20)}${sLab(T('Protège tes séances', 'Protect your workouts'), T('Active la sauvegarde automatique : sur un nouveau téléphone, tout revient.', 'Turn on automatic backup: on a new phone, everything comes back.'))}<span class="chev">${CHEV}</span></button>` : ''}
+    ${SET_GRP().map(([h, ks]) => { const k2 = ks.filter(setOk); return k2.length ? sGrp(h, k2.map(setRow).join('')) : ''; }).join('')}
+    ${S.settings.lab ? sGrp(T('Mode test', 'Test mode'), sBtn('lab', T('Compagnons', 'Companions'), {ic: 'flask', h: '#facc15'}) + sBtn('lab-cls', T('Classes et coffres', 'Classes and chests'), {ic: 'flask', h: '#facc15'}) + sBtn('lab-frames', T('Cadres peints', 'Painted frames'), {ic: 'flask', h: '#facc15'}) + sBtn('bug-list', T('Rapports de bugs', 'Bug reports'), {ic: 'alert', h: '#f87171'}) + sBtn('go', T('Galerie des boss', 'Boss gallery'), {x: 'data-v="bosslab"', ic: 'skull', h: '#a78bfa'})) : ''}
+    <p class="sfoot" data-act="ver-tap">Runelift v${APP_VERSION} · ${S.history.length} ${T('séances', 'workouts')} · ${S.routines.length} routines<br>Animations © Gym visual · base exercises-dataset</p></div>`;
+}
+function vSetPage() {
+  const c = cur(), p = SETP[c.k]; if (!p || !setOk(c.k)) return vSettings();
+  if (c.hl) { const h = c.hl; c.hl = ''; setTimeout(() => { const e = [...document.querySelectorAll('#app [data-st]')].find(x => x.dataset.st === h); if (e) { e.scrollIntoView({block: 'center'}); e.classList.add('shl'); } }, 80); }
+  return `<div class="spg">${p.b()}</div>`;
+}
+const setpTitle = () => { const p = SETP[cur().k]; return p ? p.t() : T('Réglages', 'Settings'); };
 
 /* ===================== Éditeur de séance passée ===================== */
 let draft = null;
@@ -3113,7 +3262,7 @@ async function exportData() {
   const data = JSON.stringify({...S, active: null, cloud: undefined, gd: undefined, photoData, exportedAt: new Date().toISOString()});
   const name = `carnet-muscu-${new Date().toISOString().slice(0, 10)}.json`;
   const file = new File([data], name, {type: 'application/json'});
-  const done = () => { S.settings.lastBackup = new Date().toISOString(); save(); if (cur().v === 'settings' || cur().v === 'train') render(); };
+  const done = () => { S.settings.lastBackup = new Date().toISOString(); save(); if (onSet() || cur().v === 'train') render(); };
   const r = await shareOut(file, name);
   if (r === 'shared' || r === 'dl') { done(); toast(r === 'dl' ? T('✅ Fichier exporté', '✅ File exported') : T('✅ Choisis où garder ta sauvegarde', '✅ Pick where to keep your backup')); }
 }
@@ -3499,7 +3648,7 @@ async function cloudPush(force) {
     S.cloud.last = new Date().toISOString(); S.cloud.hash = hs; delete S.cloud.err; cloudDirty = false;
   } catch (e) { S.cloud.err = e.message; cloudDirty = true; }
   cloudBusy = false; saveLocal();
-  if (cur().v === 'settings') render();
+  if (onSet()) render();
 }
 async function cloudFetch() {
   const g = await gh('/gists/' + S.cloud.gist);
@@ -4093,7 +4242,7 @@ function openAiMenu() {
     ${hasR ? opt('data-act="ai-guide" data-k="improve"', '🔧', T('Améliorer mon programme actuel', 'Improve my current program'), T('L\'IA ajuste tes routines (charges, exercices, volume).', 'The AI adjusts your routines (weights, exercises, volume).')) : ''}
     ${hasH ? opt('data-act="ai-guide" data-k="analyse"', '📊', T('Analyser mes dernières séances', 'Analyze my recent workouts'), T('Conseils sur tes 30 derniers jours.', 'Advice on your last 30 days.')) : ''}
     ${opt('data-act="paste" data-rid=""', '📥', T('J\'ai déjà la réponse de l\'IA', 'I already have the AI\'s answer'), T('Colle-la directement.', 'Paste it directly.'))}
-    ${newbie ? `<p class="muted small" style="margin:10px 0 0">💡 ${T('Tu viens de Hevy, Strong ou une autre appli qui exporte en CSV? Importe tout ton <b>historique</b> (Réglages → Sauvegarde → Restaurer, avec le fichier CSV). L\'appli te proposera ensuite de recréer tes routines.', 'Coming from Hevy, Strong or another app with CSV export? Import your whole <b>history</b> (Settings → Backup → Restore, with the CSV file). The app will then offer to rebuild your routines.')}</p>` : ''}`);
+    ${newbie ? `<p class="muted small" style="margin:10px 0 0">💡 ${T('Tu viens de Hevy, Strong ou une autre appli qui exporte en CSV? Importe tout ton <b>historique</b> (Réglages → Importer et exporter). L\'appli te proposera ensuite de recréer tes routines.', 'Coming from Hevy, Strong or another app with CSV export? Import your whole <b>history</b> (Settings → Import and export). The app will then offer to rebuild your routines.')}</p>` : ''}`);
 }
 function aiGuide(k, folder) {
   const g = AI_KINDS[k]; if (!g) return;
@@ -6855,9 +7004,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.116.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.117.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.117.0', d: '2026-11-23', fr: ['Réglages refaits : une page principale claire, groupée comme les réglages d\'un téléphone, avec une recherche. Chaque sujet a sa page, avec de vrais interrupteurs.', 'Les notifications et les rappels sont maintenant ensemble, et les charges et le matériel ont leur propre page.', 'Nouvelle page Aide : visites guidées, nouveautés et un bouton pour nous écrire.'], en: ['Settings redone: a clear main page, grouped like phone settings, with search. Each topic has its own page, with real switches.', 'Notifications and reminders are now together, and weights and equipment have their own page.', 'New Help page: guided tours, what\'s new and a button to contact us.']},
   {v: '9.116.4', d: '2026-11-23', fr: ['Correction : si tu fermais l\'appli sur l\'onglet Cardio, elle restait vide au démarrage suivant (et les rappels, la sauvegarde et la mise à jour automatique ne démarraient pas).', 'Correction d\'un plantage possible dans les récompenses de guilde.'], en: ['Fix: if you closed the app on the Cardio tab, it stayed blank on the next start (and reminders, backup and auto-update did not start).', 'Fixed a possible crash in guild rewards.']},
   {v: '9.116.3', d: '2026-11-22', fr: ['Correction : la fenêtre de fin de semaine des ligues (montée, descente, podium) plantait au lieu de s\'afficher.'], en: ['Fix: the end-of-week league window (promotion, demotion, podium) crashed instead of showing.']},
   {v: '9.116.2', d: '2026-11-22', fr: ['Correction des ligues : ton score de la semaine passée comptait celui de la semaine en cours (risque de descente le lundi), et les plafonds anti-triche ne s\'appliquaient pas.'], en: ['League fix: your last-week score used the current week (risk of demotion on Mondays), and the anti-cheat caps were not applied.']},
@@ -7264,7 +7414,7 @@ function iosHint() {
       <li>${T('Touche le bouton <b>Partager</b> (le carré avec la flèche ⬆️) en bas de Safari.', 'Tap the <b>Share</b> button (square with arrow ⬆️) at the bottom of Safari.')}</li>
       <li>${T('Choisis <b>Sur l\'écran d\'accueil</b> (fais défiler si besoin).', 'Choose <b>Add to Home Screen</b> (scroll if needed).')}</li>
       <li>${T('Touche <b>Ajouter</b>, puis ouvre Runelift depuis son icône.', 'Tap <b>Add</b>, then open Runelift from its icon.')}</li></ol>
-    <p class="muted small">${T('Tes séances déjà faites dans Safari ne passent pas toutes seules dans l\'appli installée : fais d\'abord Réglages → Sauvegarde → Exporter, puis importe le fichier dans l\'appli installée.', 'Workouts already logged in Safari don\'t carry over by themselves: first do Settings → Backup → Export, then import the file in the installed app.')}</p>
+    <p class="muted small">${T('Tes séances déjà faites dans Safari ne passent pas toutes seules dans l\'appli installée : fais d\'abord Réglages → Sauvegarde → Créer un fichier, puis restaure ce fichier dans l\'appli installée.', 'Workouts already logged in Safari don\'t carry over by themselves: first do Settings → Backup → Create a file, then restore that file in the installed app.')}</p>
     <button class="btn primary block" data-act="close">${T('Compris', 'Got it')}</button>
     <button class="btn ghost block" data-act="ios-hint-off" style="margin-top:8px">${T('Ne plus afficher', 'Don\'t show again')}</button>`);
 }
@@ -7358,7 +7508,7 @@ async function gdPush(force) {
     else { S.gd.err = e.message; S.gd.pending = true; }
   }
   gdBusy = false; saveLocal();
-  if (cur().v === 'settings') render();
+  if (onSet()) render();
 }
 /* Les images des photos de progrès vont dans un 2e fichier du dossier caché (seulement quand la liste change). */
 async function gdPushPhotos() {
@@ -8882,7 +9032,7 @@ async function cbPush(force) {
     Object.assign(c, {hash: hs, rh: hs, last: new Date().toISOString(), err: ''});
   } catch (e) { c.err = e.code === 'permission-denied' ? T('accès refusé (règles Firebase)', 'access denied (Firebase rules)') : (e.message || String(e)); }
   cbBusy = false; saveLocal();
-  if (cur().v === 'settings') render();
+  if (onSet()) render();
 }
 /* Fusion entre appareils : séances, étirements, raid, XP bonus, quêtes… de chaque appareil sont gardés (rien ne s'écrase) */
 const hTomb = ids => { const T0 = S.hDel = S.hDel || []; ids.forEach(id => { if (id && !T0.includes(id)) T0.push(id); }); if (T0.length > 400) S.hDel = T0.slice(-400); };
@@ -9016,7 +9166,7 @@ async function cpRetireDrive() {
   try {
     if (!gdOn() || !cbOn()) return; const c = CB();
     if ((await cpMissing()).length || phIds().some(id => !(c.phUp || []).includes(id)) && !c.phFull) return;
-    S.gd.on = false; saveLocal(); if (cur().v === 'settings') render();
+    S.gd.on = false; saveLocal(); if (onSet()) render();
     toast(T('☁️ Tes photos sont maintenant dans ta sauvegarde Runelift. Google Drive n\'est plus utilisé.', '☁️ Your photos are now in your Runelift backup. Google Drive is no longer used.'));
   } catch (e) {}
 }
@@ -10859,7 +11009,7 @@ const VIEWS = {
   stats: ['Statistiques', () => vStats()], 'st-vol': ['Séries par muscle', () => vVolume()], 'st-radar': ['Répartition musculaire', () => vRadar()],
   'st-body': ['Carte des muscles', () => vBodyMap()], 'st-top': ['Principaux exercices', () => vTopEx()], 'st-rec': ['Records personnels', () => vRecords()],
   'st-month': ['Rapport mensuel', () => vMonth()], exercises: ['Exercices', () => vExList()], exdetail: ['Exercice', () => vExDetail()],
-  measures: ['Corps et progrès', () => vBody()], clive: ['Cardio en direct', () => vCLive()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], friends: ['Amis', () => vFriends()], notifs: ['Notifications', () => vNotifs()], world: ['Classement mondial', () => vWorld()], cardio: ['Cardio', () => vCardio()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], murank: ['Rangs par muscle', () => vMuscleRanks()], shadows: ['Arsenal', () => vShadows()], compare: ['Comparer deux périodes', () => vCompare()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()], guild: ['Guilde', () => vGuild()]
+  measures: ['Corps et progrès', () => vBody()], clive: ['Cardio en direct', () => vCLive()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], friends: ['Amis', () => vFriends()], notifs: ['Notifications', () => vNotifs()], world: ['Classement mondial', () => vWorld()], cardio: ['Cardio', () => vCardio()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], murank: ['Rangs par muscle', () => vMuscleRanks()], shadows: ['Arsenal', () => vShadows()], compare: ['Comparer deux périodes', () => vCompare()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()], setp: ['Réglages', () => vSetPage()], guild: ['Guilde', () => vGuild()]
 };
 function headerRight(v) {
   if (['train', 'friends', 'guild'].includes(v)) return bellBtn();
@@ -10971,7 +11121,7 @@ function render() {
   const c = cur();
   foldWas = foldActive(); document.body.classList.toggle('fold', foldWas);
   if (foldWas) html = `<div class="foldwrap"><div class="foldmain">${html}</div><aside class="foldside" id="foldside">${foldSide()}</aside></div>`;
-  $('#title').textContent = c.v === 'workout' && S.active ? S.active.routineName : VIEWS[c.v][0];
+  $('#title').textContent = c.v === 'workout' && S.active ? S.active.routineName : c.v === 'setp' ? setpTitle() : VIEWS[c.v][0];
   $('#back').style.visibility = stack.length > 1 ? 'visible' : 'hidden';
   $('#hdr').innerHTML = headerRight(c.v);
   $('#app').innerHTML = html;
@@ -11418,7 +11568,8 @@ document.addEventListener('click', e => {
     case 'reo-del': b.closest('.reo').remove(); break;
     case 'reo-done': { const idx = [...document.querySelectorAll('#reolist .reo')].map(x => +x.dataset.i); const arr = idx.map(i => reo.list[i]); const cb = reo.onDone; closeModal(); cb(arr); break; }
     case 'fix-import': { const bad = new Set(brokenImports()); hTomb([...bad].map(x => x.id)); S.history = S.history.filter(x => !bad.has(x)); save(); closeAll(); render(); toast(`🧹 ${bad.size} séances retirées — choisis ton fichier CSV Hevy`); $('#fileIn').click(); break; }
-    case 'go': if (b.dataset.v === 'settings' && b.closest('.nag, .card') && !cloudOn() && /Activer|Turn on/.test(b.textContent)) secOpen.add('cloud'); go(b.dataset.v, {n: b.dataset.n, rid: b.dataset.rid}); break;
+    case 'go': if (b.dataset.v === 'settings' && b.closest('.nag, .card') && !cloudOn() && !cbOn() && /Activer|Turn on/.test(b.textContent)) { go('settings'); go('setp', {k: 'cloud'}); break; } go(b.dataset.v, {n: b.dataset.n, rid: b.dataset.rid}); break;
+    case 'setp': go('setp', {k: b.dataset.k, hl: b.dataset.hl || ''}); break;
     case 'start-empty': startEmpty(); break;
     case 'gen-open': openGen(); break;
     case 'gen-min': genSt.min = +b.dataset.m; openGen(true); break;
@@ -12114,6 +12265,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('toggle', e => { const d = e.target; if (d && d.classList && d.classList.contains('mcatd')) { S.settings.medOpen = S.settings.medOpen || {}; S.settings.medOpen[d.dataset.c] = d.open; saveLocal(); } }, true);
 document.addEventListener('input', e => {
+  if (e.target && e.target.id === 'setq') { setSearch(e.target.value); return; }
   if ((e.target.id === 'clinc' || e.target.id === 'cldist') && window._clCalc) { window._clCalc(); if (e.target.id === 'clinc') document.querySelectorAll('[data-act="cl-inc"]').forEach(x => x.classList.toggle('on', x.dataset.v === e.target.value.trim())); }
   if (e.target.id === 'hin') { hCheck(); return; }
   if (e.target.id === 'frsq') { frSearch(); return; }
@@ -12167,6 +12319,7 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', e => {
   const t = e.target;
+  if (t.tagName === 'SELECT' && t.closest('.srow.ss')) { const v = t.closest('.srow.ss').querySelector('.sval'); if (v && t.selectedIndex >= 0) v.textContent = t.options[t.selectedIndex].text; }
   if (t.id === 'exSel') { progEx = t.value; render(); }
   if (t.id === 'bodySel') { bodyMetric = t.value; render(); }
   if (t.dataset.set === 'stPrep') { S.settings.stPrep = +t.value; save(); render(); }
