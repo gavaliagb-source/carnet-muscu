@@ -64,7 +64,7 @@ class HrService : Service(), SensorEventListener {
             fl++
             if (WS.cl() != null && fl % 5 == 0) try { sm?.flush(this@HrService) } catch (e: Exception) {}
             try { hsCheck() } catch (e: Throwable) {}
-            if (WS.cl() != null) { stepReg(); diag() }
+            if (WS.cl() != null) { stepReg(); diag(); WS.cl()?.let { if (it.optInt("st", 0) == 1) stSend(it) } } // envoie le dernier compte même si plus aucun pas n'arrive
             // Écran éteint, Health Services regroupe les données : on les réclame toutes les 10 s.
             if (hsOn && fl % 10 == 0 && scr() == "off") try { HealthServices.getClient(this@HrService).exerciseClient.flushAsync() } catch (e: Throwable) {}
             if (!WS.on()) { stopSelf(); return }
@@ -121,6 +121,7 @@ class HrService : Service(), SensorEventListener {
 
     override fun onSensorChanged(ev: SensorEvent) {
         if (ev.sensor.type == Sensor.TYPE_STEP_COUNTER && ev.values.isNotEmpty()) { steps(ev.values[0]); return }
+        if (ev.sensor.type == Sensor.TYPE_STEP_DETECTOR) { val c = WS.cl() ?: return; if (c.optLong("t0") != detT0) stSend(c); detN++; stSend(c); return }
         if (ev.sensor.type != Sensor.TYPE_HEART_RATE || ev.values.isEmpty()) return
         val b = ev.values[0].toInt()
         if (b < 30 || b > 230) return
@@ -139,6 +140,7 @@ class HrService : Service(), SensorEventListener {
         if (snReg != 0 || !actOk()) return
         try { val sn = sm?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER, true) ?: sm?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
             snReg = if (sn != null && sm?.registerListener(this, sn, SensorManager.SENSOR_DELAY_NORMAL, 0) == true) 1 else -1 } catch (e: Throwable) { snReg = -1 }
+        try { (sm?.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR, true) ?: sm?.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR))?.let { sm?.registerListener(this, it, SensorManager.SENSOR_DELAY_FASTEST, 0) } } catch (e: Throwable) {}
     }
     // Diagnostic affiché sur l'écran de cardio du téléphone : quel compteur marche, et combien il a compté
     private var lastErr = ""; private var diagT = 0L
@@ -197,9 +199,15 @@ class HrService : Service(), SensorEventListener {
         hsN = maxOf(hsN, n); stSend(c)
     }
     // Les deux compteurs tournent : celui qui a compté le plus gagne (l'un des deux peut décrocher écran éteint)
+    // Détecteur de pas : un signal à chaque pas, tout de suite. Il comble l'attente entre deux paquets du compteur,
+    // puis le compteur reprend la main (aucun pas compté deux fois, et le nombre ne recule jamais).
+    private var detN = 0; private var detAt = 0; private var baseN = 0; private var shown = 0; private var detT0 = 0L
     private fun stSend(c: JSONObject) {
-        val n = maxOf(hsN, snN); val now = System.currentTimeMillis()
-        if (n != stLast && now - stSent >= 3000) { stLast = n; stSent = now; android.util.Log.i("RLSTEP", "send n=$n hs=$hsN capteur=$snN ecran=${scr()}"); WS.send(this, JSONObject().put("a", "st").put("n", n).put("t0", c.optLong("t0")).put("t", now)) }
+        val t0 = c.optLong("t0"); if (t0 != detT0) { detT0 = t0; detN = 0; detAt = 0; baseN = 0; shown = 0 }
+        val b = maxOf(hsN, snN); if (b != baseN) { baseN = b; detAt = detN }
+        shown = maxOf(shown, baseN + maxOf(0, detN - detAt))
+        val n = shown; val now = System.currentTimeMillis()
+        if (n != stLast && now - stSent >= 1000) { stLast = n; stSent = now; android.util.Log.i("RLSTEP", "send n=$n hs=$hsN capteur=$snN ecran=${scr()}"); WS.send(this, JSONObject().put("a", "st").put("n", n).put("t0", c.optLong("t0")).put("t", now)) }
     }
 
     private fun steps(v: Float) {
