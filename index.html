@@ -560,7 +560,16 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 @keyframes cpZ{0%{opacity:0;transform:translate(0,0)}20%{opacity:1}100%{opacity:0;transform:translate(12px,-26px)}}
 @keyframes cpSp{0%{opacity:0;transform:scale(.4)}30%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(.6) translateY(-14px)}}
 @keyframes cpTear{0%,30%{opacity:0;transform:translateY(0)}45%{opacity:1}100%{opacity:0;transform:translateY(22px)}}
-.cpbig{width:220px;height:220px;margin:6px auto 4px}.cpbig .cpw{width:100%;height:100%}
+.cpbig{width:220px;height:220px;margin:6px auto 4px;position:relative}
+.cpbond{margin:10px 0 0;padding:12px;border-radius:14px;background:var(--card2);border:1px solid color-mix(in srgb,var(--cc) 35%,var(--line))}.cpbond .ico{color:var(--cc);vertical-align:-2px}
+.cpbl{display:flex;flex-direction:column;gap:8px;margin:10px 0 8px}.cpbl>div{display:flex;gap:8px;align-items:flex-start;opacity:.55}.cpbl>div.on{opacity:1}.cpbl>div .ico{flex:none;margin-top:2px}
+.cpsrc{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin-top:6px}.cpbond summary{cursor:pointer;color:var(--accent);font-weight:600}
+.compc.best{box-shadow:0 0 0 1.5px var(--cc),0 0 18px color-mix(in srgb,var(--cc) 55%,transparent)}.compc .ico{vertical-align:-2px;color:var(--cc)}
+.cpfin{display:flex;gap:10px;align-items:center;text-align:left;margin:8px 0;padding:8px 10px;border-radius:12px;background:color-mix(in srgb,var(--cc) 12%,transparent)}.cpfin img{width:52px;height:52px;object-fit:contain;flex:none}.cpfin .cph{color:#f472b6;white-space:nowrap}.cpfin .ico{vertical-align:-2px}
+#tcomp{display:flex;align-items:center;margin-right:8px;cursor:pointer}#tcomp img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 1px 2px #0006)}
+.btcomp{display:flex;flex-direction:column;align-items:center;gap:6px;margin:0 0 10px}.btcomp img{width:120px;height:120px;object-fit:contain}.btcomp span{background:#fff1;border-radius:12px;padding:6px 12px;font-size:15px;font-weight:600}
+.labrest{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:14px;background:var(--accent);color:#0b0f05;font-weight:600}.labrest .muted{color:#0b0f05aa!important}#tcompx img{width:36px;height:36px;object-fit:contain;display:block}
+.cpheart{position:absolute;left:50%;bottom:30%;color:#f472b6;pointer-events:none;animation:cpH 1.5s ease-out both}@keyframes cpH{0%{transform:translate(-50%,0) scale(.6);opacity:0}20%{opacity:1}100%{transform:translate(calc(-50% + var(--x)),-150px) scale(1.2);opacity:0}}.cpbig .cpw{width:100%;height:100%}
 .cpevo{position:relative}.cpevo .cpflash{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,#fff 0,color-mix(in srgb,var(--cc,#facc15) 70%,transparent) 35%,transparent 70%);opacity:0;pointer-events:none}
 .cpevo.go .cpflash{animation:cpFlash 1.4s ease-out}.cpevo.go img{animation:cpPop 1.4s ease-out}
 @keyframes cpFlash{0%{opacity:0;transform:scale(.3)}45%{opacity:1;transform:scale(1.3)}100%{opacity:0;transform:scale(1.6)}}
@@ -2520,9 +2529,9 @@ function finishWorkout() {
   window._rtUpd = rtCh.length ? {rid: a.routineId, ex: JSON.parse(JSON.stringify(a.exercises))} : null;
   const chest = GAME() ? chestRoll(id, exercises, prs.length) : null;
   const sysNew = syncSystem(); const evX2 = GAME() ? evDoubleXp(S.history[S.history.length - 1]) : 0, clsX = GAME() ? clsBonus(S.history[S.history.length - 1]) : 0, powX = GAME() ? powFinish(S.history[S.history.length - 1]) : 0, talX = GAME() ? talFinish(S.history[S.history.length - 1]) : 0; if (GAME()) stCheck(); if (GAME()) evCheck();
-  const cpB = COMP_LIVE && GAME() ? compOf(huBefore) : null;
+  const cpB = compOn() && GAME() ? compOf(huBefore) : null, cpBond = cpB ? compBondWorkout(S.history[S.history.length - 1], prs.length, !!sysNew.quest) : null;
   const meAfter = medalsEarned(), huAfter = hunter(meAfter), medDefs = meAfter.defs, medNew = Object.keys(meAfter.got).filter(k => !medBefore[k]).map(k => medDefs.find(d => d.id === k)).filter(Boolean);
-  const cpA = COMP_LIVE && GAME() ? compSync(huAfter) : null, cpEvo = cpB && cpA && cpB.key !== cpA.key && cpA.st > cpB.st; window._cpEvo = cpEvo ? [cpB, cpA] : null;
+  const cpA = compOn() && GAME() ? compSync(huAfter) : null, cpEvo = cpB && cpA && cpB.key !== cpA.key && cpA.st > cpB.st; window._cpEvo = cpEvo ? [cpB, cpA] : null;
   setTimeout(() => queueCloud(1500), 0); setTimeout(remindSync, 500); try { expCheck(); } catch (e) {}
   if (!GAME()) {}
   else if (huAfter.rk !== huBefore.rk) setTimeout(() => awaken(huBefore.rk, huAfter), 900);
@@ -2541,6 +2550,7 @@ function finishWorkout() {
       ${clsX ? `<div style="margin:6px 0;display:flex;align-items:center;justify-content:center;gap:8px">${pclImg(clsCur(), 22)} ${T('Bonus de classe', 'Class bonus')} (${esc(pclName(clsCur()))}) <b>+${clsX} XP</b></div>` : ''}
       ${sysNew.quest ? `<div style="margin:6px 0">✨ ${T('Quête quotidienne accomplie', 'Daily quest complete')} <b>+150 XP</b></div>` : ''}
       ${sysNew.dungeon ? `<div style="margin:6px 0">⚔️ ${T('Donjon nettoyé', 'Dungeon cleared')} <b>+500 XP</b></div>` : ''}
+      ${cpBond && (cpBond.add || cpBond.gift) ? `<div class="cpfin" style="--cc:${cpBond.k.col}"><img src="${cpBond.k.img}" alt=""><span><b>${esc(cpBond.k.name)}</b> ${cpBond.add ? `<b class="cph">+${cpBond.add} ${ic('heart', 14)}</b>` : ''}${cpBond.gift ? `<br>${T('Il t\'a rapporté un cadeau', 'Brought you a gift')} <b>+${cpBond.gift} XP</b>` : ''}${cpBond.lvA > cpBond.lvB ? `<br><b style="color:var(--cc)">${T('Nouveau lien', 'New bond')} : ${esc(T(BOND[cpBond.lvA][1][0], BOND[cpBond.lvA][1][1]))}</b><br><span class="small muted">${esc(T(BOND[cpBond.lvA][2][0], BOND[cpBond.lvA][2][1]))}</span>` : ''}</span></div>` : ''}
       ${sysNew.boss ? `<div style="margin:8px 0;font-size:17px">☠️ <b>${T('BOSS VAINCU!', 'BOSS DEFEATED!')}</b> ${esc(sysNew.boss.name)} <b>+1 000 XP</b></div>` : ''}
       ${chest ? chestBtn(chest) : ''}
       ${cpEvo ? `<button class="btn block chbtn" style="--cc:${cpA.col}" data-act="comp-evo">${cpB.st < 0 ? '🥚 ' + T('Ton œuf éclot !', 'Your egg is hatching!') : '✨ ' + T('Ton compagnon évolue !', 'Your companion evolves!')} <b>${T('Voir', 'See')}</b></button>` : ''}
@@ -2699,7 +2709,7 @@ function startTimer(sec) {
   timerEnd = Date.now() + sec * 1000; timerTot = sec; restSave(); wearPush(); lockSync();
   timerBtns();
   if (notifOn() && S.settings.notifStart !== false) { const t = new Date(timerEnd); notify(T(`⏱ Repos ${fmtRest(Math.round(sec))} — fin à ${t.getHours()}:${pad2(t.getMinutes())}`, `⏱ Rest ${fmtRest(Math.round(sec))} — ends at ${t.getHours()}:${pad2(t.getMinutes())}`), T('Ensuite : ', 'Next: ') + nextSetInfo(), {silent: true, ts: timerEnd}); }
-  $('#timer').classList.add('show');
+  $('#timer').classList.add('show'); try { compRestPaint(); } catch (e) {}
   scheduleBeeps(sec); restSW(timerEnd);
   clearInterval(timerInt); tickTimer(); timerInt = setInterval(tickTimer, 250);
   if (focusOn && S.active && cur().v === 'workout') setTimeout(render, 0);
@@ -5966,6 +5976,50 @@ function compSync(hu) { // retient l'espèce à l'éclosion : c'est ton compagno
   if (k.st >= 0 && S.comp.sp !== k.sp && !COMP[S.comp.sp]) { S.comp.sp = k.sp; save(); }
   return k;
 }
+/* ---------- Lien avec le compagnon (cœurs) : il commence à l'éclosion, ne baisse jamais, max 10 cœurs par jour ---------- */
+const compOn = () => COMP_LIVE || !!S.settings.lab; // mode test : ton vrai compagnon est visible pour toi seulement
+var BOND = [[0, ['Nouveau compagnon', 'New companion'], ['Le début de votre aventure.', 'The start of your adventure.']],
+  [20, ['Ami', 'Friend'], ['Il t\'accompagne pendant tes repos.', 'Keeps you company during your rests.']],
+  [60, ['Grand ami', 'Great friend'], ['Il te rapporte un cadeau après ta première séance du jour (+25 XP).', 'Brings you a gift after your first workout of the day (+25 XP).']],
+  [130, ['Ami fidèle', 'Loyal friend'], ['+5 % de dégâts au raid de guilde.', '+5% damage in the guild raid.']],
+  [250, ['Meilleur ami', 'Best friend'], ['Aura de meilleur ami et cadeaux doublés (+50 XP).', 'Best-friend aura and double gifts (+50 XP).']]];
+var BOND_SRC = {wo: [3, 1, ['Séance', 'Workout']], pr: [1, 2, ['Record (2 max)', 'Record (2 max)']], q: [2, 1, ['Quête du jour', 'Daily quest']], cd: [2, 1, ['Cardio', 'Cardio']], st: [2, 1, ['Étirements', 'Stretching']], pet: [1, 1, ['Caresse', 'Pet']]};
+var BOND_DAY = 10;
+const bondH = () => +((S.comp || {}).h) || 0;
+function bondLv(h) { let i = 0; BOND.forEach((b, j) => { if (h >= b[0]) i = j; }); return i; }
+function bondDay() { const c = S.comp = S.comp || {}, d = dkey(new Date()); if (!c.hd || c.hd.d !== d) c.hd = {d, n: 0, g: {}}; return c.hd; }
+function bondAdd(src, times = 1) { // cœurs vraiment ajoutés (limites par source et par jour)
+  const R = BOND_SRC[src]; if (!R) return 0; const c = S.comp = S.comp || {}, D = bondDay(); let add = 0;
+  for (let i = 0; i < times; i++) { if ((D.g[src] || 0) >= R[1]) break; const k = Math.min(R[0], BOND_DAY - D.n); if (k <= 0) break; D.g[src] = (D.g[src] || 0) + 1; D.n += k; add += k; }
+  if (add) c.h = bondH() + add; return add;
+}
+function compBondWorkout(h, nPr, quest) { // fin de séance : cœurs, palier et cadeau (avant le calcul de l'XP gagnée)
+  const k = compOf(); if (k.st < 0) return null;
+  const lvB = bondLv(bondH()); let add = bondAdd('wo');
+  if (nPr) add += bondAdd('pr', nPr); if (quest) add += bondAdd('q');
+  if ((h.exercises || []).some(e => (e.sets || []).some(x => x.u === 'c'))) add += bondAdd('cd');
+  const lvA = bondLv(bondH()); let gift = 0;
+  if (lvA >= 2) { const xp = lvA >= 4 ? 50 : 25; if (giveXp('comp', dkey(new Date()), xp)) gift = xp; }
+  save(); return {add, lvB, lvA, gift, k};
+}
+const compRaidB = () => { try { return compOn() && GAME() && compOf().st >= 0 && bondLv(bondH()) >= 3 ? .05 : 0; } catch (e) { return 0; } };
+function compRest() { try { if (!compOn() || !GAME() || !S.history.length) return null; const k = compOf(); return k.st >= 0 && bondLv(bondH()) >= 1 ? k : null; } catch (e) { return null; } }
+var COMP_LINES = [['Respire, tu gères.', 'Breathe, you\'ve got this.'], ['Bois une gorgée d\'eau.', 'Take a sip of water.'], ['Encore une série, on y va.', 'One more set, let\'s go.'], ['Relâche les épaules.', 'Relax your shoulders.'], ['Je suis fier de toi.', 'I\'m proud of you.'], ['Concentre-toi sur la prochaine.', 'Focus on the next one.']];
+let compLine = 0;
+function compRestPaint() {
+  const t = $('#timer'); if (!t) return; let el = $('#tcomp'); const k = compRest();
+  if (!k) { if (el) el.remove(); return; }
+  if (!el) { el = document.createElement('span'); el.id = 'tcomp'; el.setAttribute('data-act', 'timer-go'); t.insertBefore(el, t.firstChild); }
+  el.innerHTML = `<img src="${k.img}" alt="${esc(k.name)}">`; compLine = Math.floor(Math.random() * COMP_LINES.length);
+}
+function bondHtml(h, today, k) { // carte du lien (fiche du compagnon et mode test)
+  const lv = bondLv(h), nx = BOND[lv + 1], pc = nx ? Math.round((h - BOND[lv][0]) / (nx[0] - BOND[lv][0]) * 100) : 100;
+  return `<div class="cpbond" style="--cc:${k.col}"><div class="row between"><b>${ic('heart', 16)} ${T('Lien', 'Bond')} : ${esc(T(BOND[lv][1][0], BOND[lv][1][1]))}</b><span class="small muted">${nx ? `${h} / ${nx[0]}` : h} ${T('cœurs', 'hearts')}</span></div>
+    <div class="goal" style="margin:6px 0 4px"><div style="width:${pc}%;background:var(--cc)"></div></div>
+    <div class="small muted">${T(`Aujourd'hui : ${today} / ${BOND_DAY} cœurs`, `Today: ${today} / ${BOND_DAY} hearts`)}</div>
+    <div class="cpbl">${BOND.slice(1).map((b, i) => `<div class="${lv >= i + 1 ? 'on' : ''}">${ic(lv >= i + 1 ? 'ccheck' : 'lock', 15)}<span><b>${esc(T(b[1][0], b[1][1]))}</b> <span class="muted">· ${b[0]}</span><br><span class="small">${esc(T(b[2][0], b[2][1]))}</span></span></div>`).join('')}</div>
+    <details class="small"><summary>${T('Comment gagner des cœurs', 'How to earn hearts')}</summary><div class="cpsrc">${Object.values(BOND_SRC).map(r => `<span>${esc(T(r[2][0], r[2][1]))}</span><b>+${r[0]}</b>`).join('')}</div><p class="muted" style="margin:6px 0 0">${T(`Au plus ${BOND_DAY} cœurs par jour. Le lien ne baisse jamais, même si tu prends une pause.`, `At most ${BOND_DAY} hearts a day. The bond never goes down, even if you take a break.`)}</p></details></div>`;
+}
 function compStill() { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
 var COMP_MOODV = {golem0: ['happy']}; // animations d'humeur dédiées déjà faites, ex. {golem0: ['happy', 'sleep', 'sad']}
 function compSrc(k) {
@@ -5982,9 +6036,9 @@ function compMoodTxt(k) {
   return {happy: T('Content : tu t\'es entraîné aujourd\'hui !', 'Happy: you trained today!'), sleep: T('Il se repose avec toi.', 'Resting with you.'), idle: T('Il a hâte de retourner à l\'entraînement.', 'Eager to get back to training.'), sad: T(`Il s'ennuie de toi… ${k.gap} jours sans séance.`, `Misses you… ${k.gap} days without a workout.`)}[k.mood];
 }
 function compCard() {
-  if (!COMP_LIVE || !GAME() || !S.history.length) return '';
-  const k = compSync(), nx = COMP_LV.find(l => l > k.L);
-  return `<button class="compc" data-act="comp-info" style="--cc:${k.col}">${compArt(k)}<span style="flex:1;min-width:0"><span class="muted small">${T('Compagnon', 'Companion')}</span><br><b>${esc(k.name)}</b><br><span class="small muted">${esc(compMoodTxt(k))}</span>${nx ? `<br><span class="small" style="color:var(--accent)">${k.st < 0 ? T(`Éclot au niveau ${nx}`, `Hatches at level ${nx}`) : T(`Évolue au niveau ${nx}`, `Evolves at level ${nx}`)}</span>` : ''}</span></button>`;
+  if (!compOn() || !GAME() || !S.history.length) return '';
+  const k = compSync(), nx = COMP_LV.find(l => l > k.L), bl = k.st >= 0 ? bondLv(bondH()) : -1;
+  return `<button class="compc${bl >= 4 ? ' best' : ''}" data-act="comp-info" style="--cc:${k.col}">${compArt(k)}<span style="flex:1;min-width:0"><span class="muted small">${T('Compagnon', 'Companion')}${bl >= 0 ? ` · ${ic('heart', 12)} ${esc(T(BOND[bl][1][0], BOND[bl][1][1]))}` : ''}</span><br><b>${esc(k.name)}</b><br><span class="small muted">${esc(compMoodTxt(k))}</span>${nx ? `<br><span class="small" style="color:var(--accent)">${k.st < 0 ? T(`Éclot au niveau ${nx}`, `Hatches at level ${nx}`) : T(`Évolue au niveau ${nx}`, `Evolves at level ${nx}`)}</span>` : ''}</span></button>`;
 }
 function compInfo() {
   const k = compSync(), D = COMP[k.sp];
@@ -5992,11 +6046,12 @@ function compInfo() {
   modal(`<h2>${esc(k.name)}</h2><div class="cpbig" style="--cc:${k.col}">${compArt(k)}</div><p class="muted" style="text-align:center;margin:0 0 6px">${esc(compMoodTxt(k))}</p>
     <div class="cpstages">${stages.map((s, i) => { const got = k.st >= i - 1, shown = got || k.st >= 0; return `<div class="${got ? (k.st === i - 1 ? 'on' : '') : 'off'}"><img src="${shown || i === 0 ? s[0] : 'comp/oeuf.webp'}" alt=""${i === 4 ? ' style="filter:sepia(.9) saturate(2.4) brightness(1.08)' + (got ? '' : ' brightness(0) opacity(.35)') + '"' : ''}><br>${k.st < 0 && i ? '???' : esc(s[1])}<br>${T('Niv.', 'Lv.')} ${s[2]}</div>`; }).join('')}</div>
     <p class="small muted">${k.st < 0 ? T('Ton œuf éclot au niveau 10. La créature qui en sort dépend de ta classe : dragon pour Guerrier, loup pour Rôdeur, golem pour Moine, hibou pour Soigneur et griffon pour les classes hybrides.', 'Your egg hatches at level 10. The creature inside depends on your class: dragon for Warrior, wolf for Ranger, golem for Monk, owl for Healer and griffin for hybrid classes.') : T('Il grandit au niveau 25, devient adulte au niveau 40 et devient doré au niveau 100. Il reste ton compagnon même si tu changes de classe. Il est content quand tu t\'entraînes et s\'ennuie si tu arrêtes trop longtemps, mais il ne perd jamais rien.', 'It grows at level 25, becomes an adult at level 40 and turns golden at level 100. It stays your companion even if you change class. It\'s happy when you train and gets bored if you stop for too long, but it never loses anything.')}</p>
+    ${k.st >= 0 ? bondHtml(bondH(), bondDay().n, k) + `<button class="btn primary block" data-act="comp-pet" style="margin:10px 0 12px">${ic('heart', 18)} ${bondDay().g.pet ? T(`Tu as déjà caressé ${k.name} aujourd'hui`, `You already petted ${k.name} today`) : T(`Caresser ${k.name}`, `Pet ${k.name}`)}</button>` : `<p class="small muted">${T('Le lien commence quand ton œuf éclot.', 'The bond starts when your egg hatches.')}</p>`}
     ${k.st >= 0 ? `<label class="small muted">${T('Son nom', 'Its name')}</label><div class="row" style="gap:8px;margin-top:4px"><input id="compnm" maxlength="20" value="${esc((S.comp || {}).n || '')}" placeholder="${esc(k.base)}"><button class="btn primary" data-act="comp-name">OK</button></div>` : ''}
     <button class="btn block" data-act="close" style="margin-top:12px">${T('Fermer', 'Close')}</button>`);
 }
 /* Mode test caché (7 touches sur le numéro de version) : voir tous les compagnons, stades et humeurs sans rien changer à ta partie */
-var labSel = {sp: 'dragon', st: 0, mood: 'happy'};
+var labSel = {sp: 'dragon', st: 0, mood: 'happy', bl: 1};
 function compFake(sp, st, mood) {
   const D = COMP[sp], L = st < 0 ? 9 : COMP_LV[st], base = st < 0 ? T('Œuf mystérieux', 'Mystery egg') : T(D[Math.min(st, 2) + 1][0], D[Math.min(st, 2) + 1][1]) + (st === 3 ? T(' doré', ' (golden)') : '');
   return {sp, st, L, img: st < 0 ? 'comp/oeuf.webp' : `comp/${D[0]}${Math.min(st, 2)}.webp`, base, name: base, col: D[4], mood: st < 0 ? 'egg' : mood, gap: mood === 'sad' ? 9 : 1, key: st + ':' + sp};
@@ -6008,8 +6063,14 @@ function labOpen() {
     <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${[[-1, T('Œuf', 'Egg')], [0, T('Bébé', 'Baby')], [1, T('Jeune', 'Young')], [2, T('Adulte', 'Adult')], [3, T('Doré', 'Golden')]].map(([v, l]) => chip('st', v, l, labSel.st === v)).join('')}</div>
     <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${[['happy', T('Content', 'Happy')], ['sleep', T('Repos', 'Resting')], ['idle', T('Impatient', 'Eager')], ['sad', T('Triste', 'Sad')]].map(([v, l]) => chip('mood', v, l, labSel.mood === v)).join('')}</div>
     <div class="cpbig" style="--cc:${k.col}">${compArt(k)}</div><p class="muted small" style="text-align:center;margin:0 0 10px">${esc(compMoodTxt(k))}</p>
-    <div class="compc" style="--cc:${k.col};cursor:default">${compArt(k)}<span style="flex:1;min-width:0"><span class="muted small">${T('Compagnon', 'Companion')}</span><br><b>${esc(k.name)}</b><br><span class="small muted">${esc(compMoodTxt(k))}</span></span></div>
-    ${k.st >= 0 ? `<button class="btn primary block" data-act="lab-evo">✨ ${k.st === 0 ? T('Voir l\'éclosion', 'See the hatching') : T('Voir l\'évolution', 'See the evolution')}</button>` : ''}
+    <div class="compc${k.st >= 0 && labSel.bl >= 4 ? ' best' : ''}" style="--cc:${k.col};cursor:default">${compArt(k)}<span style="flex:1;min-width:0"><span class="muted small">${T('Compagnon', 'Companion')}${k.st >= 0 ? ` · ${ic('heart', 12)} ${esc(T(BOND[labSel.bl][1][0], BOND[labSel.bl][1][1]))}` : ''}</span><br><b>${esc(k.name)}</b><br><span class="small muted">${esc(compMoodTxt(k))}</span></span></div>
+    ${k.st >= 0 ? `<div class="sysh" style="margin:14px 0 6px">[ ${T('LIEN', 'BOND')} ]</div>
+      <div class="row" style="gap:6px;flex-wrap:wrap;margin:0 0 8px">${BOND.map((b, i) => chip('bl', i, esc(T(b[1][0], b[1][1])), labSel.bl === i)).join('')}</div>
+      <div style="--cc:${k.col}">${bondHtml(BOND[labSel.bl][0] + (BOND[labSel.bl + 1] ? Math.round((BOND[labSel.bl + 1][0] - BOND[labSel.bl][0]) * .4) : 20), 6, k)}</div>
+      <div class="small muted" style="margin:12px 0 6px">${T('Fin de séance', 'End of workout')}</div>
+      <div class="cpfin" style="--cc:${k.col}"><img src="${k.img}" alt=""><span><b>${esc(k.name)}</b> <b class="cph">+5 ${ic('heart', 14)}</b>${labSel.bl >= 2 ? `<br>${T('Il t\'a rapporté un cadeau', 'Brought you a gift')} <b>+${labSel.bl >= 4 ? 50 : 25} XP</b>` : ''}</span></div>
+      ${labSel.bl >= 1 ? `<div class="small muted" style="margin:12px 0 6px">${T('Pendant le repos', 'During rest')}</div><div class="labrest"><span id="tcompx"><img src="${k.img}" alt=""></span><span style="flex:1">${T('Repos', 'Rest')} <b>1:24</b></span><span class="small muted">« ${esc(T(COMP_LINES[0][0], COMP_LINES[0][1]))} »</span></div>` : ''}` : ''}
+    ${k.st >= 0 ? `<button class="btn primary block" data-act="lab-evo" style="margin-top:12px">✨ ${k.st === 0 ? T('Voir l\'éclosion', 'See the hatching') : T('Voir l\'évolution', 'See the evolution')}</button>` : ''}
     <button class="btn block" data-act="lab-off" style="margin-top:8px">${T('Cacher le mode test', 'Hide test mode')}</button>
     <button class="btn block" data-act="close" style="margin-top:8px">${T('Fermer', 'Close')}</button>`;
   const m = document.querySelector('.modal .labm');
@@ -6828,6 +6889,7 @@ function stTick() {
 function stFinish() {
   const sec = Math.round((Date.now() - stp.t0) / 1000), rt = stp.rt;
   setTimeout(() => { try { stCheck(); } catch (e) {} }, 800); (S.stretchLog = S.stretchLog || []).push({id: uid(), date: new Date().toISOString(), rid: rt.id, name: T(rt.n[0], rt.n[1] || rt.n[0]), sec});
+  try { if (compOn() && GAME()) { const ck = compOf(); if (ck.st >= 0) { const a = bondAdd('st'); if (a) setTimeout(() => toast(T(`${ck.name} : +${a} cœurs`, `${ck.name}: +${a} hearts`)), 900); } } } catch (e) {}
   save(); clearInterval(stp.int); clearNotif();
   $('#stpl').innerHTML = `<div style="font-size:54px;margin-top:10px">🧘</div><h2>${T('Bravo, c\'est fini!', 'Well done, all done!')}</h2><p class="muted">${esc(T(rt.n[0], rt.n[1] || rt.n[0]))} · ${fmtDur(sec * 1000)}</p><button class="btn primary block" data-act="close">${T('Terminer', 'Finish')}</button>`;
   confetti(70); if (cur().v === 'stretch') setTimeout(render, 50);
@@ -7146,7 +7208,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.123.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.123.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
   {v: '9.123.2', d: '2026-11-23', fr: ['Fin de séance : une fois le coffre ouvert, le bouton devient « Coffre ouvert · revoir le butin » au lieu de « Ouvrir ton coffre ».'], en: ['End of workout: once the chest is opened, the button becomes “Chest opened · see the loot” instead of “Open your chest”.']},
@@ -10019,7 +10081,7 @@ function raAttack(k) {
   const bi = raBossIdx(wk), hp = 1 - st.tot / st.goal, enr = hp <= raEnrAt(bi);
   const crit = Math.random() < ((A[4] === 'crit' ? A[5] : ['mr'].includes(clsCur()) ? .2 : .1) + .05 * talR('crit')) * (bi === 5 ? 2 : 1), blk = !st.pure && A[4] !== 'unblk' && Math.random() < Math.max(0, (enr ? .22 : .12) * (bi === 0 ? 2 : 1) - .04 * talR('grd') * (bi === 0 ? 2 : 1)), eq = eqCur();
   const tm = bi === 1 ? (A[2] >= 15 ? 1.2 : A[2] <= 5 ? .8 : 1) : bi === 2 && raUnder() ? .5 : bi === 3 && (A[4] === 'trap' || (crit && !blk)) ? 1.25 : bi === 4 && ['m1', 'm2', 'gm', 'gm3'].includes(k) ? 1.3 : 1;
-  const d = Math.round(A[2] * RA_PT * raMult(k) * (1 + st.team + st.party) * (1 + st.trap) * (1 + .05 * talR('dmg') + (eq ? eq.bon : 0)) * tm * (crit && !blk ? 2 : 1) * (blk ? .25 : 1));
+  const d = Math.round(A[2] * RA_PT * raMult(k) * (1 + st.team + st.party) * (1 + st.trap) * (1 + .05 * talR('dmg') + (eq ? eq.bon : 0) + compRaidB()) * tm * (crit && !blk ? 2 : 1) * (blk ? .25 : 1));
   const c = (A[4] === 'refund' ? A[2] - A[5] : A[2]) + (bi === 3 && blk ? 1 : 0), now = Date.now(); // Reine des araignées : le venin d'un blocage coûte 1 point
   W.log.push({t: now, k, d, c, cr: crit && !blk ? 1 : 0, bl: blk ? 1 : 0});
   if (['team', 'trap', 'pure'].includes(A[4])) W.b.push({k: A[4], v: A[4] === 'pure' ? 0 : A[5], u: now + 24 * 3600e3});
@@ -11301,7 +11363,8 @@ let navAnim = false, enterT = null;
 function bigTimerOpen() {
   if (document.getElementById('fstimer')) return;
   const o = document.createElement('div'); o.id = 'fstimer';
-  o.innerHTML = `<div class="btprog"><b id="btp"></b></div><div class="btlab">${T('REPOS', 'REST')}</div><div id="btv">${$('#tval') ? $('#tval').textContent : '0:00'}</div>
+  const ck = compRest(), cl = COMP_LINES[compLine] || COMP_LINES[0];
+  o.innerHTML = `<div class="btprog"><b id="btp"></b></div>${ck ? `<div class="btcomp"><img src="${ck.img}" alt=""><span>${esc(T(cl[0], cl[1]))}</span></div>` : ''}<div class="btlab">${T('REPOS', 'REST')}</div><div id="btv">${$('#tval') ? $('#tval').textContent : '0:00'}</div>
     <div class="btbtns"><button data-act="timer-sub">−15 s</button><button data-act="timer-add">+30 s</button><button data-act="timer-stop">${T('Passer', 'Skip')}</button></div>
     <div class="bthint">${T('Touche l\'écran pour fermer', 'Tap the screen to close')}</div>`;
   o.addEventListener('click', ev => { if (ev.target.closest('button')) return; bigTimerClose(); });
@@ -12117,6 +12180,9 @@ document.addEventListener('click', e => {
     case 'mr-pick': mrSel = mrSel === b.dataset.m ? null : b.dataset.m; render(); break;
     case 'frs-login': fbSignIn(true, true).then(() => frSearch()).catch(e => toast(T('Connexion annulée', 'Sign-in cancelled'))); break;
     case 'comp-info': compInfo(); break;
+    case 'comp-pet': { const k = compOf(); if (k.st < 0) break; const a = bondAdd('pet'); if (!a) { toast(bondDay().n >= BOND_DAY ? T('Assez de cœurs pour aujourd\'hui : reviens demain', 'Enough hearts for today: come back tomorrow') : T('Déjà caressé aujourd\'hui : reviens demain', 'Already petted today: come back tomorrow')); break; } save();
+      const w = document.querySelector('.modal .cpbig'); if (w) { for (let i = 0; i < 5; i++) { const hEl = document.createElement('i'); hEl.className = 'cpheart'; hEl.style.setProperty('--x', (Math.random() * 120 - 60).toFixed(0) + 'px'); hEl.style.animationDelay = (i * .12) + 's'; hEl.innerHTML = ic('heart', 22); w.appendChild(hEl); setTimeout(() => hEl.remove(), 1800); } }
+      setTimeout(() => { closeModal(); compInfo(); }, 1300); toast(T(`${k.name} : +${a} cœur`, `${k.name}: +${a} heart`)); break; }
     case 'ver-tap': { window._vt = (window._vt || 0) + 1; clearTimeout(window._vtT); window._vtT = setTimeout(() => window._vt = 0, 2500); if (window._vt >= 7) { window._vt = 0; S.settings.lab = true; save(); render(); labOpen(); } else if (window._vt >= 4) toast(T(`Encore ${7 - window._vt}…`, `${7 - window._vt} more…`)); break; }
     case 'lab': labOpen(); break;
     case 'lab-cls': labCls(); break;
@@ -12124,7 +12190,7 @@ document.addEventListener('click', e => {
     case 'lab-chests': labChests(); break;
     case 'lab-frames': labFrames(); break;
     case 'lab-chest': { const r = +b.dataset.r || 0, C = CHR[r]; chestOpen(null, {id: 'lab' + r, t: Date.now(), rar: r, xp: C[6][0], fr: 1, frs: {mimic: 1}, open: false}); break; }
-    case 'lab-set': labSel[b.dataset.k] = b.dataset.k === 'st' ? +b.dataset.v : b.dataset.v; labOpen(); break;
+    case 'lab-set': labSel[b.dataset.k] = b.dataset.k === 'st' || b.dataset.k === 'bl' ? +b.dataset.v : b.dataset.v; labOpen(); break;
     case 'lab-evo': { const z = compFake(labSel.sp, labSel.st, 'happy'), a = compFake(labSel.sp, labSel.st - 1, 'happy'); compEvolve(a, z); break; }
     case 'lab-off': S.settings.lab = false; save(); closeModal(); render(); break;
     case 'comp-evo': if (window._cpEvo) { const [a, z] = window._cpEvo; window._cpEvo = null; b.remove(); compEvolve(a, z); } break;
