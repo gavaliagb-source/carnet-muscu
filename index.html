@@ -174,6 +174,8 @@ canvas{width:100%;height:210px;display:block}
 .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px;margin-bottom:12px;gap:3px}
 .seg button{flex:1;background:none;border:0;color:var(--muted);padding:9px 4px;border-radius:9px;font-size:14px;font-weight:600}
 .seg button.on{background:var(--card2);color:var(--accent)}
+.recc{border-color:color-mix(in srgb,var(--rc) 45%,var(--line))}.recring{--p:0;width:64px;height:64px;border-radius:50%;flex:none;display:grid;place-items:center;grid-auto-flow:column;align-content:center;justify-content:center;background:radial-gradient(closest-side,var(--card) 79%,transparent 80% 100%),conic-gradient(var(--rc) calc(var(--p)*1%),var(--card2) 0)}.recring b{font-size:21px;line-height:1}.recring small{font-size:11px;margin-left:1px;color:var(--muted)}
+.lgrow{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--line)}.lgrow.me{background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:10px}.lgrow .lgp{width:26px;text-align:center;font-weight:800}.lgzone{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 4px 2px}.lgzone.up{color:#4ade80}.lgzone.dn{color:#f87171}.lgcut{height:2px;background:color-mix(in srgb,#4ade80 40%,transparent);margin:4px 0}.lgrow.lgu .lgp{color:#4ade80}.lgrow.lgd .lgp{color:#f87171}.lgbadge{display:inline-flex;align-items:center;gap:6px;font-weight:800;color:var(--lc)}.lgbadge i{width:14px;height:14px;border-radius:4px;background:var(--lc);transform:rotate(45deg);display:inline-block}
 .sphg{display:grid;gap:6px;margin-bottom:8px}.sphg.n2{grid-template-columns:1fr 1fr}.sphg.n3{grid-template-columns:1fr 1fr 1fr}.sph{position:relative;display:block}.sph img{width:100%;height:200px;object-fit:cover;border-radius:12px;display:block;background:var(--card2);cursor:zoom-in}.sphg.n2 .sph img{height:170px}.sphg.n3 .sph img{height:130px}.sphx{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:28px;padding:0}
 .gseg{margin-bottom:12px}.gseg button{font-size:13px;padding:9px 2px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
@@ -3951,6 +3953,7 @@ function vTrain() {
   const a = S.active;
   let h = '';
   if (a) h += `<div class="card" style="border-color:var(--accent)"><div class="row between"><div><h3>Séance en cours</h3><span class="muted small">${esc(a.routineName)} · ⏱ <span id="elapsed2">${fmtDur(Date.now() - new Date(a.start))}</span></span></div><button class="btn primary sm" data-act="go-workout">Reprendre</button></div></div>`;
+  h += recCard();
   h += todayCard();
   syncSystem(); if (GAME()) { clsSync(); evCheck(); h += guildStrip(); setTimeout(evAnnounce, 0); }
   h += cloudNag();
@@ -6813,9 +6816,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.111.5'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.112.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.112.0', d: '2026-11-22', fr: ['Ligues de la semaine (Guilde → Classements) : affronte des aventuriers de ton niveau, même sans amis inscrits. Le haut 20 % monte de ligue chaque dimanche soir, de Bronze jusqu\'à Légende, et le podium gagne de l\'XP. Nouveaux titres de ligue.', 'Récupération du matin (onglet Muscu) : un score sur 100 calculé avec ton sommeil, ton pouls au repos et ta variabilité cardiaque dans Health Connect, avec un conseil pour ta séance. Demande le nouvel APK du téléphone et les autorisations dans Réglages → Health Connect.'], en: ['Weekly leagues (Guild → Rankings): face adventurers of your level, even without friends on the app. The top 20% move up a league every Sunday night, from Bronze to Legend, and the podium wins XP. New league titles.', 'Morning recovery (Lifting tab): a score out of 100 from your sleep, resting pulse and heart rate variability in Health Connect, with advice for your workout. Needs the new phone APK and the permissions in Settings → Health Connect.']},
   {v: '9.111.5', d: '2026-11-22', fr: ['Fin du cardio sur tapis : sous les calories, ton vrai nombre de pas, puis ce que ça vaut à plat avec ta pente (ex. 127 pas, avec la pente de 15 % = ≈ 339 pas à plat).'], en: ['End of treadmill cardio: under the calories, your real step count, then what it is worth on flat ground with your incline (e.g. 127 steps, with a 15% incline = ≈ 339 flat steps).']},
   {v: '9.111.4', d: '2026-11-22', fr: ['Fin du cardio sur tapis : l\'encadré « Ça donne » montre seulement les calories et la pente (les pas de la montre sont déjà écrits sous la distance).'], en: ['End of treadmill cardio: the “That gives” box only shows calories and incline (the watch steps are already written under the distance).']},
   {v: '9.111.3', d: '2026-11-22', fr: ['Cardio en direct : l\'écran de séance ne s\'ouvre plus par-dessus (au retour dans l\'appli, par une notification ou par la montre), et la barre de séance en bas n\'apparaît plus sur l\'écran du cardio.'], en: ['Live cardio: the workout screen no longer opens on top of it (when coming back to the app, from a notification or from the watch), and the bottom workout bar no longer shows on the cardio screen.']},
@@ -8469,6 +8473,67 @@ async function hcStepsFill() {
   }
   if (n) { RC = {}; DV++; save(); } return n;
 }
+/* ===== Récupération du matin (comme Whoop) : sommeil, pouls au repos et VFC de Health Connect, plus la charge d'hier ===== */
+const recOk = () => hcOn() && !!hcSt && (hcSt.granted || []).some(k => ['sleep', 'rhr', 'hrv'].includes(k));
+function dayLoad(k) { let n = 0; S.history.forEach(h => { if (dkey(h.date) !== k) return; h.exercises.forEach(e => work(e.sets).forEach(x => { n += x.u === 'c' ? (+x.r || 0) / 3 : 1; })); }); return n; }
+let recBusy = false;
+async function recFetch(force) {
+  if (!hcOn() || recBusy) return; if (!hcSt) await hcStatus(); if (!recOk()) return;
+  const now = new Date(), k = dkey(now); if (now.getHours() < 4) return;
+  const R = S.rec = S.rec || {}, x0 = R[k];
+  if (!force && x0 && (x0.sl || Date.now() - x0.t < 2 * 3600e3)) return; // une fois par jour ; si le sommeil n'est pas encore arrivé, on réessaie toutes les 2 h
+  recBusy = true;
+  try {
+    const a = new Date(now); a.setDate(a.getDate() - 1); a.setHours(18, 0, 0, 0);
+    const r = await HC().readRecovery({start: a.toISOString(), end: now.toISOString()});
+    let sl = 0, deep = 0, rem = 0, s0 = 0, e0 = 0;
+    const mins = y => Math.max(0, (new Date(y.e) - new Date(y.s)) / 60000);
+    (r.sleep || []).filter(y => +new Date(y.e) > +a).forEach(y => { const st = y.st || [];
+      sl += Math.max(0, mins(y) - st.filter(z => [1, 3, 7].includes(+z.k)).reduce((t, z) => t + mins(z), 0)); // 1 éveillé, 3 hors du lit, 7 éveillé au lit
+      deep += st.filter(z => +z.k === 5).reduce((t, z) => t + mins(z), 0); rem += st.filter(z => +z.k === 6).reduce((t, z) => t + mins(z), 0);
+      s0 = s0 ? Math.min(s0, +new Date(y.s)) : +new Date(y.s); e0 = Math.max(e0, +new Date(y.e)); });
+    let rhr = (r.rhr || []).length ? +r.rhr[r.rhr.length - 1].bpm : 0, rs = rhr ? 'hc' : '';
+    if (!rhr && s0 && (hcSt.granted || []).includes('heart')) { try { // pas de pouls au repos enregistré : le pouls le plus bas de la nuit (10e centile)
+      const hr = await HC().readHeartRate({start: new Date(s0).toISOString(), end: new Date(e0).toISOString()}); const v = (hr.items || []).map(z => +z.bpm).filter(z => z > 30).sort((p, q) => p - q);
+      if (v.length >= 20) { rhr = v[Math.floor(v.length * .1)]; rs = 'nuit'; } } catch (e) {} }
+    const hv = (r.hrv || []).map(z => +z.ms).filter(z => z > 0), hrv = hv.length ? Math.round(hv.reduce((t, z) => t + z, 0) / hv.length) : 0;
+    R[k] = {sl: Math.round(sl), deep: Math.round(deep), rem: Math.round(rem), rhr: Math.round(rhr), rs, hrv, t: Date.now()};
+    Object.keys(R).sort().slice(0, -40).forEach(z => delete R[z]);
+    saveLocal(); if (cur().v === 'train' && !modals.length) render();
+  } catch (e) {} finally { recBusy = false; }
+}
+function recScore(k = dkey(new Date())) {
+  const R = S.rec || {}, x = R[k]; if (!x || !(x.sl || x.rhr || x.hrv)) return null;
+  const past = Object.keys(R).filter(d => d < k).sort().slice(-14).map(d => R[d]);
+  const avg = f => { const v = past.map(f).filter(z => z > 0); return v.length >= 3 ? v.reduce((t, z) => t + z, 0) / v.length : 0; };
+  const P = [], bR = avg(z => z.rhr), bH = avg(z => z.hrv);
+  if (x.sl) P.push(['sl', .4, Math.min(100, x.sl / 480 * 100)]); // 8 h = 100
+  if (x.rhr && bR) P.push(['rhr', .25, Math.max(20, Math.min(100, 90 - (x.rhr - bR) * 8))]); // chaque battement au-dessus de ta moyenne coûte 8 points
+  if (x.hrv && bH) P.push(['hrv', .25, Math.max(10, Math.min(100, 85 + (x.hrv / bH - 1) * 150))]);
+  if (!P.length) return null;
+  const y = new Date(); y.setDate(y.getDate() - 1); const L = dayLoad(dkey(y)), D = [];
+  for (let i = 2; i <= 29; i++) { const d = new Date(); d.setDate(d.getDate() - i); const v = dayLoad(dkey(d)); if (v > 0) D.push(v); }
+  const Tn = D.length ? D.reduce((t, z) => t + z, 0) / D.length : 0;
+  if (Tn > 0) P.push(['ld', .1, L <= Tn * 1.2 ? 100 : Math.max(40, 100 - (L / Tn - 1.2) * 60)]); // grosse journée hier = un peu moins frais
+  const w = P.reduce((t, z) => t + z[1], 0), sc = Math.round(P.reduce((t, z) => t + z[1] * z[2], 0) / w);
+  return {sc, x, bR, bH, L, Tn};
+}
+function recCard() {
+  if (!HC() || !S.settings.hc) return ''; setTimeout(() => recFetch(false), 0);
+  const r = recScore(); if (!r) return '';
+  const c = r.sc >= 75 ? 'var(--ok)' : r.sc >= 50 ? '#f5c542' : 'var(--bad)', x = r.x;
+  const lab = r.sc >= 75 ? T('Pleine forme', 'Fully charged') : r.sc >= 50 ? T('Correct', 'Okay') : T('Récupération faible', 'Low recovery');
+  const tip = r.sc >= 75 ? T('Bonne journée pour viser un record.', 'A good day to go for a record.') : r.sc >= 50 ? T('Séance normale, sans forcer les records.', 'Normal workout, no need to chase records.') : T('Vas-y doucement : séance légère, cardio doux ou étirements.', 'Take it easy: light workout, easy cardio or stretching.');
+  const hm2 = m => `${Math.floor(m / 60)} h ${String(Math.round(m % 60)).padStart(2, '0')}`, d = [];
+  if (x.sl) d.push(`${T('Sommeil', 'Sleep')} ${hm2(x.sl)}${x.deep ? ` (${T('profond', 'deep')} ${hm2(x.deep)})` : ''}`);
+  if (x.rhr) d.push(`${T(x.rs === 'nuit' ? 'Pouls de nuit' : 'Pouls au repos', x.rs === 'nuit' ? 'Night pulse' : 'Resting pulse')} ${x.rhr}${r.bR ? ` (${x.rhr - Math.round(r.bR) > 0 ? '+' : ''}${x.rhr - Math.round(r.bR)})` : ''}`);
+  if (x.hrv) d.push(`${T('VFC', 'HRV')} ${x.hrv} ms${r.bH ? ` (${x.hrv >= r.bH ? '+' : ''}${Math.round((x.hrv / r.bH - 1) * 100)} %)` : ''}`);
+  return `<div class="card recc" style="--rc:${c}"><div class="row" style="gap:14px;align-items:center"><div class="recring" style="--p:${r.sc}"><b>${r.sc}</b><small>%</small></div>
+    <div style="flex:1;min-width:0"><div class="row between"><span class="small muted">${T('Récupération', 'Recovery')}</span>${ib(T('Récupération', 'Recovery'), T('Calculée chaque matin avec les données de ta montre dans Health Connect : ta nuit de sommeil (8 h = parfait), ton pouls au repos et ta variabilité cardiaque (VFC) comparés à ta moyenne des 2 dernières semaines, et la charge de ta séance d\'hier. Il faut environ 3 nuits avant que le pouls et la VFC comptent.', 'Worked out each morning from your watch data in Health Connect: last night\'s sleep (8 h = perfect), your resting pulse and heart rate variability (HRV) compared with your average of the last 2 weeks, and yesterday\'s workout load. It takes about 3 nights before pulse and HRV count.'))}</div>
+    <b style="color:var(--rc)">${lab}</b><div class="small">${tip}</div>${d.length ? `<div class="small muted" style="margin-top:2px">${d.join(' · ')}</div>` : ''}</div></div></div>`;
+}
+setTimeout(() => recFetch(false), 6000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(() => recFetch(false), 3000); });
 async function hcHrFill() {
   if (!hcOn()) return 0; if (!hcSt) await hcStatus(); if (!hcHeart()) return 0;
   const now = Date.now(); let n = 0;
@@ -8497,7 +8562,7 @@ function hrBlock(h) {
 function hcBody() {
   const st = hcSt; if (!st) { if (!hcBody.wait) { hcBody.wait = 1; hcStatus().then(() => { hcBody.wait = 0; if (hcSt) render(); }); } return `<p class="muted small">${T('Vérification de Health Connect…', 'Checking Health Connect…')}</p>`; }
   if (!st.available) return `<p class="muted small" style="margin:4px 0 10px">${st.reason === 'update' ? T('Health Connect doit être mis à jour pour fonctionner avec Runelift.', 'Health Connect needs an update to work with Runelift.') : T('Health Connect n\'est pas installé sur ce téléphone. Installe « Health Connect » depuis le Play Store, puis reviens ici.', 'Health Connect isn\'t installed on this phone. Install "Health Connect" from the Play Store, then come back here.')}</p><button class="btn block" data-act="hc-settings">${T('Ouvrir Health Connect', 'Open Health Connect')}</button>`;
-  const g = st.granted || [], miss = [['workout', T('séances', 'workouts')], ['calories', T('calories', 'calories')], ['weight', T('poids', 'weight')], ['heart', T('fréquence cardiaque', 'heart rate')], ['steps', T('pas (cardio sur tapis)', 'steps (treadmill cardio)')], ['heartw', T('écriture du pouls', 'writing heart rate')], ['tcal', T('calories totales', 'total calories')]].filter(([k]) => !g.includes(k) && (k !== 'steps' || +st.ver >= 4)).map(x => x[1]); // « pas » : seulement avec l'APK qui sait les lire
+  const g = st.granted || [], miss = [['workout', T('séances', 'workouts')], ['calories', T('calories', 'calories')], ['weight', T('poids', 'weight')], ['heart', T('fréquence cardiaque', 'heart rate')], ['steps', T('pas (cardio sur tapis)', 'steps (treadmill cardio)')], ['sleep', T('sommeil (récupération)', 'sleep (recovery)')], ['rhr', T('pouls au repos (récupération)', 'resting pulse (recovery)')], ['hrv', T('variabilité cardiaque (récupération)', 'heart rate variability (recovery)')], ['heartw', T('écriture du pouls', 'writing heart rate')], ['tcal', T('calories totales', 'total calories')]].filter(([k]) => !g.includes(k) && (k !== 'steps' || +st.ver >= 4) && (!['sleep', 'rhr', 'hrv'].includes(k) || +st.ver >= 5)).map(x => x[1]); // « pas » : seulement avec l'APK qui sait les lire
   return `<p class="muted small" style="margin:4px 0 10px">${T('Chaque séance terminée est envoyée à Health Connect (heure, durée, nom et calories estimées). Samsung Health et ta Galaxy Watch peuvent la voir. Ton poids noté dans Samsung Health ou une balance connectée arrive dans tes Mesures. La fréquence cardiaque mesurée par ta montre pendant la séance s\'affiche dans ton historique (moyenne, max et graphique). Pour une mesure précise, lance aussi un entraînement « Musculation » sur la montre.', 'Each finished workout is sent to Health Connect (time, duration, name and estimated calories). Samsung Health and your Galaxy Watch can see it. Your weight logged in Samsung Health or a smart scale shows up in your Measures. The heart rate your watch measures during the workout shows in your history (average, max and chart). For an accurate reading, also start a "Weight training" workout on the watch.')}</p>
     ${hcOn() ? `${miss.length ? `<p class="small" style="color:var(--warn,#e0b341);margin:0 0 8px">${T('Accès manquant : ', 'Missing access: ')}${miss.join(', ')}</p><button class="btn sm block" data-act="hc-on" style="margin-bottom:8px">${T('Autoriser les accès manquants', 'Allow missing access')}</button>` : ''}
       <div class="grid2"><button class="btn sm" data-act="hc-sync">${T('Envoyer les 30 derniers jours', 'Send the last 30 days')}</button><button class="btn sm" data-act="hc-settings">${T('Gérer les accès', 'Manage access')}</button></div>
@@ -8685,6 +8750,7 @@ function mergeData(B, R) {
   B.powWeeks = [...new Set([...(B.powWeeks || []), ...(R.powWeeks || [])])].slice(-20);
   const G = B.gRaid = B.gRaid || {}; Object.entries(R.gRaid || {}).forEach(([g, L]) => { G[g] = [...new Set([...(G[g] || []), ...(L || [])])]; });
   const St = B.story = B.story || {}; Object.entries(R.story || {}).forEach(([k, v]) => { if (!St[k] || (+v.ch || 0) > (+St[k].ch || 0)) St[k] = v; });
+  if (R.lg && (!B.lg || R.lg.wk > B.lg.wk)) B.lg = R.lg;
   if (R.pow && (!B.pow || R.pow.wk > B.pow.wk || (R.pow.wk === B.pow.wk && ((R.pow.used && !B.pow.used) || (R.pow.second && !B.pow.second))))) B.pow = R.pow;
   return B;
 }
@@ -8862,7 +8928,7 @@ const lbCache = () => { try { return JSON.parse(localStorage.getItem(LBKEY) || '
 async function lbPush() {
   if (!S.settings.lbOn || !GAME()) return; const u = typeof firebase !== 'undefined' && firebase.apps.length && firebase.auth().currentUser; if (!u) return;
   const h = hunter(), wk = S.history.filter(x => Date.now() - new Date(x.date) < 7 * 864e5).length;
-  try { await fbDb().collection('lb').doc(u.uid).set({n: ((S.settings.name || '').trim() || T('Aventurier', 'Adventurer')).slice(0, 24), l: h.lvl, p: h.p || 0, rk: h.rk, xp: Math.round(h.raw || h.xp), w: wk, f: myFrame() || '', e: myCos('emblem') || '', t: new Date().toISOString()}); } catch (e) {}
+  try { await fbDb().collection('lb').doc(u.uid).set({n: ((S.settings.name || '').trim() || T('Aventurier', 'Adventurer')).slice(0, 24), l: h.lvl, p: h.p || 0, rk: h.rk, xp: Math.round(h.raw || h.xp), w: wk, f: myFrame() || '', e: myCos('emblem') || '', t: new Date().toISOString(), ...lgFields()}); } catch (e) {}
 }
 async function lbLoad(force) {
   const C = lbCache(), c = C[lbTab];
@@ -8883,6 +8949,96 @@ function vWorld() {
   return tabs + `${meI < 0 ? `<p class="small muted center">${T('Tu n\'es pas encore dans le top 50', 'You\'re not in the top 50 yet')}</p>` : `<p class="small center"><b>${T('Ta position', 'Your rank')}${CLN()} #${meI + 1}</b></p>`}<div class="row between small muted" style="margin:-4px 0 8px"><span>${T('Mis à jour', 'Updated')} ${ago(new Date(lbAt).toISOString())}</span><button class="btn sm ghost" data-act="lb-refresh">↻ ${T('Actualiser', 'Refresh')}</button></div>
     <div class="card" style="padding:4px 12px">${lbData.map((x, i) => `<div class="row lbrow${x.id === me ? ' me' : ''}"><b class="lbn">${i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1)}</b>${rkBadge(x.rk || 'E', 'mrk')}<span style="flex:1;min-width:0"><b>${esc(x.n || '')}</b>${x.e ? ' <span class="emb">' + embSvg(x.e) + '</span>' : ''}<br><span class="muted small">${T('Niv.', 'Lv.')} ${x.l}${x.p ? ' 🌟' + x.p : ''}</span></span><b>${lbTab === 'xp' ? Math.round(x.xp).toLocaleString(LOC()) + ' XP' : x.w + ' ' + T('séances', 'workouts')}</b></div>`).join('')}</div>
     <button class="btn sm ghost block" data-act="lb-off" style="margin-top:10px">${T('Ne plus participer', 'Leave the ranking')}</button>`;
+}
+
+/* ===================== Ligues de la semaine (comme Duolingo) =====================
+   Chaque semaine, les aventuriers du classement mondial sont groupés par ligue. XP de la semaine seulement.
+   Le haut 20 % monte, le bas 20 % descend (dès 5 actifs). Données dans lb/{uid} : lk/lx = semaine en cours, pk/px = semaine passée. */
+const LG = [['Bronze', 'Bronze', '#cd7f32'], ['Argent', 'Silver', '#cbd5e1'], ['Or', 'Gold', '#f5c542'], ['Platine', 'Platinum', '#67e8f9'], ['Diamant', 'Diamond', '#a78bfa'], ['Maître', 'Master', '#f472b6'], ['Légende', 'Legend', '#ef4444']];
+const LG_CUT = .2, LG_MIN = 5;
+const lgS = () => (S.lg = S.lg || {t: 0, wk: wkKey(new Date()), best: 0, h: []});
+const lgKey = (wk, t) => wk + ':' + t;
+const lgName = t => T(LG[t][0], LG[t][1]);
+const prevWk = wk => wkKey(new Date(+new Date(wk + 'T12:00:00') - 7 * 864e5));
+const lgUp = n => Math.max(1, Math.round(n * LG_CUT)), lgDn = n => n >= LG_MIN ? Math.max(1, Math.round(n * LG_CUT)) : 0;
+const wxMemo = new Map();
+function weekXp(wk) { // XP gagnée pendant la semaine (même calcul que la saison du mois)
+  const k = wk + '|' + S.history.length + '|' + (S.xpb || []).length + '|' + Object.keys(S.questLog || {}).length + '|' + Object.keys(S.dungeonLog || {}).length + '|' + Object.keys(S.bossLog || {}).length + '|' + Object.keys(S.qFail || {}).length;
+  if (wxMemo.has(k)) return wxMemo.get(k);
+  const [a, b] = wkRange(wk), inD = v => { v = v && v.d || v; const t = typeof v === 'string' && v.length === 10 ? +new Date(v + 'T12:00:00') : +new Date(v); return t >= a && t < b; };
+  const pc = prCounts(), hw = S.history.filter(h => inD(h.date));
+  let xp = hw.length * 100 + hw.reduce((t, h) => t + h.exercises.reduce((u, e) => u + work(e.sets).length, 0), 0) * 5 + hw.reduce((t, h) => t + (pc.get(h.id) || 0), 0) * 40;
+  try { xp += Object.values(medalsEarned().got).filter(inD).length * 250; } catch (e) {}
+  xp += Object.keys(S.questLog || {}).filter(inD).length * 150 + Object.values(S.dungeonLog || {}).filter(inD).length * 500 + Object.values(S.bossLog || {}).filter(inD).length * 1000;
+  xp -= qFailSum(S.qFail, inD);
+  xp += (S.xpb || []).filter(x => inD(x.d)).reduce((t, x) => t + (+x.xp || 0), 0);
+  xp = Math.max(0, Math.round(xp)); wxMemo.set(k, xp); return xp;
+}
+function lgFields() { // ce que j'ajoute à ma fiche du classement
+  const L = lgS(), wk = wkKey(new Date()), o = {lk: lgKey(wk, L.t), lx: weekXp(wk), lt: L.t};
+  if (L.wk !== wk) { o.pk = lgKey(L.wk, L.t); o.px = weekXp(L.wk); } // semaine passée pas encore clôturée ici
+  else if (L.pt != null) { const pw = prevWk(wk); o.pk = lgKey(pw, L.pt); o.px = weekXp(pw); }
+  return o;
+}
+let lgData = null, lgAt = 0, lgRolling = false;
+async function lgLoad(force) {
+  if (!S.settings.lbOn || !GAME()) return; const L = lgS(), key = lgKey(wkKey(new Date()), L.t);
+  if (!force && lgData && lgData.key === key && Date.now() - lgAt < LB_TTL) return;
+  if (!force) { try { const c = JSON.parse(localStorage.getItem('cm-lg') || 'null'); if (c && c.key === key && Date.now() - c.at < LB_TTL) { lgData = c; lgAt = c.at; return; } } catch (e) {} }
+  const u = await fbSignIn(false).catch(() => null); if (!u) return;
+  try {
+    const qs = await fbDb().collection('lb').where('lk', '==', key).limit(100).get();
+    const rows = qs.docs.map(d => { const x = safeLb({id: d.id, ...d.data()}); return {id: d.id, n: x.n, l: x.l, rk: x.rk, e: x.e, x: Math.max(0, Math.round(+d.data().lx || 0))}; }).filter(r => r.id !== u.uid);
+    rows.push({id: u.uid, me: true, n: (S.settings.name || '').trim() || T('Moi', 'Me'), l: hunter().lvl, rk: hunter().rk, x: weekXp(wkKey(new Date()))});
+    lgData = {key, at: Date.now(), rows: rows.sort((p, q) => q.x - p.x)}; lgAt = lgData.at; try { localStorage.setItem('cm-lg', JSON.stringify(lgData)); } catch (e) {}
+  } catch (e) { lgData = {key, err: e.code || e.message}; }
+  if (cur().v === 'guild' && S.settings.gTab === 'rank' && !modals.length) render();
+}
+async function lgRoll() { // nouvelle semaine : on regarde où j'ai fini la semaine passée, puis je monte, descends ou reste
+  if (!S.settings.lbOn || !GAME() || lgRolling) return; const L = lgS(), wk = wkKey(new Date()); if (L.wk === wk) return;
+  const u = await fbSignIn(false).catch(() => null); if (!u) return; lgRolling = true;
+  try {
+    const pw = L.wk, key = lgKey(pw, L.t), db = fbDb().collection('lb');
+    const [a, b] = await Promise.all([db.where('lk', '==', key).limit(100).get(), db.where('pk', '==', key).limit(100).get()]);
+    const m = new Map(); a.docs.forEach(d => m.set(d.id, +d.data().lx || 0)); b.docs.forEach(d => { if (!m.has(d.id)) m.set(d.id, +d.data().px || 0); });
+    const mx = weekXp(pw); m.set(u.uid, mx);
+    const act = [...m.entries()].filter(([, x]) => x > 0).sort((p, q) => q[1] - p[1]), n = act.length, r = act.findIndex(([id]) => id === u.uid) + 1;
+    if (L.wk !== pw || L.wk === wk) return; // une autre fenêtre l'a déjà fait
+    let t = L.t, mv = 0;
+    if (mx > 0 && n >= 2 && r <= lgUp(n) && t < LG.length - 1) { t++; mv = 1; }
+    else if (t > 0 && lgDn(n) && (mx === 0 || r > n - lgDn(n))) { t--; mv = -1; }
+    const gain = r >= 1 && r <= 3 && n >= 3 ? [300, 200, 100][r - 1] : 0; if (gain) giveXp('lgw', pw, gain, '');
+    L.h = (L.h || []).concat([{wk: pw, t: L.t, r, n, mv, x: mx, g: gain}]).slice(-20); L.pt = L.t; L.t = t; L.best = Math.max(L.best || 0, t); L.wk = wk; save();
+    lgData = null; try { localStorage.removeItem('cm-lg'); } catch (e) {} lbPush();
+    if (mx > 0 || mv) setTimeout(() => lgResult(L.h[L.h.length - 1]), 700);
+  } catch (e) {} finally { lgRolling = false; }
+}
+function lgResult(h, n = 0) {
+  if (!h) return; if (modals.length || S.active) { if (n < 40) setTimeout(() => lgResult(h, n + 1), 5000); return; } // une autre fenêtre est ouverte : on attend son tour const up = h.mv > 0, dn = h.mv < 0, nt = h.t + h.mv;
+  modal(`<div style="text-align:center"><div class="sysh">[ ${T('FIN DE LA SEMAINE', 'END OF THE WEEK')} ]</div><h2 style="margin:6px 0">${esc(T('Ligue ' + LG[h.t][0], LG[h.t][1] + ' League'))}</h2>
+    <p>${h.r ? T(`Tu finis <b>${h.r}${h.r === 1 ? 'er' : 'e'}</b> sur ${h.n}`, `You finish <b>#${h.r}</b> of ${h.n}`) : T('Tu ne t\'es pas entraîné cette semaine-là.', 'You did not train that week.')}${h.g ? ` · <b>+${h.g} XP</b>` : ''}</p>
+    <p class="lgbadge" style="--lc:${LG[nt][2]};justify-content:center;font-size:18px"><i></i>${up ? T(`Tu montes en ligue ${lgName(nt)}!`, `You move up to the ${lgName(nt)} league!`) : dn ? T(`Tu descends en ligue ${lgName(nt)}.`, `You drop to the ${lgName(nt)} league.`) : T(`Tu restes en ligue ${lgName(nt)}.`, `You stay in the ${lgName(nt)} league.`)}</p>
+    <button class="btn primary block" data-act="close">${T('Super', 'Great')}</button></div>`);
+  if (up) { try { confetti(); sfx('lvl'); } catch (e) {} }
+}
+function lgCard() {
+  if (!GAME()) return '';
+  const info = ib(T('Ligues de la semaine', 'Weekly leagues'), T(`Chaque semaine, tu es groupé avec les aventuriers de ta ligue (${LG.map(x => x[0]).join(', ')}). Seule l'XP gagnée cette semaine compte. Dimanche soir, le haut 20 % monte d'une ligue et, s'il y a au moins ${LG_MIN} aventuriers actifs, le bas 20 % descend. Le podium gagne 300, 200 et 100 XP. Ton nom et ton niveau sont visibles par les autres participants.`, `Each week you are grouped with the adventurers of your league (${LG.map(x => x[1]).join(', ')}). Only XP earned this week counts. On Sunday night the top 20% move up a league and, if at least ${LG_MIN} adventurers are active, the bottom 20% move down. The podium wins 300, 200 and 100 XP. Your name and level are visible to the other players.`));
+  if (!S.settings.lbOn) return `<div class="card sysw gwin" style="margin-bottom:12px"><div class="gswh" style="margin-bottom:8px"><span class="sysh" style="margin:0">[ ${T('LIGUES DE LA SEMAINE', 'WEEKLY LEAGUES')} ]</span>${info}</div>
+    <p class="small" style="margin:0 0 10px">${T('Affronte chaque semaine des aventuriers de ton niveau, même sans amis inscrits. Les meilleurs montent de ligue, de Bronze jusqu\'à Légende.', 'Face adventurers of your level every week, even without friends on the app. The best move up, from Bronze all the way to Legend.')}</p>
+    <button class="btn primary block" data-act="lb-on">${T('Rejoindre les ligues', 'Join the leagues')}</button></div>`;
+  const L = lgS(); setTimeout(() => { lgRoll().then(() => lgLoad(false)); }, 0);
+  const left = Math.max(0, Math.ceil((wkRange(wkKey(new Date()))[1] - Date.now()) / 864e5)), lc = LG[L.t][2];
+  const head = `<div class="row between" style="margin-bottom:8px"><span class="lgbadge" style="--lc:${lc}"><i></i>${esc(T('Ligue ' + LG[L.t][0], LG[L.t][1] + ' League'))}</span><span class="small muted">${left} ${T(left > 1 ? 'j restants' : 'j restant', left > 1 ? 'days left' : 'day left')}</span></div>`;
+  let body;
+  if (!lgData || lgData.key !== lgKey(wkKey(new Date()), L.t)) body = `<p class="muted small center" style="margin:14px 0">${T('Chargement…', 'Loading…')}</p>`;
+  else if (lgData.err) body = `<p class="muted small center" style="margin:14px 0">${esc(lgData.err)}</p>`;
+  else {
+    const R = lgData.rows, act = R.filter(r => r.x > 0).length, up = L.t < LG.length - 1 ? lgUp(act) : 0, dn = L.t > 0 ? lgDn(act) : 0;
+    body = R.map((r, i) => `${i === 0 && up && act ? `<div class="lgzone up">▲ ${T('Zone de montée', 'Promotion zone')}</div>` : ''}${i === up && up && act > up ? '<div class="lgcut"></div>' : ''}${dn && i === act - dn ? `<div class="lgzone dn">▼ ${T('Zone de descente', 'Demotion zone')}</div>` : ''}<div class="lgrow${r.me ? ' me' : ''}${up && i < up && r.x > 0 ? ' lgu' : ''}${dn && i >= act - dn && i < act ? ' lgd' : ''}"><b class="lgp">${i + 1}</b><span style="flex:1;min-width:0"><b>${esc(r.me ? T('Moi', 'Me') : r.n || '?')}</b>${r.e ? ' <span class="emb">' + embSvg(r.e) + '</span>' : ''}<br><span class="muted small">${T('Niv.', 'Lv.')} ${r.l || 1}</span></span><b>${(r.x || 0).toLocaleString(LOC())} XP</b></div>`).join('')
+      + (R.length < 2 ? `<p class="small muted" style="margin:10px 0 0">${T('Tu es seul dans ta ligue pour l\'instant. D\'autres aventuriers vont te rejoindre.', 'You are alone in your league for now. Other adventurers will join you.')}</p>` : '');
+  }
+  return `<div class="card sysw gwin" style="margin-bottom:12px;border-color:color-mix(in srgb,${lc} 45%,var(--line))"><div class="gswh" style="margin-bottom:8px"><span class="sysh" style="margin:0">[ ${T('LIGUES DE LA SEMAINE', 'WEEKLY LEAGUES')} ]</span>${info}</div>${head}${body}</div>`;
 }
 
 /* ===== Mise à jour forcée : si une version plus récente est en ligne, l'appli se recharge toute seule (jamais pendant une séance) ===== */
@@ -9676,13 +9832,13 @@ const TITLES = [ // [groupe de médaille, palier (0 = premier), [fr, en]]
   ['dg', 2, ['Nettoyeur de donjons', 'Dungeon cleaner']], ['boss', 0, ['Tueur de boss', 'Boss slayer']], ['boss', 3, ['Fléau des boss', 'Bane of bosses']],
   ['shs', 0, ['Forgeron légendaire', 'Legendary smith']], ['raid', 0, ['Compagnon de raid', 'Raid companion']], ['chw', 1, ['Duelliste', 'Duelist']],
   ['stl', 0, ['Légende du Serment de fer', 'Legend of the Iron Oath'], 4], ['stl', 1, ['Légende de la Piste sans fin', 'Legend of the Endless Trail'], 4], ['stl', 2, ['Légende du Dojo', 'Legend of the Dojo'], 4], ['stl', 3, ['Légende de la Source', 'Legend of the Wellspring'], 4], ['stl', 4, ['Flamme de l\'Ordre', 'Flame of the Order'], 4], ['stl', 5, ['Porteur de lumière', 'Lightbearer'], 4], ['stl', 6, ['L\'un des Trois Cents', 'One of the Three Hundred'], 4], ['stl', 7, ['Maître des ombres', 'Shadow master'], 4], ['stl', 8, ['Cœur de la forêt', 'Heart of the Forest'], 4], ['stl', 9, ['Celui des Mille Pas', 'Walker of a Thousand Steps'], 4],
-  ['rl', 0, ['Briseur de forteresse', 'Fortress breaker'], 2], ['rl', 1, ['Fondeur de colosse', 'Colossus smelter'], 2], ['rl', 2, ['Chasseur des sables', 'Sand hunter'], 2], ['rl', 3, ['Tueur de la Reine', 'Queen slayer'], 2], ['rl', 4, ['Brise-glace', 'Icebreaker'], 2], ['rl', 5, ['Fléau des abysses', 'Bane of the deep'], 2], ['rmvp', 0, ['Héros de raid', 'Raid hero'], 3], ['ref', 0, ['Recruteur', 'Recruiter'], 1], ['ref', 1, ['Rassembleur', 'Rallier'], 2], ['ref', 2, ['Chef de clan', 'Clan chief'], 3],
+  ['rl', 0, ['Briseur de forteresse', 'Fortress breaker'], 2], ['rl', 1, ['Fondeur de colosse', 'Colossus smelter'], 2], ['rl', 2, ['Chasseur des sables', 'Sand hunter'], 2], ['rl', 3, ['Tueur de la Reine', 'Queen slayer'], 2], ['rl', 4, ['Brise-glace', 'Icebreaker'], 2], ['rl', 5, ['Fléau des abysses', 'Bane of the deep'], 2], ['rmvp', 0, ['Héros de raid', 'Raid hero'], 3], ['lg', 1, ['Lame d\'argent', 'Silver blade'], 1], ['lg', 2, ['Lame d\'or', 'Golden blade'], 2], ['lg', 3, ['Gardien de platine', 'Platinum warden'], 2], ['lg', 4, ['Éclat de diamant', 'Diamond shard'], 3], ['lg', 5, ['Grand maître', 'Grandmaster'], 3], ['lg', 6, ['Légende vivante', 'Living legend'], 3], ['ref', 0, ['Recruteur', 'Recruiter'], 1], ['ref', 1, ['Rassembleur', 'Rallier'], 2], ['ref', 2, ['Chef de clan', 'Clan chief'], 3],
   ['sea', 0, ['Champion de saison', 'Season champion']], ['evt', 1, ['Fêtard de la Guilde', 'Guild reveler']], ['lvl', 9, ['Légende vivante', 'Living legend']],
   ['chs', 5, ['Pilleur de coffres', 'Chest raider'], 2], ['chs', 36, ['Seigneur du butin', 'Loot lord'], 4], ['chl', 10, ['Nécromancien', 'Necromancer'], 2], ['chd', 5, ['Dompteur de dragons', 'Dragon tamer'], 2], ['chd', 28, ['Tueur de wyrms', 'Wyrmslayer'], 4], ['chk', 5, ['Marin des abysses', 'Abyssal sailor'], 2], ['chk', 20, ['Seigneur des profondeurs', 'Lord of the deep'], 3], ['b3', 4, ['Dieu du fer', 'God of iron'], 4], ['pr', 4, ['Briseur de légendes', 'Legend breaker'], 4], ['boss', 4, ['Dévoreur de boss', 'Boss devourer'], 4], ['dg', 5, ['Seigneur des donjons', 'Dungeon lord'], 4], ['qd', 6, ['Élu de la Guilde', 'Chosen of the Guild'], 4], ['wk', 5, ['Inarrêtable', 'Unstoppable'], 4]];
 var CH_TT = {chs: 'mimic', chl: 'liche', chd: 'dragon', chk: 'kraken'};
 function titleList() { // titres débloqués selon tes médailles
   const me = medalsEarned();
-  return TITLES.map(([g, i, t]) => { if (g === 'stl') { const b = PCL_ALL[i]; return {id: g + i, t: T(t[0], t[1]), ok: stDone(b), how: T(`Termine l'histoire de classe ${pclName(b)}`, `Finish the ${pclName(b)} class story`)}; } if (g === 'rl') return {id: g + i, t: T(t[0], t[1]), ok: !!(S.raidLoot || {})['b' + i], how: T('Bats ce boss de raid avec ta guilde', 'Defeat this raid boss with your guild')}; if (g === 'ref') { const need = [1, 3, 10][i]; return {id: g + i, t: T(t[0], t[1]), ok: refCount() >= need, how: T(`Invite ${need} ami${need > 1 ? 's' : ''} qui découvre${need > 1 ? 'nt' : ''} Runelift`, `Invite ${need} friend${need > 1 ? 's' : ''} new to Runelift`)}; } if (g === 'rmvp') return {id: 'rmvp0', t: T(t[0], t[1]), ok: !!(S.raidLoot || {}).mvp, how: T('Fais le plus de dégâts d\'un raid réussi', 'Deal the most damage in a cleared raid')}; if (g === 'gm') return {id: 'gm0', t: T(t[0], t[1]), ok: cosReq({set: 'title'}).ok, how: ''}; if (CH_TT[g]) { const q = cosReq({fr: i, ft: CH_TT[g]}); return {id: g + i, t: T(t[0], t[1]), ok: q.ok, how: q.why}; } const d = g === 'n1' ? me.defs.find(x => x.id === 'n1') : me.defs.filter(x => x.g === g).sort((a, b) => a.v - b.v)[i]; return d ? {id: g + i, t: T(t[0], t[1]), ok: !!me.got[d.id], how: d.t} : null; }).filter(Boolean);
+  return TITLES.map(([g, i, t]) => { if (g === 'stl') { const b = PCL_ALL[i]; return {id: g + i, t: T(t[0], t[1]), ok: stDone(b), how: T(`Termine l'histoire de classe ${pclName(b)}`, `Finish the ${pclName(b)} class story`)}; } if (g === 'rl') return {id: g + i, t: T(t[0], t[1]), ok: !!(S.raidLoot || {})['b' + i], how: T('Bats ce boss de raid avec ta guilde', 'Defeat this raid boss with your guild')}; if (g === 'lg') return {id: g + i, t: T(t[0], t[1]), ok: (S.lg && +S.lg.best || 0) >= i, how: T(`Atteins la ligue ${LG[i][0]}`, `Reach the ${LG[i][1]} league`)}; if (g === 'ref') { const need = [1, 3, 10][i]; return {id: g + i, t: T(t[0], t[1]), ok: refCount() >= need, how: T(`Invite ${need} ami${need > 1 ? 's' : ''} qui découvre${need > 1 ? 'nt' : ''} Runelift`, `Invite ${need} friend${need > 1 ? 's' : ''} new to Runelift`)}; } if (g === 'rmvp') return {id: 'rmvp0', t: T(t[0], t[1]), ok: !!(S.raidLoot || {}).mvp, how: T('Fais le plus de dégâts d\'un raid réussi', 'Deal the most damage in a cleared raid')}; if (g === 'gm') return {id: 'gm0', t: T(t[0], t[1]), ok: cosReq({set: 'title'}).ok, how: ''}; if (CH_TT[g]) { const q = cosReq({fr: i, ft: CH_TT[g]}); return {id: g + i, t: T(t[0], t[1]), ok: q.ok, how: q.why}; } const d = g === 'n1' ? me.defs.find(x => x.id === 'n1') : me.defs.filter(x => x.g === g).sort((a, b) => a.v - b.v)[i]; return d ? {id: g + i, t: T(t[0], t[1]), ok: !!me.got[d.id], how: d.t} : null; }).filter(Boolean);
 }
 const myTitle = () => { if (!GAME()) return ''; const k = clsCur(); return k ? pclName(k) + ' ' + pclMast(k).title : ''; }; // le titre affiché est celui de ta classe (maîtrise)
 const titleOf = id => { const x = TITLES.find(([g, i]) => g + i === id); return x ? T(x[2][0], x[2][1]) : ''; };
@@ -10341,7 +10497,7 @@ function vGuild() {
   const body = {
     day: () => `${statusCard()}${compCard()}${gSec('today', '', T('Aujourd\'hui', 'Today'), `${nd} / ${bo ? 3 : 2} ${T('accomplies', 'complete')}${chestsPending().length ? ' · ' + T('coffre à ouvrir', 'chest to open') : ''}`, () => chestPendBtn() + eventCard() + questCard('inner'))}`,
     raid: () => `${flat('myguild', T('Ma guilde', 'My guild'), gSub, () => gldBody() + (fr || S.guild ? `<div class="gsep"></div><div class="sysh" style="margin:14px 0 8px">[ ${T('RAID DE GUILDE', 'GUILD RAID')} ]</div><div class="raidbox">${raidCard()}</div>` : ''))}<div class="grid2 gtiles">${frTile}</div>`,
-    rank: () => `${flat('season', T('Saison du mois', 'Monthly season'), seaSub, () => fr ? seasonCard() || `<p class="small muted" style="margin:0">${T('La saison commence dès qu\'un ami a l\'appli à jour.', 'The season starts as soon as a friend has the app up to date.')}</p>` : noFr)}<div class="grid2 gtiles">${gLink('world', '🌍', T('Classement mondial', 'World ranking'), S.settings.lbOn ? T('Ta position', 'Your rank') : T('Compare-toi à tous', 'Compare with everyone'))}${frTile}</div>`,
+    rank: () => `${lgCard()}${flat('season', T('Saison du mois', 'Monthly season'), seaSub, () => fr ? seasonCard() || `<p class="small muted" style="margin:0">${T('La saison commence dès qu\'un ami a l\'appli à jour.', 'The season starts as soon as a friend has the app up to date.')}</p>` : noFr)}<div class="grid2 gtiles">${gLink('world', '🌍', T('Classement mondial', 'World ranking'), S.settings.lbOn ? T('Ta position', 'Your rank') : T('Compare-toi à tous', 'Compare with everyone'))}${frTile}</div>`,
     coll: () => flat('coll', T('Collection', 'Collection'), `${T('Armurerie', 'Armory')} ${aOk}/${aTot}`, () => `<div class="armbody">${armoryBody()}</div>${coll()}`)
   };
   return bar + body[gt]();
