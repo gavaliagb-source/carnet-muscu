@@ -6849,9 +6849,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.113.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.113.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.113.2', d: '2026-11-22', fr: ['Ligues : groupes de 30 aventuriers au plus, formés dans l\'ordre d\'arrivée de la semaine, pour que les ligues restent justes même avec des milliers de joueurs.'], en: ['Leagues: groups of at most 30 adventurers, formed in order of arrival each week, so leagues stay fair even with thousands of players.']},
   {v: '9.113.1', d: '2026-11-22', fr: ['« Faire cette séance » dans le fil : choisis de la démarrer tout de suite, ou de l\'enregistrer comme routine (dans le dossier « De mes amis » ou celui de ton choix).'], en: ['“Do this workout” in the feed: choose to start it right away, or save it as a routine (in the “From friends” folder or one you pick).']},
   {v: '9.113.0', d: '2026-11-22', fr: ['Nouveau fil des amis : chaque séance a un titre, ses stats (durée, volume, records), la photo et les exercices avec leur image, regroupés par jour (Aujourd\'hui, Hier…).', 'Encouragements : un seul bouton flamme, avec qui a encouragé (Max, Sarah et 2 autres). Commentaires : aperçu sous la séance, réponses à un ami, et suppression de tes commentaires.'], en: ['New friends feed: each workout has a title, its stats (time, volume, records), the photo and the exercises with their image, grouped by day (Today, Yesterday…).', 'Cheers: a single flame button, showing who cheered (Max, Sarah and 2 others). Comments: preview under the workout, replies to a friend, and deleting your comments.']},
   {v: '9.112.2', d: '2026-11-22', fr: ['Photos de séance en grand : glisse vers la gauche ou la droite pour passer d\'une photo à l\'autre (avec 1 / 3 et des points en dessous).'], en: ['Workout photos full size: swipe left or right to go from one photo to the next (with 1 / 3 and dots below).']},
@@ -8799,7 +8800,7 @@ function mergeData(B, R) {
   B.powWeeks = [...new Set([...(B.powWeeks || []), ...(R.powWeeks || [])])].slice(-20);
   const G = B.gRaid = B.gRaid || {}; Object.entries(R.gRaid || {}).forEach(([g, L]) => { G[g] = [...new Set([...(G[g] || []), ...(L || [])])]; });
   const St = B.story = B.story || {}; Object.entries(R.story || {}).forEach(([k, v]) => { if (!St[k] || (+v.ch || 0) > (+St[k].ch || 0)) St[k] = v; });
-  if (R.lg && (!B.lg || R.lg.wk > B.lg.wk)) B.lg = R.lg;
+  if (R.lg && (!B.lg || R.lg.wk > B.lg.wk || (R.lg.wk === B.lg.wk && R.lg.gw === R.lg.wk && B.lg.gw !== B.lg.wk))) B.lg = R.lg;
   if (R.pow && (!B.pow || R.pow.wk > B.pow.wk || (R.pow.wk === B.pow.wk && ((R.pow.used && !B.pow.used) || (R.pow.second && !B.pow.second))))) B.pow = R.pow;
   return B;
 }
@@ -9004,9 +9005,23 @@ function vWorld() {
    Chaque semaine, les aventuriers du classement mondial sont groupés par ligue. XP de la semaine seulement.
    Le haut 20 % monte, le bas 20 % descend (dès 5 actifs). Données dans lb/{uid} : lk/lx = semaine en cours, pk/px = semaine passée. */
 const LG = [['Bronze', 'Bronze', '#cd7f32'], ['Argent', 'Silver', '#cbd5e1'], ['Or', 'Gold', '#f5c542'], ['Platine', 'Platinum', '#67e8f9'], ['Diamant', 'Diamond', '#a78bfa'], ['Maître', 'Master', '#f472b6'], ['Légende', 'Legend', '#ef4444']];
-const LG_CUT = .2, LG_MIN = 5;
+const LG_CUT = .2, LG_MIN = 5, LG_SIZE = 30; // groupes de 30 au plus : avec des milliers de joueurs, chaque ligue a plusieurs groupes
 const lgS = () => (S.lg = S.lg || {t: 0, wk: wkKey(new Date()), best: 0, h: []});
-const lgKey = (wk, t) => wk + ':' + t;
+const lgKey = (wk, t, g) => wk + ':' + t + (g ? ':' + g : ''); // groupe 0 = ancienne clé, pour rester compatible
+const lgG = (L, wk) => L.gw === wk ? +L.g || 0 : 0;
+/* Entrée dans un groupe pour la semaine : dans l'ordre d'arrivée (compteur lg/{semaine_ligue}), 30 par groupe */
+let lgJoining = false;
+async function lgJoin() {
+  if (!S.settings.lbOn || !GAME() || lgJoining) return; const L = lgS(), wk = wkKey(new Date()); if (L.wk !== wk || L.gw === wk) return;
+  const u = await fbSignIn(false).catch(() => null); if (!u) return; lgJoining = true;
+  try {
+    const ref = fbDb().collection('lg').doc(wk + '_' + L.t);
+    const n = await fbDb().runTransaction(async tx => { const d = await tx.get(ref), v = (d.exists ? +d.data().n || 0 : 0) + 1; tx.set(ref, {n: v}); return v; });
+    if (L.wk !== wk || L.gw === wk) return;
+    L.g = Math.floor((n - 1) / LG_SIZE); L.gw = wk; save(); lgData = null; try { localStorage.removeItem('cm-lg'); } catch (e) {} lbPush();
+  } catch (e) { if (L.wk === wk && L.gw !== wk) { L.g = 0; L.gw = wk; save(); } } // compteur pas encore permis par les règles : groupe 0
+  finally { lgJoining = false; }
+}
 const lgName = t => T(LG[t][0], LG[t][1]);
 const prevWk = wk => wkKey(new Date(+new Date(wk + 'T12:00:00') - 7 * 864e5));
 const lgUp = n => Math.max(1, Math.round(n * LG_CUT)), lgDn = n => n >= LG_MIN ? Math.max(1, Math.round(n * LG_CUT)) : 0;
@@ -9024,14 +9039,14 @@ function weekXp(wk) { // XP gagnée pendant la semaine (même calcul que la sais
   xp = Math.max(0, Math.round(xp)); wxMemo.set(k, xp); return xp;
 }
 function lgFields() { // ce que j'ajoute à ma fiche du classement
-  const L = lgS(), wk = wkKey(new Date()), o = {lk: lgKey(wk, L.t), lx: weekXp(wk), lt: L.t};
-  if (L.wk !== wk) { o.pk = lgKey(L.wk, L.t); o.px = weekXp(L.wk); } // semaine passée pas encore clôturée ici
-  else if (L.pt != null) { const pw = prevWk(wk); o.pk = lgKey(pw, L.pt); o.px = weekXp(pw); }
+  const L = lgS(), wk = wkKey(new Date()), o = {lk: lgKey(wk, L.wk === wk ? L.t : L.t, lgG(L, wk)), lx: weekXp(wk), lt: L.t};
+  if (L.wk !== wk) { o.pk = lgKey(L.wk, L.t, lgG(L, L.wk)); o.px = weekXp(L.wk); } // semaine passée pas encore clôturée ici
+  else if (L.pt != null) { const pw = prevWk(wk); o.pk = lgKey(pw, L.pt, +L.pg || 0); o.px = weekXp(pw); }
   return o;
 }
 let lgData = null, lgAt = 0, lgRolling = false;
 async function lgLoad(force) {
-  if (!S.settings.lbOn || !GAME()) return; const L = lgS(), key = lgKey(wkKey(new Date()), L.t);
+  if (!S.settings.lbOn || !GAME()) return; const L = lgS(), wk0 = wkKey(new Date()), key = lgKey(wk0, L.t, lgG(L, wk0));
   if (!force && lgData && lgData.key === key && Date.now() - lgAt < LB_TTL) return;
   if (!force) { try { const c = JSON.parse(localStorage.getItem('cm-lg') || 'null'); if (c && c.key === key && Date.now() - c.at < LB_TTL) { lgData = c; lgAt = c.at; return; } } catch (e) {} }
   const u = await fbSignIn(false).catch(() => null); if (!u) return;
@@ -9047,7 +9062,7 @@ async function lgRoll() { // nouvelle semaine : on regarde où j'ai fini la sema
   if (!S.settings.lbOn || !GAME() || lgRolling) return; const L = lgS(), wk = wkKey(new Date()); if (L.wk === wk) return;
   const u = await fbSignIn(false).catch(() => null); if (!u) return; lgRolling = true;
   try {
-    const pw = L.wk, key = lgKey(pw, L.t), db = fbDb().collection('lb');
+    const pw = L.wk, pg = lgG(L, pw), key = lgKey(pw, L.t, pg), db = fbDb().collection('lb');
     const [a, b] = await Promise.all([db.where('lk', '==', key).limit(100).get(), db.where('pk', '==', key).limit(100).get()]);
     const m = new Map(); a.docs.forEach(d => m.set(d.id, +d.data().lx || 0)); b.docs.forEach(d => { if (!m.has(d.id)) m.set(d.id, +d.data().px || 0); });
     const mx = weekXp(pw); m.set(u.uid, mx);
@@ -9057,7 +9072,7 @@ async function lgRoll() { // nouvelle semaine : on regarde où j'ai fini la sema
     if (mx > 0 && n >= 2 && r <= lgUp(n) && t < LG.length - 1) { t++; mv = 1; }
     else if (t > 0 && lgDn(n) && (mx === 0 || r > n - lgDn(n))) { t--; mv = -1; }
     const gain = r >= 1 && r <= 3 && n >= 3 ? [300, 200, 100][r - 1] : 0; if (gain) giveXp('lgw', pw, gain, '');
-    L.h = (L.h || []).concat([{wk: pw, t: L.t, r, n, mv, x: mx, g: gain}]).slice(-20); L.pt = L.t; L.t = t; L.best = Math.max(L.best || 0, t); L.wk = wk; save();
+    L.h = (L.h || []).concat([{wk: pw, t: L.t, r, n, mv, x: mx, g: gain}]).slice(-20); L.pt = L.t; L.pg = pg; L.t = t; L.best = Math.max(L.best || 0, t); L.wk = wk; L.g = 0; L.gw = ''; save();
     lgData = null; try { localStorage.removeItem('cm-lg'); } catch (e) {} lbPush();
     if (mx > 0 || mv) setTimeout(() => lgResult(L.h[L.h.length - 1]), 700);
   } catch (e) {} finally { lgRolling = false; }
@@ -9076,11 +9091,11 @@ function lgCard() {
   if (!S.settings.lbOn) return `<div class="card sysw gwin" style="margin-bottom:12px"><div class="gswh" style="margin-bottom:8px"><span class="sysh" style="margin:0">[ ${T('LIGUES DE LA SEMAINE', 'WEEKLY LEAGUES')} ]</span>${info}</div>
     <p class="small" style="margin:0 0 10px">${T('Affronte chaque semaine des aventuriers de ton niveau, même sans amis inscrits. Les meilleurs montent de ligue, de Bronze jusqu\'à Légende.', 'Face adventurers of your level every week, even without friends on the app. The best move up, from Bronze all the way to Legend.')}</p>
     <button class="btn primary block" data-act="lb-on">${T('Rejoindre les ligues', 'Join the leagues')}</button></div>`;
-  const L = lgS(); setTimeout(() => { lgRoll().then(() => lgLoad(false)); }, 0);
+  const L = lgS(); setTimeout(() => { lgRoll().then(() => lgJoin()).then(() => lgLoad(false)); }, 0);
   const left = Math.max(0, Math.ceil((wkRange(wkKey(new Date()))[1] - Date.now()) / 864e5)), lc = LG[L.t][2];
   const head = `<div class="row between" style="margin-bottom:8px"><span class="lgbadge" style="--lc:${lc}"><i></i>${esc(T('Ligue ' + LG[L.t][0], LG[L.t][1] + ' League'))}</span><span class="small muted">${left} ${T(left > 1 ? 'j restants' : 'j restant', left > 1 ? 'days left' : 'day left')}</span></div>`;
   let body;
-  if (!lgData || lgData.key !== lgKey(wkKey(new Date()), L.t)) body = `<p class="muted small center" style="margin:14px 0">${T('Chargement…', 'Loading…')}</p>`;
+  if (!lgData || lgData.key !== lgKey(wkKey(new Date()), L.t, lgG(L, wkKey(new Date())))) body = `<p class="muted small center" style="margin:14px 0">${T('Chargement…', 'Loading…')}</p>`;
   else if (lgData.err) body = `<p class="muted small center" style="margin:14px 0">${esc(lgData.err)}</p>`;
   else {
     const R = lgData.rows, act = R.filter(r => r.x > 0).length, up = L.t < LG.length - 1 ? lgUp(act) : 0, dn = L.t > 0 ? lgDn(act) : 0;
