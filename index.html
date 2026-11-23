@@ -6855,9 +6855,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.116.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.116.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.116.2', d: '2026-11-22', fr: ['Correction des ligues : ton score de la semaine passée comptait celui de la semaine en cours (risque de descente le lundi), et les plafonds anti-triche ne s\'appliquaient pas.'], en: ['League fix: your last-week score used the current week (risk of demotion on Mondays), and the anti-cheat caps were not applied.']},
   {v: '9.116.1', d: '2026-11-22', fr: ['Supprimer mon compte efface aussi tes photos partagées et ta fiche sociale en ligne. Politique de confidentialité mise à jour (Health Connect, ligues, signalements, règles de conduite).'], en: ['Delete my account also erases your shared photos and your social card online. Privacy policy updated (Health Connect, leagues, reports, conduct rules).']},
   {v: '9.116.0', d: '2026-11-22', fr: ['Amis encore plus légers : encouragements, commentaires, défis, raid et séance en direct passent par une petite fiche à part. Un « j\'aime » ne renvoie plus toute ta fiche à tes amis.', 'Correction : les photos de progrès de tes amis s\'affichent de nouveau dans le fil.'], en: ['Even lighter friends: cheers, comments, challenges, raid and live workout go through a small separate card. A like no longer resends your whole card to your friends.', 'Fix: your friends\' progress photos show in the feed again.']},
   {v: '9.115.0', d: '2026-11-22', fr: ['Signaler et bloquer : touche un joueur dans ta ligue ou le classement mondial, ou ouvre le profil d\'un ami, pour le signaler ou le bloquer. Un commentaire peut aussi être signalé. Les personnes bloquées sont dans Amis → Ce que tes amis voient.', 'Filtre de mots : insultes et propos haineux masqués, et pseudos ou noms grossiers refusés dans les ligues et le classement.', 'Ligues plus justes : plafonds réalistes d\'XP (3 séances par jour, 60 séries et 15 records par séance au plus) et scores impossibles écartés.'], en: ['Report and block: tap a player in your league or the world ranking, or open a friend\'s profile, to report or block them. A comment can be reported too. Blocked people are in Friends → What friends see.', 'Word filter: insults and hate speech masked, and rude usernames or names refused in leagues and the ranking.', 'Fairer leagues: realistic XP caps (3 workouts a day, 60 sets and 15 records per workout at most) and impossible scores removed.']},
@@ -9126,7 +9127,7 @@ const lgName = t => T(LG[t][0], LG[t][1]);
 const prevWk = wk => wkKey(new Date(+new Date(wk + 'T12:00:00') - 7 * 864e5));
 const lgUp = n => Math.max(1, Math.round(n * LG_CUT)), lgDn = n => n >= LG_MIN ? Math.max(1, Math.round(n * LG_CUT)) : 0;
 const wxMemo = new Map();
-function weekXp(wk) { // XP gagnée pendant la semaine (même calcul que la saison du mois)
+function lgXp(wk) { // XP gagnée pendant la semaine (même calcul que la saison du mois)
   const k = wk + '|' + S.history.length + '|' + (S.xpb || []).length + '|' + Object.keys(S.questLog || {}).length + '|' + Object.keys(S.dungeonLog || {}).length + '|' + Object.keys(S.bossLog || {}).length + '|' + Object.keys(S.qFail || {}).length;
   if (wxMemo.has(k)) return wxMemo.get(k);
   const [a, b] = wkRange(wk), inD = v => { v = v && v.d || v; const t = typeof v === 'string' && v.length === 10 ? +new Date(v + 'T12:00:00') : +new Date(v); return t >= a && t < b; };
@@ -9141,9 +9142,9 @@ function weekXp(wk) { // XP gagnée pendant la semaine (même calcul que la sais
   xp = Math.max(0, Math.min(LG_XP_MAX, Math.round(xp))); wxMemo.set(k, xp); return xp;
 }
 function lgFields() { // ce que j'ajoute à ma fiche du classement
-  const L = lgS(), wk = wkKey(new Date()), o = {lk: lgKey(wk, L.wk === wk ? L.t : L.t, lgG(L, wk)), lx: weekXp(wk), lt: L.t};
-  if (L.wk !== wk) { o.pk = lgKey(L.wk, L.t, lgG(L, L.wk)); o.px = weekXp(L.wk); } // semaine passée pas encore clôturée ici
-  else if (L.pt != null) { const pw = prevWk(wk); o.pk = lgKey(pw, L.pt, +L.pg || 0); o.px = weekXp(pw); }
+  const L = lgS(), wk = wkKey(new Date()), o = {lk: lgKey(wk, L.wk === wk ? L.t : L.t, lgG(L, wk)), lx: lgXp(wk), lt: L.t};
+  if (L.wk !== wk) { o.pk = lgKey(L.wk, L.t, lgG(L, L.wk)); o.px = lgXp(L.wk); } // semaine passée pas encore clôturée ici
+  else if (L.pt != null) { const pw = prevWk(wk); o.pk = lgKey(pw, L.pt, +L.pg || 0); o.px = lgXp(pw); }
   return o;
 }
 let lgData = null, lgAt = 0, lgRolling = false;
@@ -9155,7 +9156,7 @@ async function lgLoad(force) {
   try {
     const qs = await fbDb().collection('lb').where('lk', '==', key).limit(100).get();
     const rows = qs.docs.map(d => { const x = safeLb({id: d.id, ...d.data()}); return {id: d.id, n: x.n, l: x.l, rk: x.rk, e: x.e, bad: x.bad, x: Math.max(0, Math.round(+d.data().lx || 0))}; }).filter(r => r.id !== u.uid && !r.bad && !isBlk(r.id));
-    rows.push({id: u.uid, me: true, n: (S.settings.name || '').trim() || T('Moi', 'Me'), l: hunter().lvl, rk: hunter().rk, x: weekXp(wkKey(new Date()))});
+    rows.push({id: u.uid, me: true, n: (S.settings.name || '').trim() || T('Moi', 'Me'), l: hunter().lvl, rk: hunter().rk, x: lgXp(wkKey(new Date()))});
     lgData = {key, at: Date.now(), rows: rows.sort((p, q) => q.x - p.x)}; lgAt = lgData.at; try { localStorage.setItem('cm-lg', JSON.stringify(lgData)); } catch (e) {}
   } catch (e) { lgData = {key, err: e.code || e.message}; }
   if (cur().v === 'guild' && S.settings.gTab === 'rank' && !modals.length) render();
@@ -9168,7 +9169,7 @@ async function lgRoll() { // nouvelle semaine : on regarde où j'ai fini la sema
     const [a, b] = await Promise.all([db.where('lk', '==', key).limit(100).get(), db.where('pk', '==', key).limit(100).get()]);
     const m = new Map(); a.docs.forEach(d => m.set(d.id, +d.data().lx || 0)); b.docs.forEach(d => { if (!m.has(d.id)) m.set(d.id, +d.data().px || 0); });
     [...m.keys()].forEach(id => { if (m.get(id) > LG_XP_MAX || isBlk(id)) m.delete(id); }); // scores impossibles (triche) et personnes bloquées : pas comptés
-    const mx = weekXp(pw); m.set(u.uid, mx);
+    const mx = lgXp(pw); m.set(u.uid, mx);
     const act = [...m.entries()].filter(([, x]) => x > 0).sort((p, q) => q[1] - p[1]), n = act.length, r = act.findIndex(([id]) => id === u.uid) + 1;
     if (L.wk !== pw || L.wk === wk) return; // une autre fenêtre l'a déjà fait
     let t = L.t, mv = 0;
