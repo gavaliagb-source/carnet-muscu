@@ -378,6 +378,32 @@ html.moving :is(.rkf,.pfhead,.frhero,.armit,.chbtn,.cpw,.frm-glow,[class*="bn-"]
 .ghero{background:linear-gradient(150deg,color-mix(in srgb,var(--rc) 16%,var(--card)),var(--card) 65%);border:1px solid color-mix(in srgb,var(--rc) 40%,var(--line));border-radius:18px;padding:16px;margin-bottom:12px}
 .glv{display:flex;align-items:baseline;gap:8px}.glv span{color:var(--muted);font-size:13px}.glv b{font-size:30px;line-height:1}.gtitle{color:var(--rc);font-weight:700;font-size:14px;margin-top:2px}
 .gcls{margin-top:6px;background:none;border:0;padding:0;color:var(--text);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px;text-align:left}
+.gsum2{cursor:pointer;position:relative;padding:14px 16px}.gsum2:active{transform:scale(.99)}
+.gsh{text-align:left!important;margin:0 0 10px!important;font-size:12px!important;letter-spacing:3px!important}
+.gsum2 .chev{color:var(--muted);display:flex;flex:none}
+.gsum2 .gsx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.gsum2 .gsx small{color:var(--muted);font-size:12.5px}
+.ghero{display:flex;align-items:stretch;gap:6px;overflow:hidden;min-height:176px;background:radial-gradient(70% 90% at 88% 55%,color-mix(in srgb,var(--rc) 30%,transparent),transparent 70%),linear-gradient(160deg,color-mix(in srgb,var(--accent) 10%,var(--card)),var(--card) 60%)}
+.ghinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;position:relative;z-index:1}
+.ghlv{display:flex;align-items:center;gap:10px}.ghlv small{display:block;color:var(--muted);font-size:12px}.ghlv b{font-size:30px;line-height:1;font-weight:900}
+.rkbig.ghrk{width:50px;height:50px;font-size:25px;border-radius:12px}
+.ghname{font-size:16px;color:var(--rc);line-height:1.25}
+.ghxp{color:var(--muted);font-size:12px}
+.ghart{flex:none;width:132px;margin:-14px -16px -14px -6px;display:flex;align-items:flex-end;justify-content:center}.ghart img{width:150px;height:150px;object-fit:contain;filter:drop-shadow(0 8px 16px #000a);margin-bottom:2px}
+.gmore{position:absolute;top:12px;right:12px;color:var(--muted);display:flex;z-index:2}
+.gcol .ghd{display:flex;align-items:center;gap:8px;margin-bottom:2px}.gcol .ghd .gsh{margin:0!important}.gcol .ghd small{flex:1;text-align:right;color:var(--muted);font-size:12.5px}
+.ghd{display:flex;align-items:center;gap:8px;margin-bottom:8px}.ghd .gsh{margin:0!important}.ghd small{flex:1;text-align:right;color:var(--muted);font-size:12.5px}
+.gcta{flex:none;font-size:12.5px;font-weight:800;color:var(--accent-ink);background:var(--accent);border-radius:99px;padding:6px 11px;white-space:nowrap}
+.gcta.big{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;padding:11px;border-radius:12px;font-size:14.5px;box-shadow:0 0 18px -6px var(--accent)}
+.gcta.off{background:var(--card2);color:var(--muted);box-shadow:none;font-weight:600}.gcta.ok{background:color-mix(in srgb,var(--ok) 20%,var(--card2));color:var(--ok);box-shadow:none}
+.gbrow{display:flex;gap:14px;align-items:center}
+.graidsum .gboss{width:118px;height:118px;border-radius:18px;border:1px solid color-mix(in srgb,#3ee6b0 35%,var(--line));box-shadow:0 0 24px -8px #3ee6b0}
+.gboss.dead img{filter:grayscale(1) brightness(.6)}
+.gbn{font-size:17px;line-height:1.25}.gpos{color:var(--text);font-size:15px}
+.gguildsum .gldhead{margin:0 0 10px}.gguildsum .gldhead small{display:block;opacity:.85;font-size:12.5px}.gguildsum .gldhead .chev{color:inherit;opacity:.8}
+.glgsum .glgic{width:54px;height:54px;border-radius:15px}.glgsum .glgic i{width:24px;height:24px}
+.gtops{display:flex;gap:6px;margin-top:12px}.gtop{flex:1;min-width:0;display:flex;align-items:center;gap:6px;background:var(--card2);border-radius:10px;padding:7px 8px;font-size:12.5px;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.gtop i{font-style:normal;font-weight:900;color:var(--muted);flex:none}.gtop em{font-style:normal;color:var(--muted);font-size:11px;margin-left:auto;flex:none}.gtop.me{outline:1.5px solid var(--accent)}.gtop.me i{color:var(--accent)}
+.gherocard{margin:0 0 12px}
 /* Guilde épurée */
 .gtabbody{margin-top:12px}
 .gsum{display:flex;align-items:center;gap:14px;width:100%;text-align:left;color:var(--text);font:inherit;cursor:pointer;padding:14px 14px 14px 16px;margin:0 0 12px;position:relative}
@@ -675,6 +701,7 @@ label.srow,.srow.sbtn{cursor:pointer}
 /* Visite guidée */
 #tour{position:fixed;inset:0;z-index:9000;touch-action:none}
 #tour .tspot{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.72);border:2px solid var(--accent);transition:all .3s ease;pointer-events:none}
+.touring #app{padding-bottom:70vh!important} /* pendant une visite : assez de place pour monter ce qu'on montre en haut de l'écran */
 #tour .tspot.cut{border-bottom-style:dashed;border-bottom-left-radius:4px;border-bottom-right-radius:4px}
 #tour .tspot.none{width:0!important;height:0!important;border:0;left:50%!important;top:40%!important}
 #tour .tbub{position:fixed;left:16px;right:16px;max-width:420px;margin:0 auto;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:14px 16px 0;box-shadow:0 14px 44px rgba(0,0,0,.55);transition:top .3s ease;overflow:visible}
@@ -7089,9 +7116,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.121.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.122.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.122.0', d: '2026-11-23', fr: ['Guilde : retour du style jeu sur les cartes. Ton personnage en grand avec ton rang et ton niveau, le boss du raid en grand avec un bouton Attaquer quand tu as de l\'énergie, « Choisir ma porte » directement sur le donjon, le podium de ta ligue et de la saison, et ta carte d\'aventurier en haut de Collection.'], en: ['Guild: the game look is back on the cards. Your character shown big with your rank and level, the raid boss shown big with an Attack button when you have energy, “Pick my door” right on the dungeon, the podium of your league and season, and your adventurer card at the top of Collection.']},
   {v: '9.121.0', d: '2026-11-23', fr: ['Guilde épurée : chaque onglet montre de petites cartes résumé (ton personnage, tes quêtes, le boss du raid, ta guilde, ta ligue, la saison). Touche une carte pour ouvrir sa page complète. Rien n\'a été enlevé.', 'Collection devient une liste simple : Armurerie, Médailles, Bestiaire, Arsenal et Rangs par muscle.', 'Une notification de raid ouvre directement le combat.'], en: ['Cleaner Guild: each tab shows small summary cards (your character, your quests, the raid boss, your guild, your league, the season). Tap a card to open its full page. Nothing was removed.', 'Collection becomes a simple list: Armory, Medals, Bestiary, Arsenal and Muscle ranks.', 'A raid notification opens the fight directly.']},
   {v: '9.120.2', d: '2026-11-23', fr: ['Visites guidées : une section plus grande que l\'écran n\'est plus encadrée au complet. La visite montre son haut, juste sous le titre, et la bulle ne la cache plus. L\'étape du raid pointe directement sur le boss.'], en: ['Guided tours: a section taller than the screen is no longer framed whole. The tour shows its top, right under the title, and the bubble no longer hides it. The raid step points straight at the boss.']},
   {v: '9.120.1', d: '2026-11-23', fr: ['Mode test : bouton « Visites guidées », et l\'aperçu de l\'accueil se termine par la visite « Les bases », comme pour un vrai nouveau.'], en: ['Test mode: “Guided tours” button, and the welcome preview ends with “The basics” tour, like for a real new user.']},
@@ -7423,10 +7451,10 @@ function tourStart(k) {
     const a = e.target.closest('[data-tour]'); if (!a) return; e.stopPropagation();
     if (a.dataset.tour === 'next') tourGo(tourSt.i + 1); else if (a.dataset.tour === 'prev') tourGo(tourSt.i - 1); else tourEnd();
   });
-  document.body.appendChild(el); tourGo(0);
+  document.body.appendChild(el); document.documentElement.classList.add('touring'); tourGo(0);
 }
 function tourEnd() {
-  const el = $('#tour'); if (el) el.remove(); const k = tourSt && tourSt.k, gt0 = tourSt && tourSt.gt0; tourSt = null;
+  const el = $('#tour'); if (el) el.remove(); document.documentElement.classList.remove('touring'); const k = tourSt && tourSt.k, gt0 = tourSt && tourSt.gt0; tourSt = null;
   if (k === 'guild' && S.settings.gTab !== gt0 && cur().v === 'guild') { S.settings.gTab = gt0; render(); window.scrollTo(0, 0); }
   if (k === 'main' && cur().v !== 'train') { setRoot('train'); render(); window.scrollTo(0, 0); }
 }
@@ -7440,7 +7468,7 @@ function tourGo(i) {
   const tg = find();
   if (tg && !tg.closest('nav, header')) { const r = tg.getBoundingClientRect(), hb = tourHb();
     if (r.height > innerHeight * .45) window.scrollBy(0, r.top - hb - 12); // grande section : on montre son haut, juste sous l'en-tête
-    else if (r.top < hb + 8 || r.bottom > innerHeight - 240) tg.scrollIntoView({block: 'center'}); }
+    else if (r.top < hb + 8 || r.bottom > innerHeight - 240) window.scrollBy(0, r.top - hb - 12); } // en haut de l'écran : la bulle a la place en dessous
   setTimeout(() => tourPlace(find()), tg ? 280 : 0);
 }
 function tourPlace(tg) {
@@ -10950,58 +10978,70 @@ function gHeroSum() {
   const me = medalsEarned(), hu = hunter(me), pct = Math.round(hu.cur / Math.max(1, hu.need) * 100), k = clsCur();
   const p = k ? powCur() : null, free = k ? talPts(k) - talSpent(k) : 0;
   const chips = [k && (!p || powAgain()) ? T('Pouvoir prêt', 'Power ready') : '', free > 0 ? T(`${free} point${free > 1 ? 's' : ''} de talent`, `${free} talent point${free > 1 ? 's' : ''}`) : ''].filter(Boolean);
-  return `<button class="card gwin gsum ghero" data-act="go" data-v="ghero" style="--rc:${hu.col}">
-    <span class="ghimg">${k ? pclImg(k, 64) : rkBadge(hu.rk, '')}</span>
-    <span class="gsx"><small>${T('Niveau', 'Level')} <b class="gnum">${hu.lvl}</b> · ${T('Rang', 'Rank')} <b class="gnum" style="color:var(--rc)">${hu.rk}</b></small>
-      <b>${k ? esc(pclName(k) + ' ' + pclMast(k).title) : esc(hu.title)}</b>${gBar(pct, `linear-gradient(90deg,var(--accent),${hu.col})`)}
-      <small>${gFmt(hu.cur)} / ${gFmt(hu.need)} XP</small>${chips.length ? `<span class="gchips">${chips.map(c => `<em>${c}</em>`).join('')}</span>` : ''}</span><span class="chev">${CHEV}</span></button>`;
+  return `<div class="card sysw gwin gsum2 ghero" data-act="go" data-v="ghero" role="button" style="--rc:${hu.col}">
+    <div class="ghinfo"><div class="sysh gsh">[ ${T('STATUT', 'STATUS')} ]</div>
+      <div class="ghlv">${rkBadge(hu.rk, 'rkbig ghrk')}<div><small>${T('Niveau', 'Level')}</small><b>${hu.lvl}</b></div></div>
+      <b class="ghname">${k ? esc(pclName(k) + ' ' + pclMast(k).title) : esc(hu.title)}</b>
+      ${gBar(pct, `linear-gradient(90deg,var(--accent),${hu.col})`)}<small class="ghxp">${gFmt(hu.cur)} / ${gFmt(hu.need)} XP</small>
+      ${chips.length ? `<span class="gchips">${chips.map(c => `<em>${c}</em>`).join('')}</span>` : ''}</div>
+    <div class="ghart">${k ? pclImg(k, 150) : ''}</div><span class="gmore">${CHEV}</span></div>`;
 }
 function gQuestSum() {
   const q = dailyQuest(), dg = weekDungeon(), bo = monthBoss(), pen = questPenalty(), pc = (a, b) => Math.round(a / Math.max(1, b) * 100);
   const nd = (q.rest || q.done ? 1 : 0) + (dg.done ? 1 : 0) + (bo && bo.done ? 1 : 0), tot = bo ? 3 : 2;
-  const row = (tile, t, sub, pct, done) => `<span class="gqr${done ? ' ok' : ''}">${tile}<span class="gqt"><b>${t}</b><small>${sub}</small></span>${done ? `<span class="gqok">${ic('check', 16)}</span>` : `<span class="gqp">${gBar(pct)}</span>`}</span>`;
+  const row = (tile, t, sub, pct, done, cta) => `<span class="gqr${done ? ' ok' : ''}">${tile}<span class="gqt"><b>${t}</b><small>${sub}</small></span>${cta || (done ? `<span class="gqok">${ic('check', 16)}</span>` : `<span class="gqp">${gBar(pct)}</span>`)}</span>`;
   const qr = q.rest ? row(sTile('moon', '#a78bfa'), T('Jour de repos', 'Rest day'), T('Pas de quête aujourd\'hui', 'No quest today'), 100, true)
     : row(sTile('target', '#c6f135'), esc(q.text), `${gFmt(Math.min(q.cur, q.goal))} / ${gFmt(q.goal)} · +150 XP`, pc(q.cur, q.goal), q.done);
   const door = !dg.picked && !dg.done && GAME();
-  const dr = row(`<span class="stile gqrk" style="--h:#fb923c">${esc(dg.rk)}</span>`, `${T('Donjon', 'Dungeon')} · ${esc(dg.text)}`, door ? `<span style="color:var(--accent)">${T('Choisis ta porte de la semaine', 'Pick your door for the week')}</span>` : `${gFmt(Math.min(dg.cur, dg.goal))} / ${gFmt(dg.goal)}`, pc(dg.cur, dg.goal), dg.done);
-  const br = bo ? row(sTile('skull', '#f87171'), esc(bo.name), bo.done ? T('Vaincu', 'Defeated') : `${T('Boss du mois', 'Boss of the month')} · ${bo.left} ${T('j', 'd')}`, pc(bo.cur - bo.from * .85, bo.target - bo.from * .85), bo.done) : '';
+  const dr = row(`<span class="stile gqrk" style="--h:#fb923c">${esc(dg.rk)}</span>`, `${T('Donjon', 'Dungeon')} · ${esc(dg.text)}`, `${gFmt(Math.min(dg.cur, dg.goal))} / ${gFmt(dg.goal)} · ${T('cette semaine', 'this week')}`, pc(dg.cur, dg.goal), dg.done, door ? `<span class="gcta">${T('Choisir ma porte', 'Pick my door')}</span>` : '');
+  const br = bo ? row(sTile('skull', '#f87171'), esc(bo.name), bo.done ? T('Boss du mois vaincu', 'Boss of the month defeated') : `${T('Boss du mois', 'Boss of the month')} · ${bo.left} ${T('j', 'd')}`, pc(bo.cur - bo.from * .85, bo.target - bo.from * .85), bo.done) : '';
   const miss = pen && !q.rest ? `<span class="gqmiss">${ic('alert', 14)} ${T('Quête d\'hier ratée : −' + qfXP(qFail()[dkey(new Date(Date.now() - 864e5))]) + ' XP', 'Yesterday\'s quest failed: −' + qfXP(qFail()[dkey(new Date(Date.now() - 864e5))]) + ' XP')}</span>` : '';
-  return `<button class="card gwin gsum gcol gquest" data-act="go" data-v="gquests"><span class="ghd"><b>${T('Quêtes', 'Quests')}</b><small>${nd} / ${tot} ${T('accomplies', 'complete')}</small><span class="chev">${CHEV}</span></span>${qr}${dr}${br}${miss}</button>`;
+  return `<div class="card sysw gwin gsum2 gcol gquest" data-act="go" data-v="gquests" role="button"><div class="ghd"><span class="sysh gsh">[ ${T('QUÊTES', 'QUESTS')} ]</span><small>${nd} / ${tot} ${T('accomplies', 'complete')}</small><span class="chev">${CHEV}</span></div>${qr}${dr}${br}${miss}</div>`;
 }
 function gRaidSum() {
   const fr = FRS().list.length;
   if (!fr && !S.guild) return '';
   const wk = wkKey(new Date()), st = raidState(wk);
-  if (st.rows.length < 2) return `<button class="card gwin gsum graidsum" data-act="go" data-v="graid">${sTile('shield', '#60a5fa', 22)}<span class="gsx"><b>${T('Raid de guilde', 'Guild raid')}</b><small>${st.guild ? T('Commence dès qu\'un autre membre rejoint ta guilde.', 'Starts as soon as another member joins your guild.') : T('Commence dès qu\'un ami a l\'appli à jour.', 'Starts as soon as a friend has the app up to date.')}</small></span><span class="chev">${CHEV}</span></button>`;
-  const bi = raBossIdx(wk), hp = st.done ? 0 : Math.max(0, st.goal - st.tot), left = Math.max(0, Math.ceil((+new Date(wk + 'T00:00:00') + 7 * 864e5 - Date.now()) / 864e5)), en = raAvail(wk, st);
-  return `<button class="card gwin gsum graidsum" data-act="go" data-v="graid"><span class="gboss"><img src="boss/r${bi}.webp" alt="" decoding="async" onerror="this.remove()"></span>
-    <span class="gsx"><small>${T('Raid de la semaine', 'Raid of the week')} · ${left} ${T('j', 'd')}</small><b>${esc(gCap(T(RAID_BOSS[bi][0], RAID_BOSS[bi][1])))}</b>${gBar(st.goal ? hp / st.goal * 100 : 0, 'linear-gradient(90deg,#ff5a5f,#ff9f1c)')}
-      <small>${st.done ? `<b style="color:var(--ok)">${T('Vaincu', 'Defeated')}</b>` : `${T('PV', 'HP')} ${gFmt(hp)} / ${gFmt(st.goal)}`}</small>${!st.done ? `<span class="gchips"><em class="${en > 0 ? '' : 'off'}">${T('Énergie', 'Energy')} ${en}</em></span>` : ''}</span><span class="chev">${CHEV}</span></button>`;
+  if (st.rows.length < 2) return `<div class="card sysw gwin gsum2 graidsum" data-act="go" data-v="graid" role="button"><div class="sysh gsh">[ ${T('RAID DE LA SEMAINE', 'RAID OF THE WEEK')} ]</div><div class="row" style="gap:12px;align-items:center">${sTile('shield', '#60a5fa', 22)}<small class="muted" style="flex:1">${st.guild ? T('Le raid commence dès qu\'un autre membre rejoint ta guilde.', 'The raid starts as soon as another member joins your guild.') : T('Le raid commence dès qu\'un ami a l\'appli à jour.', 'The raid starts as soon as a friend has the app up to date.')}</small><span class="chev">${CHEV}</span></div></div>`;
+  const bi = raBossIdx(wk), hp = st.done ? 0 : Math.max(0, st.goal - st.tot), left = Math.max(0, Math.ceil((+new Date(wk + 'T00:00:00') + 7 * 864e5 - Date.now()) / 864e5)), en = raAvail(wk, st), on = st.rows.filter(r => r.r > 0).length;
+  const btn = st.done ? `<span class="gcta big ok">${ic('check', 16)} ${T('Boss vaincu cette semaine', 'Boss defeated this week')}</span>`
+    : en > 0 ? `<span class="gcta big">${ic('swords', 16)} ${T('Attaquer', 'Attack')} · ${T('énergie', 'energy')} ${en}</span>`
+    : `<span class="gcta big off">${T('Entraîne-toi pour gagner de l\'énergie', 'Train to earn energy')}</span>`;
+  return `<div class="card sysw gwin gsum2 graidsum" data-act="go" data-v="graid" role="button"><div class="ghd"><span class="sysh gsh">[ ${T('RAID DE LA SEMAINE', 'RAID OF THE WEEK')} ]</span><small>${left} ${T(left > 1 ? 'j restants' : 'j restant', left > 1 ? 'days left' : 'day left')}</small><span class="chev">${CHEV}</span></div>
+    <div class="gbrow"><span class="gboss${st.done ? ' dead' : ''}"><img src="boss/r${bi}.webp" alt="" decoding="async" onerror="this.remove()"></span>
+      <span class="gsx"><b class="gbn">${esc(gCap(T(RAID_BOSS[bi][0], RAID_BOSS[bi][1])))}</b>${gBar(st.goal ? hp / st.goal * 100 : 0, 'linear-gradient(90deg,#ff5a5f,#ff9f1c)')}
+        <small>${T('PV', 'HP')} <b class="gnum">${gFmt(hp)}</b> / ${gFmt(st.goal)}</small><small>${on} ${T(on > 1 ? 'aventuriers au combat' : 'aventurier au combat', on > 1 ? 'adventurers fighting' : 'adventurer fighting')}</small></span></div>${btn}</div>`;
 }
 function gGuildSum() {
   const g = S.guild;
-  if (!g) return `<button class="card gwin gsum gguildsum" data-act="go" data-v="gguild">${sTile('users', '#c6f135', 22)}<span class="gsx"><b>${T('Ma guilde', 'My guild')}</b><small>${T('Crée ou rejoins une guilde avec tes amis : toute l\'XP des membres la fait monter de niveau.', 'Create or join a guild with your friends: all members\' XP levels it up.')}</small></span><span class="chev">${CHEV}</span></button>`;
-  const mem = (g.mem || []).slice().sort((x, y) => y.wk - x.wk || y.c - x.c), i = mem.findIndex(m => m.uid === g.me);
-  return `<button class="card gwin gsum gguildsum" data-act="go" data-v="gguild"><span class="gldcrest gcrest">${embSvg(g.emb || '⚔️')}</span><span class="gsx"><b>${esc(g.name || T('Ma guilde', 'My guild'))}</b><small>${T('Niveau', 'Level')} ${g.lvl || 1} · ${mem.length || 1} / ${GLD_MAX} ${T(mem.length > 1 ? 'membres' : 'membre', mem.length > 1 ? 'members' : 'member')}</small>${i >= 0 && mem.length > 1 ? `<small>${T('Toi', 'You')} : ${T(i + 1 + (i ? 'e' : 'er'), '#' + (i + 1))} ${T('cette semaine', 'this week')}</small>` : ''}</span><span class="chev">${CHEV}</span></button>`;
+  if (!g) return `<div class="card sysw gwin gsum2 gguildsum" data-act="go" data-v="gguild" role="button"><div class="sysh gsh">[ ${T('MA GUILDE', 'MY GUILD')} ]</div><div class="row" style="gap:12px;align-items:center">${sTile('users', '#c6f135', 22)}<small class="muted" style="flex:1">${T('Crée ou rejoins une guilde avec tes amis : toute l\'XP des membres la fait monter de niveau et débloque des récompenses pour tous.', 'Create or join a guild with your friends: all members\' XP levels it up and unlocks rewards for everyone.')}</small><span class="chev">${CHEV}</span></div></div>`;
+  const lv = g.lvl || 1, a = gldAt(lv), b = gldAt(lv + 1), mem = (g.mem || []).slice().sort((x, y) => y.wk - x.wk || y.c - x.c), i = mem.findIndex(m => m.uid === g.me), pct = ((g.xp || 0) - a) / Math.max(1, b - a) * 100;
+  return `<div class="card sysw gwin gsum2 gguildsum" data-act="go" data-v="gguild" role="button"><div class="gldhead${g.bn ? bannerCls(g.bn) : ''}"><span class="gldcrest">${embSvg(g.emb || '⚔️')}</span><div style="min-width:0;flex:1"><b class="gldname">${esc(g.name || '')}</b><small>${T('Niveau', 'Level')} ${lv} · ${mem.length || 1} / ${GLD_MAX} ${T(mem.length > 1 ? 'membres' : 'membre', mem.length > 1 ? 'members' : 'member')}</small></div><span class="chev">${CHEV}</span></div>
+    ${gBar(pct)}<div class="row between small muted" style="margin-top:2px"><span>${T('XP de guilde', 'Guild XP')}</span>${i >= 0 && mem.length > 1 ? `<span>${T('Toi', 'You')} : <b class="gnum">${T(i + 1 + (i ? 'e' : 'er'), '#' + (i + 1))}</b> ${T('cette semaine', 'this week')}</span>` : ''}</div></div>`;
 }
 function gLeagueSum() {
-  if (!S.settings.lbOn) return `<button class="card gwin gsum glgsum" data-act="go" data-v="gleague">${sTile('trophy', '#fb923c', 22)}<span class="gsx"><b>${T('Ligues de la semaine', 'Weekly leagues')}</b><small>${T('Affronte chaque semaine des aventuriers de ton niveau, même sans amis inscrits.', 'Face adventurers at your level every week, even without friends signed up.')}</small></span><span class="chev">${CHEV}</span></button>`;
+  if (!S.settings.lbOn) return `<div class="card sysw gwin gsum2 glgsum" data-act="go" data-v="gleague" role="button"><div class="sysh gsh">[ ${T('LIGUES DE LA SEMAINE', 'WEEKLY LEAGUES')} ]</div><div class="row" style="gap:12px;align-items:center">${sTile('trophy', '#fb923c', 22)}<small class="muted" style="flex:1">${T('Affronte chaque semaine des aventuriers de ton niveau, même sans amis inscrits.', 'Face adventurers at your level every week, even without friends signed up.')}</small><span class="chev">${CHEV}</span></div></div>`;
   const L = lgS(); setTimeout(() => { lgRoll().then(() => lgJoin()).then(() => lgLoad(false)); }, 0);
   const left = Math.max(0, Math.ceil((wkRange(wkKey(new Date()))[1] - Date.now()) / 864e5)), lc = LG[L.t][2];
-  let sub = T('Chargement…', 'Loading…');
+  let pos = '', sub = T('Chargement…', 'Loading…'), top = '';
   if (lgData && lgData.key === lgKey(wkKey(new Date()), L.t, lgG(L, wkKey(new Date()))) && !lgData.err) {
     const R = lgData.rows, i = R.findIndex(r => r.me), act = R.filter(r => r.x > 0).length, up = L.t < LG.length - 1 ? lgUp(act) : 0, dn = L.t > 0 ? lgDn(act) : 0;
-    const z = i < 0 ? '' : up && i < up && act ? `<span style="color:var(--ok)">${T('zone de montée', 'promotion zone')}</span>` : dn && i >= act - dn ? `<span style="color:var(--warm)">${T('zone de descente', 'demotion zone')}</span>` : '';
-    sub = i >= 0 ? `${T(i + 1 + (i ? 'e' : 'er'), '#' + (i + 1))} ${T('sur', 'of')} ${R.length}${z ? ' · ' + z : ''}` : `${R.length} ${T('aventuriers', 'adventurers')}`;
+    pos = i >= 0 ? T(i + 1 + (i ? 'e' : 'er'), '#' + (i + 1)) : '';
+    sub = (i >= 0 ? `${T('sur', 'of')} ${R.length}` : `${R.length} ${T('aventuriers', 'adventurers')}`) + (i < 0 ? '' : up && i < up && act ? ` · <span style="color:var(--ok)">${T('zone de montée', 'promotion zone')}</span>` : dn && i >= act - dn ? ` · <span style="color:var(--warm)">${T('zone de descente', 'demotion zone')}</span>` : '');
+    top = R.slice(0, 3).map((r, j) => `<span class="gtop${r.me ? ' me' : ''}"><i>${j + 1}</i>${esc(r.me ? T('Toi', 'You') : (r.n || '?'))}<em>${gFmt(r.x || 0)}</em></span>`).join('');
   }
-  return `<button class="card gwin gsum glgsum" data-act="go" data-v="gleague" style="border-color:color-mix(in srgb,${lc} 40%,var(--line))"><span class="glgic" style="--lc:${lc}"><i></i></span><span class="gsx"><small>${T('Ligues de la semaine', 'Weekly leagues')} · ${left} ${T('j', 'd')}</small><b style="color:${lc}">${esc(T('Ligue ' + LG[L.t][0], LG[L.t][1] + ' League'))}</b><small>${sub}</small></span><span class="chev">${CHEV}</span></button>`;
+  return `<div class="card gwin gsum2 glgsum" data-act="go" data-v="gleague" role="button" style="--lc:${lc};border:1.5px solid color-mix(in srgb,${lc} 60%,transparent);box-shadow:0 0 22px -10px ${lc}"><div class="ghd"><span class="sysh gsh" style="color:${lc}">[ ${T('LIGUES DE LA SEMAINE', 'WEEKLY LEAGUES')} ]</span><small>${left} ${T('j', 'd')}</small><span class="chev">${CHEV}</span></div>
+    <div class="row" style="gap:14px;align-items:center"><span class="glgic"><i></i></span><span class="gsx"><b class="gbn" style="color:${lc}">${esc(T('Ligue ' + LG[L.t][0], LG[L.t][1] + ' League'))}</b><small>${pos ? `<b class="gpos">${pos}</b> ` : ''}${sub}</small></span></div>${top ? `<div class="gtops">${top}</div>` : ''}</div>`;
 }
 function gSeasonSum() {
-  const m = monKey(new Date()), fr = FRS().list.length;
-  let sub = T('Ajoute des amis pour te mesurer à eux chaque mois.', 'Add friends to compete with them every month.');
-  if (fr) { const rows = seasonRows(m).slice().sort((a, b) => b.xp - a.xp), i = rows.findIndex(r => r.me), left = Math.ceil((monEnd(m) - Date.now()) / 864e5);
-    sub = rows.length > 1 ? `${T(i + 1 + (i ? 'e' : 'er'), '#' + (i + 1))} ${T('sur', 'of')} ${rows.length} · ${gFmt(rows[i].xp)} XP · ${left} ${T('j', 'd')}` : T('La saison commence dès qu\'un ami a l\'appli à jour.', 'The season starts as soon as a friend has the app up to date.'); }
-  return `<button class="card gwin gsum gseasum" data-act="go" data-v="gseason">${sTile('crown', '#facc15', 22)}<span class="gsx"><small>${T('Saison de', 'Season of')} ${esc(monName(m))}</small><b>${T('Saison du mois', 'Monthly season')}</b><small>${sub}</small></span><span class="chev">${CHEV}</span></button>`;
+  const m = monKey(new Date()), fr = FRS().list.length, left = Math.ceil((monEnd(m) - Date.now()) / 864e5);
+  let body = `<small class="muted">${T('Ajoute des amis pour te mesurer à eux chaque mois.', 'Add friends to compete with them every month.')}</small>`, top = '';
+  if (fr) { const rows = seasonRows(m).slice().sort((a, b) => b.xp - a.xp), i = rows.findIndex(r => r.me);
+    if (rows.length > 1) { body = `<small><b class="gpos">${T(i + 1 + (i ? 'e' : 'er'), '#' + (i + 1))}</b> ${T('sur', 'of')} ${rows.length} · ${gFmt(rows[i].xp)} XP</small>`;
+      top = rows.slice(0, 3).map((r, j) => `<span class="gtop${r.me ? ' me' : ''}"><i>${j + 1}</i>${esc(r.me ? T('Toi', 'You') : ((r.d && r.d.name) || '?'))}<em>${gFmt(r.xp)}</em></span>`).join(''); }
+    else body = `<small class="muted">${T('La saison commence dès qu\'un ami a l\'appli à jour.', 'The season starts as soon as a friend has the app up to date.')}</small>`; }
+  return `<div class="card sysw gwin gsum2 gseasum" data-act="go" data-v="gseason" role="button"><div class="ghd"><span class="sysh gsh">[ ${T('SAISON DE', 'SEASON OF')} ${esc(monName(m).toUpperCase())} ]</span><small>${left} ${T('j', 'd')}</small><span class="chev">${CHEV}</span></div>
+    <div class="row" style="gap:14px;align-items:center">${sTile('crown', '#facc15', 24)}<span class="gsx"><b class="gbn">${T('Trophée de la saison', 'Season trophy')}</b>${body}</span></div>${top ? `<div class="gtops">${top}</div>` : ''}</div>`;
 }
 function gLinks(keys) {
   const fr = FRS().list.length, [aOk, aTot] = armoryCount(), sh = shadowArmy().length, me = medalsEarned();
@@ -11028,7 +11068,7 @@ function vGuild() {
     day: () => `${gHeroSum()}${chestPendBtn()}${compCard()}${gQuestSum()}`,
     raid: () => `${gRaidSum()}${gGuildSum()}<div class="sgrp gl">${gLinks(['friends'])}</div>`,
     rank: () => `${gLeagueSum()}${gSeasonSum()}<div class="sgrp gl">${gLinks(['world', 'friends'])}</div>`,
-    coll: () => `<div class="sgrp gl gcoll">${gLinks(['armory', 'medals', 'bestiary', 'shadows', 'murank'])}</div>`
+    coll: () => `<div class="gherocard">${heroCard()}</div><div class="sgrp gl gcoll">${gLinks(['armory', 'medals', 'bestiary', 'shadows', 'murank'])}</div>`
   };
   return bar + `<div class="gtabbody">${body[gt]()}</div>`;
 }
