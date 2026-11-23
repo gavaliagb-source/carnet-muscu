@@ -1,0 +1,58 @@
+--------- beginning of main
+11-23 00:20:04.761  4469  4469 I RLSTEP  : send n=0 hs=0 capteur=0 ecran=on
+11-23 00:20:04.779  4469  4469 I RLSTEP  : rappel enregistré
+11-23 00:20:04.807  4469  4469 I RLSTEP  : dbg exercice montre démarré
+11-23 00:20:04.819  4469  4469 I RLSTEP  : maj #1 etat=USER_STARTING types=
+11-23 00:20:04.819  4469  4469 I RLSTEP  : maj #2 etat=ACTIVE types=
+11-23 00:20:04.820  4469  4469 I RLSTEP  : dispo Steps ACQUIRING
+11-23 00:20:04.820  4469  4469 I RLSTEP  : dispo HeartRate ACQUIRING
+11-23 00:20:05.813  4469  4469 I RLSTEP  : dispo Steps AVAILABLE
+11-23 00:20:05.814  4469  4469 I RLSTEP  : dispo HeartRate AVAILABLE
+11-23 00:20:05.823  4469  4469 I RLSTEP  : maj #3 etat=ACTIVE types=HeartRate, Steps
+11-23 00:20:05.823  4469  4469 I RLSTEP  : pouls hs 60
+11-23 00:20:06.818  4469  4469 I RLSTEP  : send n=2 hs=2 capteur=0 ecran=on
+11-23 00:20:07.819  4469  4469 I RLSTEP  : send n=4 hs=4 capteur=0 ecran=on
+11-23 00:20:08.820  4469  4469 I RLSTEP  : send n=6 hs=6 capteur=0 ecran=on
+11-23 00:20:09.821  4469  4469 I RLSTEP  : send n=8 hs=8 capteur=0 ecran=on
+11-23 00:20:10.821  4469  4469 I RLSTEP  : send n=10 hs=10 capteur=0 ecran=on
+11-23 00:20:11.821  4469  4469 I RLSTEP  : send n=12 hs=12 capteur=0 ecran=on
+11-23 00:20:12.821  4469  4469 I RLSTEP  : send n=14 hs=14 capteur=0 ecran=on
+11-23 00:20:13.822  4469  4469 I RLSTEP  : send n=16 hs=16 capteur=0 ecran=on
+11-23 00:20:14.826  4469  4469 I RLSTEP  : send n=18 hs=18 capteur=0 ecran=on
+11-23 00:20:16.772  4469  4469 I RLSTEP  : send n=20 hs=20 capteur=0 ecran=on
+11-23 00:20:17.773  4469  4469 I RLSTEP  : send n=22 hs=22 capteur=0 ecran=on
+11-23 00:20:18.774  4469  4469 I RLSTEP  : send n=24 hs=24 capteur=0 ecran=on
+11-23 00:20:19.774  4469  4469 I RLSTEP  : send n=26 hs=26 capteur=0 ecran=on
+11-23 00:20:20.775  4469  4469 I RLSTEP  : send n=28 hs=28 capteur=0 ecran=on
+11-23 00:20:21.775  4469  4469 I RLSTEP  : send n=30 hs=30 capteur=0 ecran=on
+11-23 00:20:22.782  4469  4469 I RLSTEP  : send n=32 hs=32 capteur=0 ecran=on
+11-23 00:20:22.828  4469  4469 I RLSTEP  : maj #20 etat=ACTIVE types=HeartRate, Steps
+11-23 00:20:23.783  4469  4469 I RLSTEP  : send n=34 hs=34 capteur=0 ecran=on
+11-23 00:20:24.784  4469  4469 I RLSTEP  : send n=36 hs=36 capteur=0 ecran=on
+11-23 00:20:25.784  4469  4469 I RLSTEP  : send n=38 hs=38 capteur=0 ecran=on
+11-23 00:20:26.784  4469  4469 I RLSTEP  : send n=40 hs=40 capteur=0 ecran=on
+11-23 00:20:27.784  4469  4469 I RLSTEP  : send n=42 hs=42 capteur=0 ecran=on
+11-23 00:20:28.785  4469  4469 I RLSTEP  : send n=44 hs=44 capteur=0 ecran=on
+11-23 00:20:29.785  4469  4469 I RLSTEP  : send n=46 hs=46 capteur=0 ecran=on
+11-23 00:20:30.785  4469  4469 I RLSTEP  : send n=48 hs=48 capteur=0 ecran=on
+11-23 00:20:31.785  4469  4469 I RLSTEP  : send n=50 hs=50 capteur=0 ecran=on
+11-23 00:20:32.785  4469  4469 I RLSTEP  : send n=52 hs=52 capteur=0 ecran=on
+11-23 00:20:33.785  4469  4469 I RLSTEP  : send n=54 hs=54 capteur=0 ecran=on
+11-23 00:20:34.785  4469  4469 I RLSTEP  : send n=56 hs=56 capteur=0 ecran=on
+11-23 00:20:35.785  4469  4469 I RLSTEP  : send n=58 hs=58 capteur=0 ecran=on
+11-23 00:20:36.786  4469  4469 I RLSTEP  : send n=60 hs=60 capteur=0 ecran=on
+11-23 00:20:37.787  4469  4469 I RLSTEP  : send n=62 hs=62 capteur=0 ecran=on
+11-23 00:20:38.800  4469  4469 I RLSTEP  : send n=64 hs=64 capteur=0 ecran=on
+11-23 00:20:39.801  4469  4469 I RLSTEP  : send n=66 hs=66 capteur=0 ecran=on
+11-23 00:20:40.802  4469  4469 I RLSTEP  : send n=68 hs=68 capteur=0 ecran=off
+11-23 00:20:43.814  4469  4469 I RLSTEP  : send n=74 hs=74 capteur=0 ecran=off
+11-23 00:20:53.826  4469  4469 I RLSTEP  : maj #40 etat=ACTIVE types=HeartRate
+11-23 00:20:53.828  4469  4469 I RLSTEP  : send n=94 hs=94 capteur=0 ecran=off
+11-23 00:21:03.842  4469  4469 I RLSTEP  : send n=114 hs=114 capteur=0 ecran=off
+11-23 00:21:13.855  4469  4469 I RLSTEP  : send n=136 hs=136 capteur=0 ecran=off
+11-23 00:21:23.865  4469  4469 I RLSTEP  : send n=156 hs=156 capteur=0 ecran=off
+11-23 00:21:33.879  4469  4469 I RLSTEP  : send n=176 hs=176 capteur=0 ecran=off
+11-23 00:21:43.853  4469  4469 I RLSTEP  : send n=196 hs=196 capteur=0 ecran=on
+11-23 00:21:44.882  4469  4469 I RLSTEP  : send n=198 hs=198 capteur=0 ecran=on
+11-23 00:21:45.884  4469  4469 I RLSTEP  : send n=200 hs=200 capteur=0 ecran=on
+11-23 00:21:46.885  4469  4469 I RLSTEP  : send n=202 hs=202 capteur=0 ecran=on

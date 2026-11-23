@@ -1,0 +1,80 @@
+écran 454 454 Physical density: 320
+Performing Streamed Install
+Success
+
+appli prête après 0 s
+capture routines
+capture routines_bas
+toucher 'Épaule bras'
+appli prête après 0 s
+capture detail_routine
+capture detail_bas
+toucher 'Commencer'
+appli prête après 0 s
+capture serie
+toucher '✓'
+appli prête après 0 s
+capture repos
+toucher '+30'
+appli prête après 0 s
+capture repos_plus30
+toucher 'Passer'
+appli prête après 0 s
+capture serie_2
+capture roue_charge_lent
+capture roue_charge_coup_fort
+capture roue_reps_baisse
+lunette : Unknown command: rotaryencoder
+capture lunette
+toucher 'Série suivante'
+appli prête après 0 s
+capture fleche_suivante
+toucher 'Série précédente'
+appli prête après 0 s
+capture fleche_precedente
+capture liste_exos
+capture liste_exos_bas
+capture options
+toucher 'Remplacer'
+appli prête après 0 s
+capture remplacer
+capture remplacer_bas
+capture retour_options
+toucher 'Type'
+appli prête après 0 s
+capture type_change
+toucher 'Ajouter une série'
+appli prête après 0 s
+toucher 'Abandonner'
+appli prête après 0 s
+capture confirmer_abandon
+toucher 'Non'
+appli prête après 0 s
+capture apres_non
+fluidité Total frames rendered: 2237
+fluidité Janky frames: 1512 (67.59%)
+fluidité Janky frames (legacy): 1870 (83.59%)
+fluidité 50th percentile: 20ms
+fluidité 90th percentile: 22ms
+fluidité 95th percentile: 23ms
+fluidité 99th percentile: 25ms
+fluidité Number Slow UI thread: 18
+fluidité Number Slow bitmap uploads: 0
+fluidité Number Slow issue draw commands: 1504
+fluidité Number Frame deadline missed: 1512
+fluidité Number Frame deadline missed (legacy): 2
+fluidité 50th gpu percentile: 13ms
+fluidité 90th gpu percentile: 14ms
+fluidité 95th gpu percentile: 14ms
+fluidité 99th gpu percentile: 15ms
+appli pas prête
+capture serie_texte_grand
+capture liste_texte_grand
+capture reprise_apres_relance
+appli prête après 0 s
+capture cardio_tapis
+Broadcasting: Intent { act=whs.synthetic.user.START_WALKING flg=0x400000 pkg=com.google.android.wearable.healthservices 
+capture cardio_tapis_25s
+écran : mWakefulness=Dozing
+PAS : envois 45 · écran éteint 7 · messages ['  : dbg exercice montre démarré']
+PLANTAGES : aucun

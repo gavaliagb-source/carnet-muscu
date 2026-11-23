@@ -1,0 +1,59 @@
+Applications Graphics Acceleration Info:
+Uptime: 139658 Realtime: 139658
+
+** Graphics info for pid 2224 [app.runelift] **
+
+Stats since: 75319454822ns
+Total frames rendered: 2237
+Janky frames: 1512 (67.59%)
+Janky frames (legacy): 1870 (83.59%)
+50th percentile: 20ms
+90th percentile: 22ms
+95th percentile: 23ms
+99th percentile: 25ms
+Number Missed Vsync: 2
+Number High input latency: 2796
+Number Slow UI thread: 18
+Number Slow bitmap uploads: 0
+Number Slow issue draw commands: 1504
+Number Frame deadline missed: 1512
+Number Frame deadline missed (legacy): 2
+HISTOGRAM: 5ms=1 6ms=1 7ms=0 8ms=0 9ms=1 10ms=0 11ms=0 12ms=1 13ms=11 14ms=18 15ms=68 16ms=305 17ms=219 18ms=140 19ms=255 20ms=419 21ms=443 22ms=212 23ms=96 24ms=22 25ms=6 26ms=6 27ms=3 28ms=2 29ms=2 30ms=1 31ms=1 32ms=0 34ms=0 36ms=0 38ms=0 40ms=0 42ms=0 44ms=0 46ms=0 48ms=0 53ms=0 57ms=0 61ms=0 65ms=0 69ms=0 73ms=0 77ms=0 81ms=0 85ms=0 89ms=0 93ms=0 97ms=0 101ms=1 105ms=0 109ms=0 113ms=0 117ms=0 121ms=0 125ms=0 129ms=0 133ms=0 150ms=0 200ms=1 250ms=1 300ms=0 350ms=0 400ms=0 450ms=1 500ms=0 550ms=0 600ms=0 650ms=0 700ms=0 750ms=0 800ms=0 850ms=0 900ms=0 950ms=0 1000ms=0 1050ms=0 1100ms=0 1150ms=0 1200ms=0 1250ms=0 1300ms=0 1350ms=0 1400ms=0 1450ms=0 1500ms=0 1550ms=0 1600ms=0 1650ms=0 1700ms=0 1750ms=0 1800ms=0 1850ms=0 1900ms=0 1950ms=0 2000ms=0 2050ms=0 2100ms=0 2150ms=0 2200ms=0 2250ms=0 2300ms=0 2350ms=0 2400ms=0 2450ms=0 2500ms=0 2550ms=0 2600ms=0 2650ms=0 2700ms=0 2750ms=0 2800ms=0 2850ms=0 2900ms=0 2950ms=0 3000ms=0 3050ms=0 3100ms=0 3150ms=0 3200ms=0 3250ms=0 3300ms=0 3350ms=0 3400ms=0 3450ms=0 3500ms=0 3550ms=0 3600ms=0 3650ms=0 3700ms=0 3750ms=0 3800ms=0 3850ms=0 3900ms=0 3950ms=0 4000ms=0 4050ms=0 4100ms=0 4150ms=0 4200ms=0 4250ms=0 4300ms=0 4350ms=0 4400ms=0 4450ms=0 4500ms=0 4550ms=0 4600ms=0 4650ms=0 4700ms=0 4750ms=0 4800ms=0 4850ms=0 4900ms=0 4950ms=0
+50th gpu percentile: 13ms
+90th gpu percentile: 14ms
+95th gpu percentile: 14ms
+99th gpu percentile: 15ms
+GPU HISTOGRAM: 1ms=1 2ms=3 3ms=3 4ms=3 5ms=2 6ms=1 7ms=2 8ms=6 9ms=8 10ms=32 11ms=129 12ms=419 13ms=1209 14ms=329 15ms=76 16ms=12 17ms=0 18ms=0 19ms=0 20ms=0 21ms=0 22ms=0 23ms=0 24ms=0 25ms=0 4950ms=2
+
+Pipeline=Skia (OpenGL)
+CPU Caches:
+  Glyph Cache: 168.28 KB (1 entry)
+  Glyph Count: 66 
+Total CPU memory usage:
+  172318 bytes, 168.28 KB (0.00 bytes is purgeable)
+GPU Caches:
+  Other:
+    Other: 2.08 KB (1 entry)
+    StencilAttachment: 16.00 KB (1 entry)
+    Buffer Object: 464.00 bytes (2 entries)
+  Image:
+    Texture: 632.81 KB (5 entries)
+  Scratch:
+    Buffer Object: 112.00 KB (3 entries)
+    Texture: 2.00 MB (1 entry)
+Total GPU memory usage:
+  2878816 bytes, 2.75 MB (713.27 KB is purgeable)
+
+Profile data in ms:
+
+	app.runelift/app.runelift.wear.WatchActivity/android.view.ViewRootImpl@8026d72 (visibility=0)
+View hierarchy:
+
+  app.runelift/app.runelift.wear.WatchActivity/android.view.ViewRootImpl@8026d72
+  19 views, 45.55 kB of render nodes
+
+
+Total ViewRootImpl   : 1
+Total attached Views : 19
+Total RenderNode     : 45.55 kB (used) / 161.55 kB (capacity)
+
