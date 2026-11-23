@@ -8,6 +8,9 @@ import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.RestingHeartRateRecord
+import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
@@ -43,7 +46,10 @@ class RLHealthPlugin : Plugin() {
     private val pHrW = HealthPermission.getWritePermission(HeartRateRecord::class)
     private val pTcal = HealthPermission.getWritePermission(TotalCaloriesBurnedRecord::class)
     private val pSteps = HealthPermission.getReadPermission(StepsRecord::class)
-    private val perms = setOf(pWorkout, pKcal, pWeight, pHr, pHrW, pTcal, pSteps)
+    private val pSleep = HealthPermission.getReadPermission(SleepSessionRecord::class)
+    private val pRhr = HealthPermission.getReadPermission(RestingHeartRateRecord::class)
+    private val pHrv = HealthPermission.getReadPermission(HeartRateVariabilityRmssdRecord::class)
+    private val perms = setOf(pWorkout, pKcal, pWeight, pHr, pHrW, pTcal, pSteps, pSleep, pRhr, pHrv)
 
     private fun sdk() = HealthConnectClient.getSdkStatus(context)
     private fun client() = HealthConnectClient.getOrCreate(context)
@@ -64,6 +70,9 @@ class RLHealthPlugin : Plugin() {
         if (pHrW in g) a.put("heartw")
         if (pTcal in g) a.put("tcal")
         if (pSteps in g) a.put("steps")
+        if (pSleep in g) a.put("sleep")
+        if (pRhr in g) a.put("rhr")
+        if (pHrv in g) a.put("hrv")
         return a
     }
 
@@ -72,7 +81,7 @@ class RLHealthPlugin : Plugin() {
         val s = sdk()
         val r = JSObject()
         r.put("available", s == HealthConnectClient.SDK_AVAILABLE)
-        r.put("ver", 4) // 3 = + pouls et calories totales, 4 = + pas
+        r.put("ver", 5) // 3 = + pouls et calories totales, 4 = + pas, 5 = + sommeil, pouls au repos, VFC
         r.put("reason", when (s) {
             HealthConnectClient.SDK_AVAILABLE -> "ok"
             HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> "update"
@@ -199,6 +208,25 @@ class RLHealthPlugin : Plugin() {
             if (pSteps !in c.permissionController.getGrantedPermissions()) { reject("no_permission"); return@safe }
             val r = c.aggregate(AggregateRequest(setOf(StepsRecord.COUNT_TOTAL), TimeRangeFilter.between(start, end)))
             resolve(JSObject().put("steps", r[StepsRecord.COUNT_TOTAL] ?: 0L))
+        }
+    }
+
+    /* Récupération : sommeil (avec les phases), pouls au repos et VFC entre start et end. Chaque partie seulement si elle est autorisée. */
+    @PluginMethod
+    fun readRecovery(call: PluginCall) {
+        if (sdk() != HealthConnectClient.SDK_AVAILABLE) { call.reject("unavailable"); return }
+        val start = Instant.parse(call.getString("start") ?: run { call.reject("start"); return })
+        val end = Instant.parse(call.getString("end") ?: run { call.reject("end"); return })
+        call.safe {
+            val c = client(); val g = c.permissionController.getGrantedPermissions(); val tr = TimeRangeFilter.between(start, end)
+            val sl = JSArray(); val rh = JSArray(); val hv = JSArray()
+            if (pSleep in g) for (r in c.readRecords(ReadRecordsRequest(SleepSessionRecord::class, tr, pageSize = 100)).records) {
+                val st = JSArray(); for (x in r.stages) st.put(JSObject().put("k", x.stage).put("s", x.startTime.toString()).put("e", x.endTime.toString()))
+                sl.put(JSObject().put("s", r.startTime.toString()).put("e", r.endTime.toString()).put("st", st).put("src", r.metadata.dataOrigin.packageName))
+            }
+            if (pRhr in g) for (r in c.readRecords(ReadRecordsRequest(RestingHeartRateRecord::class, tr, pageSize = 200)).records) rh.put(JSObject().put("t", r.time.toString()).put("bpm", r.beatsPerMinute))
+            if (pHrv in g) for (r in c.readRecords(ReadRecordsRequest(HeartRateVariabilityRmssdRecord::class, tr, pageSize = 1000)).records) hv.put(JSObject().put("t", r.time.toString()).put("ms", r.heartRateVariabilityMillis))
+            resolve(JSObject().put("sleep", sl).put("rhr", rh).put("hrv", hv))
         }
     }
 
