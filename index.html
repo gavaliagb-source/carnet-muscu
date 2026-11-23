@@ -378,6 +378,28 @@ html.moving :is(.rkf,.pfhead,.frhero,.armit,.chbtn,.cpw,.frm-glow,[class*="bn-"]
 .ghero{background:linear-gradient(150deg,color-mix(in srgb,var(--rc) 16%,var(--card)),var(--card) 65%);border:1px solid color-mix(in srgb,var(--rc) 40%,var(--line));border-radius:18px;padding:16px;margin-bottom:12px}
 .glv{display:flex;align-items:baseline;gap:8px}.glv span{color:var(--muted);font-size:13px}.glv b{font-size:30px;line-height:1}.gtitle{color:var(--rc);font-weight:700;font-size:14px;margin-top:2px}
 .gcls{margin-top:6px;background:none;border:0;padding:0;color:var(--text);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px;text-align:left}
+/* Guilde épurée */
+.gtabbody{margin-top:12px}
+.gsum{display:flex;align-items:center;gap:14px;width:100%;text-align:left;color:var(--text);font:inherit;cursor:pointer;padding:14px 14px 14px 16px;margin:0 0 12px;position:relative}
+.gsum:active{transform:scale(.99)}
+.gsum .gsx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.gsum .gsx>b{font-size:17px;line-height:1.25}.gsum .gsx small{color:var(--muted);font-size:12.5px;line-height:1.4}
+.gsum .chev{color:var(--muted);display:flex;flex:none}
+.gnum{color:var(--text);font-size:13px}
+.gbar{display:block;height:7px;border-radius:9px;background:var(--line);overflow:hidden;margin:5px 0 1px}.gbar i{display:block;height:100%;border-radius:9px;background:var(--accent);transition:width .4s ease}
+.ghimg{flex:none;width:68px;height:68px;display:flex;align-items:center;justify-content:center}.ghimg img{width:68px;height:68px;object-fit:contain;filter:drop-shadow(0 4px 10px #0007)}
+.gchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}.gchips em{font-style:normal;font-size:12px;font-weight:800;color:var(--accent-ink);background:var(--accent);border-radius:99px;padding:3px 9px}.gchips em.off{background:var(--card2);color:var(--muted)}
+.gsum.gcol{flex-direction:column;align-items:stretch;gap:0;padding:12px 14px}
+.ghd{display:flex;align-items:center;gap:8px;margin-bottom:4px}.ghd b{font-size:16px}.ghd small{color:var(--muted);font-size:12.5px;flex:1}
+.gqr{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--line)}.ghd+.gqr{border-top:0}
+.gqt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.gqt b{font-size:14.5px;font-weight:600;line-height:1.3}.gqt small{color:var(--muted);font-size:12.5px}
+.gqp{width:56px;flex:none}.gqp .gbar{margin:0}.gqok{width:26px;height:26px;border-radius:50%;background:var(--ok);color:#06210f;display:flex;align-items:center;justify-content:center;flex:none}
+.gqr.ok .gqt b{color:var(--muted)}.gqrk{font-weight:900;font-size:15px}
+.gqmiss{display:flex;align-items:center;gap:6px;color:var(--warm);font-size:12.5px;padding-top:8px;border-top:1px solid var(--line)}
+.gboss{flex:none;width:72px;height:72px;border-radius:16px;overflow:hidden;background:radial-gradient(circle,#3ee6b033,transparent 70%),var(--card2)}.gboss img{width:100%;height:100%;object-fit:cover}
+.gldcrest.gcrest{width:50px;height:56px;overflow:hidden}.gcrest img{height:100%;width:auto;max-width:100%}
+.glgic{flex:none;width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--lc) 18%,transparent)}.glgic i{width:20px;height:20px;background:var(--lc);transform:rotate(45deg);border-radius:5px;box-shadow:0 0 14px var(--lc)}
+.sgrp.gl{margin:0 0 12px}
 .gxp{display:block;width:100%;background:none;border:0;padding:0;color:inherit;text-align:left;margin-top:12px}.gxp .sysbar{margin:0 0 6px}
 .ghero .sysstats{margin-top:12px}
 .glist{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
@@ -7067,9 +7089,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.120.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.121.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.121.0', d: '2026-11-23', fr: ['Guilde épurée : chaque onglet montre de petites cartes résumé (ton personnage, tes quêtes, le boss du raid, ta guilde, ta ligue, la saison). Touche une carte pour ouvrir sa page complète. Rien n\'a été enlevé.', 'Collection devient une liste simple : Armurerie, Médailles, Bestiaire, Arsenal et Rangs par muscle.', 'Une notification de raid ouvre directement le combat.'], en: ['Cleaner Guild: each tab shows small summary cards (your character, your quests, the raid boss, your guild, your league, the season). Tap a card to open its full page. Nothing was removed.', 'Collection becomes a simple list: Armory, Medals, Bestiary, Arsenal and Muscle ranks.', 'A raid notification opens the fight directly.']},
   {v: '9.120.2', d: '2026-11-23', fr: ['Visites guidées : une section plus grande que l\'écran n\'est plus encadrée au complet. La visite montre son haut, juste sous le titre, et la bulle ne la cache plus. L\'étape du raid pointe directement sur le boss.'], en: ['Guided tours: a section taller than the screen is no longer framed whole. The tour shows its top, right under the title, and the bubble no longer hides it. The raid step points straight at the boss.']},
   {v: '9.120.1', d: '2026-11-23', fr: ['Mode test : bouton « Visites guidées », et l\'aperçu de l\'accueil se termine par la visite « Les bases », comme pour un vrai nouveau.'], en: ['Test mode: “Guided tours” button, and the welcome preview ends with “The basics” tour, like for a real new user.']},
   {v: '9.120.0', d: '2026-11-23', fr: ['Visites guidées refaites : textes à jour, nouveau look (icône, étape 3 / 8, petite flèche vers ce qu\'on montre) et plus d\'émojis.', 'La visite de la Guilde passe maintenant par ses 4 onglets (Aujourd\'hui, Raid, Classements, Collection), avec les ligues. Nouvelles étapes : séance générée, cardio en direct, fil d\'amis, défis et confidentialité.', 'Les fenêtres automatiques n\'apparaissent plus par-dessus une visite.'], en: ['Guided tours redone: up-to-date text, new look (icon, step 3 / 8, small arrow toward what is shown) and no more emojis.', 'The Guild tour now goes through its 4 tabs (Today, Raid, Rankings, Collection), with leagues. New steps: generated workout, live cardio, friends feed, challenges and privacy.', 'Automatic pop-ups no longer appear over a tour.']},
@@ -7379,14 +7402,15 @@ const TOURS = {
   ],
   guild: [
     {ic: 'swords', gtab: 'day', t: ['Bienvenue dans la Guilde', 'Welcome to the Guild'], d: ['Chaque séance te donne de l\'XP : monte de niveau et de rang (E, D, C, B, A, S), accomplis des quêtes et débloque des récompenses. Tout se fait en t\'entraînant.', 'Every workout gives you XP: level up and rank up (E, D, C, B, A, S), complete quests and unlock rewards. It all happens just by training.']},
-    {ic: 'chart', gtab: 'day', sel: '#gstatus', t: ['Ton statut', 'Your status'], d: ['Ton niveau, ton rang et ta classe, choisie selon ta façon de t\'entraîner. Touche la barre d\'XP pour voir d\'où vient ton XP.', 'Your level, rank and class, picked from how you train. Tap the XP bar to see where your XP comes from.']},
-    {ic: 'zap', gtab: 'day', sel: '.ctiles', t: ['Ta classe', 'Your class'], d: ['Ton pouvoir de la semaine, ton histoire, tes talents et ton arme. Ils changent tes quêtes et tes attaques de raid.', 'Your power of the week, your story, your talents and your weapon. They shape your quests and your raid attacks.']},
-    {ic: 'target', gtab: 'day', sel: '[data-gid="today"]', t: ['Aujourd\'hui', 'Today'], d: ['Tes quêtes du jour, le donjon de la semaine et le boss du mois. Attention : une quête du jour ratée te coûte de l\'XP.', 'Your daily quests, the dungeon of the week and the boss of the month. Careful: a missed daily quest costs you XP.']},
-    {ic: 'shield', gtab: 'raid', sel: ['.raidbox', '[data-gid="myguild"]'], t: ['Raid de guilde', 'Guild raid'], d: () => S.guild ? ['Chaque semaine, ta guilde affronte un boss. Tes séances te donnent de l\'énergie : dépense-la en attaques de classe pour faire tomber ses PV avant dimanche soir.', 'Each week, your guild faces a boss. Your workouts give you energy: spend it on class attacks to bring its HP down before Sunday night.'] : ['Crée ou rejoins une guilde avec tes amis. Vos séances donnent des attaques : ensemble, faites tomber le boss de la semaine.', 'Create or join a guild with your friends. Your workouts give attacks: together, take down the boss of the week.']},
-    {ic: 'trophy', gtab: 'rank', sel: '[data-gid="league"]', t: ['Ligues de la semaine', 'Weekly leagues'], d: ['Chaque semaine, tu affrontes les aventuriers de ta ligue. Seule l\'XP de la semaine compte : le haut du classement monte de ligue, le bas descend.', 'Each week, you face the adventurers in your league. Only this week\'s XP counts: the top moves up a league, the bottom moves down.']},
-    {ic: 'crown', gtab: 'rank', sel: '[data-gid="season"]', t: ['Saison du mois', 'Season of the month'], d: ['Chaque mois, celui qui gagne le plus d\'XP parmi tes amis remporte le trophée de la saison.', 'Every month, whoever earns the most XP among your friends wins the season trophy.']},
-    {ic: 'gem', gtab: 'coll', sel: '[data-gid="coll"]', t: ['Collection', 'Collection'], d: ['Titres, cadres, bannières, blasons, effets et thèmes. Touche une récompense pour la voir et savoir comment l\'obtenir.', 'Titles, frames, banners, crests, effects and themes. Tap a reward to preview it and see how to get it.']}
+    {ic: 'user', gtab: 'day', sel: '.ghero', t: ['Ton personnage', 'Your character'], d: ['Ton niveau, ton rang et ta classe, choisie selon ta façon de t\'entraîner. Touche pour voir tes statistiques, ton pouvoir de la semaine, ton histoire, tes talents et ton arme.', 'Your level, rank and class, picked from how you train. Tap to see your stats, your power of the week, your story, your talents and your weapon.']},
+    {ic: 'target', gtab: 'day', sel: '.gquest', t: ['Quêtes', 'Quests'], d: ['Ta quête du jour, le donjon de la semaine et le boss du mois. Touche pour les détails. Attention : une quête du jour ratée te coûte de l\'XP.', 'Your daily quest, the dungeon of the week and the boss of the month. Tap for details. Careful: a missed daily quest costs you XP.']},
+    {ic: 'shield', gtab: 'raid', sel: ['.graidsum', '.gguildsum'], t: ['Raid de guilde', 'Guild raid'], d: () => S.guild || FRS().list.length ? ['Chaque semaine, un boss. Tes séances te donnent de l\'énergie : dépense-la en attaques de classe pour faire tomber ses PV avant dimanche soir. Touche pour combattre.', 'A boss every week. Your workouts give you energy: spend it on class attacks to bring its HP down before Sunday night. Tap to fight.'] : ['Avec des amis ou une guilde, vous affrontez un boss chaque semaine : vos séances donnent l\'énergie pour l\'attaquer.', 'With friends or a guild, you face a boss every week: your workouts give the energy to attack it.']},
+    {ic: 'users', gtab: 'raid', sel: '.gguildsum', t: ['Ta guilde', 'Your guild'], d: () => S.guild ? ['Toute l\'XP des membres fait monter le niveau de ta guilde et débloque des récompenses pour tous. Touche pour voir les membres et inviter tes amis.', 'All members\' XP levels up your guild and unlocks rewards for everyone. Tap to see the members and invite your friends.'] : ['Crée ou rejoins une guilde avec tes amis : toute l\'XP des membres la fait monter de niveau et débloque des récompenses pour tous.', 'Create or join a guild with your friends: all members\' XP levels it up and unlocks rewards for everyone.']},
+    {ic: 'trophy', gtab: 'rank', sel: '.glgsum', t: ['Ligues de la semaine', 'Weekly leagues'], d: ['Chaque semaine, tu affrontes les aventuriers de ta ligue. Seule l\'XP de la semaine compte : le haut du classement monte de ligue, le bas descend.', 'Each week, you face the adventurers in your league. Only this week\'s XP counts: the top moves up a league, the bottom moves down.']},
+    {ic: 'crown', gtab: 'rank', sel: '.gseasum', t: ['Saison du mois', 'Season of the month'], d: ['Chaque mois, celui qui gagne le plus d\'XP parmi tes amis remporte le trophée de la saison.', 'Every month, whoever earns the most XP among your friends wins the season trophy.']},
+    {ic: 'gem', gtab: 'coll', sel: '.gcoll', t: ['Collection', 'Collection'], d: ['Ton armurerie (titres, cadres, bannières, blasons, effets et thèmes), tes médailles, les boss vaincus, ton arsenal et tes rangs par muscle.', 'Your armory (titles, frames, banners, crests, effects and themes), your medals, beaten bosses, your arsenal and your muscle ranks.']}
   ]
+
 };
 let tourSt = null;
 function tourStart(k) {
@@ -8695,7 +8719,7 @@ function liveAct(a) { if (a === 'add30' && timerEnd > Date.now()) fakeAct('timer
 function launchAct(v) {
   if (!v || !S.settings.onboarded) return;
   if (v === 'friends') { closeAll(); setRoot('profile'); go('friends'); return; }
-  if (v === 'raid') { closeAll(); S.settings.gTab = 'raid'; setRoot(GAME() ? 'guild' : 'profile'); render(); return; }
+  if (v === 'raid') { closeAll(); S.settings.gTab = 'raid'; setRoot(GAME() ? 'guild' : 'profile'); render(); if (GAME()) go('graid'); return; }
   if (S.active) { if (cur().v !== 'workout') openWorkout(); return; }
   if (v !== 'open' && S.routines.some(r => r.id === v)) startWorkout(v);
 }
@@ -9408,7 +9432,7 @@ async function lgLoad(force) {
     rows.push({id: u.uid, me: true, n: (S.settings.name || '').trim() || T('Moi', 'Me'), l: hunter().lvl, rk: hunter().rk, x: lgXp(wkKey(new Date()))});
     lgData = {key, at: Date.now(), rows: rows.sort((p, q) => q.x - p.x)}; lgAt = lgData.at; try { localStorage.setItem('cm-lg', JSON.stringify(lgData)); } catch (e) {}
   } catch (e) { lgData = {key, err: e.code || e.message}; }
-  if (cur().v === 'guild' && S.settings.gTab === 'rank' && !modals.length) render();
+  if (((cur().v === 'guild' && S.settings.gTab === 'rank') || cur().v === 'gleague') && !modals.length) render();
 }
 async function lgRoll() { // nouvelle semaine : on regarde où j'ai fini la semaine passée, puis je monte, descends ou reste
   if (!S.settings.lbOn || !GAME() || lgRolling) return; const L = lgS(), wk = wkKey(new Date()); if (L.wk === wk) return;
@@ -10773,9 +10797,9 @@ async function gldSync(force) {
   try {
     const u = await fbSignIn(false); if (!u) throw new Error(T('Connecte-toi avec Google pour voir ta guilde.', 'Sign in with Google to see your guild.'));
     const ref = fbDb().collection('guilds').doc(g.id), gd = await ref.get();
-    if (!gd.exists) { S.guild = null; save(); toast(T('Ta guilde a été dissoute.', 'Your guild was disbanded.')); if (cur().v === 'guild') render(); return; }
+    if (!gd.exists) { S.guild = null; save(); toast(T('Ta guilde a été dissoute.', 'Your guild was disbanded.')); if (inGuild()) render(); return; }
     const d = gd.data() || {};
-    if ((d.ban || []).includes(u.uid)) { S.guild = null; save(); toast(T('Tu as été retiré de la guilde.', 'You were removed from the guild.')); if (cur().v === 'guild') render(); return; }
+    if ((d.ban || []).includes(u.uid)) { S.guild = null; save(); toast(T('Tu as été retiré de la guilde.', 'You were removed from the guild.')); if (inGuild()) render(); return; }
     const hu = hunter(), wkk = dkey(weekStart(new Date()));
     const rk = wkKey(new Date()), qk = wkKey(new Date(+new Date(rk + 'T12:00:00') - 3 * 864e5));
     const mdoc = {n: myNm().slice(0, 24), l: hu.lvl, r: hu.rk, f: myFrame(), x0: +g.x0 || 0, xp: hu.raw, wk: weekXp(), wkk, rp: raDmg(rk), rk, qp: raDmg(qk), qk, t: new Date().toISOString()}, mref = ref.collection('m').doc(u.uid);
@@ -10786,7 +10810,7 @@ async function gldSync(force) {
     g.name = String(d.name || g.name || '').slice(0, 30); g.emb = d.emb || '⚔️'; g.bn = d.bn || ''; g.owner = d.owner; g.me = u.uid;
     g.mem = ms.docs.map(x => { const m = x.data() || {}; return {uid: x.id, n: String(m.n || '?').slice(0, 24), l: +m.l || 1, r: RKC[m.r] ? m.r : 'E', f: String(m.f || '').slice(0, 20), c: Math.max(0, (+m.xp || 0) - (+m.x0 || 0)), wk: m.wkk === wkk ? Math.max(0, +m.wk || 0) : 0, rp: Math.max(0, +m.rp || 0), rk: String(m.rk || ''), qp: Math.max(0, +m.qp || 0), qk: String(m.qk || ''), cl: PCL[m.cl] ? m.cl : '', lk: m.lk === 'f' ? 'f' : 'm', cv: Math.max(0, Math.min(PCL_LV.length - 1, +m.cv || 0)), ra: m.ra && typeof m.ra === 'object' ? {...m.ra, wk: String(m.ra.wk || '')} : null}; }).filter(m => !(d.ban || []).includes(m.uid));
     g.xpRaw = g.mem.reduce((a, m) => a + m.c, 0); g.xp = Math.round(g.xpRaw * gldScale(g.mem.length)); g.lvl = gldLvl(g.xp); S.gpeak = Math.max(+S.gpeak || 0, g.lvl); g.t = Date.now(); g.err = '';
-    save(); RC = {}; DV++; try { raidCheck(); } catch (e) {} if (cur().v === 'guild' && !modals.length) { if (window.raSoft && document.querySelector('#app .raidbox')) raRefresh(); else render(); } window.raSoft = 0; raNotif();
+    save(); RC = {}; DV++; try { raidCheck(); } catch (e) {} if (inGuild() && !modals.length) { if (window.raSoft && document.querySelector('#app .raidbox')) raRefresh(); else render(); } window.raSoft = 0; raNotif();
   } catch (e) { if (S.guild) { S.guild.err = String(e && e.message || e).slice(0, 140); saveLocal(); } } finally { gldBusy = 0; }
 }
 async function gldCreate(name) {
@@ -10915,42 +10939,115 @@ function gCustom() {
   ${o.map((id, i) => `<div class="row between" style="padding:8px 0;border-top:1px solid var(--line);gap:8px"><label style="display:flex;gap:10px;align-items:center;flex:1;margin:0"><input type="checkbox" data-act="gc-vis" data-id="${id}" ${hid.includes(id) ? '' : 'checked'}> ${esc(T(G_NAMES[id][0], G_NAMES[id][1]))}</label><button class="btn sm" data-act="gc-mv" data-id="${id}" data-d="-1" ${i ? '' : 'disabled'}>↑</button><button class="btn sm" data-act="gc-mv" data-id="${id}" data-d="1" ${i < o.length - 1 ? '' : 'disabled'}>↓</button></div>`).join('')}
   <button class="btn primary block" style="margin-top:12px" data-act="close">OK</button>`);
 }
+/* ===== Guilde épurée : chaque onglet montre de petites cartes résumé, le détail s'ouvre dans sa propre page ===== */
+const GVIEWS = ['guild', 'ghero', 'gquests', 'graid', 'gguild', 'gleague', 'gseason', 'garmory'];
+const inGuild = () => GVIEWS.includes(cur().v);
+const gFmt = v => Math.round(v).toLocaleString(LOC());
+const gCap = s => s ? s[0].toUpperCase() + s.slice(1) : '';
+const gBar = (pct, col) => `<span class="gbar"><i style="width:${Math.max(0, Math.min(100, pct))}%${col ? ';background:' + col : ''}"></i></span>`;
+function gPrep() { syncSystem(); clsSync(); evCheck(); }
+function gHeroSum() {
+  const me = medalsEarned(), hu = hunter(me), pct = Math.round(hu.cur / Math.max(1, hu.need) * 100), k = clsCur();
+  const p = k ? powCur() : null, free = k ? talPts(k) - talSpent(k) : 0;
+  const chips = [k && (!p || powAgain()) ? T('Pouvoir prêt', 'Power ready') : '', free > 0 ? T(`${free} point${free > 1 ? 's' : ''} de talent`, `${free} talent point${free > 1 ? 's' : ''}`) : ''].filter(Boolean);
+  return `<button class="card gwin gsum ghero" data-act="go" data-v="ghero" style="--rc:${hu.col}">
+    <span class="ghimg">${k ? pclImg(k, 64) : rkBadge(hu.rk, '')}</span>
+    <span class="gsx"><small>${T('Niveau', 'Level')} <b class="gnum">${hu.lvl}</b> · ${T('Rang', 'Rank')} <b class="gnum" style="color:var(--rc)">${hu.rk}</b></small>
+      <b>${k ? esc(pclName(k) + ' ' + pclMast(k).title) : esc(hu.title)}</b>${gBar(pct, `linear-gradient(90deg,var(--accent),${hu.col})`)}
+      <small>${gFmt(hu.cur)} / ${gFmt(hu.need)} XP</small>${chips.length ? `<span class="gchips">${chips.map(c => `<em>${c}</em>`).join('')}</span>` : ''}</span><span class="chev">${CHEV}</span></button>`;
+}
+function gQuestSum() {
+  const q = dailyQuest(), dg = weekDungeon(), bo = monthBoss(), pen = questPenalty(), pc = (a, b) => Math.round(a / Math.max(1, b) * 100);
+  const nd = (q.rest || q.done ? 1 : 0) + (dg.done ? 1 : 0) + (bo && bo.done ? 1 : 0), tot = bo ? 3 : 2;
+  const row = (tile, t, sub, pct, done) => `<span class="gqr${done ? ' ok' : ''}">${tile}<span class="gqt"><b>${t}</b><small>${sub}</small></span>${done ? `<span class="gqok">${ic('check', 16)}</span>` : `<span class="gqp">${gBar(pct)}</span>`}</span>`;
+  const qr = q.rest ? row(sTile('moon', '#a78bfa'), T('Jour de repos', 'Rest day'), T('Pas de quête aujourd\'hui', 'No quest today'), 100, true)
+    : row(sTile('target', '#c6f135'), esc(q.text), `${gFmt(Math.min(q.cur, q.goal))} / ${gFmt(q.goal)} · +150 XP`, pc(q.cur, q.goal), q.done);
+  const door = !dg.picked && !dg.done && GAME();
+  const dr = row(`<span class="stile gqrk" style="--h:#fb923c">${esc(dg.rk)}</span>`, `${T('Donjon', 'Dungeon')} · ${esc(dg.text)}`, door ? `<span style="color:var(--accent)">${T('Choisis ta porte de la semaine', 'Pick your door for the week')}</span>` : `${gFmt(Math.min(dg.cur, dg.goal))} / ${gFmt(dg.goal)}`, pc(dg.cur, dg.goal), dg.done);
+  const br = bo ? row(sTile('skull', '#f87171'), esc(bo.name), bo.done ? T('Vaincu', 'Defeated') : `${T('Boss du mois', 'Boss of the month')} · ${bo.left} ${T('j', 'd')}`, pc(bo.cur - bo.from * .85, bo.target - bo.from * .85), bo.done) : '';
+  const miss = pen && !q.rest ? `<span class="gqmiss">${ic('alert', 14)} ${T('Quête d\'hier ratée : −' + qfXP(qFail()[dkey(new Date(Date.now() - 864e5))]) + ' XP', 'Yesterday\'s quest failed: −' + qfXP(qFail()[dkey(new Date(Date.now() - 864e5))]) + ' XP')}</span>` : '';
+  return `<button class="card gwin gsum gcol gquest" data-act="go" data-v="gquests"><span class="ghd"><b>${T('Quêtes', 'Quests')}</b><small>${nd} / ${tot} ${T('accomplies', 'complete')}</small><span class="chev">${CHEV}</span></span>${qr}${dr}${br}${miss}</button>`;
+}
+function gRaidSum() {
+  const fr = FRS().list.length;
+  if (!fr && !S.guild) return '';
+  const wk = wkKey(new Date()), st = raidState(wk);
+  if (st.rows.length < 2) return `<button class="card gwin gsum graidsum" data-act="go" data-v="graid">${sTile('shield', '#60a5fa', 22)}<span class="gsx"><b>${T('Raid de guilde', 'Guild raid')}</b><small>${st.guild ? T('Commence dès qu\'un autre membre rejoint ta guilde.', 'Starts as soon as another member joins your guild.') : T('Commence dès qu\'un ami a l\'appli à jour.', 'Starts as soon as a friend has the app up to date.')}</small></span><span class="chev">${CHEV}</span></button>`;
+  const bi = raBossIdx(wk), hp = st.done ? 0 : Math.max(0, st.goal - st.tot), left = Math.max(0, Math.ceil((+new Date(wk + 'T00:00:00') + 7 * 864e5 - Date.now()) / 864e5)), en = raAvail(wk, st);
+  return `<button class="card gwin gsum graidsum" data-act="go" data-v="graid"><span class="gboss"><img src="boss/r${bi}.webp" alt="" decoding="async" onerror="this.remove()"></span>
+    <span class="gsx"><small>${T('Raid de la semaine', 'Raid of the week')} · ${left} ${T('j', 'd')}</small><b>${esc(gCap(T(RAID_BOSS[bi][0], RAID_BOSS[bi][1])))}</b>${gBar(st.goal ? hp / st.goal * 100 : 0, 'linear-gradient(90deg,#ff5a5f,#ff9f1c)')}
+      <small>${st.done ? `<b style="color:var(--ok)">${T('Vaincu', 'Defeated')}</b>` : `${T('PV', 'HP')} ${gFmt(hp)} / ${gFmt(st.goal)}`}</small>${!st.done ? `<span class="gchips"><em class="${en > 0 ? '' : 'off'}">${T('Énergie', 'Energy')} ${en}</em></span>` : ''}</span><span class="chev">${CHEV}</span></button>`;
+}
+function gGuildSum() {
+  const g = S.guild;
+  if (!g) return `<button class="card gwin gsum gguildsum" data-act="go" data-v="gguild">${sTile('users', '#c6f135', 22)}<span class="gsx"><b>${T('Ma guilde', 'My guild')}</b><small>${T('Crée ou rejoins une guilde avec tes amis : toute l\'XP des membres la fait monter de niveau.', 'Create or join a guild with your friends: all members\' XP levels it up.')}</small></span><span class="chev">${CHEV}</span></button>`;
+  const mem = (g.mem || []).slice().sort((x, y) => y.wk - x.wk || y.c - x.c), i = mem.findIndex(m => m.uid === g.me);
+  return `<button class="card gwin gsum gguildsum" data-act="go" data-v="gguild"><span class="gldcrest gcrest">${embSvg(g.emb || '⚔️')}</span><span class="gsx"><b>${esc(g.name || T('Ma guilde', 'My guild'))}</b><small>${T('Niveau', 'Level')} ${g.lvl || 1} · ${mem.length || 1} / ${GLD_MAX} ${T(mem.length > 1 ? 'membres' : 'membre', mem.length > 1 ? 'members' : 'member')}</small>${i >= 0 && mem.length > 1 ? `<small>${T('Toi', 'You')} : ${T(i + 1 + (i ? 'e' : 'er'), '#' + (i + 1))} ${T('cette semaine', 'this week')}</small>` : ''}</span><span class="chev">${CHEV}</span></button>`;
+}
+function gLeagueSum() {
+  if (!S.settings.lbOn) return `<button class="card gwin gsum glgsum" data-act="go" data-v="gleague">${sTile('trophy', '#fb923c', 22)}<span class="gsx"><b>${T('Ligues de la semaine', 'Weekly leagues')}</b><small>${T('Affronte chaque semaine des aventuriers de ton niveau, même sans amis inscrits.', 'Face adventurers at your level every week, even without friends signed up.')}</small></span><span class="chev">${CHEV}</span></button>`;
+  const L = lgS(); setTimeout(() => { lgRoll().then(() => lgJoin()).then(() => lgLoad(false)); }, 0);
+  const left = Math.max(0, Math.ceil((wkRange(wkKey(new Date()))[1] - Date.now()) / 864e5)), lc = LG[L.t][2];
+  let sub = T('Chargement…', 'Loading…');
+  if (lgData && lgData.key === lgKey(wkKey(new Date()), L.t, lgG(L, wkKey(new Date()))) && !lgData.err) {
+    const R = lgData.rows, i = R.findIndex(r => r.me), act = R.filter(r => r.x > 0).length, up = L.t < LG.length - 1 ? lgUp(act) : 0, dn = L.t > 0 ? lgDn(act) : 0;
+    const z = i < 0 ? '' : up && i < up && act ? `<span style="color:var(--ok)">${T('zone de montée', 'promotion zone')}</span>` : dn && i >= act - dn ? `<span style="color:var(--warm)">${T('zone de descente', 'demotion zone')}</span>` : '';
+    sub = i >= 0 ? `${T(i + 1 + (i ? 'e' : 'er'), '#' + (i + 1))} ${T('sur', 'of')} ${R.length}${z ? ' · ' + z : ''}` : `${R.length} ${T('aventuriers', 'adventurers')}`;
+  }
+  return `<button class="card gwin gsum glgsum" data-act="go" data-v="gleague" style="border-color:color-mix(in srgb,${lc} 40%,var(--line))"><span class="glgic" style="--lc:${lc}"><i></i></span><span class="gsx"><small>${T('Ligues de la semaine', 'Weekly leagues')} · ${left} ${T('j', 'd')}</small><b style="color:${lc}">${esc(T('Ligue ' + LG[L.t][0], LG[L.t][1] + ' League'))}</b><small>${sub}</small></span><span class="chev">${CHEV}</span></button>`;
+}
+function gSeasonSum() {
+  const m = monKey(new Date()), fr = FRS().list.length;
+  let sub = T('Ajoute des amis pour te mesurer à eux chaque mois.', 'Add friends to compete with them every month.');
+  if (fr) { const rows = seasonRows(m).slice().sort((a, b) => b.xp - a.xp), i = rows.findIndex(r => r.me), left = Math.ceil((monEnd(m) - Date.now()) / 864e5);
+    sub = rows.length > 1 ? `${T(i + 1 + (i ? 'e' : 'er'), '#' + (i + 1))} ${T('sur', 'of')} ${rows.length} · ${gFmt(rows[i].xp)} XP · ${left} ${T('j', 'd')}` : T('La saison commence dès qu\'un ami a l\'appli à jour.', 'The season starts as soon as a friend has the app up to date.'); }
+  return `<button class="card gwin gsum gseasum" data-act="go" data-v="gseason">${sTile('crown', '#facc15', 22)}<span class="gsx"><small>${T('Saison de', 'Season of')} ${esc(monName(m))}</small><b>${T('Saison du mois', 'Monthly season')}</b><small>${sub}</small></span><span class="chev">${CHEV}</span></button>`;
+}
+function gLinks(keys) {
+  const fr = FRS().list.length, [aOk, aTot] = armoryCount(), sh = shadowArmy().length, me = medalsEarned();
+  const bWon = new Set(Object.keys(S.bossLog || {}).map(mk => (+mk.slice(0, 4) * 12 + +mk.slice(5, 7) - 1) % BOSSES.length)).size;
+  const R = {
+    world: () => sBtn('go', T('Classement mondial', 'World ranking'), {x: 'data-v="world"', ic: 'globe', h: '#60a5fa', sub: S.settings.lbOn ? T('Ta position parmi tous', 'Your rank among everyone') : T('Compare-toi à tous', 'Compare with everyone')}),
+    friends: () => sBtn('go', T('Amis et défis', 'Friends & challenges'), {x: 'data-v="friends"', ic: 'users', h: '#c6f135', sub: fr ? `${fr} ${T(fr > 1 ? 'amis' : 'ami', fr > 1 ? 'friends' : 'friend')}` : T('Ajoute tes chums', 'Add your buddies')}),
+    armory: () => sBtn('go', T('Armurerie', 'Armory'), {x: 'data-v="garmory"', ic: 'gem', h: '#a78bfa', sub: T('Titres, cadres, bannières, blasons, effets, thèmes', 'Titles, frames, banners, crests, effects, themes'), val: `${aOk} / ${aTot}`}),
+    medals: () => sBtn('go', T('Médailles', 'Medals'), {x: 'data-v="medals"', ic: 'medal', h: '#facc15', val: `${Object.keys(me.got).length} / ${me.defs.length}`}),
+    bestiary: () => sBtn('go', T('Bestiaire', 'Bestiary'), {x: 'data-v="bestiary"', ic: 'skull', h: '#f87171', val: `${bWon} / ${BOSSES.length}`}),
+    shadows: () => sBtn('go', T('Arsenal', 'Arsenal'), {x: 'data-v="shadows"', ic: 'swords', h: '#fb923c', val: `${sh}`}),
+    murank: () => sBtn('go', T('Rangs par muscle', 'Muscle ranks'), {x: 'data-v="murank"', ic: 'arm', h: '#4ade80', sub: T('Tes points forts et faibles', 'Your strong and weak points')})
+  };
+  return keys.map(k => R[k]()).join('');
+}
 function vGuild() {
   if (!GAME()) { setRoot('train'); return vTrain(); }
   if (!S.history.length) return `<div class="empty">${T('Ta première séance t\'inscrit à la Guilde : niveau, rang, quêtes et boss commencent ici.', 'Your first workout signs you up to the Guild: level, rank, quests and bosses start here.')}<br><button class="btn primary sm" data-tab="train" style="margin-top:12px">${T('Démarrer une séance', 'Start a workout')}</button></div>`;
-  syncSystem(); clsSync(); evCheck(); setTimeout(evAnnounce, 0);
-  const fr = FRS().list.length, q = dailyQuest(), dg = weekDungeon(), bo = monthBoss(), nd = (q.rest || q.done ? 1 : 0) + (dg.done ? 1 : 0) + (bo && bo.done ? 1 : 0);
-  const [aOk, aTot] = armoryCount(), sh = shadowArmy().length;
-  let raidSub = T('Avec tes amis', 'With your friends'), seaSub = T('Avec tes amis', 'With your friends');
-  if (S.guild) raidSub = T('Avec ta guilde', 'With your guild');
-  if (fr || S.guild) { try { const r = raidState(wkKey(new Date())); if (r.rows.length > 1) raidSub = `${Math.round(Math.min(r.tot, r.goal)).toLocaleString(LOC())} / ${r.goal.toLocaleString(LOC())} ${T('PV', 'HP')}${r.done ? ' · ' + T('vaincu', 'cleared') : ''}`; const sr = seasonRows(monKey(new Date())), i = sr.findIndex(x => x.me); if (sr.length > 1) seaSub = `${T(i + 1 + (i ? 'e' : 'er'), '#' + (i + 1))} ${T('sur', 'of')} ${sr.length} · ${monName(monKey(new Date()))}`; } catch (e) {} }
-  const noFr = `<p class="small muted" style="margin:0 0 10px">${T('Ajoute des amis pour combattre des boss de raid ensemble et te mesurer à eux chaque mois.', 'Add friends to fight raid bosses together and compete every month.')}</p><button class="btn sm" data-act="go" data-v="friends">${T('Mes amis', 'My friends')}</button>`;
-  setTimeout(() => { gldSync(); revealCheck(); }, 500);
-  const gS = S.guild, gSub = gS ? `${esc(gS.name || '')} · ${T('niv.', 'lv.')} ${gS.lvl || 1}` : T('Crée ou rejoins une guilde', 'Create or join a guild');
-  const bWon = new Set(Object.keys(S.bossLog || {}).map(mk => (+mk.slice(0, 4) * 12 + +mk.slice(5, 7) - 1) % BOSSES.length)).size;
-  const GSECS = {
-    myguild: () => gSec('myguild', '🛡️', T('Ma guilde', 'My guild'), (fr || S.guild) && raidSub !== T('Avec tes amis', 'With your friends') && raidSub !== T('Avec ta guilde', 'With your guild') ? `${gSub} · ${raidSub}` : gSub, () => gldBody() + (fr || S.guild ? `<div class="gsep"></div><div class="sysh" style="margin:14px 0 8px">[ ${T('RAID DE GUILDE', 'GUILD RAID')} ]</div><div class="raidbox">${raidCard()}</div>` : '')),
-    next: () => nextRewardsCard(),
-    quests: () => gSec('quests', '🏆', T('Quêtes', 'Quests'), `${nd} / ${bo ? 3 : 2} ${T('accomplies aujourd\'hui', 'complete today')}`, () => questCard('inner')),
-    season: () => gSec('season', '👑', T('Saison', 'Season'), seaSub, () => fr ? seasonCard() || `<p class="small muted" style="margin:0">${T('La saison commence dès qu\'un ami a l\'appli à jour.', 'The season starts as soon as a friend has the app up to date.')}</p>` : noFr),
-    arm: () => gSec('arm', '⚔️', T('Armurerie', 'Armory'), `${aOk} / ${aTot} ${T('récompenses débloquées', 'rewards unlocked')}`, () => `<div class="armbody">${armoryBody()}</div>`)};
-  const gOrd = gSecOrder().filter(id => !['quests', 'next', 'arm'].includes(id));
-  const row = (act, v, title, sub) => `<button class="btn tile gtile grow" data-act="${act}" data-v="${v}"><span><b>${title}</b><small>${sub}</small></span><i>›</i></button>`;
-  const coll = () => `<div class="glist2">${row('go', 'medals', T('Médailles', 'Medals'), `${Object.keys(medalsEarned().got).length} / ${medalsEarned().defs.length}`)}${row('go', 'bestiary', T('Bestiaire', 'Bestiary'), `${bWon} / ${BOSSES.length} ${T('boss vaincus', 'bosses beaten')}`)}${row('go', 'shadows', T('Arsenal', 'Arsenal'), `${sh} ${T(sh > 1 ? 'armes forgées' : 'arme forgée', sh > 1 ? 'weapons forged' : 'weapon forged')}`)}${row('go', 'murank', T('Rangs par muscle', 'Muscle ranks'), T('Tes points forts et faibles', 'Your strong and weak points'))}</div>`;
-  // Sous-onglets : une seule partie de la Guilde à la fois
+  gPrep(); setTimeout(evAnnounce, 0); setTimeout(() => { gldSync(); revealCheck(); }, 500);
   const gt = ['day', 'raid', 'rank', 'coll'].includes(S.settings.gTab) ? S.settings.gTab : 'day';
-  const flat = (id, title, sub, body) => `<div class="card sysw gwin gflat" data-gid="${id}"><div class="gswh" style="margin-bottom:10px"><span class="sysh" style="margin:0">[ ${title.toUpperCase()} ]</span><small>${sub}</small></div>${body()}</div>`;
   const tabs = [['day', T('Aujourd\'hui', 'Today')], ['raid', T('Raid', 'Raid')], ['rank', T('Classements', 'Rankings')], ['coll', T('Collection', 'Collection')]];
   const bar = `<div class="seg gseg">${tabs.map(([k, l]) => `<button class="${gt === k ? 'on' : ''}" data-act="gtab" data-k="${k}">${l}</button>`).join('')}</div>`;
-  const frTile = gLink('friends', '👥', T('Amis et défis', 'Friends & challenges'), fr ? `${fr} ${T(fr > 1 ? 'amis' : 'ami', fr > 1 ? 'friends' : 'friend')}` : T('Ajoute tes chums', 'Add your buddies'));
   const body = {
-    day: () => `${statusCard()}${compCard()}${gSec('today', '', T('Aujourd\'hui', 'Today'), `${nd} / ${bo ? 3 : 2} ${T('accomplies', 'complete')}${chestsPending().length ? ' · ' + T('coffre à ouvrir', 'chest to open') : ''}`, () => chestPendBtn() + eventCard() + questCard('inner'))}`,
-    raid: () => `${flat('myguild', T('Ma guilde', 'My guild'), gSub, () => gldBody() + (fr || S.guild ? `<div class="gsep"></div><div class="sysh" style="margin:14px 0 8px">[ ${T('RAID DE GUILDE', 'GUILD RAID')} ]</div><div class="raidbox">${raidCard()}</div>` : ''))}<div class="grid2 gtiles">${frTile}</div>`,
-    rank: () => `${lgCard()}${flat('season', T('Saison du mois', 'Monthly season'), seaSub, () => fr ? seasonCard() || `<p class="small muted" style="margin:0">${T('La saison commence dès qu\'un ami a l\'appli à jour.', 'The season starts as soon as a friend has the app up to date.')}</p>` : noFr)}<div class="grid2 gtiles">${gLink('world', '🌍', T('Classement mondial', 'World ranking'), S.settings.lbOn ? T('Ta position', 'Your rank') : T('Compare-toi à tous', 'Compare with everyone'))}${frTile}</div>`,
-    coll: () => flat('coll', T('Collection', 'Collection'), `${T('Armurerie', 'Armory')} ${aOk}/${aTot}`, () => `<div class="armbody">${armoryBody()}</div>${coll()}`)
+    day: () => `${gHeroSum()}${chestPendBtn()}${compCard()}${gQuestSum()}`,
+    raid: () => `${gRaidSum()}${gGuildSum()}<div class="sgrp gl">${gLinks(['friends'])}</div>`,
+    rank: () => `${gLeagueSum()}${gSeasonSum()}<div class="sgrp gl">${gLinks(['world', 'friends'])}</div>`,
+    coll: () => `<div class="sgrp gl gcoll">${gLinks(['armory', 'medals', 'bestiary', 'shadows', 'murank'])}</div>`
   };
-  return bar + body[gt]();
+  return bar + `<div class="gtabbody">${body[gt]()}</div>`;
 }
+/* Pages de détail : les sections complètes, une à la fois */
+function vGHero() { gPrep(); return statusCard(); }
+function vGQuests() { gPrep(); return `${chestPendBtn()}${eventCard()}<div class="card sysw gwin" data-gid="today">${questCard('inner')}</div>`; }
+function vGRaid() {
+  gPrep(); setTimeout(() => { gldSync(); }, 500);
+  const r = raidCard();
+  return `<div class="card sysw gwin">${r ? `<div class="raidbox">${r}</div>` : `<p class="small muted" style="margin:0 0 10px">${T('Ajoute des amis ou rejoins une guilde pour combattre des boss de raid ensemble.', 'Add friends or join a guild to fight raid bosses together.')}</p><button class="btn sm" data-act="go" data-v="friends">${T('Mes amis', 'My friends')}</button>`}</div>`;
+}
+function vGGuild() { gPrep(); setTimeout(() => { gldSync(); }, 500); return `<div class="card sysw gwin" data-gid="myguild">${gldBody()}</div>`; }
+function vGLeague() { gPrep(); return lgCard(); }
+function vGSeason() {
+  gPrep();
+  return FRS().list.length ? seasonCard() || `<div class="card"><p class="small muted" style="margin:0">${T('La saison commence dès qu\'un ami a l\'appli à jour.', 'The season starts as soon as a friend has the app up to date.')}</p></div>`
+    : `<div class="card"><p class="small muted" style="margin:0 0 10px">${T('Ajoute des amis pour te mesurer à eux chaque mois.', 'Add friends to compete with them every month.')}</p><button class="btn sm" data-act="go" data-v="friends">${T('Mes amis', 'My friends')}</button></div>`;
+}
+function vGArmory() { gPrep(); return `<div class="card sysw gwin" data-gid="coll"><div class="armbody">${armoryBody()}</div></div>`; }
 /* Bande compacte dans Entraînement : un coup d'œil, et on touche pour ouvrir la Guilde */
 function guildStrip() {
   if (!GAME() || !S.history.length) return '';
@@ -11106,7 +11203,7 @@ const VIEWS = {
   stats: ['Statistiques', () => vStats()], 'st-vol': ['Séries par muscle', () => vVolume()], 'st-radar': ['Répartition musculaire', () => vRadar()],
   'st-body': ['Carte des muscles', () => vBodyMap()], 'st-top': ['Principaux exercices', () => vTopEx()], 'st-rec': ['Records personnels', () => vRecords()],
   'st-month': ['Rapport mensuel', () => vMonth()], exercises: ['Exercices', () => vExList()], exdetail: ['Exercice', () => vExDetail()],
-  measures: ['Corps et progrès', () => vBody()], clive: ['Cardio en direct', () => vCLive()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], friends: ['Amis', () => vFriends()], notifs: ['Notifications', () => vNotifs()], world: ['Classement mondial', () => vWorld()], cardio: ['Cardio', () => vCardio()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], murank: ['Rangs par muscle', () => vMuscleRanks()], shadows: ['Arsenal', () => vShadows()], compare: ['Comparer deux périodes', () => vCompare()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()], setp: ['Réglages', () => vSetPage()], guild: ['Guilde', () => vGuild()]
+  measures: ['Corps et progrès', () => vBody()], clive: ['Cardio en direct', () => vCLive()], stretch: ['Étirements', () => vStretch()], timers: ['Intervalles', () => vTimers()], friends: ['Amis', () => vFriends()], notifs: ['Notifications', () => vNotifs()], world: ['Classement mondial', () => vWorld()], cardio: ['Cardio', () => vCardio()], recov: ['Récupération', () => vRecovery()], medals: ['Médailles', () => vMedals()], murank: ['Rangs par muscle', () => vMuscleRanks()], shadows: ['Arsenal', () => vShadows()], compare: ['Comparer deux périodes', () => vCompare()], year: ['Bilan de l\'année', () => vYear()], calendar: ['Calendrier', () => vCal2()], history: ['Séances', () => vHistAll()], settings: ['Réglages', () => vSettings()], setp: ['Réglages', () => vSetPage()], guild: ['Guilde', () => vGuild()], ghero: [() => T('Mon personnage', 'My character'), () => vGHero()], gquests: [() => T('Quêtes', 'Quests'), () => vGQuests()], graid: [() => T('Raid de guilde', 'Guild raid'), () => vGRaid()], gguild: [() => (S.guild && S.guild.name) || T('Ma guilde', 'My guild'), () => vGGuild()], gleague: [() => T('Ligues', 'Leagues'), () => vGLeague()], gseason: [() => T('Saison du mois', 'Monthly season'), () => vGSeason()], garmory: [() => T('Armurerie', 'Armory'), () => vGArmory()]
 };
 function headerRight(v) {
   if (['train', 'friends', 'guild'].includes(v)) return bellBtn();
@@ -11218,7 +11315,7 @@ function render() {
   const c = cur();
   foldWas = foldActive(); document.body.classList.toggle('fold', foldWas);
   if (foldWas) html = `<div class="foldwrap"><div class="foldmain">${html}</div><aside class="foldside" id="foldside">${foldSide()}</aside></div>`;
-  $('#title').textContent = c.v === 'workout' && S.active ? S.active.routineName : c.v === 'setp' ? setpTitle() : VIEWS[c.v][0];
+  $('#title').textContent = c.v === 'workout' && S.active ? S.active.routineName : c.v === 'setp' ? setpTitle() : typeof VIEWS[c.v][0] === 'function' ? VIEWS[c.v][0]() : VIEWS[c.v][0];
   $('#back').style.visibility = stack.length > 1 ? 'visible' : 'hidden';
   $('#hdr').innerHTML = headerRight(c.v);
   $('#app').innerHTML = html;
@@ -13158,7 +13255,7 @@ setTimeout(() => { try { const fr = FRS(); if (frOn() && fr.fb && fr.pubName !==
     if (q === 'today') { if (S.active) openWorkout(); else { const r = schedR(dayIdx(new Date())); if (r) startWorkout(r.id); else toast("Rien de prévu aujourd'hui dans ton horaire"); } }
     else if (q === 'empty') startEmpty();
     else if (q === 'profile') { setRoot('profile'); render(); }
-    else if (q === 'medals' || q === 'guild') { if (q === 'guild') S.settings.gTab = 'raid'; setRoot(GAME() ? 'guild' : 'profile'); render(); if (!GAME()) go('medals'); }
+    else if (q === 'medals' || q === 'guild') { if (q === 'guild') S.settings.gTab = 'raid'; setRoot(GAME() ? 'guild' : 'profile'); render(); if (!GAME()) go('medals'); else if (q === 'guild') go('graid'); }
     else if (q === 'quest') { setRoot(GAME() ? 'guild' : 'train'); render(); }
   } }
 if (cloudOn()) setTimeout(() => cloudPush(), 4000);
