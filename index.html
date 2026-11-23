@@ -2022,7 +2022,7 @@ function startWorkout(rid) {
     exercises: r.exercises.map(e => { const sets = mkSetsFromRoutine(e, lastFor(e.name)); return {name: e.name, orig: e.name, n0: sets.length, n0w: sets.filter(s => s.t !== 'W').length, ss: e.ss, rest: e.rest, note: '', target: {...e}, sets}; })};
   save(); openWorkout(); try { if (frOn()) frQueue(false); } catch (e) {}
 }
-function openWorkout() { stack = [{v: 'train'}, {v: 'workout'}]; render(); window.scrollTo(0, 0); setTimeout(scrollCur, 30); hSync(); }
+function openWorkout() { stack = S.active && S.active.cl ? [{v: 'cardio'}, {v: 'clive'}] : [{v: 'train'}, {v: 'workout'}]; render(); window.scrollTo(0, 0); setTimeout(scrollCur, 30); hSync(); }
 /* Exercice en cours = premier exercice avec une série non cochée */
 let justChk = null;
 let celeForce = null;
@@ -6813,9 +6813,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.111.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.111.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.111.3', d: '2026-11-22', fr: ['Cardio en direct : l\'écran de séance ne s\'ouvre plus par-dessus (au retour dans l\'appli, par une notification ou par la montre), et la barre de séance en bas n\'apparaît plus sur l\'écran du cardio.'], en: ['Live cardio: the workout screen no longer opens on top of it (when coming back to the app, from a notification or from the watch), and the bottom workout bar no longer shows on the cardio screen.']},
   {v: '9.111.2', d: '2026-11-22', fr: ['Fin du cardio sur tapis : le nombre de pas estimé n\'apparaît plus que si tu entres une distance, et l\'appli dit combien de pas ta montre a vraiment comptés.'], en: ['End of treadmill cardio: the estimated step count only shows when you enter a distance, and the app says how many steps your watch really counted.']},
   {v: '9.111.1', d: '2026-11-22', fr: ['Quête « Soulève plus que la dernière fois » : l\'objectif reste le même jusqu\'à la vérification du lendemain, même si tu as fait une autre routine que prévu.'], en: ['“Lift more than last time” quest: the goal stays the same until it is checked the next day, even if you did a different routine than planned.']},
   {v: '9.111.0', d: '2026-11-22', fr: ['Cardio sur tapis : après la séance, Runelift relit tes pas dans Health Connect et corrige la distance si la montre a décroché en cours de route. Nouvelle autorisation « pas » dans Réglages → Health Connect.', 'Montre : la permission « Activité physique » est redemandée à chaque cardio tant qu\'elle manque, et les deux compteurs de pas de la montre tournent en même temps (le plus fiable gagne).'], en: ['Treadmill cardio: after the workout, Runelift reads your steps from Health Connect and fixes the distance if the watch dropped out. New “steps” permission in Settings → Health Connect.', 'Watch: the “Physical activity” permission is asked again at each cardio while it is missing, and both step counters of the watch run at the same time (the most reliable wins).']},
@@ -10589,6 +10590,7 @@ document.addEventListener('toggle', e => { const d = e.target; if (!d || !d.data
   const fb = d.querySelector(':scope > .gfb'); if (d.open && fb && !fb.childElementCount && GSB[d.dataset.gid]) { try { fb.innerHTML = GSB[d.dataset.gid](); iconize(fb); friFill(); } catch (e2) {} } }, true);
 let animNext = true, ANIM = true; // les graphiques s'animent seulement à l'ouverture d'un écran (pas à chaque mise à jour)
 function render() {
+  if (window.rlBoot && cur().v === 'workout' && S.active && S.active.cl) stack = [{v: 'cardio'}, {v: 'clive'}]; // pas au tout premier affichage : l'écran du cardio a besoin de tout le script
   RC = {}; { const g = pcSig(); if (PC.sig !== g) PC = {sig: g}; } wearPush();
   ANIM = !!navAnim || animNext; animNext = false;
   if (selR && cur().v !== 'train') { selR = null; const sb = document.getElementById('selbar'); if (sb) sb.remove(); document.body.classList.remove('selon'); }
@@ -10637,7 +10639,7 @@ const fmtDur = ms => { const s = Math.max(0, Math.floor(ms / 1000)), hh = Math.f
 function woStats() { const a = S.active; let d = 0, n = 0; a.exercises.forEach(e => e.sets.forEach(s => { n++; if (s.done) d++; })); return {d, n}; }
 function updWobar() {
   const el = $('#wobar'); if (!el) return;
-  const on = !!S.active && cur().v !== 'workout';
+  const on = !!S.active && cur().v !== 'workout' && cur().v !== 'clive';
   el.classList.toggle('show', on); document.body.classList.toggle('wob', on);
   if (!on) return;
   const {d, n} = woStats();
@@ -12444,6 +12446,7 @@ setTimeout(() => { try { const fr = FRS(); if (frOn() && fr.fb && fr.pubName !==
 if (cloudOn()) setTimeout(() => cloudPush(), 4000);
 setTimeout(remindSync, 3000);
 setTimeout(finResume, 1200);
+setTimeout(() => { window.rlBoot = 1; if (cur().v === 'workout' && S.active && S.active.cl) render(); }, 0); // rechargée pendant un cardio en direct : on y retourne
 setTimeout(() => { try { const fr = FRS(), x = frHu(); if (frOn() && x && fr.huL !== x.l) { fr.huL = x.l; save(); frQueue(false); } } catch (e) {} }, 6000);
 setTimeout(() => loadTxt(), 5000);
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
