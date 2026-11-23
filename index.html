@@ -5938,31 +5938,32 @@ function awakenClass(c, hu) {
   if (S.settings.haptic !== false) haptic([60, 80, 60, 80, 300]);
 }
 /* ---------- Compagnon : un œuf jusqu'au niveau 10, puis une créature qui grandit avec toi (forme selon ta classe) ---------- */
-var COMP = {war: ['dragon', ['Dragonnet', 'Dragonling'], ['Jeune dragon', 'Young dragon'], ['Dragon de guerre', 'War dragon'], '#f97316'],
-  tank: ['golem', ['Petit golem', 'Little golem'], ['Golem de pierre', 'Stone golem'], ['Golem colosse', 'Colossus golem'], '#38bdf8'],
-  asn: ['loup', ['Louveteau', 'Wolf pup'], ['Loup des ombres', 'Shadow wolf'], ['Loup spectral', 'Spectral wolf'], '#818cf8'],
-  mage: ['hibou', ['Petit hibou', 'Owlet'], ['Hibou arcanique', 'Arcane owl'], ['Grand-duc des runes', 'Rune eagle-owl'], '#c084fc'],
-  ftr: ['griffon', ['Griffonneau', 'Griffin cub'], ['Jeune griffon', 'Young griffin'], ['Griffon royal', 'Royal griffin'], '#eab308']};
+/* Une créature par classe : Guerrier = dragon, Rôdeur = loup, Moine = golem, Soigneur = hibou, classes hybrides = griffon.
+   [fichier image, stade 0, stade 1, stade 2, couleur, nom de l'espèce] */
+var COMP = {dragon: ['dragon', ['Dragonnet', 'Dragonling'], ['Jeune dragon', 'Young dragon'], ['Dragon de guerre', 'War dragon'], '#f97316', ['Dragon', 'Dragon']],
+  loup: ['loup', ['Louveteau', 'Wolf pup'], ['Loup des ombres', 'Shadow wolf'], ['Loup spectral', 'Spectral wolf'], '#818cf8', ['Loup', 'Wolf']],
+  golem: ['golem', ['Petit golem', 'Little golem'], ['Golem de pierre', 'Stone golem'], ['Golem colosse', 'Colossus golem'], '#38bdf8', ['Golem', 'Golem']],
+  hibou: ['hibou', ['Petit hibou', 'Owlet'], ['Hibou arcanique', 'Arcane owl'], ['Grand-duc des runes', 'Rune eagle-owl'], '#c084fc', ['Hibou', 'Owl']],
+  griffon: ['griffon', ['Griffonneau', 'Griffin cub'], ['Jeune griffon', 'Young griffin'], ['Griffon royal', 'Royal griffin'], '#eab308', ['Griffon', 'Griffin']]};
+var COMP_CLS = {g: 'dragon', r: 'loup', m: 'golem', s: 'hibou'}; // toute autre classe (hybride) : griffon
+var COMP_OLD = {war: 'dragon', tank: 'golem', asn: 'loup', mage: 'hibou', ftr: 'griffon'}; // anciennes clés (avant les classes choisies)
+const compClsOf = sp => sp === 'griffon' ? T('Classes hybrides', 'Hybrid classes') : pclName(Object.keys(COMP_CLS).find(k => COMP_CLS[k] === sp) || '');
 var COMP_LV = [10, 25, 40, 100];
 var COMP_LIVE = false; // false = compagnons visibles seulement dans le mode test (Réglages, 7 touches sur la version)
-function compPred() {
-  const s = classStyle(); if (!s) return 'ftr';
-  if (s.cardio >= .3) return 'asn'; if (s.reps <= 7) return 'war'; if (s.sets >= 24) return 'tank'; if (s.ex >= 60) return 'mage'; if (s.reps >= 13) return 'asn';
-  return 'ftr';
-}
+function compPred() { let k = ''; try { k = clsCur(); } catch (e) {} return COMP_CLS[k] || 'griffon'; }
 function compOf(hu) {
   hu = hu || hunter(); const L = hu.p ? 100 : hu.lvl, c = S.comp || {};
   const st = L < 10 ? -1 : L < 25 ? 0 : L < 40 ? 1 : L < 100 ? 2 : 3;
-  let sp = L >= 40 && COMP[hu.cls] ? hu.cls : c.sp && COMP[c.sp] ? c.sp : compPred();
+  const own = COMP[c.sp] ? c.sp : COMP_OLD[c.sp], sp = st >= 0 && own ? own : compPred(); // l'espèce ne change plus après l'éclosion
   const D = COMP[sp], img = st < 0 ? 'comp/oeuf.webp' : `comp/${D[0]}${Math.min(st, 2)}.webp`;
   const base = st < 0 ? T('Œuf mystérieux', 'Mystery egg') : T(D[Math.min(st, 2) + 1][0], D[Math.min(st, 2) + 1][1]) + (st === 3 ? T(' doré', ' (golden)') : '');
   const last = S.history.length ? S.history[S.history.length - 1].date : null, gap = last ? Math.floor((Date.now() - new Date(last)) / 864e5) : 99;
   const mood = st < 0 ? 'egg' : gap < 1 && new Date(last).toDateString() === new Date().toDateString() ? 'happy' : gap >= 7 ? 'sad' : gap <= 2 ? 'sleep' : 'idle';
   return {sp, st, L, img, base, name: st >= 0 && c.n ? c.n : base, col: D[4], mood, gap, key: st + ':' + (st < 0 ? '' : sp)};
 }
-function compSync(hu) { // retient l'espèce à l'éclosion (avant le niveau 40 elle ne change plus)
+function compSync(hu) { // retient l'espèce à l'éclosion : c'est ton compagnon, même si tu changes de classe ensuite
   const k = compOf(hu); S.comp = S.comp || {};
-  if (k.st >= 0 && S.comp.sp !== k.sp && (k.L >= 40 || !S.comp.sp)) { S.comp.sp = k.sp; save(); }
+  if (k.st >= 0 && S.comp.sp !== k.sp && !COMP[S.comp.sp]) { S.comp.sp = k.sp; save(); }
   return k;
 }
 function compStill() { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
@@ -5990,12 +5991,12 @@ function compInfo() {
   const stages = [['comp/oeuf.webp', T('Œuf', 'Egg'), 1], ...[0, 1, 2].map(i => [`comp/${D[0]}${i}.webp`, T(D[i + 1][0], D[i + 1][1]), COMP_LV[i]]), [`comp/${D[0]}2.webp`, T('Doré', 'Golden'), 100]];
   modal(`<h2>${esc(k.name)}</h2><div class="cpbig" style="--cc:${k.col}">${compArt(k)}</div><p class="muted" style="text-align:center;margin:0 0 6px">${esc(compMoodTxt(k))}</p>
     <div class="cpstages">${stages.map((s, i) => { const got = k.st >= i - 1, shown = got || k.st >= 0; return `<div class="${got ? (k.st === i - 1 ? 'on' : '') : 'off'}"><img src="${shown || i === 0 ? s[0] : 'comp/oeuf.webp'}" alt=""${i === 4 ? ' style="filter:sepia(.9) saturate(2.4) brightness(1.08)' + (got ? '' : ' brightness(0) opacity(.35)') + '"' : ''}><br>${k.st < 0 && i ? '???' : esc(s[1])}<br>${T('Niv.', 'Lv.')} ${s[2]}</div>`; }).join('')}</div>
-    <p class="small muted">${k.st < 0 ? T('Ton œuf éclot au niveau 10. La créature qui en sort dépend de ta façon de t\'entraîner : dragon, golem, loup, hibou ou griffon.', 'Your egg hatches at level 10. The creature inside depends on how you train: dragon, golem, wolf, owl or griffin.') : T('Il grandit au niveau 25, devient adulte au niveau 40 (il prend alors la forme de ta classe) et devient doré au niveau 100. Il est content quand tu t\'entraînes et s\'ennuie si tu arrêtes trop longtemps.', 'It grows at level 25, becomes an adult at level 40 (taking the form of your class) and turns golden at level 100. It\'s happy when you train and gets sad if you stop for too long.')}</p>
+    <p class="small muted">${k.st < 0 ? T('Ton œuf éclot au niveau 10. La créature qui en sort dépend de ta classe : dragon pour Guerrier, loup pour Rôdeur, golem pour Moine, hibou pour Soigneur et griffon pour les classes hybrides.', 'Your egg hatches at level 10. The creature inside depends on your class: dragon for Warrior, wolf for Ranger, golem for Monk, owl for Healer and griffin for hybrid classes.') : T('Il grandit au niveau 25, devient adulte au niveau 40 et devient doré au niveau 100. Il reste ton compagnon même si tu changes de classe. Il est content quand tu t\'entraînes et s\'ennuie si tu arrêtes trop longtemps, mais il ne perd jamais rien.', 'It grows at level 25, becomes an adult at level 40 and turns golden at level 100. It stays your companion even if you change class. It\'s happy when you train and gets bored if you stop for too long, but it never loses anything.')}</p>
     ${k.st >= 0 ? `<label class="small muted">${T('Son nom', 'Its name')}</label><div class="row" style="gap:8px;margin-top:4px"><input id="compnm" maxlength="20" value="${esc((S.comp || {}).n || '')}" placeholder="${esc(k.base)}"><button class="btn primary" data-act="comp-name">OK</button></div>` : ''}
     <button class="btn block" data-act="close" style="margin-top:12px">${T('Fermer', 'Close')}</button>`);
 }
 /* Mode test caché (7 touches sur le numéro de version) : voir tous les compagnons, stades et humeurs sans rien changer à ta partie */
-var labSel = {sp: 'war', st: 0, mood: 'happy'};
+var labSel = {sp: 'dragon', st: 0, mood: 'happy'};
 function compFake(sp, st, mood) {
   const D = COMP[sp], L = st < 0 ? 9 : COMP_LV[st], base = st < 0 ? T('Œuf mystérieux', 'Mystery egg') : T(D[Math.min(st, 2) + 1][0], D[Math.min(st, 2) + 1][1]) + (st === 3 ? T(' doré', ' (golden)') : '');
   return {sp, st, L, img: st < 0 ? 'comp/oeuf.webp' : `comp/${D[0]}${Math.min(st, 2)}.webp`, base, name: base, col: D[4], mood: st < 0 ? 'egg' : mood, gap: mood === 'sad' ? 9 : 1, key: st + ':' + sp};
@@ -6003,7 +6004,7 @@ function compFake(sp, st, mood) {
 function labOpen() {
   const k = compFake(labSel.sp, labSel.st, labSel.mood), chip = (a, v, l, on) => `<button class="btn sm${on ? ' primary' : ''}" data-act="lab-set" data-k="${a}" data-v="${v}">${l}</button>`;
   const html = `<h2>🧪 ${T('Mode test', 'Test mode')}</h2><p class="small muted" style="margin-top:0">${T('Rien ici ne change ta partie : c\'est juste un aperçu.', 'Nothing here changes your progress: it\'s just a preview.')}</p>
-    <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${Object.keys(COMP).map(c => chip('sp', c, clsIc(c) + ' ' + esc(clsName(c)), labSel.sp === c)).join('')}</div>
+    <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${Object.keys(COMP).map(c => chip('sp', c, `${esc(T(COMP[c][5][0], COMP[c][5][1]))} <span class="small" style="opacity:.75">· ${esc(compClsOf(c))}</span>`, labSel.sp === c)).join('')}</div>
     <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${[[-1, T('Œuf', 'Egg')], [0, T('Bébé', 'Baby')], [1, T('Jeune', 'Young')], [2, T('Adulte', 'Adult')], [3, T('Doré', 'Golden')]].map(([v, l]) => chip('st', v, l, labSel.st === v)).join('')}</div>
     <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${[['happy', T('Content', 'Happy')], ['sleep', T('Repos', 'Resting')], ['idle', T('Impatient', 'Eager')], ['sad', T('Triste', 'Sad')]].map(([v, l]) => chip('mood', v, l, labSel.mood === v)).join('')}</div>
     <div class="cpbig" style="--cc:${k.col}">${compArt(k)}</div><p class="muted small" style="text-align:center;margin:0 0 10px">${esc(compMoodTxt(k))}</p>
@@ -7145,7 +7146,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.123.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.123.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
   {v: '9.123.2', d: '2026-11-23', fr: ['Fin de séance : une fois le coffre ouvert, le bouton devient « Coffre ouvert · revoir le butin » au lieu de « Ouvrir ton coffre ».'], en: ['End of workout: once the chest is opened, the button becomes “Chest opened · see the loot” instead of “Open your chest”.']},
