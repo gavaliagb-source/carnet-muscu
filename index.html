@@ -6813,9 +6813,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.111.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.111.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.111.4', d: '2026-11-22', fr: ['Fin du cardio sur tapis : l\'encadré « Ça donne » montre seulement les calories et la pente (les pas de la montre sont déjà écrits sous la distance).'], en: ['End of treadmill cardio: the “That gives” box only shows calories and incline (the watch steps are already written under the distance).']},
   {v: '9.111.3', d: '2026-11-22', fr: ['Cardio en direct : l\'écran de séance ne s\'ouvre plus par-dessus (au retour dans l\'appli, par une notification ou par la montre), et la barre de séance en bas n\'apparaît plus sur l\'écran du cardio.'], en: ['Live cardio: the workout screen no longer opens on top of it (when coming back to the app, from a notification or from the watch), and the bottom workout bar no longer shows on the cardio screen.']},
   {v: '9.111.2', d: '2026-11-22', fr: ['Fin du cardio sur tapis : le nombre de pas estimé n\'apparaît plus que si tu entres une distance, et l\'appli dit combien de pas ta montre a vraiment comptés.'], en: ['End of treadmill cardio: the estimated step count only shows when you enter a distance, and the app says how many steps your watch really counted.']},
   {v: '9.111.1', d: '2026-11-22', fr: ['Quête « Soulève plus que la dernière fois » : l\'objectif reste le même jusqu\'à la vérification du lendemain, même si tu as fait une autre routine que prévu.'], en: ['“Lift more than last time” quest: the goal stays the same until it is checked the next day, even if you did a different routine than planned.']},
@@ -7998,7 +7999,7 @@ function clFinish(fromWatch) {
   if (!c.pat) c.pat = Date.now(); clStop(); save(); window._clPend = null;
   const n = v => { v = String(v || '').replace(',', '.').trim(); return v !== '' && !isNaN(v) && +v > 0 ? +v : 0; };
   window._clRead = () => ({inc: Math.min(40, n(($('#clinc') || {}).value)), km: n(($('#cldist') || {}).value)});
-  window._clCalc = () => { const el = $('#clkc'); if (!el) return; const v = window._clRead(), r = cardioCalc(c.k, min, v.km, v.inc, bodyKg()); el.innerHTML = r ? `<b style="font-size:22px">${r.kcal.toLocaleString(LOC())}</b> kcal${clStepsOn(c) && c.steps > 30 && v.km && Math.abs(v.km - Math.round(clKm() * 100) / 100) < .011 ? ` <span class="muted">· ${Math.round(c.steps).toLocaleString(LOC())} ${T('pas comptés par ta montre', 'steps counted by your watch')}</span>` : ''}${v.inc ? ` <span class="muted">· ${T('pente', 'incline')} ${DN(v.inc)} %</span>` : ''}` : ''; };
+  window._clCalc = () => { const el = $('#clkc'); if (!el) return; const v = window._clRead(), r = cardioCalc(c.k, min, v.km, v.inc, bodyKg()); el.innerHTML = r ? `<b style="font-size:22px">${r.kcal.toLocaleString(LOC())}</b> kcal${v.inc ? ` <span class="muted">· ${T('pente', 'incline')} ${DN(v.inc)} %</span>` : ''}` : ''; };
   modal(`<h2 style="margin:0 0 4px">${T('Séance sur tapis', 'Treadmill session')}</h2>
     <p class="muted small" style="margin:0 0 6px">${hm(min)} · ${T('Facultatif : l\'inclinaison et la distance de ton tapis donnent des calories plus justes.', 'Optional: your treadmill incline and distance give more accurate calories.')}</p>
     <label>${T('Inclinaison moyenne (%)', 'Average incline (%)')}</label>
