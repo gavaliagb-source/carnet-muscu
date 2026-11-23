@@ -6813,9 +6813,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.111.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.111.5'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.111.5', d: '2026-11-22', fr: ['Fin du cardio sur tapis : sous les calories, ton vrai nombre de pas, puis ce que ça vaut à plat avec ta pente (ex. 127 pas, avec la pente de 15 % = ≈ 339 pas à plat).'], en: ['End of treadmill cardio: under the calories, your real step count, then what it is worth on flat ground with your incline (e.g. 127 steps, with a 15% incline = ≈ 339 flat steps).']},
   {v: '9.111.4', d: '2026-11-22', fr: ['Fin du cardio sur tapis : l\'encadré « Ça donne » montre seulement les calories et la pente (les pas de la montre sont déjà écrits sous la distance).'], en: ['End of treadmill cardio: the “That gives” box only shows calories and incline (the watch steps are already written under the distance).']},
   {v: '9.111.3', d: '2026-11-22', fr: ['Cardio en direct : l\'écran de séance ne s\'ouvre plus par-dessus (au retour dans l\'appli, par une notification ou par la montre), et la barre de séance en bas n\'apparaît plus sur l\'écran du cardio.'], en: ['Live cardio: the workout screen no longer opens on top of it (when coming back to the app, from a notification or from the watch), and the bottom workout bar no longer shows on the cardio screen.']},
   {v: '9.111.2', d: '2026-11-22', fr: ['Fin du cardio sur tapis : le nombre de pas estimé n\'apparaît plus que si tu entres une distance, et l\'appli dit combien de pas ta montre a vraiment comptés.'], en: ['End of treadmill cardio: the estimated step count only shows when you enter a distance, and the app says how many steps your watch really counted.']},
@@ -7999,7 +8000,12 @@ function clFinish(fromWatch) {
   if (!c.pat) c.pat = Date.now(); clStop(); save(); window._clPend = null;
   const n = v => { v = String(v || '').replace(',', '.').trim(); return v !== '' && !isNaN(v) && +v > 0 ? +v : 0; };
   window._clRead = () => ({inc: Math.min(40, n(($('#clinc') || {}).value)), km: n(($('#cldist') || {}).value)});
-  window._clCalc = () => { const el = $('#clkc'); if (!el) return; const v = window._clRead(), r = cardioCalc(c.k, min, v.km, v.inc, bodyKg()); el.innerHTML = r ? `<b style="font-size:22px">${r.kcal.toLocaleString(LOC())}</b> kcal${v.inc ? ` <span class="muted">· ${T('pente', 'incline')} ${DN(v.inc)} %</span>` : ''}` : ''; };
+  window._clCalc = () => { const el = $('#clkc'); if (!el) return; const v = window._clRead(), r = cardioCalc(c.k, min, v.km, v.inc, bodyKg()); 
+    // Pas réels (montre), puis leur équivalent à plat avec la pente : 127 pas, avec la pente de 15 % = ≈ 339 pas
+    const r0 = v.inc ? cardioCalc(c.k, min, v.km, 0, bodyKg()) : r, real = clStepsOn(c) && c.steps > 30 && v.km && Math.abs(v.km - Math.round(clKm() * 100) / 100) < .011 ? Math.round(c.steps) : 0;
+    const base = real || (v.km && r0 ? r0.steps : 0), eq = base && v.inc && r0 && r0.steps ? Math.round(base * r.steps / r0.steps) : 0, f = n => n.toLocaleString(LOC());
+    const line = !base ? '' : `${real ? '' : '≈ '}${f(base)} ${T('pas', 'steps')}${eq ? `, ${T(`avec la pente de ${DN(v.inc)} %`, `with a ${DN(v.inc)}% incline`)} = <b>≈ ${f(eq)} ${T('pas à plat', 'flat steps')}</b>` : ''}`;
+    el.innerHTML = r ? `<b style="font-size:22px">${f(r.kcal)}</b> kcal${line ? `<div class="muted small" style="margin-top:4px">${line}</div>` : ''}` : ''; };
   modal(`<h2 style="margin:0 0 4px">${T('Séance sur tapis', 'Treadmill session')}</h2>
     <p class="muted small" style="margin:0 0 6px">${hm(min)} · ${T('Facultatif : l\'inclinaison et la distance de ton tapis donnent des calories plus justes.', 'Optional: your treadmill incline and distance give more accurate calories.')}</p>
     <label>${T('Inclinaison moyenne (%)', 'Average incline (%)')}</label>
