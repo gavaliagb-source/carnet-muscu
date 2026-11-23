@@ -568,6 +568,8 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .cpfin{display:flex;gap:10px;align-items:center;text-align:left;margin:8px 0;padding:8px 10px;border-radius:12px;background:color-mix(in srgb,var(--cc) 12%,transparent)}.cpfin img{width:52px;height:52px;object-fit:contain;flex:none}.cpfin .cph{color:#f472b6;white-space:nowrap}.cpfin .ico{vertical-align:-2px}
 #tcomp{display:flex;align-items:center;margin-right:8px;cursor:pointer}#tcomp img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 1px 2px #0006)}
 .btcomp{display:flex;flex-direction:column;align-items:center;gap:6px;margin:0 0 10px}.btcomp img{width:120px;height:120px;object-fit:contain}.btcomp span{background:#fff1;border-radius:12px;padding:6px 12px;font-size:15px;font-weight:600}
+.cpch{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.cpt{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:14px;border:1.5px solid var(--line);background:var(--card2);color:var(--text);font-size:12px;line-height:1.2;text-align:center}.cpt img{width:64px;height:64px;object-fit:contain}.cpt.on{border-color:var(--cc);box-shadow:0 0 14px color-mix(in srgb,var(--cc) 50%,transparent)}.cpt.dis{opacity:.55}.cpt .small{font-size:10px}.cpsug{position:absolute;top:-7px;left:50%;transform:translateX(-50%);background:var(--accent);color:#0b0f05;font-size:9px;font-weight:800;padding:1px 6px;border-radius:8px;white-space:nowrap}
+.cppv{margin:12px 0 0;padding:10px;border-radius:14px;background:color-mix(in srgb,var(--cc) 10%,var(--card2))}.cpown{display:flex;flex-direction:column;gap:6px;margin:6px 0 0}.cpo{display:flex;gap:10px;align-items:center;padding:6px 8px;border-radius:12px;background:var(--card2)}.cpo img{width:44px;height:44px;object-fit:contain}.cpo .ico{color:var(--cc);vertical-align:-1px}
 .labrest{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:14px;background:var(--accent);color:#0b0f05;font-weight:600}.labrest .muted{color:#0b0f05aa!important}#tcompx img{width:36px;height:36px;object-fit:contain;display:block}
 .cpheart{position:absolute;left:50%;bottom:30%;color:#f472b6;pointer-events:none;animation:cpH 1.5s ease-out both}@keyframes cpH{0%{transform:translate(-50%,0) scale(.6);opacity:0}20%{opacity:1}100%{transform:translate(calc(-50% + var(--x)),-150px) scale(1.2);opacity:0}}.cpbig .cpw{width:100%;height:100%}
 .cpevo{position:relative}.cpevo .cpflash{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,#fff 0,color-mix(in srgb,var(--cc,#facc15) 70%,transparent) 35%,transparent 70%);opacity:0;pointer-events:none}
@@ -2531,7 +2533,7 @@ function finishWorkout() {
   const sysNew = syncSystem(); const evX2 = GAME() ? evDoubleXp(S.history[S.history.length - 1]) : 0, clsX = GAME() ? clsBonus(S.history[S.history.length - 1]) : 0, powX = GAME() ? powFinish(S.history[S.history.length - 1]) : 0, talX = GAME() ? talFinish(S.history[S.history.length - 1]) : 0; if (GAME()) stCheck(); if (GAME()) evCheck();
   const cpB = compOn() && GAME() ? compOf(huBefore) : null, cpBond = cpB ? compBondWorkout(S.history[S.history.length - 1], prs.length, !!sysNew.quest) : null;
   const meAfter = medalsEarned(), huAfter = hunter(meAfter), medDefs = meAfter.defs, medNew = Object.keys(meAfter.got).filter(k => !medBefore[k]).map(k => medDefs.find(d => d.id === k)).filter(Boolean);
-  const cpA = compOn() && GAME() ? compSync(huAfter) : null, cpEvo = cpB && cpA && cpB.key !== cpA.key && cpA.st > cpB.st; window._cpEvo = cpEvo ? [cpB, cpA] : null;
+  const cpA = compOn() && GAME() ? compSync(huAfter) : null, cpEvo = cpB && cpA && cpA.sp && cpB.sp === cpA.sp && cpA.st > cpB.st, cpRdy = cpA && compReady(huAfter.p ? 100 : huAfter.lvl); window._cpEvo = cpEvo ? [cpB, cpA] : null;
   setTimeout(() => queueCloud(1500), 0); setTimeout(remindSync, 500); try { expCheck(); } catch (e) {}
   if (!GAME()) {}
   else if (huAfter.rk !== huBefore.rk) setTimeout(() => awaken(huBefore.rk, huAfter), 900);
@@ -2550,10 +2552,11 @@ function finishWorkout() {
       ${clsX ? `<div style="margin:6px 0;display:flex;align-items:center;justify-content:center;gap:8px">${pclImg(clsCur(), 22)} ${T('Bonus de classe', 'Class bonus')} (${esc(pclName(clsCur()))}) <b>+${clsX} XP</b></div>` : ''}
       ${sysNew.quest ? `<div style="margin:6px 0">✨ ${T('Quête quotidienne accomplie', 'Daily quest complete')} <b>+150 XP</b></div>` : ''}
       ${sysNew.dungeon ? `<div style="margin:6px 0">⚔️ ${T('Donjon nettoyé', 'Dungeon cleared')} <b>+500 XP</b></div>` : ''}
-      ${cpBond && (cpBond.add || cpBond.gift) ? `<div class="cpfin" style="--cc:${cpBond.k.col}"><img src="${cpBond.k.img}" alt=""><span><b>${esc(cpBond.k.name)}</b> ${cpBond.add ? `<b class="cph">+${cpBond.add} ${ic('heart', 14)}</b>` : ''}${cpBond.gift ? `<br>${T('Il t\'a rapporté un cadeau', 'Brought you a gift')} <b>+${cpBond.gift} XP</b>` : ''}${cpBond.lvA > cpBond.lvB ? `<br><b style="color:var(--cc)">${T('Nouveau lien', 'New bond')} : ${esc(T(BOND[cpBond.lvA][1][0], BOND[cpBond.lvA][1][1]))}</b><br><span class="small muted">${esc(T(BOND[cpBond.lvA][2][0], BOND[cpBond.lvA][2][1]))}</span>` : ''}</span></div>` : ''}
+      ${cpBond && (cpBond.add || cpBond.gift) ? `<div class="cpfin" style="--cc:${cpBond.k.col}"><img src="${cpBond.k.img}" alt=""><span><b>${esc(cpBond.k.name)}</b> ${cpBond.add ? `<b class="cph">+${cpBond.add} ${ic('heart', 14)}</b>` : ''}${cpBond.gift ? `<br>${T('Il t\'a rapporté un cadeau', 'Brought you a gift')} <b>+${cpBond.gift} XP</b>` : ''}${cpBond.egg ? `<br><b style="color:#eab308">${T('Meilleur ami : un nouvel œuf t\'attend !', 'Best friend: a new egg is waiting!')}</b>` : ''}${cpBond.lvA > cpBond.lvB ? `<br><b style="color:var(--cc)">${T('Nouveau lien', 'New bond')} : ${esc(T(BOND[cpBond.lvA][1][0], BOND[cpBond.lvA][1][1]))}</b><br><span class="small muted">${esc(T(BOND[cpBond.lvA][2][0], BOND[cpBond.lvA][2][1]))}</span>` : ''}</span></div>` : ''}
       ${sysNew.boss ? `<div style="margin:8px 0;font-size:17px">☠️ <b>${T('BOSS VAINCU!', 'BOSS DEFEATED!')}</b> ${esc(sysNew.boss.name)} <b>+1 000 XP</b></div>` : ''}
       ${chest ? chestBtn(chest) : ''}
-      ${cpEvo ? `<button class="btn block chbtn" style="--cc:${cpA.col}" data-act="comp-evo">${cpB.st < 0 ? '🥚 ' + T('Ton œuf éclot !', 'Your egg is hatching!') : '✨ ' + T('Ton compagnon évolue !', 'Your companion evolves!')} <b>${T('Voir', 'See')}</b></button>` : ''}
+      ${cpEvo ? `<button class="btn block chbtn" style="--cc:${cpA.col}" data-act="comp-evo">✨ ${cpA.st === 3 ? T('Forme dorée !', 'Golden form!') : T('Ton compagnon grandit !', 'Your companion grows!')} <b>${T('Voir', 'See')}</b></button>` : ''}
+      ${cpRdy ? `<button class="btn block chbtn" style="--cc:#eab308;margin-top:8px" data-act="comp-choose">${T('Ton œuf est prêt : choisis ton compagnon', 'Your egg is ready: choose your companion')}</button>` : ''}
       ${prs.length ? `<div class="small" style="margin:6px 0;color:var(--accent)">⚔️ ${prs.length > 1 ? T(`${prs.length} armes améliorées !`, `${prs.length} weapons upgraded!`) : T('Arme améliorée !', 'Weapon upgraded!')}${CLN()} ${prs.map(r => esc(r.name)).join(', ')}</div>` : ''}
       <div class="finxp"><div class="row between small"><span id="finlv">${T('Niv.', 'Lv.')} ${huBefore.lvl}</span><b id="finxpn" data-cnt="${huAfter.xp - huBefore.xp}" data-pre="+" data-suf=" XP">+${(huAfter.xp - huBefore.xp).toLocaleString(LOC())} XP</b></div><div class="xpbar"><div id="finbar" style="width:${Math.round(huBefore.cur / huBefore.need * 100)}%"></div></div></div></div>` : ''}
     ${medNew.length ? `<div class="card" style="border-color:var(--accent);margin:8px 0"><b>🏅 ${T(medNew.length > 1 ? 'Nouvelles médailles!' : 'Nouvelle médaille!', medNew.length > 1 ? 'New medals!' : 'New medal!')}</b>${medNew.map(d => `<div style="margin-top:6px;display:flex;align-items:center;gap:8px">${rkBadge(d.rk, 'mrk lvrk')} ${d.ic} ${esc(d.t)}</div>`).join('')}</div>` : ''}
@@ -5947,60 +5950,81 @@ function awakenClass(c, hu) {
   document.body.appendChild(o);
   if (S.settings.haptic !== false) haptic([60, 80, 60, 80, 300]);
 }
-/* ---------- Compagnon : un œuf jusqu'au niveau 10, puis une créature qui grandit avec toi (forme selon ta classe) ---------- */
-/* Une créature par classe : Guerrier = dragon, Rôdeur = loup, Moine = golem, Soigneur = hibou, classes hybrides = griffon.
-   [fichier image, stade 0, stade 1, stade 2, couleur, nom de l'espèce] */
-var COMP = {dragon: ['dragon', ['Dragonnet', 'Dragonling'], ['Jeune dragon', 'Young dragon'], ['Dragon de guerre', 'War dragon'], '#f97316', ['Dragon', 'Dragon']],
-  loup: ['loup', ['Louveteau', 'Wolf pup'], ['Loup des ombres', 'Shadow wolf'], ['Loup spectral', 'Spectral wolf'], '#818cf8', ['Loup', 'Wolf']],
-  golem: ['golem', ['Petit golem', 'Little golem'], ['Golem de pierre', 'Stone golem'], ['Golem colosse', 'Colossus golem'], '#38bdf8', ['Golem', 'Golem']],
-  hibou: ['hibou', ['Petit hibou', 'Owlet'], ['Hibou arcanique', 'Arcane owl'], ['Grand-duc des runes', 'Rune eagle-owl'], '#c084fc', ['Hibou', 'Owl']],
-  griffon: ['griffon', ['Griffonneau', 'Griffin cub'], ['Jeune griffon', 'Young griffin'], ['Griffon royal', 'Royal griffin'], '#eab308', ['Griffon', 'Griffin']]};
-var COMP_CLS = {g: 'dragon', r: 'loup', m: 'golem', s: 'hibou'}; // toute autre classe (hybride) : griffon
-var COMP_OLD = {war: 'dragon', tank: 'golem', asn: 'loup', mage: 'hibou', ftr: 'griffon'}; // anciennes clés (avant les classes choisies)
-const compClsOf = sp => sp === 'griffon' ? T('Classes hybrides', 'Hybrid classes') : pclName(Object.keys(COMP_CLS).find(k => COMP_CLS[k] === sp) || '');
-var COMP_LV = [10, 25, 40, 100];
+/* ---------- Compagnon : un œuf, puis la créature que TU choisis. Il grandit avec votre lien (cœurs), et chaque « Meilleur ami » donne un nouvel œuf ---------- */
+/* f : fichier image · s : espèce · n : noms des 3 stades · c : couleur · k : classe suggérée · ok : images prêtes · an : animations prêtes · old : ancienne image (temporaire) */
+var COMP = {
+  panda: {f: 'panda', s: ['Panda roux de braise', 'Ember red panda'], n: [['Petit panda roux', 'Red panda cub'], ['Panda de braise', 'Ember red panda'], ['Maître panda flamboyant', 'Blazing panda master']], c: '#f97316', k: 'm'},
+  rhino: {f: 'rhino', s: ['Rhinocéros de fer', 'Iron rhino'], n: [['Petit rhino', 'Rhino calf'], ['Rhino de fer', 'Iron rhino'], ['Rhino cuirassé', 'Armored war rhino']], c: '#ef4444', k: 'g'},
+  faucon: {f: 'faucon', s: ['Faucon', 'Falcon'], n: [['Fauconneau', 'Falcon chick'], ['Faucon des bois', 'Woodland falcon'], ['Grand faucon traqueur', 'Great hunting falcon']], c: '#22c55e', k: 'r'},
+  axolotl: {f: 'axolotl', s: ['Axolotl de cristal', 'Crystal axolotl'], n: [['Petit axolotl', 'Baby axolotl'], ['Axolotl des sources', 'Spring axolotl'], ['Grand axolotl de cristal', 'Great crystal axolotl']], c: '#38bdf8', k: 's'},
+  lion: {f: 'lion', s: ['Lion de fer', 'Iron lion'], n: [['Lionceau', 'Lion cub'], ['Lion de fer', 'Iron lion'], ['Lion templier', 'Templar lion']], c: '#e11d48', k: 'gm'},
+  pegase: {f: 'pegase', s: ['Pégase solaire', 'Solar pegasus'], n: [['Poulain ailé', 'Winged foal'], ['Jeune pégase', 'Young pegasus'], ['Pégase solaire', 'Solar pegasus']], c: '#facc15', k: 'gs'},
+  sanglier: {f: 'sanglier', s: ['Sanglier de bronze', 'Bronze boar'], n: [['Marcassin', 'Boar piglet'], ['Sanglier de bronze', 'Bronze boar'], ['Grand sanglier spartiate', 'Great spartan boar']], c: '#d97706', k: 'gr'},
+  panthere: {f: 'panthere', s: ['Panthère lunaire', 'Moon panther'], n: [['Chaton d\'ombre', 'Shadow kitten'], ['Panthère lunaire', 'Moon panther'], ['Grande panthère des ombres', 'Great shadow panther']], c: '#a78bfa', k: 'mr'},
+  ours: {f: 'ours', s: ['Ours de mousse', 'Moss bear'], n: [['Ourson de mousse', 'Moss cub'], ['Ours des bois', 'Woodland bear'], ['Ours gardien de la forêt', 'Forest guardian bear']], c: '#4ade80', k: 'rs'},
+  tortue: {f: 'tortue', s: ['Tortue des runes', 'Rune tortoise'], n: [['Bébé tortue', 'Baby tortoise'], ['Tortue lanterne', 'Lantern tortoise'], ['Grande tortue sage', 'Great sage tortoise']], c: '#2dd4bf', k: 'ms'},
+  dragon: {f: 'dragon', s: ['Dragon', 'Dragon'], n: [['Dragonnet', 'Dragonling'], ['Jeune dragon', 'Young dragon'], ['Dragon de guerre', 'War dragon']], c: '#f97316', ok: 1, an: 1, old: 1},
+  loup: {f: 'loup', s: ['Loup', 'Wolf'], n: [['Louveteau', 'Wolf pup'], ['Loup des ombres', 'Shadow wolf'], ['Loup spectral', 'Spectral wolf']], c: '#818cf8', ok: 1, an: 1, old: 1},
+  golem: {f: 'golem', s: ['Golem', 'Golem'], n: [['Petit golem', 'Little golem'], ['Golem de pierre', 'Stone golem'], ['Golem colosse', 'Colossus golem']], c: '#38bdf8', ok: 1, an: 1, old: 1},
+  hibou: {f: 'hibou', s: ['Hibou', 'Owl'], n: [['Petit hibou', 'Owlet'], ['Hibou arcanique', 'Arcane owl'], ['Grand-duc des runes', 'Rune eagle-owl']], c: '#c084fc', ok: 1, an: 1, old: 1},
+  griffon: {f: 'griffon', s: ['Griffon', 'Griffin'], n: [['Griffonneau', 'Griffin cub'], ['Jeune griffon', 'Young griffin'], ['Griffon royal', 'Royal griffin']], c: '#eab308', ok: 1, an: 1, old: 1}};
+var COMP_OLD = {war: 'dragon', tank: 'golem', asn: 'loup', mage: 'hibou', ftr: 'griffon'}; // anciennes clés
+var HATCH_LV = 5; // le premier œuf éclot au niveau 5 (environ 3 séances)
 var COMP_LIVE = false; // false = compagnons visibles seulement dans le mode test (Réglages, 7 touches sur la version)
-function compPred() { let k = ''; try { k = clsCur(); } catch (e) {} return COMP_CLS[k] || 'griffon'; }
+const compList = () => Object.keys(COMP).filter(k => COMP[k].ok); // créatures qu'on peut choisir maintenant
+const compSugg = () => { let c = ''; try { c = clsCur(); } catch (e) {} return Object.keys(COMP).find(k => COMP[k].k === c && COMP[k].ok) || ''; };
+const compStage = h => h >= 250 ? 3 : h >= 130 ? 2 : h >= 60 ? 1 : 0; // bébé, jeune (Grand ami), adulte (Ami fidèle), doré (Meilleur ami)
+const STAGE_H = [0, 60, 130, 250];
+function compSt() { // état des compagnons (et conversion de l'ancienne version : un seul compagnon)
+  const c = S.comp = S.comp || {};
+  if (!c.own) { c.own = {}; const sp = COMP[c.sp] ? c.sp : COMP_OLD[c.sp]; if (sp) { c.own[sp] = {h: +c.h || 0, ...(c.n ? {n: c.n} : {})}; c.act = sp; } delete c.sp; delete c.n; delete c.h; }
+  if (c.act && !c.own[c.act]) c.act = Object.keys(c.own)[0] || '';
+  return c;
+}
+function compReady(L) { // un œuf attend d'éclore
+  const c = compSt(); if (L == null) { try { const hu = hunter(); L = hu.p ? 100 : hu.lvl; } catch (e) { L = 0; } }
+  return (!c.act && L >= HATCH_LV) || ((c.eggs || 0) > 0 && compList().some(k => !c.own[k]));
+}
 function compOf(hu) {
-  hu = hu || hunter(); const L = hu.p ? 100 : hu.lvl, c = S.comp || {};
-  const st = L < 10 ? -1 : L < 25 ? 0 : L < 40 ? 1 : L < 100 ? 2 : 3;
-  const own = COMP[c.sp] ? c.sp : COMP_OLD[c.sp], sp = st >= 0 && own ? own : compPred(); // l'espèce ne change plus après l'éclosion
-  const D = COMP[sp], img = st < 0 ? 'comp/oeuf.webp' : `comp/${D[0]}${Math.min(st, 2)}.webp`;
-  const base = st < 0 ? T('Œuf mystérieux', 'Mystery egg') : T(D[Math.min(st, 2) + 1][0], D[Math.min(st, 2) + 1][1]) + (st === 3 ? T(' doré', ' (golden)') : '');
+  hu = hu || hunter(); const L = hu.p ? 100 : hu.lvl, c = compSt(), sp = c.act, me = sp && c.own[sp];
   const last = S.history.length ? S.history[S.history.length - 1].date : null, gap = last ? Math.floor((Date.now() - new Date(last)) / 864e5) : 99;
-  const mood = st < 0 ? 'egg' : gap < 1 && new Date(last).toDateString() === new Date().toDateString() ? 'happy' : gap >= 7 ? 'sad' : gap <= 2 ? 'sleep' : 'idle';
-  return {sp, st, L, img, base, name: st >= 0 && c.n ? c.n : base, col: D[4], mood, gap, key: st + ':' + (st < 0 ? '' : sp)};
+  if (!me) { const ready = L >= HATCH_LV, nm = T('Œuf mystérieux', 'Mystery egg'); return {sp: '', st: -1, L, h: 0, img: 'comp/oeuf.webp', base: nm, name: nm, col: '#eab308', mood: 'egg', gap, ready, key: '-1:'}; }
+  const D = COMP[sp], h = +me.h || 0, st = compStage(h), s2 = Math.min(st, 2);
+  const base = T(D.n[s2][0], D.n[s2][1]) + (st === 3 ? T(' doré', ' (golden)') : '');
+  const mood = gap < 1 && new Date(last).toDateString() === new Date().toDateString() ? 'happy' : gap >= 7 ? 'sad' : gap <= 2 ? 'sleep' : 'idle';
+  return {sp, st, L, h, img: `comp/${D.f}${s2}.webp`, base, name: me.n || base, col: D.c, mood, gap, ready: false, key: st + ':' + sp};
 }
-function compSync(hu) { // retient l'espèce à l'éclosion : c'est ton compagnon, même si tu changes de classe ensuite
-  const k = compOf(hu); S.comp = S.comp || {};
-  if (k.st >= 0 && S.comp.sp !== k.sp && !COMP[S.comp.sp]) { S.comp.sp = k.sp; save(); }
-  return k;
-}
-/* ---------- Lien avec le compagnon (cœurs) : il commence à l'éclosion, ne baisse jamais, max 10 cœurs par jour ---------- */
+const compSync = hu => compOf(hu);
+/* ---------- Lien avec le compagnon (cœurs) : chaque compagnon a les siens, ils ne baissent jamais, max 10 cœurs par jour ---------- */
 const compOn = () => COMP_LIVE || !!S.settings.lab; // mode test : ton vrai compagnon est visible pour toi seulement
 var BOND = [[0, ['Nouveau compagnon', 'New companion'], ['Le début de votre aventure.', 'The start of your adventure.']],
   [20, ['Ami', 'Friend'], ['Il t\'accompagne pendant tes repos.', 'Keeps you company during your rests.']],
-  [60, ['Grand ami', 'Great friend'], ['Il te rapporte un cadeau après ta première séance du jour (+25 XP).', 'Brings you a gift after your first workout of the day (+25 XP).']],
-  [130, ['Ami fidèle', 'Loyal friend'], ['+5 % de dégâts au raid de guilde.', '+5% damage in the guild raid.']],
-  [250, ['Meilleur ami', 'Best friend'], ['Aura de meilleur ami et cadeaux doublés (+50 XP).', 'Best-friend aura and double gifts (+50 XP).']]];
-var BOND_SRC = {wo: [3, 1, ['Séance', 'Workout']], pr: [1, 2, ['Record (2 max)', 'Record (2 max)']], q: [2, 1, ['Quête du jour', 'Daily quest']], cd: [2, 1, ['Cardio', 'Cardio']], st: [2, 1, ['Étirements', 'Stretching']], pet: [1, 1, ['Caresse', 'Pet']]};
+  [60, ['Grand ami', 'Great friend'], ['Il grandit et te rapporte un cadeau après ta première séance du jour (+25 XP).', 'Grows up and brings you a gift after your first workout of the day (+25 XP).']],
+  [130, ['Ami fidèle', 'Loyal friend'], ['Il devient adulte et donne +5 % de dégâts au raid de guilde.', 'Becomes an adult and gives +5% damage in the guild raid.']],
+  [250, ['Meilleur ami', 'Best friend'], ['Forme dorée, aura, cadeaux doublés (+50 XP) et un nouvel œuf.', 'Golden form, aura, double gifts (+50 XP) and a new egg.']]];
+var BOND_SRC = {wo: [3, 1, ['Séance', 'Workout']], pr: [1, 2, ['Record (2 max)', 'Record (2 max)']], q: [2, 1, ['Quête du jour', 'Daily quest']], cd: [2, 1, ['Cardio', 'Cardio']], st: [2, 1, ['Étirements', 'Stretching']], pet: [1, 1, ['Caresse', 'Pet']], rest: [2, 1, ['Jour de repos après une séance', 'Rest day after a workout']]};
 var BOND_DAY = 10;
-const bondH = () => +((S.comp || {}).h) || 0;
+const bondH = () => { const c = compSt(), me = c.own[c.act]; return me ? +me.h || 0 : 0; };
 function bondLv(h) { let i = 0; BOND.forEach((b, j) => { if (h >= b[0]) i = j; }); return i; }
 function bondDay() { const c = S.comp = S.comp || {}, d = dkey(new Date()); if (!c.hd || c.hd.d !== d) c.hd = {d, n: 0, g: {}}; return c.hd; }
-function bondAdd(src, times = 1) { // cœurs vraiment ajoutés (limites par source et par jour)
-  const R = BOND_SRC[src]; if (!R) return 0; const c = S.comp = S.comp || {}, D = bondDay(); let add = 0;
+function bondAdd(src, times = 1) { // cœurs vraiment ajoutés au compagnon actif (limites par source et par jour)
+  const R = BOND_SRC[src], c = compSt(), me = c.own[c.act]; if (!R || !me) return 0; const D = bondDay(); let add = 0;
   for (let i = 0; i < times; i++) { if ((D.g[src] || 0) >= R[1]) break; const k = Math.min(R[0], BOND_DAY - D.n); if (k <= 0) break; D.g[src] = (D.g[src] || 0) + 1; D.n += k; add += k; }
-  if (add) c.h = bondH() + add; return add;
+  if (add) { me.h = (+me.h || 0) + add; if (me.h >= BOND[4][0] && !me.eg) { me.eg = 1; if (compList().some(k => !c.own[k])) c.eggs = (c.eggs || 0) + 1; } }
+  return add;
 }
-function compBondWorkout(h, nPr, quest) { // fin de séance : cœurs, palier et cadeau (avant le calcul de l'XP gagnée)
+function bondRest() { // la récupération compte aussi : un jour sans séance juste après une séance donne des cœurs
+  try { const c = compSt(); if (!c.act || !S.history.length) return 0; const td = dkey(new Date()), yd = dkey(new Date(Date.now() - 864e5)), dd = h => dkey(new Date(h.date));
+    if (S.history.some(h => dd(h) === td) || !S.history.some(h => dd(h) === yd)) return 0; const a = bondAdd('rest'); if (a) save(); return a; } catch (e) { return 0; }
+}
+function compBondWorkout(h, nPr, quest) { // fin de séance : cœurs, palier, cadeau et nouvel œuf (avant le calcul de l'XP gagnée)
   const k = compOf(); if (k.st < 0) return null;
-  const lvB = bondLv(bondH()); let add = bondAdd('wo');
+  const e0 = compSt().eggs || 0, lvB = bondLv(bondH()); let add = bondAdd('wo');
   if (nPr) add += bondAdd('pr', nPr); if (quest) add += bondAdd('q');
   if ((h.exercises || []).some(e => (e.sets || []).some(x => x.u === 'c'))) add += bondAdd('cd');
   const lvA = bondLv(bondH()); let gift = 0;
   if (lvA >= 2) { const xp = lvA >= 4 ? 50 : 25; if (giveXp('comp', dkey(new Date()), xp)) gift = xp; }
-  save(); return {add, lvB, lvA, gift, k};
+  save(); return {add, lvB, lvA, gift, egg: (compSt().eggs || 0) > e0, k};
 }
 const compRaidB = () => { try { return compOn() && GAME() && compOf().st >= 0 && bondLv(bondH()) >= 3 ? .05 : 0; } catch (e) { return 0; } };
 function compRest() { try { if (!compOn() || !GAME() || !S.history.length) return null; const k = compOf(); return k.st >= 0 && bondLv(bondH()) >= 1 ? k : null; } catch (e) { return null; } }
@@ -6018,59 +6042,91 @@ function bondHtml(h, today, k) { // carte du lien (fiche du compagnon et mode te
     <div class="goal" style="margin:6px 0 4px"><div style="width:${pc}%;background:var(--cc)"></div></div>
     <div class="small muted">${T(`Aujourd'hui : ${today} / ${BOND_DAY} cœurs`, `Today: ${today} / ${BOND_DAY} hearts`)}</div>
     <div class="cpbl">${BOND.slice(1).map((b, i) => `<div class="${lv >= i + 1 ? 'on' : ''}">${ic(lv >= i + 1 ? 'ccheck' : 'lock', 15)}<span><b>${esc(T(b[1][0], b[1][1]))}</b> <span class="muted">· ${b[0]}</span><br><span class="small">${esc(T(b[2][0], b[2][1]))}</span></span></div>`).join('')}</div>
-    <details class="small"><summary>${T('Comment gagner des cœurs', 'How to earn hearts')}</summary><div class="cpsrc">${Object.values(BOND_SRC).map(r => `<span>${esc(T(r[2][0], r[2][1]))}</span><b>+${r[0]}</b>`).join('')}</div><p class="muted" style="margin:6px 0 0">${T(`Au plus ${BOND_DAY} cœurs par jour. Le lien ne baisse jamais, même si tu prends une pause.`, `At most ${BOND_DAY} hearts a day. The bond never goes down, even if you take a break.`)}</p></details></div>`;
+    <details class="small"><summary>${T('Comment gagner des cœurs', 'How to earn hearts')}</summary><div class="cpsrc">${Object.values(BOND_SRC).map(r => `<span>${esc(T(r[2][0], r[2][1]))}</span><b>+${r[0]}</b>`).join('')}</div><p class="muted" style="margin:6px 0 0">${T(`Au plus ${BOND_DAY} cœurs par jour, pour ton compagnon actif. Le lien ne baisse jamais, même si tu prends une pause.`, `At most ${BOND_DAY} hearts a day, for your active companion. The bond never goes down, even if you take a break.`)}</p></details></div>`;
 }
 function compStill() { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
 var COMP_MOODV = {golem0: ['happy']}; // animations d'humeur dédiées déjà faites, ex. {golem0: ['happy', 'sleep', 'sad']}
 function compSrc(k) {
-  if (k.st < 0 || compStill()) return k.img;
+  const D = COMP[k.sp]; if (k.st < 0 || compStill() || !D || !D.an) return k.img; // pas d'animation : pas de requête inutile
   const n = k.img.slice(5, -5), m = (COMP_MOODV[n] || []).includes(k.mood);
   return `comp/a_${n}${m ? '_' + k.mood : ''}.webp`;
 }
 function compArt(k, cls = '') {
   const own = k.st >= 0 && (COMP_MOODV[k.img.slice(5, -5)] || []).includes(k.mood);
-  return `<div class="cpw ${cls} ${k.st < 0 ? 'egg' + (k.L >= 8 ? ' near' : '') : own ? 'own' : 'm-' + k.mood}${k.st === 3 ? ' gold' : ''}" style="--cpm:url(${k.img})"><img src="${compSrc(k)}" onerror="this.onerror=null;this.src='${k.img}'" alt="${esc(k.name)}" loading="lazy"><i class="cpfx">${k.mood === 'sleep' ? 'z' : k.mood === 'sad' ? '💧' : '✦'}</i><i class="cpfx b">${k.mood === 'sleep' ? 'z' : '✦'}</i></div>`;
+  return `<div class="cpw ${cls} ${k.st < 0 ? 'egg' + (k.ready || k.L >= HATCH_LV - 1 ? ' near' : '') : own ? 'own' : 'm-' + k.mood}${k.st === 3 ? ' gold' : ''}" style="--cpm:url(${k.img})"><img src="${compSrc(k)}" onerror="this.onerror=null;this.src='${k.img}'" alt="${esc(k.name)}" loading="lazy"><i class="cpfx">${k.mood === 'sleep' ? 'z' : k.mood === 'sad' ? '💧' : '✦'}</i><i class="cpfx b">${k.mood === 'sleep' ? 'z' : '✦'}</i></div>`;
 }
 function compMoodTxt(k) {
-  if (k.st < 0) return k.L >= 8 ? T('Il bouge… il va bientôt éclore !', 'It\'s moving… it will hatch soon!') : T('Chaque séance le réchauffe.', 'Every workout warms it up.');
+  if (k.st < 0) return k.ready ? T('Il est prêt à éclore : choisis ton compagnon !', 'It\'s ready to hatch: choose your companion!') : k.L >= HATCH_LV - 1 ? T('Il bouge… il va bientôt éclore !', 'It\'s moving… it will hatch soon!') : T('Chaque séance le réchauffe.', 'Every workout warms it up.');
   return {happy: T('Content : tu t\'es entraîné aujourd\'hui !', 'Happy: you trained today!'), sleep: T('Il se repose avec toi.', 'Resting with you.'), idle: T('Il a hâte de retourner à l\'entraînement.', 'Eager to get back to training.'), sad: T(`Il s'ennuie de toi… ${k.gap} jours sans séance.`, `Misses you… ${k.gap} days without a workout.`)}[k.mood];
 }
 function compCard() {
   if (!compOn() || !GAME() || !S.history.length) return '';
-  const k = compSync(), nx = COMP_LV.find(l => l > k.L), bl = k.st >= 0 ? bondLv(bondH()) : -1;
-  return `<button class="compc${bl >= 4 ? ' best' : ''}" data-act="comp-info" style="--cc:${k.col}">${compArt(k)}<span style="flex:1;min-width:0"><span class="muted small">${T('Compagnon', 'Companion')}${bl >= 0 ? ` · ${ic('heart', 12)} ${esc(T(BOND[bl][1][0], BOND[bl][1][1]))}` : ''}</span><br><b>${esc(k.name)}</b><br><span class="small muted">${esc(compMoodTxt(k))}</span>${nx ? `<br><span class="small" style="color:var(--accent)">${k.st < 0 ? T(`Éclot au niveau ${nx}`, `Hatches at level ${nx}`) : T(`Évolue au niveau ${nx}`, `Evolves at level ${nx}`)}</span>` : ''}</span></button>`;
+  bondRest(); const k = compOf(), bl = k.st >= 0 ? bondLv(k.h) : -1, nx = k.st >= 0 && k.st < 3 ? STAGE_H[k.st + 1] : 0, egg = k.st >= 0 && compReady(k.L);
+  const sub = k.st < 0 ? (k.ready ? `<b style="color:var(--accent)">${T('Touche pour choisir ton compagnon', 'Tap to choose your companion')}</b>` : T(`Éclot au niveau ${HATCH_LV}`, `Hatches at level ${HATCH_LV}`)) : egg ? `<b style="color:var(--accent)">${T('Un nouvel œuf t\'attend', 'A new egg is waiting')}</b>` : nx ? T(`Grandit à ${nx} cœurs`, `Grows at ${nx} hearts`) : '';
+  return `<button class="compc${bl >= 4 ? ' best' : ''}" data-act="${k.ready ? 'comp-choose' : 'comp-info'}" style="--cc:${k.col}">${compArt(k)}<span style="flex:1;min-width:0"><span class="muted small">${T('Compagnon', 'Companion')}${bl >= 0 ? ` · ${ic('heart', 12)} ${esc(T(BOND[bl][1][0], BOND[bl][1][1]))}` : ''}</span><br><b>${esc(k.name)}</b><br><span class="small muted">${esc(compMoodTxt(k))}</span>${sub ? `<br><span class="small" style="color:var(--accent)">${sub}</span>` : ''}</span></button>`;
 }
 function compInfo() {
-  const k = compSync(), D = COMP[k.sp];
-  const stages = [['comp/oeuf.webp', T('Œuf', 'Egg'), 1], ...[0, 1, 2].map(i => [`comp/${D[0]}${i}.webp`, T(D[i + 1][0], D[i + 1][1]), COMP_LV[i]]), [`comp/${D[0]}2.webp`, T('Doré', 'Golden'), 100]];
+  const k = compOf(); if (k.st < 0) { if (k.ready) compChoose(); else modal(`<h2>${esc(k.name)}</h2><div class="cpbig" style="--cc:${k.col}">${compArt(k)}</div><p class="muted" style="text-align:center">${esc(compMoodTxt(k))}</p><p class="small muted">${T(`Ton œuf éclot au niveau ${HATCH_LV}. Tu choisiras alors ton compagnon parmi toutes les créatures, celle de ta classe est suggérée.`, `Your egg hatches at level ${HATCH_LV}. You will then choose your companion among all the creatures, your class's one is suggested.`)}</p><button class="btn block" data-act="close">${T('Fermer', 'Close')}</button>`); return; }
+  bondRest(); const c = compSt(), D = COMP[k.sp], me = c.own[k.sp];
+  const stages = [0, 1, 2, 3].map(i => [`comp/${D.f}${Math.min(i, 2)}.webp`, i === 3 ? T('Doré', 'Golden') : T(D.n[i][0], D.n[i][1]), STAGE_H[i]]);
+  const others = Object.keys(c.own).filter(s => s !== k.sp && COMP[s]);
   modal(`<h2>${esc(k.name)}</h2><div class="cpbig" style="--cc:${k.col}">${compArt(k)}</div><p class="muted" style="text-align:center;margin:0 0 6px">${esc(compMoodTxt(k))}</p>
-    <div class="cpstages">${stages.map((s, i) => { const got = k.st >= i - 1, shown = got || k.st >= 0; return `<div class="${got ? (k.st === i - 1 ? 'on' : '') : 'off'}"><img src="${shown || i === 0 ? s[0] : 'comp/oeuf.webp'}" alt=""${i === 4 ? ' style="filter:sepia(.9) saturate(2.4) brightness(1.08)' + (got ? '' : ' brightness(0) opacity(.35)') + '"' : ''}><br>${k.st < 0 && i ? '???' : esc(s[1])}<br>${T('Niv.', 'Lv.')} ${s[2]}</div>`; }).join('')}</div>
-    <p class="small muted">${k.st < 0 ? T('Ton œuf éclot au niveau 10. La créature qui en sort dépend de ta classe : dragon pour Guerrier, loup pour Rôdeur, golem pour Moine, hibou pour Soigneur et griffon pour les classes hybrides.', 'Your egg hatches at level 10. The creature inside depends on your class: dragon for Warrior, wolf for Ranger, golem for Monk, owl for Healer and griffin for hybrid classes.') : T('Il grandit au niveau 25, devient adulte au niveau 40 et devient doré au niveau 100. Il reste ton compagnon même si tu changes de classe. Il est content quand tu t\'entraînes et s\'ennuie si tu arrêtes trop longtemps, mais il ne perd jamais rien.', 'It grows at level 25, becomes an adult at level 40 and turns golden at level 100. It stays your companion even if you change class. It\'s happy when you train and gets bored if you stop for too long, but it never loses anything.')}</p>
-    ${k.st >= 0 ? bondHtml(bondH(), bondDay().n, k) + `<button class="btn primary block" data-act="comp-pet" style="margin:10px 0 12px">${ic('heart', 18)} ${bondDay().g.pet ? T(`Tu as déjà caressé ${k.name} aujourd'hui`, `You already petted ${k.name} today`) : T(`Caresser ${k.name}`, `Pet ${k.name}`)}</button>` : `<p class="small muted">${T('Le lien commence quand ton œuf éclot.', 'The bond starts when your egg hatches.')}</p>`}
-    ${k.st >= 0 ? `<label class="small muted">${T('Son nom', 'Its name')}</label><div class="row" style="gap:8px;margin-top:4px"><input id="compnm" maxlength="20" value="${esc((S.comp || {}).n || '')}" placeholder="${esc(k.base)}"><button class="btn primary" data-act="comp-name">OK</button></div>` : ''}
+    <div class="cpstages">${stages.map((s, i) => `<div class="${k.st >= i ? (k.st === i ? 'on' : '') : 'off'}"><img src="${s[0]}" alt=""${i === 3 ? ' style="filter:sepia(.9) saturate(2.4) brightness(1.08)' + (k.st >= 3 ? '' : ' brightness(0) opacity(.35)') + '"' : ''}><br>${esc(s[1])}<br>${s[2]} ${ic('heart', 10)}</div>`).join('')}</div>
+    <p class="small muted">${T('Il grandit avec votre lien : jeune à 60 cœurs, adulte à 130, doré à 250, où tu reçois aussi un nouvel œuf. Il est content quand tu t\'entraînes et s\'ennuie si tu arrêtes trop longtemps, mais il ne perd jamais rien.', 'It grows with your bond: young at 60 hearts, adult at 130, golden at 250, where you also get a new egg. It\'s happy when you train and gets bored if you stop for too long, but it never loses anything.')}</p>
+    ${bondHtml(k.h, bondDay().n, k)}<button class="btn primary block" data-act="comp-pet" style="margin:10px 0 12px">${ic('heart', 18)} ${bondDay().g.pet ? T(`Tu as déjà caressé ${k.name} aujourd'hui`, `You already petted ${k.name} today`) : T(`Caresser ${k.name}`, `Pet ${k.name}`)}</button>
+    ${compReady(k.L) ? `<button class="btn block chbtn" style="--cc:#eab308;margin-bottom:12px" data-act="comp-choose">${T('Un nouvel œuf t\'attend : choisis ton compagnon', 'A new egg is waiting: choose your companion')}</button>` : ''}
+    ${others.length ? `<label class="small muted">${T('Mes compagnons', 'My companions')}</label><div class="cpown">${others.map(s => { const o = compOfSp(s); return `<div class="cpo" style="--cc:${o.col}"><img src="${o.img}" alt=""><span style="flex:1;min-width:0"><b>${esc(o.name)}</b><br><span class="small muted">${ic('heart', 11)} ${esc(T(BOND[bondLv(o.h)][1][0], BOND[bondLv(o.h)][1][1]))} · ${o.h}</span></span><button class="btn sm" data-act="comp-act" data-k="${s}">${T('Le prendre', 'Take along')}</button></div>`; }).join('')}</div>
+      <p class="small muted" style="margin:6px 0 12px">${T('Seul ton compagnon actif gagne des cœurs. Chacun garde les siens quand tu changes.', 'Only your active companion earns hearts. Each one keeps its own when you switch.')}</p>` : ''}
+    <label class="small muted">${T('Son nom', 'Its name')}</label><div class="row" style="gap:8px;margin-top:4px"><input id="compnm" maxlength="20" value="${esc(me.n || '')}" placeholder="${esc(k.base)}"><button class="btn primary" data-act="comp-name">OK</button></div>
     <button class="btn block" data-act="close" style="margin-top:12px">${T('Fermer', 'Close')}</button>`);
 }
-/* Mode test caché (7 touches sur le numéro de version) : voir tous les compagnons, stades et humeurs sans rien changer à ta partie */
-var labSel = {sp: 'dragon', st: 0, mood: 'happy', bl: 1};
-function compFake(sp, st, mood) {
-  const D = COMP[sp], L = st < 0 ? 9 : COMP_LV[st], base = st < 0 ? T('Œuf mystérieux', 'Mystery egg') : T(D[Math.min(st, 2) + 1][0], D[Math.min(st, 2) + 1][1]) + (st === 3 ? T(' doré', ' (golden)') : '');
-  return {sp, st, L, img: st < 0 ? 'comp/oeuf.webp' : `comp/${D[0]}${Math.min(st, 2)}.webp`, base, name: base, col: D[4], mood: st < 0 ? 'egg' : mood, gap: mood === 'sad' ? 9 : 1, key: st + ':' + sp};
+function compOfSp(sp) { const c = compSt(), a = c.act; c.act = sp; try { return compOf(); } finally { c.act = a; } }
+/* Choisir son compagnon à l'éclosion : toutes les créatures, celle de ta classe en premier (pv = aperçu du mode test, ne change rien) */
+var chSel = '', chPv = false;
+function compChoose(pv) {
+  if (pv !== undefined) { chPv = !!pv; chSel = ''; }
+  const c = compSt(), sug = compSugg(), keys = Object.keys(COMP).filter(s => !COMP[s].old || COMP[s].ok).sort((a, b) => (b === sug) - (a === sug) || (!!COMP[a].old) - (!!COMP[b].old) || (!COMP[b].ok) - (!COMP[a].ok));
+  const tile = s => { const D = COMP[s], mine = !chPv && c.own[s], dis = !D.ok || mine; return `<button class="cpt${chSel === s ? ' on' : ''}${dis ? ' dis' : ''}" style="--cc:${D.c}" data-act="comp-sel" data-k="${s}"${dis ? ' disabled' : ''}>${s === sug ? `<span class="cpsug">${T('Ta classe', 'Your class')}</span>` : ''}<img src="${D.ok ? `comp/${D.f}0.webp` : 'comp/oeuf.webp'}" alt=""${D.ok ? '' : ' style="filter:grayscale(1) opacity(.5)"'}><b>${esc(T(D.s[0], D.s[1]))}</b><span class="small muted">${mine ? T('Déjà à toi', 'Already yours') : !D.ok ? T('Image à venir', 'Picture coming') : D.k ? esc(pclName(D.k)) : T('Image actuelle', 'Current picture')}</span></button>`; };
+  const D = COMP[chSel];
+  const html = `<h2 style="margin:0 0 4px">${T('Choisis ton compagnon', 'Choose your companion')}</h2><p class="small muted" style="margin:0 0 10px">${chPv ? T('Aperçu du mode test : rien ne change dans ta partie.', 'Test mode preview: nothing changes in your progress.') : T('Prends celui que tu préfères : aucun ne donne d\'avantage. Celui de ta classe est suggéré. Tu en auras d\'autres plus tard.', 'Pick the one you like best: none gives an advantage. Your class\'s one is suggested. You will get others later.')}</p>
+    <div class="cpch">${keys.map(tile).join('')}</div>
+    ${D ? `<div class="cppv" style="--cc:${D.c}"><div class="cpstages">${[0, 1, 2].map(i => `<div class="on"><img src="comp/${D.f}${i}.webp" alt=""><br>${esc(T(D.n[i][0], D.n[i][1]))}</div>`).join('')}</div>
+      <button class="btn primary block" data-act="comp-pick" data-k="${chSel}">${T(`Choisir : ${D.s[0]}`, `Choose: ${D.s[1]}`)}</button></div>` : `<p class="small muted" style="text-align:center;margin:10px 0 0">${T('Touche une créature pour voir comment elle grandit.', 'Tap a creature to see how it grows.')}</p>`}
+    <button class="btn block" data-act="close" style="margin-top:8px">${chPv ? T('Fermer', 'Close') : T('Plus tard', 'Later')}</button>`;
+  const m = document.querySelector('.modal .cpchm'); if (m) m.innerHTML = html; else modal(`<div class="cpchm">${html}</div>`);
+  if (D) setTimeout(() => { const p = document.querySelector('.modal .cppv'); if (p) p.scrollIntoView({block: 'nearest', behavior: 'smooth'}); }, 30);
+}
+function compPick(s) {
+  const D = COMP[s]; if (!D || !D.ok) return;
+  if (chPv) { closeAll(); toast(T('Aperçu : rien n\'a changé', 'Preview: nothing changed')); return; }
+  const c = compSt(); if (c.own[s]) return; const first = !c.act;
+  if (!first) { if (!((c.eggs || 0) > 0)) return; c.eggs--; }
+  const from = compOf(); c.own[s] = {h: 0, at: new Date().toISOString()}; c.act = s; save(); closeAll(); render();
+  compEvolve(first ? from : {...from, st: -1, img: 'comp/oeuf.webp', sp: '', mood: 'egg', name: T('Nouvel œuf', 'New egg'), ready: true}, compOf());
+}
+/* Mode test caché (7 touches sur le numéro de version) : voir toutes les créatures, stades, liens et humeurs sans rien changer à ta partie */
+var labSel = {sp: 'golem', bl: 1, mood: 'happy'};
+var SBL = [0, 2, 3, 4]; // palier de lien qui donne chaque stade
+function compFake(sp, bl, mood) {
+  const D = COMP[sp];
+  if (bl < 0 || !D.ok) { const nm = T('Œuf mystérieux', 'Mystery egg'); return {sp, st: -1, L: HATCH_LV, h: 0, img: 'comp/oeuf.webp', base: nm, name: nm, col: D.c, mood: 'egg', gap: 1, ready: true, key: '-1:'}; }
+  const h = BOND[bl][0], st = compStage(h), s2 = Math.min(st, 2), base = T(D.n[s2][0], D.n[s2][1]) + (st === 3 ? T(' doré', ' (golden)') : '');
+  return {sp, st, L: 30, h, img: `comp/${D.f}${s2}.webp`, base, name: base, col: D.c, mood, gap: mood === 'sad' ? 9 : 1, ready: false, key: st + ':' + sp};
 }
 function labOpen() {
-  const k = compFake(labSel.sp, labSel.st, labSel.mood), chip = (a, v, l, on) => `<button class="btn sm${on ? ' primary' : ''}" data-act="lab-set" data-k="${a}" data-v="${v}">${l}</button>`;
-  const html = `<h2>🧪 ${T('Mode test', 'Test mode')}</h2><p class="small muted" style="margin-top:0">${T('Rien ici ne change ta partie : c\'est juste un aperçu.', 'Nothing here changes your progress: it\'s just a preview.')}</p>
-    <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${Object.keys(COMP).map(c => chip('sp', c, `${esc(T(COMP[c][5][0], COMP[c][5][1]))} <span class="small" style="opacity:.75">· ${esc(compClsOf(c))}</span>`, labSel.sp === c)).join('')}</div>
-    <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${[[-1, T('Œuf', 'Egg')], [0, T('Bébé', 'Baby')], [1, T('Jeune', 'Young')], [2, T('Adulte', 'Adult')], [3, T('Doré', 'Golden')]].map(([v, l]) => chip('st', v, l, labSel.st === v)).join('')}</div>
+  const k = compFake(labSel.sp, labSel.bl, labSel.mood), chip = (a, v, l, on) => `<button class="btn sm${on ? ' primary' : ''}" data-act="lab-set" data-k="${a}" data-v="${v}">${l}</button>`;
+  const html = `<h2>🧪 ${T('Mode test', 'Test mode')}</h2><p class="small muted" style="margin-top:0">${T('Rien ici ne change ta partie : c\'est juste un aperçu. Ton vrai compagnon est dans Guilde, onglet Aujourd\'hui.', 'Nothing here changes your progress: it\'s just a preview. Your real companion is in Guild, Today tab.')}</p>
+    <button class="btn primary block" data-act="lab-choose" style="margin:4px 0 10px">${T('Voir l\'écran de choix', 'See the choice screen')}</button>
+    <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${Object.keys(COMP).map(c => chip('sp', c, `${esc(T(COMP[c].s[0], COMP[c].s[1]))}${COMP[c].ok ? '' : ` <span class="small" style="opacity:.7">· ${T('à venir', 'coming')}</span>`}`, labSel.sp === c)).join('')}</div>
+    <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${chip('bl', -1, T('Œuf', 'Egg'), labSel.bl === -1)}${BOND.map((b, i) => chip('bl', i, esc(T(b[1][0], b[1][1])), labSel.bl === i)).join('')}</div>
     <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${[['happy', T('Content', 'Happy')], ['sleep', T('Repos', 'Resting')], ['idle', T('Impatient', 'Eager')], ['sad', T('Triste', 'Sad')]].map(([v, l]) => chip('mood', v, l, labSel.mood === v)).join('')}</div>
     <div class="cpbig" style="--cc:${k.col}">${compArt(k)}</div><p class="muted small" style="text-align:center;margin:0 0 10px">${esc(compMoodTxt(k))}</p>
-    <div class="compc${k.st >= 0 && labSel.bl >= 4 ? ' best' : ''}" style="--cc:${k.col};cursor:default">${compArt(k)}<span style="flex:1;min-width:0"><span class="muted small">${T('Compagnon', 'Companion')}${k.st >= 0 ? ` · ${ic('heart', 12)} ${esc(T(BOND[labSel.bl][1][0], BOND[labSel.bl][1][1]))}` : ''}</span><br><b>${esc(k.name)}</b><br><span class="small muted">${esc(compMoodTxt(k))}</span></span></div>
-    ${k.st >= 0 ? `<div class="sysh" style="margin:14px 0 6px">[ ${T('LIEN', 'BOND')} ]</div>
-      <div class="row" style="gap:6px;flex-wrap:wrap;margin:0 0 8px">${BOND.map((b, i) => chip('bl', i, esc(T(b[1][0], b[1][1])), labSel.bl === i)).join('')}</div>
-      <div style="--cc:${k.col}">${bondHtml(BOND[labSel.bl][0] + (BOND[labSel.bl + 1] ? Math.round((BOND[labSel.bl + 1][0] - BOND[labSel.bl][0]) * .4) : 20), 6, k)}</div>
+    <div class="compc${k.st >= 3 ? ' best' : ''}" style="--cc:${k.col};cursor:default">${compArt(k)}<span style="flex:1;min-width:0"><span class="muted small">${T('Compagnon', 'Companion')}${k.st >= 0 ? ` · ${ic('heart', 12)} ${esc(T(BOND[labSel.bl][1][0], BOND[labSel.bl][1][1]))}` : ''}</span><br><b>${esc(k.name)}</b><br><span class="small muted">${esc(compMoodTxt(k))}</span></span></div>
+    ${k.st >= 0 ? `<div style="--cc:${k.col}">${bondHtml(k.h + (BOND[labSel.bl + 1] ? Math.round((BOND[labSel.bl + 1][0] - k.h) * .4) : 20), 6, k)}</div>
       <div class="small muted" style="margin:12px 0 6px">${T('Fin de séance', 'End of workout')}</div>
-      <div class="cpfin" style="--cc:${k.col}"><img src="${k.img}" alt=""><span><b>${esc(k.name)}</b> <b class="cph">+5 ${ic('heart', 14)}</b>${labSel.bl >= 2 ? `<br>${T('Il t\'a rapporté un cadeau', 'Brought you a gift')} <b>+${labSel.bl >= 4 ? 50 : 25} XP</b>` : ''}</span></div>
+      <div class="cpfin" style="--cc:${k.col}"><img src="${k.img}" alt=""><span><b>${esc(k.name)}</b> <b class="cph">+5 ${ic('heart', 14)}</b>${labSel.bl >= 2 ? `<br>${T('Il t\'a rapporté un cadeau', 'Brought you a gift')} <b>+${labSel.bl >= 4 ? 50 : 25} XP</b>` : ''}${labSel.bl >= 4 ? `<br><b style="color:var(--cc)">${T('Un nouvel œuf t\'attend !', 'A new egg is waiting!')}</b>` : ''}</span></div>
       ${labSel.bl >= 1 ? `<div class="small muted" style="margin:12px 0 6px">${T('Pendant le repos', 'During rest')}</div><div class="labrest"><span id="tcompx"><img src="${k.img}" alt=""></span><span style="flex:1">${T('Repos', 'Rest')} <b>1:24</b></span><span class="small muted">« ${esc(T(COMP_LINES[0][0], COMP_LINES[0][1]))} »</span></div>` : ''}` : ''}
-    ${k.st >= 0 ? `<button class="btn primary block" data-act="lab-evo" style="margin-top:12px">✨ ${k.st === 0 ? T('Voir l\'éclosion', 'See the hatching') : T('Voir l\'évolution', 'See the evolution')}</button>` : ''}
+    ${COMP[labSel.sp].ok ? `<button class="btn block" data-act="lab-evo" style="margin-top:12px">✨ ${k.st <= 0 ? T('Voir l\'éclosion', 'See the hatching') : T('Voir l\'évolution', 'See the evolution')}</button>` : ''}
     <button class="btn block" data-act="lab-off" style="margin-top:8px">${T('Cacher le mode test', 'Hide test mode')}</button>
     <button class="btn block" data-act="close" style="margin-top:8px">${T('Fermer', 'Close')}</button>`;
   const m = document.querySelector('.modal .labm');
@@ -6118,8 +6174,9 @@ function compEvolve(from, to) {
   modal(`<h2 style="text-align:center">${hatch ? T('Ton œuf éclot !', 'Your egg hatches!') : gold ? T('Forme dorée !', 'Golden form!') : T('Ton compagnon évolue !', 'Your companion evolves!')}</h2>
     <div class="cpbig cpevo" id="cpevo" style="--cc:${to.col}">${compArt(from)}<div class="cpflash"></div></div>
     <p style="text-align:center;margin:6px 0 2px"><b id="cpevon" style="font-size:18px">${esc(from.name)}</b></p><p class="muted small" style="text-align:center;margin:0 0 12px" id="cpevot">…</p>
+    ${hatch && !to.fake ? `<div class="row" id="cpevonm" style="gap:8px;margin:0 0 12px;display:none"><input id="compnm" maxlength="20" placeholder="${esc(to.base)}"><button class="btn primary" data-act="comp-name">OK</button></div>` : ''}
     <button class="btn primary block" data-act="close">${T('Super !', 'Awesome!')}</button>`);
-  setTimeout(() => { const w = $('#cpevo'); if (!w) return; w.classList.add('go'); setTimeout(() => { const t = document.createElement('div'); t.innerHTML = compArt(to); w.querySelector('.cpw').replaceWith(t.firstElementChild); $('#cpevon').textContent = to.name; $('#cpevot').textContent = hatch ? T('Il te suivra dans toute ton aventure. Donne-lui un nom dans la Guilde !', 'It will follow you on your whole adventure. Name it in the Guild!') : T(`${from.base} → ${to.base}`, `${from.base} → ${to.base}`); if (S.settings.haptic !== false) haptic([40, 60, 40, 60, 200]); }, 560); }, 700);
+  setTimeout(() => { const w = $('#cpevo'); if (!w) return; w.classList.add('go'); setTimeout(() => { const t = document.createElement('div'); t.innerHTML = compArt(to); w.querySelector('.cpw').replaceWith(t.firstElementChild); $('#cpevon').textContent = to.name; $('#cpevot').textContent = hatch ? T('Il te suivra dans toute ton aventure. Donne-lui un nom :', 'It will follow you on your whole adventure. Give it a name:') : T(`${from.base} → ${to.base}`, `${from.base} → ${to.base}`); const nb = $('#cpevonm'); if (nb) nb.style.display = ''; if (S.settings.haptic !== false) haptic([40, 60, 40, 60, 200]); }, 560); }, 700);
 }
 /* ---------- Boss du mois : battre ton 1RM estimé sur ton exercice principal ---------- */
 const BOSSES = [['Le Golem de fer forgé', 'The Ironforged Golem'], ['La Liche des marais', 'The Swamp Lich'], ['Le Minotaure enragé', 'The Raging Minotaur'], ['L\'Hydre des cavernes', 'The Cavern Hydra'],
@@ -7208,7 +7265,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.123.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.123.5'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
   {v: '9.123.2', d: '2026-11-23', fr: ['Fin de séance : une fois le coffre ouvert, le bouton devient « Coffre ouvert · revoir le butin » au lieu de « Ouvrir ton coffre ».'], en: ['End of workout: once the chest is opened, the button becomes “Chest opened · see the loot” instead of “Open your chest”.']},
@@ -12190,11 +12247,16 @@ document.addEventListener('click', e => {
     case 'lab-chests': labChests(); break;
     case 'lab-frames': labFrames(); break;
     case 'lab-chest': { const r = +b.dataset.r || 0, C = CHR[r]; chestOpen(null, {id: 'lab' + r, t: Date.now(), rar: r, xp: C[6][0], fr: 1, frs: {mimic: 1}, open: false}); break; }
-    case 'lab-set': labSel[b.dataset.k] = b.dataset.k === 'st' || b.dataset.k === 'bl' ? +b.dataset.v : b.dataset.v; labOpen(); break;
-    case 'lab-evo': { const z = compFake(labSel.sp, labSel.st, 'happy'), a = compFake(labSel.sp, labSel.st - 1, 'happy'); compEvolve(a, z); break; }
+    case 'lab-set': labSel[b.dataset.k] = b.dataset.k === 'bl' ? +b.dataset.v : b.dataset.v; labOpen(); break;
+    case 'lab-choose': compChoose(true); break;
+    case 'comp-choose': closeAll(); compChoose(false); break;
+    case 'comp-sel': chSel = b.dataset.k; compChoose(); break;
+    case 'comp-pick': compPick(b.dataset.k); break;
+    case 'comp-act': { const c = compSt(); if (c.own[b.dataset.k]) { c.act = b.dataset.k; save(); closeModal(); compInfo(); render(); toast(T(`${compOf().name} t'accompagne`, `${compOf().name} is with you`)); } break; }
+    case 'lab-evo': { const z = compFake(labSel.sp, labSel.bl < 0 ? 0 : labSel.bl, 'happy'), a = z.st <= 0 ? compFake(labSel.sp, -1, 'happy') : compFake(labSel.sp, SBL[z.st - 1], 'happy'); compEvolve(a, {...z, fake: 1}); break; }
     case 'lab-off': S.settings.lab = false; save(); closeModal(); render(); break;
     case 'comp-evo': if (window._cpEvo) { const [a, z] = window._cpEvo; window._cpEvo = null; b.remove(); compEvolve(a, z); } break;
-    case 'comp-name': { S.comp = S.comp || {}; S.comp.n = ($('#compnm').value || '').trim().slice(0, 20); save(); closeModal(); render(); toast(T('Nom enregistré', 'Name saved')); break; }
+    case 'comp-name': { const c = compSt(), me = c.own[c.act]; if (!me) break; const v = ($('#compnm').value || '').trim().slice(0, 20); if (v) me.n = v; else delete me.n; save(); closeModal(); render(); toast(T('Nom enregistré', 'Name saved')); break; }
     case 'cls-info': { const hu = hunter(), s = classStyle();
       modal(`<h2>${clsIc(hu.cls)} ${esc(clsName(hu.cls))}</h2><p class="muted">${esc(clsDesc(hu.cls))}</p>
         <p class="small" style="margin:12px 0 6px"><b>${T('Les classes', 'The classes')}</b></p>
