@@ -545,6 +545,7 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 
 .cpw.m-sad img{filter:grayscale(.55) brightness(.85) drop-shadow(0 4px 6px rgba(0,0,0,.45))}
 .cpw.egg img{animation:cpWob 2.6s ease-in-out infinite}.cpw.egg.near img{animation-duration:1.1s}
+.cpw.cpfa.m-sad .cpfx{left:var(--tx);top:var(--ty);right:auto;margin-left:-.25em}.cpw.cpfa.m-sleep .cpfx{left:var(--zx);top:var(--zy);right:auto}.cpw.cpfa.m-sleep .cpfx.b{margin:-.5em 0 0 .7em}.cpw.cpfa.m-happy .cpfx{left:var(--s0x);top:var(--s0y);right:auto}.cpw.cpfa.m-happy .cpfx.b{left:var(--s1x);top:var(--s1y)}
 .cpw rl-pup{display:block;width:100%;height:100%;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}.cpw.gold rl-pup{filter:sepia(.9) saturate(2.4) hue-rotate(-8deg) brightness(1.08) drop-shadow(0 0 10px #facc15)}
 .cpw.gold img{filter:sepia(.9) saturate(2.4) hue-rotate(-8deg) brightness(1.08) drop-shadow(0 0 10px #facc15)}
 .cpw.gold::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%) -150% 0/250% 100% no-repeat;-webkit-mask:var(--cpm) center bottom/contain no-repeat;mask:var(--cpm) center bottom/contain no-repeat;animation:cpShine 3s ease-in-out infinite;pointer-events:none}
@@ -6120,12 +6121,24 @@ class RlPup extends HTMLElement {
       [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER].forEach(p => gl.texParameteri(gl.TEXTURE_2D, p, gl.LINEAR));
       [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T].forEach(p => gl.texParameteri(gl.TEXTURE_2D, p, gl.CLAMP_TO_EDGE));
       this._t0 = performance.now() - Math.random() * 3000; this._nb = 1 + Math.random() * 2;
+      try { this.fxPos(); } catch (e) {}
       this._io = new IntersectionObserver(es => { this._vis = es[0].isIntersecting; if (this._vis && !this._raf) this.frame(); }, {threshold: 0}); this._io.observe(this);
       this._vis = true; this.frame();
     };
     im.onerror = () => this.fallback(); im.src = this.getAttribute('src');
   }
   P(x, y) { return [this._ox + x * this._sx, this._oy + y * this._sy]; }
+  fxPos() { // place la larme sous l'œil et les « z » au-dessus de la tête de CE compagnon (variables CSS sur le cadre)
+    const par = this.parentElement, c = this._cfg; if (!par) return;
+    const M = .05, pc = q => ((M + q * (1 - 2 * M)) * 100).toFixed(1) + '%';
+    const hc = this.P(c.head[0][0], c.head[0][1]), hp = this.P(c.head[1][0], c.head[1][1]), hr = c.head[2] * this._sy;
+    const turn = (q, a) => { const d = [(q[0] - hc[0]) / hr, (q[1] - hc[1]) / hr], w = Math.exp(-(d[0] * d[0] + d[1] * d[1]) * .9), r = a * w, sn = Math.sin(r), co = Math.cos(r), x = q[0] - hp[0], y = q[1] - hp[1]; return [hp[0] + co * x - sn * y, hp[1] + sn * x + co * y]; };
+    const e = c.eyes[1], t = turn(this.P(e[0] + e[2] * .2, e[1] + e[3] * .9), .09 * (c.hs || 1));
+    const z = turn(this.P(Math.min(.95, c.head[0][0] + c.head[2] * .55), Math.max(.02, c.head[0][1] - c.head[2] * .8)), .07 * (c.hs || 1));
+    const s0 = this.P(Math.max(.03, c.head[0][0] - c.head[2] * .85), c.head[0][1] - c.head[2] * .45), s1 = this.P(Math.min(.97, c.head[0][0] + c.head[2] * .85), c.head[0][1] - c.head[2] * .25);
+    [['tx', t[0]], ['ty', t[1]], ['zx', z[0]], ['zy', z[1]], ['s0x', s0[0]], ['s0y', s0[1]], ['s1x', s1[0]], ['s1y', s1[1]]].forEach(([k, v]) => par.style.setProperty('--' + k, pc(v)));
+    par.classList.add('cpfa');
+  }
   frame() {
     this._raf = 0; const gl = this._gl; if (!gl || !this._vis) return;
     if (document.hidden) { this._raf = requestAnimationFrame(() => this.frame()); return; }
@@ -7373,7 +7386,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.123.9'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.123.10'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
   {v: '9.123.2', d: '2026-11-23', fr: ['Fin de séance : une fois le coffre ouvert, le bouton devient « Coffre ouvert · revoir le butin » au lieu de « Ouvrir ton coffre ».'], en: ['End of workout: once the chest is opened, the button becomes “Chest opened · see the loot” instead of “Open your chest”.']},
