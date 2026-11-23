@@ -378,6 +378,9 @@ html.moving :is(.rkf,.pfhead,.frhero,.armit,.chbtn,.cpw,.frm-glow,[class*="bn-"]
 .ghero{background:linear-gradient(150deg,color-mix(in srgb,var(--rc) 16%,var(--card)),var(--card) 65%);border:1px solid color-mix(in srgb,var(--rc) 40%,var(--line));border-radius:18px;padding:16px;margin-bottom:12px}
 .glv{display:flex;align-items:baseline;gap:8px}.glv span{color:var(--muted);font-size:13px}.glv b{font-size:30px;line-height:1}.gtitle{color:var(--rc);font-weight:700;font-size:14px;margin-top:2px}
 .gcls{margin-top:6px;background:none;border:0;padding:0;color:var(--text);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px;text-align:left}
+.gqt .gcta{align-self:flex-start;margin-top:7px}.gnoen{display:flex;align-items:center;gap:5px;color:var(--muted)!important;margin-top:2px}
+.gchips em{white-space:nowrap}
+@media (max-width:370px){.ghart{width:108px}.ghart img{width:124px;height:124px}.ghlv b{font-size:26px}}
 .gsum2{cursor:pointer;position:relative;padding:14px 16px}.gsum2:active{transform:scale(.99)}
 .gsh{text-align:left!important;margin:0 0 10px!important;font-size:12px!important;letter-spacing:3px!important}
 .gsum2 .chev{color:var(--muted);display:flex;flex:none}
@@ -7116,9 +7119,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.122.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.122.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.122.1', d: '2026-11-23', fr: ['Guilde : le bouton « Choisir ma porte » passe sous le titre du donjon, le raid sans énergie affiche une simple ligne au lieu d\'une grosse barre, les pastilles du statut tiennent sur une ligne, et « Amis et défis » n\'est plus en double.'], en: ['Guild: the “Pick my door” button moves under the dungeon title, the raid without energy shows a simple line instead of a big bar, the status badges fit on one line, and “Friends & challenges” is no longer duplicated.']},
   {v: '9.122.0', d: '2026-11-23', fr: ['Guilde : retour du style jeu sur les cartes. Ton personnage en grand avec ton rang et ton niveau, le boss du raid en grand avec un bouton Attaquer quand tu as de l\'énergie, « Choisir ma porte » directement sur le donjon, le podium de ta ligue et de la saison, et ta carte d\'aventurier en haut de Collection.'], en: ['Guild: the game look is back on the cards. Your character shown big with your rank and level, the raid boss shown big with an Attack button when you have energy, “Pick my door” right on the dungeon, the podium of your league and season, and your adventurer card at the top of Collection.']},
   {v: '9.121.0', d: '2026-11-23', fr: ['Guilde épurée : chaque onglet montre de petites cartes résumé (ton personnage, tes quêtes, le boss du raid, ta guilde, ta ligue, la saison). Touche une carte pour ouvrir sa page complète. Rien n\'a été enlevé.', 'Collection devient une liste simple : Armurerie, Médailles, Bestiaire, Arsenal et Rangs par muscle.', 'Une notification de raid ouvre directement le combat.'], en: ['Cleaner Guild: each tab shows small summary cards (your character, your quests, the raid boss, your guild, your league, the season). Tap a card to open its full page. Nothing was removed.', 'Collection becomes a simple list: Armory, Medals, Bestiary, Arsenal and Muscle ranks.', 'A raid notification opens the fight directly.']},
   {v: '9.120.2', d: '2026-11-23', fr: ['Visites guidées : une section plus grande que l\'écran n\'est plus encadrée au complet. La visite montre son haut, juste sous le titre, et la bulle ne la cache plus. L\'étape du raid pointe directement sur le boss.'], en: ['Guided tours: a section taller than the screen is no longer framed whole. The tour shows its top, right under the title, and the bubble no longer hides it. The raid step points straight at the boss.']},
@@ -10977,7 +10981,7 @@ function gPrep() { syncSystem(); clsSync(); evCheck(); }
 function gHeroSum() {
   const me = medalsEarned(), hu = hunter(me), pct = Math.round(hu.cur / Math.max(1, hu.need) * 100), k = clsCur();
   const p = k ? powCur() : null, free = k ? talPts(k) - talSpent(k) : 0;
-  const chips = [k && (!p || powAgain()) ? T('Pouvoir prêt', 'Power ready') : '', free > 0 ? T(`${free} point${free > 1 ? 's' : ''} de talent`, `${free} talent point${free > 1 ? 's' : ''}`) : ''].filter(Boolean);
+  const chips = [k && (!p || powAgain()) ? T('Pouvoir prêt', 'Power ready') : '', free > 0 ? T(`${free} talent${free > 1 ? 's' : ''}`, `${free} talent${free > 1 ? 's' : ''}`) : ''].filter(Boolean);
   return `<div class="card sysw gwin gsum2 ghero" data-act="go" data-v="ghero" role="button" style="--rc:${hu.col}">
     <div class="ghinfo"><div class="sysh gsh">[ ${T('STATUT', 'STATUS')} ]</div>
       <div class="ghlv">${rkBadge(hu.rk, 'rkbig ghrk')}<div><small>${T('Niveau', 'Level')}</small><b>${hu.lvl}</b></div></div>
@@ -10989,7 +10993,7 @@ function gHeroSum() {
 function gQuestSum() {
   const q = dailyQuest(), dg = weekDungeon(), bo = monthBoss(), pen = questPenalty(), pc = (a, b) => Math.round(a / Math.max(1, b) * 100);
   const nd = (q.rest || q.done ? 1 : 0) + (dg.done ? 1 : 0) + (bo && bo.done ? 1 : 0), tot = bo ? 3 : 2;
-  const row = (tile, t, sub, pct, done, cta) => `<span class="gqr${done ? ' ok' : ''}">${tile}<span class="gqt"><b>${t}</b><small>${sub}</small></span>${cta || (done ? `<span class="gqok">${ic('check', 16)}</span>` : `<span class="gqp">${gBar(pct)}</span>`)}</span>`;
+  const row = (tile, t, sub, pct, done, cta) => `<span class="gqr${done ? ' ok' : ''}">${tile}<span class="gqt"><b>${t}</b><small>${sub}</small>${cta || ''}</span>${done ? `<span class="gqok">${ic('check', 16)}</span>` : `<span class="gqp">${gBar(pct)}</span>`}</span>`;
   const qr = q.rest ? row(sTile('moon', '#a78bfa'), T('Jour de repos', 'Rest day'), T('Pas de quête aujourd\'hui', 'No quest today'), 100, true)
     : row(sTile('target', '#c6f135'), esc(q.text), `${gFmt(Math.min(q.cur, q.goal))} / ${gFmt(q.goal)} · +150 XP`, pc(q.cur, q.goal), q.done);
   const door = !dg.picked && !dg.done && GAME();
@@ -11006,11 +11010,11 @@ function gRaidSum() {
   const bi = raBossIdx(wk), hp = st.done ? 0 : Math.max(0, st.goal - st.tot), left = Math.max(0, Math.ceil((+new Date(wk + 'T00:00:00') + 7 * 864e5 - Date.now()) / 864e5)), en = raAvail(wk, st), on = st.rows.filter(r => r.r > 0).length;
   const btn = st.done ? `<span class="gcta big ok">${ic('check', 16)} ${T('Boss vaincu cette semaine', 'Boss defeated this week')}</span>`
     : en > 0 ? `<span class="gcta big">${ic('swords', 16)} ${T('Attaquer', 'Attack')} · ${T('énergie', 'energy')} ${en}</span>`
-    : `<span class="gcta big off">${T('Entraîne-toi pour gagner de l\'énergie', 'Train to earn energy')}</span>`;
+    : '';
   return `<div class="card sysw gwin gsum2 graidsum" data-act="go" data-v="graid" role="button"><div class="ghd"><span class="sysh gsh">[ ${T('RAID DE LA SEMAINE', 'RAID OF THE WEEK')} ]</span><small>${left} ${T(left > 1 ? 'j restants' : 'j restant', left > 1 ? 'days left' : 'day left')}</small><span class="chev">${CHEV}</span></div>
     <div class="gbrow"><span class="gboss${st.done ? ' dead' : ''}"><img src="boss/r${bi}.webp" alt="" decoding="async" onerror="this.remove()"></span>
       <span class="gsx"><b class="gbn">${esc(gCap(T(RAID_BOSS[bi][0], RAID_BOSS[bi][1])))}</b>${gBar(st.goal ? hp / st.goal * 100 : 0, 'linear-gradient(90deg,#ff5a5f,#ff9f1c)')}
-        <small>${T('PV', 'HP')} <b class="gnum">${gFmt(hp)}</b> / ${gFmt(st.goal)}</small><small>${on} ${T(on > 1 ? 'aventuriers au combat' : 'aventurier au combat', on > 1 ? 'adventurers fighting' : 'adventurer fighting')}</small></span></div>${btn}</div>`;
+        <small>${T('PV', 'HP')} <b class="gnum">${gFmt(hp)}</b> / ${gFmt(st.goal)}</small><small>${on} ${T(on > 1 ? 'aventuriers au combat' : 'aventurier au combat', on > 1 ? 'adventurers fighting' : 'adventurer fighting')}</small>${!st.done && en <= 0 ? `<small class="gnoen">${ic('zap', 13)} ${T('Entraîne-toi pour gagner de l\'énergie', 'Train to earn energy')}</small>` : ''}</span></div>${btn}</div>`;
 }
 function gGuildSum() {
   const g = S.guild;
@@ -11067,7 +11071,7 @@ function vGuild() {
   const body = {
     day: () => `${gHeroSum()}${chestPendBtn()}${compCard()}${gQuestSum()}`,
     raid: () => `${gRaidSum()}${gGuildSum()}<div class="sgrp gl">${gLinks(['friends'])}</div>`,
-    rank: () => `${gLeagueSum()}${gSeasonSum()}<div class="sgrp gl">${gLinks(['world', 'friends'])}</div>`,
+    rank: () => `${gLeagueSum()}${gSeasonSum()}<div class="sgrp gl">${gLinks(['world'])}</div>`,
     coll: () => `<div class="gherocard">${heroCard()}</div><div class="sgrp gl gcoll">${gLinks(['armory', 'medals', 'bestiary', 'shadows', 'murank'])}</div>`
   };
   return bar + `<div class="gtabbody">${body[gt]()}</div>`;
