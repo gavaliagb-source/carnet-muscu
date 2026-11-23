@@ -6714,8 +6714,14 @@ function sUid(v) { return typeof v === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test
 function sH(v) { return typeof v === 'string' && /^[a-z0-9._]{3,20}$/.test(v) ? v : ''; }
 function sArr(v, n) { return Array.isArray(v) ? v.slice(0, n || 200).filter(x => x && typeof x === 'object' && !Array.isArray(x)) : []; }
 /* Nom à afficher : celui de la personne, sinon son @pseudo, sinon « Un ami » dans MA langue */
-function sName(v, h) { const n = sStr(v, 40).trim(); return n && !/^(un ami|a friend)$/i.test(n) ? n : (sH(h) ? '@' + h : T('Un ami', 'A friend')); }
-function myNm() { return (S.settings.name || '').trim() || (myH() ? '@' + myH() : T('Un ami', 'A friend')); }
+/* ---------- Filtre de mots : insultes et propos haineux masqués partout ; jurons masqués dans ce que des inconnus voient (noms, pseudos, ligues) ---------- */
+const W_SLUR = new Set('negre negres negro negros nigger niggers nigga niggas bougnoule bougnoules youpin youpins pd pede pedes tapette tapettes fif fifs fag fags faggot faggots tranny retard retards retarde retardes mongol mongols nazi nazis hitler kkk salope salopes pute putes putain connard connards connasse encule encules enculer niquer nique ntm fdp bitch bitches cunt cunts whore whores slut sluts pussy dick dicks cock cocks bite chatte motherfucker'.split(' '));
+const W_SWEAR = new Set('tabarnak tabarnac tabernak calice caliss calisse osti ostie esti criss crisse fuck fucker fucking fuk shit merde con cons batard batards couille couilles penis vagin sexe sex porn porno'.split(' '));
+const wFold = w => w.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const wMask = (v, pub) => String(v || '').replace(/[\p{L}\p{N}]+/gu, w => { const f = wFold(w); return W_SLUR.has(f) || (pub && W_SWEAR.has(f)) ? '•'.repeat(Math.min(w.length, 6)) : w; });
+const wBad = v => wMask(v, true) !== String(v || '');
+function sName(v, h) { const n = wMask(sStr(v, 40).trim(), true); return n && !/^(un ami|a friend)$/i.test(n) ? n : (sH(h) ? '@' + h : T('Un ami', 'A friend')); }
+function myNm() { const n = (S.settings.name || '').trim(); return n && !wBad(n) ? n : (myH() ? '@' + myH() : T('Un ami', 'A friend')); }
 function safeCard(raw) { // carte d'un ami
   const d = safeIn(raw); if (!d || typeof d !== 'object' || Array.isArray(d)) return null;
   d.app = sStr(d.app, 20); d.name = sStr(d.name, 40).trim(); d.av = sImg(d.av); d.wk = sNum(d.wk); d.up = sStr(d.up, 40);
@@ -6738,8 +6744,8 @@ function cardIn(raw, h) { // carte reçue → carte vérifiée (ou null si ce n'
   d.h = sH(h) || sH(d.h); d.name = sName(d.name, d.h); return d;
 }
 function safeLive(l) { l = safeIn(l); return l && typeof l === 'object' && !Array.isArray(l) ? {r: sStr(l.r, 80), st: sStr(l.st, 40), s: sInt(l.s, 0, 0, 999), e: sInt(l.e, 0, 0, 99), n: sInt(l.n, 0, 0, 99), up: sStr(l.up, 40)} : null; }
-function safeLb(x) { x = safeIn(x); if (!x || typeof x !== 'object') x = {}; return {id: sStr(x.id, 140), n: sStr(x.n, 24), l: sInt(x.l, 1, 1, 9999), p: sInt(x.p, 0, 0, 999), rk: RKC[x.rk] ? x.rk : 'E', xp: sNum(x.xp), w: sInt(x.w, 0, 0, 99), f: sStr(x.f, 40), e: sStr(x.e, 40)}; }
-function safeHandle(id, v) { v = safeIn(v); if (!v || typeof v !== 'object') return null; const uid = sUid(v.uid), h = sH(id); return uid && h ? {h, uid, n: sStr(v.n, 40).trim(), l: sInt(v.l, 0, 0, 9999)} : null; }
+function safeLb(x) { x = safeIn(x); if (!x || typeof x !== 'object') x = {}; return {id: sStr(x.id, 140), n: wMask(sStr(x.n, 24), true), bad: +x.xp > LB_XP_MAX || +x.lx > LG_XP_MAX || +x.l > 2000, l: sInt(x.l, 1, 1, 9999), p: sInt(x.p, 0, 0, 999), rk: RKC[x.rk] ? x.rk : 'E', xp: sNum(x.xp), w: sInt(x.w, 0, 0, 99), f: sStr(x.f, 40), e: sStr(x.e, 40)}; }
+function safeHandle(id, v) { v = safeIn(v); if (!v || typeof v !== 'object') return null; const uid = sUid(v.uid), h = sH(id); return uid && h && !wBad(h) ? {h, uid, n: wMask(sStr(v.n, 40).trim(), true), l: sInt(v.l, 0, 0, 9999)} : null; }
 /* Contenu d'un lien ou d'un code de partage (routines, minuteurs, étirements) */
 function cleanEx(e) {
   const name = sStr(e.name, 100).trim(); if (!name) return null;
@@ -6849,9 +6855,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.114.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.115.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.115.0', d: '2026-11-22', fr: ['Signaler et bloquer : touche un joueur dans ta ligue ou le classement mondial, ou ouvre le profil d\'un ami, pour le signaler ou le bloquer. Un commentaire peut aussi être signalé. Les personnes bloquées sont dans Amis → Ce que tes amis voient.', 'Filtre de mots : insultes et propos haineux masqués, et pseudos ou noms grossiers refusés dans les ligues et le classement.', 'Ligues plus justes : plafonds réalistes d\'XP (3 séances par jour, 60 séries et 15 records par séance au plus) et scores impossibles écartés.'], en: ['Report and block: tap a player in your league or the world ranking, or open a friend\'s profile, to report or block them. A comment can be reported too. Blocked people are in Friends → What friends see.', 'Word filter: insults and hate speech masked, and rude usernames or names refused in leagues and the ranking.', 'Fairer leagues: realistic XP caps (3 workouts a day, 60 sets and 15 records per workout at most) and impossible scores removed.']},
   {v: '9.114.0', d: '2026-11-22', fr: ['Fil des amis plus léger : les photos ne sont plus dans ta fiche d\'ami. Chacune est envoyée une seule fois, chargée seulement quand elle arrive à l\'écran, puis gardée sur ton téléphone. Le fil se charge plus vite et utilise beaucoup moins de données.'], en: ['Lighter friends feed: photos are no longer inside your friend card. Each one is sent once, loaded only when it comes on screen, then kept on your phone. The feed loads faster and uses much less data.']},
   {v: '9.113.2', d: '2026-11-22', fr: ['Ligues : groupes de 30 aventuriers au plus, formés dans l\'ordre d\'arrivée de la semaine, pour que les ligues restent justes même avec des milliers de joueurs.'], en: ['Leagues: groups of at most 30 adventurers, formed in order of arrival each week, so leagues stay fair even with thousands of players.']},
   {v: '9.113.1', d: '2026-11-22', fr: ['« Faire cette séance » dans le fil : choisis de la démarrer tout de suite, ou de l\'enregistrer comme routine (dans le dossier « De mes amis » ou celui de ton choix).'], en: ['“Do this workout” in the feed: choose to start it right away, or save it as a routine (in the “From friends” folder or one you pick).']},
@@ -8700,6 +8707,42 @@ async function fbPublish(touch) {
   if (frAgain) { frAgain = false; setTimeout(() => frPublish(false), 300); }
   if (cur().v === 'friends') render();
 }
+/* ---------- Signaler et bloquer (exigé par Google Play pour les applis où les gens partagent du contenu) ----------
+   Bloquer : la personne disparaît de mes amis, de mes ligues, du classement, de mes recherches et ne peut plus m'envoyer de demande.
+   Signaler : un document dans reports/, lu seulement par le propriétaire de l'appli (console Firebase). */
+const BLK = () => (FRS().block = FRS().block || []);
+const isBlk = id => { const u = String(id || '').replace(/^fb:/, ''); return !!u && BLK().some(x => x.u === u); };
+function usrBlock(u, n) {
+  u = sUid(u); if (!u || isBlk(u)) return; const fr = FRS(), c = 'fb:' + u;
+  BLK().push({u, n: String(n || '').slice(0, 40), t: new Date().toISOString()});
+  fr.list = fr.list.filter(x => x.c !== c); fr.re = (fr.re || []).filter(x => x.to !== c); fr.reqIn = (fr.reqIn || []).filter(x => x.uid !== u); fr.reqOut = (fr.reqOut || []).filter(x => x.uid !== u); delete frData[c];
+  try { frSaveCache(); } catch (e) {} save(); fbAllowSync(); if (frOn()) frQueue(false); lgData = null; lbData = null;
+  toast(T(`${n || 'Cette personne'} est bloquée`, `${n || 'This person'} is blocked`));
+}
+function usrUnblock(u) { FRS().block = BLK().filter(x => x.u !== u); save(); lgData = null; lbData = null; toast(T('Débloqué', 'Unblocked')); }
+const REP_WHY = [['harc', 'Harcèlement ou insultes', 'Harassment or insults'], ['sex', 'Contenu sexuel ou choquant', 'Sexual or shocking content'], ['nom', 'Nom ou photo inapproprié', 'Inappropriate name or photo'], ['triche', 'Triche', 'Cheating'], ['spam', 'Spam ou arnaque', 'Spam or scam'], ['autre', 'Autre', 'Other']];
+let repCtx = null;
+function usrMenu(u, n, x, t) {
+  u = sUid(u); if (!u) return; const me = fbMe(); if (me && me.uid === u) return; const blk = isBlk(u);
+  modal(`<div class="row between"><h2 style="margin:0">${esc(n || '?')}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <button class="btn block" style="margin-top:12px" data-act="usr-rep" data-u="${u}" data-n="${esc(n || '')}" data-x="${esc(x || '')}" data-t="${esc(t || '')}">${ic('alert', 18)} ${T('Signaler', 'Report')}</button>
+    <button class="btn block" style="margin-top:8px${blk ? '' : ';color:var(--bad)'}" data-act="${blk ? 'usr-unblk' : 'usr-blk'}" data-u="${u}" data-n="${esc(n || '')}">${ic('lock', 18)} ${blk ? T('Débloquer', 'Unblock') : T('Bloquer', 'Block')}</button>
+    ${blk ? '' : `<p class="small muted" style="margin:10px 0 0">${T('Bloquer : cette personne n\'apparaît plus dans tes amis, tes ligues, le classement et tes recherches, et ne peut plus t\'envoyer de demande.', 'Block: this person no longer appears in your friends, leagues, ranking and searches, and can no longer send you requests.')}</p>`}`);
+}
+function usrReport(u, n, x, t) {
+  repCtx = {u: sUid(u), n: String(n || '').slice(0, 40), x: String(x || '').slice(0, 20), t: String(t || '').slice(0, 300)}; if (!repCtx.u) return;
+  closeAll(); modal(`<div class="row between"><h2 style="margin:0">${T('Signaler', 'Report')} ${esc(repCtx.n)}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <p class="small muted" style="margin:6px 0 10px">${T('Pourquoi? Ton signalement est anonyme pour cette personne.', 'Why? Your report is anonymous to this person.')}</p>
+    ${REP_WHY.map(([k, fr, en]) => `<button class="btn block" style="margin-top:6px;justify-content:flex-start" data-act="rep-send" data-k="${k}">${esc(T(fr, en))}</button>`).join('')}`);
+}
+async function repSend(k) {
+  const c = repCtx; if (!c) return; closeAll();
+  const u = await fbSignIn(false).catch(() => null); if (!u) { toast(T('Connecte-toi pour signaler', 'Sign in to report')); return; }
+  try { await fbDb().collection('reports').add({by: u.uid, who: c.u, why: k, ctx: c.x, txt: c.t, n: c.n, t: new Date().toISOString(), v: APP_VERSION}); } catch (e) { toast(T('Envoi impossible pour le moment', 'Could not send right now')); return; }
+  modal(`<h2 style="margin:0 0 6px">${T('Merci', 'Thank you')}</h2><p class="small">${T('Ton signalement a été envoyé. On le regarde au plus vite.', 'Your report was sent. We will look at it as soon as possible.')}</p>
+    ${isBlk(c.u) ? '' : `<button class="btn block" style="margin-top:8px;color:var(--bad)" data-act="usr-blk" data-u="${c.u}" data-n="${esc(c.n)}">${T('Bloquer aussi', 'Block as well')} ${esc(c.n)}</button>`}<button class="btn primary block" style="margin-top:8px" data-act="close">OK</button>`);
+}
+
 /* ---------- Photos des amis hors de la fiche ----------
    Avant : les photos étaient dans la fiche (jusqu'à 900 Ko), renvoyée en entier à chaque « j'aime ». Avec des milliers d'utilisateurs, c'est
    des dizaines de Go par mois. Maintenant : users/{uid}/ph/{id}, envoyée une seule fois, lue seulement quand elle arrive à l'écran, puis gardée sur le téléphone. */
@@ -9003,7 +9046,7 @@ const lbCache = () => { try { return JSON.parse(localStorage.getItem(LBKEY) || '
 async function lbPush() {
   if (!S.settings.lbOn || !GAME()) return; const u = typeof firebase !== 'undefined' && firebase.apps.length && firebase.auth().currentUser; if (!u) return;
   const h = hunter(), wk = S.history.filter(x => Date.now() - new Date(x.date) < 7 * 864e5).length;
-  try { await fbDb().collection('lb').doc(u.uid).set({n: ((S.settings.name || '').trim() || T('Aventurier', 'Adventurer')).slice(0, 24), l: h.lvl, p: h.p || 0, rk: h.rk, xp: Math.round(h.raw || h.xp), w: wk, f: myFrame() || '', e: myCos('emblem') || '', t: new Date().toISOString(), ...lgFields()}); } catch (e) {}
+  try { await fbDb().collection('lb').doc(u.uid).set({n: (myNm().replace(/^@/, '') || T('Aventurier', 'Adventurer')).slice(0, 24), l: h.lvl, p: h.p || 0, rk: h.rk, xp: Math.round(h.raw || h.xp), w: wk, f: myFrame() || '', e: myCos('emblem') || '', t: new Date().toISOString(), ...lgFields()}); } catch (e) {}
 }
 async function lbLoad(force) {
   const C = lbCache(), c = C[lbTab];
@@ -9022,7 +9065,7 @@ function vWorld() {
   if (lbData.err) return tabs + `<p class="muted center" style="margin:30px 0">⚠️ ${esc(lbData.err)}</p>`;
   const meI = lbData.findIndex(x => x.id === me);
   return tabs + `${meI < 0 ? `<p class="small muted center">${T('Tu n\'es pas encore dans le top 50', 'You\'re not in the top 50 yet')}</p>` : `<p class="small center"><b>${T('Ta position', 'Your rank')}${CLN()} #${meI + 1}</b></p>`}<div class="row between small muted" style="margin:-4px 0 8px"><span>${T('Mis à jour', 'Updated')} ${ago(new Date(lbAt).toISOString())}</span><button class="btn sm ghost" data-act="lb-refresh">↻ ${T('Actualiser', 'Refresh')}</button></div>
-    <div class="card" style="padding:4px 12px">${lbData.map((x, i) => `<div class="row lbrow${x.id === me ? ' me' : ''}"><b class="lbn">${i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1)}</b>${rkBadge(x.rk || 'E', 'mrk')}<span style="flex:1;min-width:0"><b>${esc(x.n || '')}</b>${x.e ? ' <span class="emb">' + embSvg(x.e) + '</span>' : ''}<br><span class="muted small">${T('Niv.', 'Lv.')} ${x.l}${x.p ? ' 🌟' + x.p : ''}</span></span><b>${lbTab === 'xp' ? Math.round(x.xp).toLocaleString(LOC()) + ' XP' : x.w + ' ' + T('séances', 'workouts')}</b></div>`).join('')}</div>
+    <div class="card" style="padding:4px 12px">${lbData.filter(x => x.id === me || (!x.bad && !isBlk(x.id))).map((x, i) => `<div class="row lbrow${x.id === me ? ' me' : ' tap'}"${x.id === me ? '' : ` data-act="usr" data-u="${esc(x.id)}" data-n="${esc(x.n || '')}" data-x="world"`}><b class="lbn">${i < 3 ? ['🥇', '🥈', '🥉'][i] : '#' + (i + 1)}</b>${rkBadge(x.rk || 'E', 'mrk')}<span style="flex:1;min-width:0"><b>${esc(x.n || '')}</b>${x.e ? ' <span class="emb">' + embSvg(x.e) + '</span>' : ''}<br><span class="muted small">${T('Niv.', 'Lv.')} ${x.l}${x.p ? ' 🌟' + x.p : ''}</span></span><b>${lbTab === 'xp' ? Math.round(x.xp).toLocaleString(LOC()) + ' XP' : x.w + ' ' + T('séances', 'workouts')}</b></div>`).join('')}</div>
     <button class="btn sm ghost block" data-act="lb-off" style="margin-top:10px">${T('Ne plus participer', 'Leave the ranking')}</button>`;
 }
 
@@ -9030,7 +9073,7 @@ function vWorld() {
    Chaque semaine, les aventuriers du classement mondial sont groupés par ligue. XP de la semaine seulement.
    Le haut 20 % monte, le bas 20 % descend (dès 5 actifs). Données dans lb/{uid} : lk/lx = semaine en cours, pk/px = semaine passée. */
 const LG = [['Bronze', 'Bronze', '#cd7f32'], ['Argent', 'Silver', '#cbd5e1'], ['Or', 'Gold', '#f5c542'], ['Platine', 'Platinum', '#67e8f9'], ['Diamant', 'Diamond', '#a78bfa'], ['Maître', 'Master', '#f472b6'], ['Légende', 'Legend', '#ef4444']];
-const LG_CUT = .2, LG_MIN = 5, LG_SIZE = 30; // groupes de 30 au plus : avec des milliers de joueurs, chaque ligue a plusieurs groupes
+const LG_CUT = .2, LG_MIN = 5, LG_SIZE = 30, LG_XP_MAX = 12000, LB_XP_MAX = 5e6; // au-delà : score impossible, écarté (et refusé par les règles) // groupes de 30 au plus : avec des milliers de joueurs, chaque ligue a plusieurs groupes
 const lgS = () => (S.lg = S.lg || {t: 0, wk: wkKey(new Date()), best: 0, h: []});
 const lgKey = (wk, t, g) => wk + ':' + t + (g ? ':' + g : ''); // groupe 0 = ancienne clé, pour rester compatible
 const lgG = (L, wk) => L.gw === wk ? +L.g || 0 : 0;
@@ -9056,12 +9099,14 @@ function weekXp(wk) { // XP gagnée pendant la semaine (même calcul que la sais
   if (wxMemo.has(k)) return wxMemo.get(k);
   const [a, b] = wkRange(wk), inD = v => { v = v && v.d || v; const t = typeof v === 'string' && v.length === 10 ? +new Date(v + 'T12:00:00') : +new Date(v); return t >= a && t < b; };
   const pc = prCounts(), hw = S.history.filter(h => inD(h.date));
-  let xp = hw.length * 100 + hw.reduce((t, h) => t + h.exercises.reduce((u, e) => u + work(e.sets).length, 0), 0) * 5 + hw.reduce((t, h) => t + (pc.get(h.id) || 0), 0) * 40;
+  // plafonds par séance : 60 séries, 15 records ; 3 séances par jour au plus
+  let xp = 0; const dayN = {};
+  hw.forEach(h => { const k = dkey(new Date(h.date)); dayN[k] = (dayN[k] || 0) + 1; if (dayN[k] > 3) return; xp += 100 + Math.min(60, h.exercises.reduce((u, e) => u + work(e.sets).length, 0)) * 5 + Math.min(15, pc.get(h.id) || 0) * 40; });
   try { xp += Object.values(medalsEarned().got).filter(inD).length * 250; } catch (e) {}
   xp += Object.keys(S.questLog || {}).filter(inD).length * 150 + Object.values(S.dungeonLog || {}).filter(inD).length * 500 + Object.values(S.bossLog || {}).filter(inD).length * 1000;
   xp -= qFailSum(S.qFail, inD);
   xp += (S.xpb || []).filter(x => inD(x.d)).reduce((t, x) => t + (+x.xp || 0), 0);
-  xp = Math.max(0, Math.round(xp)); wxMemo.set(k, xp); return xp;
+  xp = Math.max(0, Math.min(LG_XP_MAX, Math.round(xp))); wxMemo.set(k, xp); return xp;
 }
 function lgFields() { // ce que j'ajoute à ma fiche du classement
   const L = lgS(), wk = wkKey(new Date()), o = {lk: lgKey(wk, L.wk === wk ? L.t : L.t, lgG(L, wk)), lx: weekXp(wk), lt: L.t};
@@ -9077,7 +9122,7 @@ async function lgLoad(force) {
   const u = await fbSignIn(false).catch(() => null); if (!u) return;
   try {
     const qs = await fbDb().collection('lb').where('lk', '==', key).limit(100).get();
-    const rows = qs.docs.map(d => { const x = safeLb({id: d.id, ...d.data()}); return {id: d.id, n: x.n, l: x.l, rk: x.rk, e: x.e, x: Math.max(0, Math.round(+d.data().lx || 0))}; }).filter(r => r.id !== u.uid);
+    const rows = qs.docs.map(d => { const x = safeLb({id: d.id, ...d.data()}); return {id: d.id, n: x.n, l: x.l, rk: x.rk, e: x.e, bad: x.bad, x: Math.max(0, Math.round(+d.data().lx || 0))}; }).filter(r => r.id !== u.uid && !r.bad && !isBlk(r.id));
     rows.push({id: u.uid, me: true, n: (S.settings.name || '').trim() || T('Moi', 'Me'), l: hunter().lvl, rk: hunter().rk, x: weekXp(wkKey(new Date()))});
     lgData = {key, at: Date.now(), rows: rows.sort((p, q) => q.x - p.x)}; lgAt = lgData.at; try { localStorage.setItem('cm-lg', JSON.stringify(lgData)); } catch (e) {}
   } catch (e) { lgData = {key, err: e.code || e.message}; }
@@ -9090,6 +9135,7 @@ async function lgRoll() { // nouvelle semaine : on regarde où j'ai fini la sema
     const pw = L.wk, pg = lgG(L, pw), key = lgKey(pw, L.t, pg), db = fbDb().collection('lb');
     const [a, b] = await Promise.all([db.where('lk', '==', key).limit(100).get(), db.where('pk', '==', key).limit(100).get()]);
     const m = new Map(); a.docs.forEach(d => m.set(d.id, +d.data().lx || 0)); b.docs.forEach(d => { if (!m.has(d.id)) m.set(d.id, +d.data().px || 0); });
+    [...m.keys()].forEach(id => { if (m.get(id) > LG_XP_MAX || isBlk(id)) m.delete(id); }); // scores impossibles (triche) et personnes bloquées : pas comptés
     const mx = weekXp(pw); m.set(u.uid, mx);
     const act = [...m.entries()].filter(([, x]) => x > 0).sort((p, q) => q[1] - p[1]), n = act.length, r = act.findIndex(([id]) => id === u.uid) + 1;
     if (L.wk !== pw || L.wk === wk) return; // une autre fenêtre l'a déjà fait
@@ -9124,7 +9170,7 @@ function lgCard() {
   else if (lgData.err) body = `<p class="muted small center" style="margin:14px 0">${esc(lgData.err)}</p>`;
   else {
     const R = lgData.rows, act = R.filter(r => r.x > 0).length, up = L.t < LG.length - 1 ? lgUp(act) : 0, dn = L.t > 0 ? lgDn(act) : 0;
-    body = R.map((r, i) => `${i === 0 && up && act ? `<div class="lgzone up">▲ ${T('Zone de montée', 'Promotion zone')}</div>` : ''}${i === up && up && act > up ? '<div class="lgcut"></div>' : ''}${dn && i === act - dn ? `<div class="lgzone dn">▼ ${T('Zone de descente', 'Demotion zone')}</div>` : ''}<div class="lgrow${r.me ? ' me' : ''}${up && i < up && r.x > 0 ? ' lgu' : ''}${dn && i >= act - dn && i < act ? ' lgd' : ''}"><b class="lgp">${i + 1}</b><span style="flex:1;min-width:0"><b>${esc(r.me ? T('Moi', 'Me') : r.n || '?')}</b>${r.e ? ' <span class="emb">' + embSvg(r.e) + '</span>' : ''}<br><span class="muted small">${T('Niv.', 'Lv.')} ${r.l || 1}</span></span><b>${(r.x || 0).toLocaleString(LOC())} XP</b></div>`).join('')
+    body = R.map((r, i) => `${i === 0 && up && act ? `<div class="lgzone up">▲ ${T('Zone de montée', 'Promotion zone')}</div>` : ''}${i === up && up && act > up ? '<div class="lgcut"></div>' : ''}${dn && i === act - dn ? `<div class="lgzone dn">▼ ${T('Zone de descente', 'Demotion zone')}</div>` : ''}<div class="lgrow${r.me ? ' me' : ' tap'}${up && i < up && r.x > 0 ? ' lgu' : ''}${dn && i >= act - dn && i < act ? ' lgd' : ''}"${r.me ? '' : ` data-act="usr" data-u="${esc(r.id)}" data-n="${esc(r.n || '')}" data-x="league"`}><b class="lgp">${i + 1}</b><span style="flex:1;min-width:0"><b>${esc(r.me ? T('Moi', 'Me') : r.n || '?')}</b>${r.e ? ' <span class="emb">' + embSvg(r.e) + '</span>' : ''}<br><span class="muted small">${T('Niv.', 'Lv.')} ${r.l || 1}</span></span><b>${(r.x || 0).toLocaleString(LOC())} XP</b></div>`).join('')
       + (R.length < 2 ? `<p class="small muted" style="margin:10px 0 0">${T('Tu es seul dans ta ligue pour l\'instant. D\'autres aventuriers vont te rejoindre.', 'You are alone in your league for now. Other adventurers will join you.')}</p>` : '');
   }
   return `<div class="card sysw gwin" style="margin-bottom:12px;border-color:color-mix(in srgb,${lc} 45%,var(--line))"><div class="gswh" style="margin-bottom:8px"><span class="sysh" style="margin:0">[ ${T('LIGUES DE LA SEMAINE', 'WEEKLY LEAGUES')} ]</span>${info}</div>${head}${body}</div>`;
@@ -9901,7 +9947,7 @@ function chPaint() {
 function frComments(owner, sid) {
   const fr = FRS(), out = [];
   (fr.cm || []).forEach(x => { if (x.to === owner && x.s === sid) out.push({n: T('Toi', 'You'), t: x.t, d: x.d, r: x.r, me: 1, av: S.settings.avatar}); });
-  fr.list.forEach(f => { const d = frData[f.c] && frData[f.c].d; (d && d.cm || []).forEach(x => { if (x.to === owner && x.s === sid) out.push({n: d.name, t: x.t, d: x.d, r: x.r, av: d.av}); }); });
+  fr.list.forEach(f => { if (isBlk(f.c)) return; const d = frData[f.c] && frData[f.c].d; (d && d.cm || []).forEach(x => { if (x.to === owner && x.s === sid) out.push({n: d.name, t: wMask(x.t, false), d: x.d, r: x.r, av: d.av, c: f.c}); }); });
   return out.sort((a, b) => (a.d || '').localeCompare(b.d || ''));
 }
 function frCmRow(f, s) {
@@ -9913,7 +9959,7 @@ function frCmOpen(owner, sid, reply) {
   const cs = frComments(owner, sid);
   modal(`<div class="row between"><h2 style="margin:0">${T('Commentaires', 'Comments')}</h2><button class="btn sm" data-act="close">✕</button></div>
     <div class="frcml">${cs.length ? cs.map(c => `<div class="frcmi">${cmAv(c)}<div style="flex:1;min-width:0"><div class="small"><b>${esc(c.n)}</b> <span class="muted">· ${c.d ? frAgo(c.d) : ''}</span></div><div>${c.r ? `<span class="muted">@${esc(c.r)}</span> ` : ''}${esc(c.t)}</div>
-      <div class="frcma">${c.me ? `<button class="linkbtn small" data-act="fr-cm-del" data-c="${owner}" data-s="${esc(sid)}" data-d="${esc(c.d || '')}">${T('Supprimer', 'Delete')}</button>` : `<button class="linkbtn small" data-act="fr-cm-rep" data-c="${owner}" data-s="${esc(sid)}" data-n="${esc(c.n)}">${T('Répondre', 'Reply')}</button>`}</div></div></div>`).join('') : `<p class="muted small">${T('Pas encore de commentaire. Sois le premier!', 'No comments yet. Be the first!')}</p>`}</div>
+      <div class="frcma">${c.me ? `<button class="linkbtn small" data-act="fr-cm-del" data-c="${owner}" data-s="${esc(sid)}" data-d="${esc(c.d || '')}">${T('Supprimer', 'Delete')}</button>` : `<button class="linkbtn small" data-act="fr-cm-rep" data-c="${owner}" data-s="${esc(sid)}" data-n="${esc(c.n)}">${T('Répondre', 'Reply')}</button> <button class="linkbtn small muted" data-act="usr-rep" data-u="${esc(String(c.c || '').replace(/^fb:/, ''))}" data-n="${esc(c.n)}" data-x="comment" data-t="${esc(c.t)}">${T('Signaler', 'Report')}</button>`}</div></div></div>`).join('') : `<p class="muted small">${T('Pas encore de commentaire. Sois le premier!', 'No comments yet. Be the first!')}</p>`}</div>
     ${reply ? `<div class="small muted" style="margin-bottom:4px">${T('Réponse à', 'Replying to')} <b>${esc(reply)}</b> · <button class="linkbtn small" data-act="fr-cm" data-c="${owner}" data-s="${esc(sid)}">${T('Annuler', 'Cancel')}</button></div>` : ''}
     <div class="frcmin"><textarea id="cmin" maxlength="200" rows="1" placeholder="${reply ? T(`Répondre à ${esc(reply)}…`, `Reply to ${esc(reply)}…`) : T('Écris un commentaire…', 'Write a comment…')}" data-noic></textarea>
     <button class="btn primary" data-act="fr-cm-send" data-c="${owner}" data-s="${esc(sid)}" data-r="${esc(reply || '')}" aria-label="${T('Envoyer', 'Send')}">${ic('share', 18)}</button></div>`);
@@ -10664,6 +10710,7 @@ function vFriends() {
       <label class="row" style="gap:10px;margin:10px 0"><input type="checkbox" data-act="fr-now" ${fr.noW ? 'checked' : ''} style="width:auto"> ${T('Cacher les poids soulevés', 'Hide weights lifted')}</label>
       <p class="muted small" style="margin:0 0 6px">${T('Touche une séance pour la rendre privée :', 'Tap a workout to make it private:')}</p>
       ${S.history.slice(-8).reverse().map(x => `<button class="btn sm block" style="justify-content:space-between;margin-top:6px" data-act="fr-hide" data-id="${x.id}"><span>${esc(x.routineName || '')} · ${dateFr(x.date)}</span><span>${(fr.hide || []).includes(x.id) ? '🔒 ' + T('privée', 'private') : '👁 ' + T('visible', 'visible')}</span></button>`).join('')}
+      ${BLK().length ? `<p class="muted small" style="margin:14px 0 6px">${T('Personnes bloquées', 'Blocked people')}</p>${BLK().map(x => `<div class="row between small" style="margin-top:6px"><span>${esc(x.n || '?')}</span><button class="btn sm" data-act="usr-unblk" data-u="${esc(x.u)}">${T('Débloquer', 'Unblock')}</button></div>`).join('')}` : ''}
       <button class="btn block" data-act="fr-stop" style="margin-top:12px;color:var(--bad)">${T('Arrêter le partage', 'Stop sharing')}</button></details>` : ''}`;
 }
 function friendsCard() {
@@ -11395,7 +11442,7 @@ document.addEventListener('click', e => {
     case 'req-no': frReqDecline(b.dataset.u); break;
     case 'req-later': { const p = document.getElementById('reqpop'); if (p) p.remove(); break; }
     case 'h-pick': { const i = $('#hin'); if (i) { i.value = b.dataset.h; hCheck(); } break; }
-    case 'h-save': { const h = hNorm(($('#hin') || {}).value); if (!H_RE.test(h)) { toast(T('Pseudo invalide', 'Invalid username')); break; } b.disabled = true; hClaim(h).then(() => { closeAll(); render(); toast(T(`✅ Ton pseudo : @${h}`, `✅ Your username: @${h}`)); }, e => { b.disabled = false; S.settings.hAsk = false; saveLocal(); toast(e.message === 'taken' ? T('Ce pseudo est déjà pris', 'Username taken') : '⚠️ ' + e.message); hCheck(); }); break; }
+    case 'h-save': { const h = hNorm(($('#hin') || {}).value); if (!H_RE.test(h)) { toast(T('Pseudo invalide', 'Invalid username')); break; } if (wBad(h.replace(/[._]/g, ' '))) { toast(T('Ce pseudo n\'est pas permis', 'This username is not allowed')); break; } b.disabled = true; hClaim(h).then(() => { closeAll(); render(); toast(T(`✅ Ton pseudo : @${h}`, `✅ Your username: @${h}`)); }, e => { b.disabled = false; S.settings.hAsk = false; saveLocal(); toast(e.message === 'taken' ? T('Ce pseudo est déjà pris', 'Username taken') : '⚠️ ' + e.message); hCheck(); }); break; }
     case 'fb-popup': closeAll(); fbStart.popup = true; fbStart().finally(() => { fbStart.popup = false; }); break;
     case 'fb-popup-add': { const cc = b.dataset.c; closeAll(); frAdd.popup = true; frAdd(cc).finally(() => { frAdd.popup = false; }); break; }
     case 'cb-on': cbEnable(); break;
@@ -11519,6 +11566,11 @@ document.addEventListener('click', e => {
     case 'fr-cm-rep': closeModal(); frCmOpen(b.dataset.c, b.dataset.s, b.dataset.n); break;
     case 'fr-cm-del': { const fr = FRS(); if (!confirm(T('Supprimer ce commentaire?', 'Delete this comment?'))) break; fr.cm = (fr.cm || []).filter(x => !(x.to === b.dataset.c && x.s === b.dataset.s && (x.d || '') === b.dataset.d)); save(); closeModal(); frCmOpen(b.dataset.c, b.dataset.s); render(); frQueue(true); break; }
     case 'fr-likers': frLikersOpen(b.dataset.c, b.dataset.s); break;
+    case 'usr': usrMenu(b.dataset.u, b.dataset.n, b.dataset.x, b.dataset.t); break;
+    case 'usr-rep': usrReport(b.dataset.u, b.dataset.n, b.dataset.x, b.dataset.t); break;
+    case 'rep-send': repSend(b.dataset.k); break;
+    case 'usr-blk': if (confirm(T(`Bloquer ${b.dataset.n || 'cette personne'}?`, `Block ${b.dataset.n || 'this person'}?`))) { closeAll(); usrBlock(b.dataset.u, b.dataset.n); render(); } break;
+    case 'usr-unblk': closeAll(); usrUnblock(b.dataset.u); render(); break;
     case 'fr-more': { const k = b.dataset.k; if (FRX.has(k)) FRX.delete(k); else FRX.add(k); render(); break; }
     case 'fr-now': FRS().noW = b.checked; save(); frQueue(false); break;
     case 'fr-hide': { const fr = FRS(), id = b.dataset.id; fr.hide = fr.hide || []; const i = fr.hide.indexOf(id); if (i >= 0) fr.hide.splice(i, 1); else fr.hide.push(id); save(); render(); frQueue(false); break; }
@@ -11538,6 +11590,7 @@ document.addEventListener('click', e => {
           ${d ? `<p class="small muted" style="margin:0">🔥 ${d.wk || 0} ${T('sem. de suite', 'weeks in a row')} · ${nS} ${T('séance' + (nS > 1 ? 's' : ''), 'workout' + (nS > 1 ? 's' : ''))} · ${(d.p || []).length} 📸</p>` : ''}${frBossRow(d)}</div>
         <div style="margin-top:12px">${items.length ? items.map(frPost).join('') : `<p class="muted center">${T('Rien de partagé pour l\'instant.', 'Nothing shared yet.')}</p>`}</div>
         ${me ? `<button class="btn block" data-act="fr-code" style="margin-top:8px">${T('Mon code ami', 'My friend code')}</button>` : `<button class="btn primary block" data-act="ch-new" data-c="${f.c}" style="margin-top:8px">⚔️ ${T('Défier', 'Challenge')} ${esc((d && d.name) || f.n || '')}</button><button class="btn block" data-act="fr-del" data-c="${f.c}" style="color:var(--bad);margin-top:8px">${T('Retirer de mes amis', 'Remove friend')}</button>`}`);
+      if (!me && fbIs(c)) { const sh = document.querySelector('.modal:last-child .sheet') || document.querySelector('.sheet'); if (sh) sh.insertAdjacentHTML('beforeend', `<div class="row" style="gap:8px;margin-top:8px"><button class="btn sm" style="flex:1" data-act="usr-rep" data-u="${c.slice(3)}" data-n="${esc((d && d.name) || f.n || '')}" data-x="profile">${T('Signaler', 'Report')}</button><button class="btn sm" style="flex:1;color:var(--bad)" data-act="usr-blk" data-u="${c.slice(3)}" data-n="${esc((d && d.name) || f.n || '')}">${T('Bloquer', 'Block')}</button></div>`); }
       setTimeout(phFill, 0); break; }
     case 'fr-del': { const fr = FRS(); fr.list = fr.list.filter(x => x.c !== b.dataset.c); fr.re = (fr.re || []).filter(x => x.to !== b.dataset.c); delete frData[b.dataset.c]; frSaveCache(); save(); closeAll(); render(); if (frOn()) frQueue(false); fbAllowSync(); break; }
     case 'cv-kind': cv.k = b.dataset.k; render(); break;
@@ -12356,7 +12409,7 @@ function reqShow(r) {
 /* Message reçu dans ma boîte (Firebase) */
 function fbInboxMsg(m, me) {
   m = safeIn(m); if (!m || typeof m !== 'object' || Array.isArray(m)) return;
-  const fr = FRS(), from = sUid(m.from); if (!from || from === me) return;
+  const fr = FRS(), from = sUid(m.from); if (!from || from === me || isBlk(from)) return;
   m.type = sStr(m.type, 10); m.h = sH(m.h); m.name = sName(m.name, m.h); m.e = sStr(m.e, 8); m.t = sStr(m.t, 40); m.id = sStr(m.id, 80); m.k = sStr(m.k, 12); m.gid = sStr(m.gid, 6).toUpperCase().replace(/[^A-Z0-9]/g, ''); m.gn = sStr(m.gn, 30); m.ref = m.ref === 1 && m.type === 'req' ? 1 : 0;
   const c = 'fb:' + from, isFr = fr.list.some(f => f.c === c);
   if (!isFr && !['req', 'add', 'acc'].includes(m.type)) return; // encouragements et défis : seulement entre amis
@@ -12442,7 +12495,7 @@ function frSearch() {
     if (!u) { const r = $('#frsr'); if (r) r.innerHTML = `<p class="muted small center" style="margin:10px 0">${T('Reconnecte-toi pour chercher tes amis.', 'Sign in again to search for friends.')}</p><button class="btn primary block" data-act="frs-login">${T('Se reconnecter', 'Sign in')}</button>`; return; }
     const db = fbDb(), col = db.collection('handles'), FP = firebase.firestore.FieldPath.documentId();
     const [a, b] = await Promise.all([col.where(FP, '>=', q).where(FP, '<', q + '').limit(8).get(), qn.length >= 2 ? col.where('nl', '>=', qn).where('nl', '<', qn + '').limit(8).get() : Promise.resolve({docs: []})]);
-    const me = fbMe(), seen = new Set(); frsRes = [...a.docs, ...b.docs].map(d => safeHandle(d.id, d.data())).filter(x => x && (!me || x.uid !== me.uid) && !seen.has(x.uid) && seen.add(x.uid)).slice(0, 10); frsQ = q; frSearchRender();
+    const me = fbMe(), seen = new Set(); frsRes = [...a.docs, ...b.docs].map(d => safeHandle(d.id, d.data())).filter(x => x && (!me || x.uid !== me.uid) && !isBlk(x.uid) && !seen.has(x.uid) && seen.add(x.uid)).slice(0, 10); frsQ = q; frSearchRender();
   } catch (e) {
     if (e.code === 'permission-denied') { // la recherche par liste est bloquée par les règles : on essaie au moins le @pseudo exact
       try { const d = await fbDb().collection('handles').doc(q).get(), me = fbMe(), x = d.exists ? safeHandle(d.id, d.data()) : null;
