@@ -6855,9 +6855,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.116.3'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.116.4'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.116.4', d: '2026-11-23', fr: ['Correction : si tu fermais l\'appli sur l\'onglet Cardio, elle restait vide au démarrage suivant (et les rappels, la sauvegarde et la mise à jour automatique ne démarraient pas).', 'Correction d\'un plantage possible dans les récompenses de guilde.'], en: ['Fix: if you closed the app on the Cardio tab, it stayed blank on the next start (and reminders, backup and auto-update did not start).', 'Fixed a possible crash in guild rewards.']},
   {v: '9.116.3', d: '2026-11-22', fr: ['Correction : la fenêtre de fin de semaine des ligues (montée, descente, podium) plantait au lieu de s\'afficher.'], en: ['Fix: the end-of-week league window (promotion, demotion, podium) crashed instead of showing.']},
   {v: '9.116.2', d: '2026-11-22', fr: ['Correction des ligues : ton score de la semaine passée comptait celui de la semaine en cours (risque de descente le lundi), et les plafonds anti-triche ne s\'appliquaient pas.'], en: ['League fix: your last-week score used the current week (risk of demotion on Mondays), and the anti-cheat caps were not applied.']},
   {v: '9.116.1', d: '2026-11-22', fr: ['Supprimer mon compte efface aussi tes photos partagées et ta fiche sociale en ligne. Politique de confidentialité mise à jour (Health Connect, ligues, signalements, règles de conduite).'], en: ['Delete my account also erases your shared photos and your social card online. Privacy policy updated (Health Connect, leagues, reports, conduct rules).']},
@@ -10095,7 +10096,7 @@ function cosReq(r) { // {ok, why}
   if (r.fr) { const f = FRAG_T[r.ft || 'mimic']; return {ok: frN(r.ft) >= r.fr, why: T(`${r.fr} fragments de ${f.n[0]}`, `${r.fr} ${f.n[1]} fragments`), how: T(`Trouve des fragments de ${f.n[0]} ${f.i} dans les coffres de fin de séance : chaque coffre donne des fragments d'un monstre au hasard (1 par coffre rare, 2 par épique, 4 par légendaire, et parfois dans les communs).`, `Find ${f.n[1]} fragments ${f.i} in end-of-workout chests: each chest gives fragments of a random monster (1 per rare chest, 2 per epic, 4 per legendary, sometimes in commons).`)}; }
   if (r.set) { const [a, b] = setCount(r.set); return {ok: b > 0 && a >= b, why: T(`Complète toute la collection (${a}/${b})`, `Complete the whole collection (${a}/${b})`)}; }
   if (r.id) { const me = medalsEarned(), d = me.defs.find(x => x.id === r.id); return {ok: !!me.got[r.id], why: d ? d.t : '?', how: d ? medalHow(d) : ''}; }
-  const me = medalsEarned(), d = me.defs.filter(x => x.g === r.m[0]).sort((a, b) => a.v - b.v)[r.m[1]];
+  const me = medalsEarned(), d = me.defs.filter(x => x.g === (r.m || [])[0]).sort((a, b) => a.v - b.v)[(r.m || [])[1]];
   return d ? {ok: !!me.got[d.id], why: d.t, how: medalHow(d)} : {ok: false, why: '?'};
 }
 /* Explication claire de ce qu'il faut faire pour une médaille */
@@ -10160,7 +10161,7 @@ function cosProg(r) {
   if (r.p) return [{c: Math.min(myPrestige(), r.p), m: r.p}];
   if (r.fr) return [{c: Math.min(frN(r.ft), r.fr), m: r.fr}];
   if (r.set) { const [a, b] = setCount(r.set); return [{c: a, m: b}]; }
-  const me = medalsEarned(), d = r.id ? me.defs.find(x => x.id === r.id) : me.defs.filter(x => x.g === r.m[0]).sort((a, b) => a.v - b.v)[r.m[1]];
+  const me = medalsEarned(), d = r.id ? me.defs.find(x => x.id === r.id) : me.defs.filter(x => x.g === (r.m || [])[0]).sort((a, b) => a.v - b.v)[(r.m || [])[1]];
   if (!d) return []; const c = me.got[d.id] ? d.v : Math.min(+me.st[d.g] || 0, d.v); return [{c, m: d.v}];
 }
 const RAR = [['Commun', 'Common', '#9aa3ad'], ['Rare', 'Rare', '#38bdf8'], ['Épique', 'Epic', '#a78bfa'], ['Légendaire', 'Legendary', '#f5c542'], ['Mythique', 'Mythic', '#ff4d6d']];
@@ -10171,7 +10172,7 @@ function rarOf(r) { // rareté selon la difficulté à débloquer
   if (r.l) return r.l <= 20 ? 0 : r.l <= 45 ? 1 : r.l <= 75 ? 2 : 3;
   if (r.p || r.set) return 4; if (r.id) return 1; if (r.fr) return r.fr >= 15 ? 4 : 3;
   if (r.all) return Math.max(...r.all.map(rarOf));
-  const me = medalsEarned(), d = me.defs.filter(x => x.g === r.m[0]).sort((a, b) => a.v - b.v)[r.m[1]];
+  const me = medalsEarned(), d = me.defs.filter(x => x.g === (r.m || [])[0]).sort((a, b) => a.v - b.v)[(r.m || [])[1]];
   return d ? Math.max(1, RKR[d.rk] ?? 1) : 1; // une récompense de médaille est au moins Rare
 }
 let armTab = 'frame';
@@ -12231,7 +12232,7 @@ function rotGo() {
 addEventListener('resize', rotGo); addEventListener('orientationchange', () => setTimeout(rotGo, 120));
 setTimeout(rotCap, 800);
 
-render();
+let bootRe = 0; try { render(); } catch (e) { bootRe = 1; console.warn('premier affichage reporté', e); } // un écran (ex. Cardio) peut avoir besoin d'une partie du script plus bas : on le refait à la fin, sinon tout le reste du démarrage sautait
 try { const sc = sessionStorage.getItem('cm-scroll'); sessionStorage.removeItem('cm-scroll'); if (sc && stack.length === 1) { const [t, y] = sc.split(':'); if (t === stack[0].v && +y > 0) requestAnimationFrame(() => window.scrollTo(0, +y)); } } catch (e) {}
 /* ===================== Accueil : connexion Google + création du profil ===================== */
 const OB_GOALS = () => [['muscle', '💪', T('Prendre du muscle', 'Build muscle'), T('8 à 12 reps', '8 to 12 reps')], ['force', '⚡', T('Gagner en force', 'Get stronger'), T('4 à 6 reps, charges lourdes', '4 to 6 reps, heavy weights')], ['fat', '🔥', T('Perdre du gras', 'Lose fat'), T('10 à 15 reps et cardio', '10 to 15 reps and cardio')], ['fit', '❤️', T('Rester en forme', 'Stay fit'), T('Équilibré', 'Balanced')]];
@@ -12827,6 +12828,7 @@ setTimeout(() => { try { const fr = FRS(); if (frOn() && fr.fb && fr.pubName !==
 if (cloudOn()) setTimeout(() => cloudPush(), 4000);
 setTimeout(remindSync, 3000);
 setTimeout(finResume, 1200);
+if (bootRe) render(); // tout le script est maintenant chargé
 setTimeout(() => { window.rlBoot = 1; if (cur().v === 'workout' && S.active && S.active.cl) render(); }, 0); // rechargée pendant un cardio en direct : on y retourne
 setTimeout(() => { try { const fr = FRS(), x = frHu(); if (frOn() && x && fr.huL !== x.l) { fr.huL = x.l; save(); frQueue(false); } } catch (e) {} }, 6000);
 setTimeout(() => loadTxt(), 5000);
