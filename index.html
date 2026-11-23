@@ -813,28 +813,76 @@ html.moving :is(.fra-rot .frimg,.fra-pulse .frimg,.fra-sheen::after,.frsp){anima
 .lbrow{gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.lbrow:first-child{border-top:0}.lbrow.me{background:color-mix(in srgb,var(--accent) 12%,transparent);margin:0 -12px;padding:10px 12px}.lbn{width:34px;text-align:center}
 .ob{position:fixed;inset:0;z-index:14;background:var(--bg);overflow-y:auto;animation:obIn .25s ease}.ob.out{opacity:0;transition:opacity .25s}
 @keyframes obIn{from{opacity:0}to{opacity:1}}
-.ob-in{max-width:460px;margin:0 auto;min-height:100%;box-sizing:border-box;padding:calc(var(--sat) + 22px) 22px calc(env(safe-area-inset-bottom) + 22px);display:flex;flex-direction:column;position:relative}
-.ob-in label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.06em}
-.ob-h1{font-size:26px;margin:0;line-height:1.15}.ob-h2{font-size:22px;margin:0 0 4px}.ob-in>p.muted{margin:0;font-size:14px}
-.ob .center{text-align:center}.ob-bot{margin-top:auto;padding-top:22px;display:flex;flex-direction:column;gap:10px}.ob-big{padding:15px!important;font-size:16px!important;border-radius:14px!important}
-.ob-gbtn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1px solid #dadce0;border-radius:14px;padding:15px;font-weight:800;font-size:16px;font-family:inherit;cursor:pointer}
+/* Accueil des nouveaux utilisateurs */
+.ob-in{max-width:460px;margin:0 auto;min-height:100%;box-sizing:border-box;padding:calc(var(--sat) + 14px) 22px 0;display:flex;flex-direction:column;position:relative}
+.ob-in label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin:18px 0 7px;text-transform:uppercase;letter-spacing:.06em}
+.ob-h1,.ob-h2{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-weight:700;letter-spacing:.01em;line-height:1.15}
+.ob-h1{font-size:27px;margin:0}.ob-h2{font-size:27px;margin:6px 0 6px}
+.ob-sub{color:var(--muted);font-size:15px;line-height:1.45;margin:0}.ob-hint{color:var(--muted);font-size:13px;line-height:1.45;margin:8px 2px 0}
+.ob-ok{display:flex;align-items:center;gap:4px;color:var(--accent);font-weight:600;margin-bottom:2px}
+.ob .center{text-align:center}.ob-bot{margin-top:auto;padding:24px 0 calc(env(safe-area-inset-bottom) + 20px);display:flex;flex-direction:column;gap:10px;position:sticky;bottom:0;z-index:3;background:linear-gradient(to bottom,transparent,var(--bg) 22px)}.ob-big{padding:15px!important;font-size:16px!important;border-radius:14px!important}
+.ob-gbtn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1px solid #dadce0;border-radius:14px;padding:15px;font-weight:700;font-size:16px;font-family:inherit;cursor:pointer}
+.ob-gbtn:active{transform:scale(.98)}
+.ob-legal{color:var(--muted);font-size:12px;line-height:1.45;text-align:center;margin:2px 6px 0}.ob-legal a{color:inherit;text-decoration:underline}
 .ob-ghost{background:none;border:0;color:var(--muted);font-weight:600;font-size:14px;padding:8px;font-family:inherit;cursor:pointer}
-.ob-back{position:absolute;left:10px;top:calc(var(--sat) + 12px);background:none;border:0;color:var(--muted);font-size:32px;line-height:1;padding:4px 10px;cursor:pointer}
-.ob-dots{display:flex;gap:6px;justify-content:center;margin:4px 0 22px}.ob-dots i{width:24px;height:4px;border-radius:9px;background:var(--line)}.ob-dots i.on{background:var(--accent)}
-.ob-lang{display:flex;justify-content:flex-end;gap:4px}.ob-lang button{background:var(--card);border:1px solid var(--line);color:var(--muted);border-radius:9px;padding:5px 10px;font-weight:700;font-size:12px;font-family:inherit}.ob-lang button.on{color:var(--text);border-color:var(--accent)}
-.ob-logo{width:100px;height:100px;border-radius:28px;margin:7vh auto 22px;overflow:hidden;box-shadow:0 0 60px color-mix(in srgb,var(--accent) 35%,transparent)}.ob-logo img{width:100%;height:100%;display:block}
-.ob-feats{margin:26px 4px 0;display:flex;flex-direction:column;gap:12px;font-size:14px}.ob-feats>div{display:flex;gap:12px;align-items:center}.ob-feats span{width:30px;height:30px;flex:none;border-radius:9px;background:var(--card);display:flex;align-items:center;justify-content:center}
-.ob-feats.card{padding:14px}
-.ob-seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px}.ob-seg button{flex:1;background:none;border:0;color:var(--muted);padding:10px 4px;border-radius:9px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}.ob-seg button.on{background:var(--card2);color:var(--text);box-shadow:inset 0 0 0 1.5px var(--accent)}
-.ob-av{display:flex;width:84px;height:84px;border-radius:50%;margin:18px auto 0;background:linear-gradient(135deg,var(--accent),var(--ok));align-items:center;justify-content:center;font-size:32px;font-weight:900;color:var(--accent-ink);position:relative;border:0;font-family:inherit;cursor:pointer;padding:0}
-.ob-av img{width:100%;height:100%;border-radius:50%;object-fit:cover}.ob-av em{position:absolute;right:-2px;bottom:-2px;width:28px;height:28px;border-radius:50%;background:var(--card2);border:2px solid var(--bg);font-style:normal;font-size:13px;display:flex;align-items:center;justify-content:center}
+.ob-hd{display:flex;align-items:center;gap:8px;margin:0 -8px 10px}
+.ob-back{width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;background:none;border:0;color:var(--text);border-radius:12px;cursor:pointer;padding:0}
+.ob-back:active{background:var(--card)}
+.ob-prog{flex:1;height:6px;border-radius:9px;background:var(--line);overflow:hidden}.ob-prog i{display:block;height:100%;border-radius:9px;background:var(--accent);transition:width .35s ease}
+.ob-top{display:flex;align-items:center;justify-content:space-between}
+.ob-brand{display:flex;align-items:center;gap:10px;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-weight:700;font-size:20px;letter-spacing:.02em}
+.ob-brand img{width:34px;height:34px;border-radius:10px}
+.ob-lang{display:flex;gap:4px}.ob-lang button{background:var(--card);border:1px solid var(--line);color:var(--muted);border-radius:9px;padding:6px 10px;font-weight:700;font-size:12px;font-family:inherit;cursor:pointer}.ob-lang button.on{color:var(--accent-ink);background:var(--accent);border-color:var(--accent)}
+.ob-car{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin:16px -22px 0;flex:1 0 auto;overscroll-behavior-x:contain}
+.ob-car::-webkit-scrollbar{display:none}
+.ob-sl{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;padding:0 22px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.ob-sl .ob-h1{text-align:center;margin:22px 4px 8px}.ob-sl p{text-align:center;color:var(--muted);font-size:15px;line-height:1.45;margin:0 6px}
+.ob-pg{display:flex;gap:6px;justify-content:center;margin:18px 0 0}.ob-pg i{width:7px;height:7px;border-radius:9px;background:var(--line);transition:width .25s,background .25s}.ob-pg i.on{width:22px;background:var(--accent)}
+.obart{height:clamp(210px,40vh,340px);border-radius:24px;position:relative;overflow:hidden;border:1px solid var(--line);background:radial-gradient(circle at 50% 38%,color-mix(in srgb,var(--accent) 20%,transparent),transparent 62%),var(--card)}
+.obchip{position:absolute;left:14px;right:14px;bottom:14px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;font-size:13px}
+.obchip i{flex:1;height:8px;border-radius:9px;background:var(--line);overflow:hidden;display:block}.obchip u{display:block;height:100%;border-radius:9px;background:var(--accent)}
+.obchip em{font-style:normal;font-weight:800;color:var(--accent)}
+.obart-cls img{position:absolute;bottom:58px;height:72%;width:auto;filter:drop-shadow(0 10px 18px #0008)}
+.obart-cls .c0{left:50%;transform:translateX(-50%);height:74%;z-index:2}.obart-cls .c1{left:-3%;height:56%;opacity:.8}.obart-cls .c2{right:-3%;height:56%;opacity:.8}
+.obart-boss img{position:absolute;left:50%;top:8%;transform:translateX(-50%);height:68%;filter:drop-shadow(0 10px 24px #000a)}
+.obart-boss{background:radial-gradient(circle at 50% 38%,#3ee6b033,transparent 62%),var(--card)}
+.obhp{flex-direction:column;align-items:stretch;gap:7px}.obhp i{flex:none}.obhp>span{display:flex;justify-content:space-between}.obhp u{background:linear-gradient(90deg,#ff5a5f,#ff9f1c)}.obhp em{color:#ff9f1c}
+.obart-feed{display:flex;flex-direction:column;justify-content:center;padding:0 18px}
+.obfc{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:12px 14px;text-align:left}
+.obfc.back{display:flex;align-items:center;gap:10px;transform:scale(.92);opacity:.55;margin-bottom:-6px;font-size:13px}.obfc.back small{color:var(--muted);margin-left:auto}
+.obfh{display:flex;align-items:center;gap:10px}.obfh>span:not(.obav){display:flex;flex-direction:column;flex:1;min-width:0}.obfh small{color:var(--muted);font-size:12px}
+.obav{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#111;flex:none}
+.oblive{font-style:normal;font-size:11px;font-weight:800;color:#ff5a5f;background:#ff5a5f22;border-radius:99px;padding:3px 8px;text-transform:uppercase;letter-spacing:.04em}
+.obft{display:block;font-size:16px;margin:10px 0 8px}
+.obfs{display:flex;gap:16px;font-weight:700;font-size:14px}.obfs span{display:flex;flex-direction:column}.obfs small{color:var(--muted);font-weight:500;font-size:11px}
+.obfa{display:flex;gap:14px;margin-top:10px;padding-top:9px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;font-weight:700}.obfa span{display:flex;align-items:center;gap:5px}.obfa .on{color:#ff9f1c}
+.obart-plan{display:flex;flex-direction:column;justify-content:center;gap:8px;padding:0 18px 52px}
+.obwk,.ob-wk{display:flex;gap:6px}.obwk span,.ob-wk span{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 0;border-radius:12px;background:var(--card2);color:var(--muted);font-size:12px;font-weight:700}
+.obwk i,.ob-wk i{width:8px;height:8px;border-radius:50%;background:var(--line)}.obwk .on,.ob-wk .on{color:var(--text)}.obwk .on i,.ob-wk .on i{background:var(--accent);box-shadow:0 0 10px var(--accent)}
+.ob-wk{margin-top:18px}
+.obrt{display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px}.obrt small{color:var(--muted)}
+.obpr{color:var(--accent);font-weight:700}
+.ob-seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}.ob-seg button{flex:1;background:none;border:0;color:var(--muted);padding:11px 4px;border-radius:9px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer;transition:background .15s,color .15s}.ob-seg button.on{background:var(--accent);color:var(--accent-ink)}
+.ob-av{display:flex;width:88px;height:88px;border-radius:50%;margin:20px auto 0;background:linear-gradient(135deg,var(--accent),var(--ok));align-items:center;justify-content:center;font-size:34px;font-weight:900;color:var(--accent-ink);position:relative;border:0;font-family:inherit;cursor:pointer;padding:0}
+.ob-av img{width:100%;height:100%;border-radius:50%;object-fit:cover}.ob-av em{position:absolute;right:-2px;bottom:-2px;width:30px;height:30px;border-radius:50%;background:var(--card2);border:2px solid var(--bg);color:var(--text);font-style:normal;display:flex;align-items:center;justify-content:center}
 .ob-av.big{width:104px;height:104px;font-size:42px}
-.ob-note{display:flex;gap:8px;margin-top:16px;background:var(--card);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--muted)}
-.ob-opt{display:flex;width:100%;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:8px;text-align:left;color:var(--text);font-family:inherit;cursor:pointer}.ob-opt.on{border-color:var(--accent);background:var(--has-bg)}
-.ob-opt .ob-ic{width:38px;height:38px;flex:none;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:19px}.ob-opt b{display:block;font-size:15px}.ob-opt small{color:var(--muted);font-size:12px}
-.ob-chips{display:flex;gap:6px}.ob-chips button{flex:1;padding:11px 0;border-radius:11px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:800;font-size:15px;font-family:inherit;cursor:pointer}.ob-chips button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.ob-mode{display:block;width:100%;text-align:left;border-radius:16px;padding:14px;margin-bottom:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-family:inherit;cursor:pointer}.ob-mode.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
-.ob-mode b{display:flex;gap:8px;align-items:center;font-size:15px}.ob-mode b i{margin-left:auto;flex:none}.ob-mode>span{display:block;color:var(--muted);font-size:13px;margin-top:6px;line-height:1.4}.ob-mode i{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);box-sizing:border-box}.ob-mode.on i{border:5px solid var(--accent)}
+.ob-note{display:flex;gap:10px;align-items:flex-start;margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.45;color:var(--muted)}.ob-note>.ico{flex:none;color:var(--accent);margin-top:1px}
+.ob-opt{display:flex;width:100%;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:8px;text-align:left;color:var(--text);font-family:inherit;cursor:pointer}
+.ob-opt>span:not(.stile){flex:1;min-width:0}.ob-opt b{display:block;font-size:15px}.ob-opt small{color:var(--muted);font-size:12.5px}
+.ob-opt.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--card))}
+.ob-rad{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);box-sizing:border-box;flex:none;margin-left:auto;transition:border .15s}
+.on>.ob-rad,.on>span>.ob-rad{border:6px solid var(--accent)}
+.ob-chips{display:flex;gap:6px}.ob-chips button{flex:1;padding:12px 0;border-radius:12px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:800;font-size:15px;font-family:inherit;cursor:pointer}.ob-chips button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.ob-mode{display:block;width:100%;text-align:left;border-radius:18px;padding:14px;margin-bottom:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-family:inherit;cursor:pointer;overflow:hidden}
+.ob-mode.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--card))}
+.ob-mhd{display:flex;align-items:center;gap:12px}.ob-mhd b{font-size:16px}
+.ob-mtx{display:block;color:var(--muted);font-size:13.5px;margin-top:10px;line-height:1.45}
+.ob-mimg{display:flex;justify-content:space-around;align-items:flex-end;margin:12px -4px -6px;height:84px}.ob-mimg img{height:100%;width:auto;filter:drop-shadow(0 6px 10px #0007)}
+.ob-done{width:64px;height:64px;border-radius:50%;margin:1vh auto 6px;display:flex;align-items:center;justify-content:center;background:var(--accent);color:var(--accent-ink);box-shadow:0 0 50px color-mix(in srgb,var(--accent) 45%,transparent)}
+.obs-ready .ob-h2,.obs-ready>.ob-sub{text-align:center}
+.ob-logo{width:100px;height:100px;border-radius:28px;margin:7vh auto 22px;overflow:hidden;box-shadow:0 0 60px color-mix(in srgb,var(--accent) 35%,transparent)}.ob-logo img{width:100%;height:100%;display:block}
+.ob-feats{margin:26px 4px 0;display:flex;flex-direction:column;gap:12px;font-size:14px}.ob-feats>div{display:flex;gap:12px;align-items:center}.ob-feats span{width:30px;height:30px;flex:none;border-radius:9px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--accent)}
+@media (max-height:700px){.obart{height:190px}.ob-sl .ob-h1{font-size:23px;margin-top:16px}.ob-sl p{font-size:14px}}
 .sl-row{margin:8px 0}.sl-bar{position:relative;height:8px;border-radius:9px;margin-top:5px;background:linear-gradient(90deg,#64748b,#38bdf8 25%,#4ade80 50%,#facc15 75%,#f97316)}.sl-bar i{position:absolute;top:-3px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--text);border:2px solid var(--card);box-shadow:0 0 0 1px #0006}.sl-lv{color:var(--accent)}
 .bellb{position:relative}.bellb b{position:absolute;top:-3px;right:-5px;background:#ff5a5f;color:#fff;font-size:10px;font-weight:800;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);padding:0 3px;box-sizing:border-box;font-family:inherit}
 .hin-wrap{display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:0 12px;margin-top:8px}.hin-wrap span{color:var(--muted);font-weight:700}.hin-wrap input{flex:1;border:0!important;background:none!important;padding:12px 0!important;margin:0!important;box-shadow:none!important;min-width:0;font-size:16px}
@@ -7004,9 +7052,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.117.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.118.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.118.0', d: '2026-11-23', fr: ['Nouvel accueil pour les nouveaux : 4 écrans qui présentent Runelift (aventure, boss de guilde, amis, programme), puis la connexion Google.', 'Création du profil plus simple : objectif, niveau et jours dans une même étape, la classe se choisit toute seule, et un dernier écran montre ton programme de départ jour par jour.'], en: ['New welcome for new users: 4 screens that introduce Runelift (adventure, guild bosses, friends, program), then Google sign-in.', 'Simpler profile setup: goal, level and days in one step, your class is picked for you, and a last screen shows your starting program day by day.']},
   {v: '9.117.2', d: '2026-11-23', fr: ['Apparence : « Écran déplié » devient « Deux colonnes sur grand écran », avec une explication claire. L\'option n\'apparaît que sur une tablette ou un téléphone pliable ouvert.'], en: ['Appearance: “Unfolded screen” is now “Two columns on large screens”, with a clear explanation. The option only shows on a tablet or an unfolded phone.']},
   {v: '9.117.1', d: '2026-11-23', fr: ['« Tout effacer » demande maintenant une vraie confirmation : ce qui sera effacé, si ta sauvegarde en ligne est gardée, et un bouton pour créer une copie d\'abord.'], en: ['“Erase everything” now asks for a real confirmation: what will be erased, whether your online backup is kept, and a button to make a copy first.']},
   {v: '9.117.0', d: '2026-11-23', fr: ['Réglages refaits : une page principale claire, groupée comme les réglages d\'un téléphone, avec une recherche. Chaque sujet a sa page, avec de vrais interrupteurs.', 'Les notifications et les rappels sont maintenant ensemble, et les charges et le matériel ont leur propre page.', 'Nouvelle page Aide : visites guidées, nouveautés et un bouton pour nous écrire.'], en: ['Settings redone: a clear main page, grouped like phone settings, with search. Each topic has its own page, with real switches.', 'Notifications and reminders are now together, and weights and equipment have their own page.', 'New Help page: guided tours, what\'s new and a button to contact us.']},
@@ -11966,15 +12015,15 @@ document.addEventListener('click', e => {
     case 'ag-login': agLogin(); break;
     case 'ag-later': agLater = Date.now() + 15 * 60e3; { const g = document.getElementById('authgate'); if (g) g.remove(); } break;
     case 'ob-noacc': obSt.i = 1; obRender(); break;
-    case 'ob-back': obCollect(); obSt.i = Math.max(0, obSt.i - 1); if (obSt.steps[obSt.i] === 'home' && obSt.steps.includes('back')) obSt.steps = ['home', 'prof', 'toi', 'obj', 'style', 'cls']; obRender(); break;
+    case 'ob-back': obCollect(); obSt.i = Math.max(0, obSt.i - 1); if (obSt.steps[obSt.i] === 'home' && obSt.steps.includes('back')) obSt.steps = ['home', 'prof', 'toi', 'obj', 'style', 'ready']; obRender(); break;
     case 'ob-later': obClose(); break;
     case 'ob-skip': obSt.i++; obRender(); break;
     case 'ob-next': obCollect(); if (obSt.steps[obSt.i] === 'prof' && !obSt.d.name.trim()) { toast(T('Écris ton nom', 'Enter your name')); break; }
-      if (obSt.steps[obSt.i] === 'pseudo' && hOk !== obSt.d.h) { toast(H_RE.test(obSt.d.h || '') ? T('Choisis un pseudo disponible', 'Pick an available username') : T('3 caractères min.', '3 characters min.')); break; } if (obSt.i >= obSt.steps.length - 1 || (obSt.steps[obSt.i] === 'style' && !obSt.d.game)) obFinish(); else { obSt.i++; obRender(); window.scrollTo && document.getElementById('ob').scrollTo(0, 0); } break;
+      if (obSt.steps[obSt.i] === 'pseudo' && hOk !== obSt.d.h) { toast(H_RE.test(obSt.d.h || '') ? T('Choisis un pseudo disponible', 'Pick an available username') : T('3 caractères min.', '3 characters min.')); break; } if (obSt.i >= obSt.steps.length - 1) obFinish(); else { obSt.i++; obRender(); window.scrollTo && document.getElementById('ob').scrollTo(0, 0); } break;
     case 'ob-seg': { obCollect(); const k = b.dataset.k, v = b.dataset.v; obSt.d[k] = k === 'game' ? v === '1' : k === 'days' ? +v : v; obRender(); break; }
     case 'ob-avatar': obCollect(); pickImage(async f => { try { obSt.d.avatar = await shrinkImg(f, 240, .82); obRender(); } catch (e) { toast('⚠️ ' + e.message); } }, true); break;
     case 'ob-restore': { const done = () => { obClose(); try { frLoad(); } catch (e) {} }; cbRestore(false).then(done, done); break; }
-    case 'ob-fresh': if (!confirm(T('Repartir à zéro? Ta sauvegarde en ligne sera remplacée par ce nouveau carnet vide à la fin.', 'Start fresh? Your online backup will be replaced by this new empty log at the end.'))) break; obSt.steps = ['home', 'prof', 'toi', 'obj', 'style']; obSt.i = 1; obRender(); break;
+    case 'ob-fresh': if (!confirm(T('Repartir à zéro? Ta sauvegarde en ligne sera remplacée par ce nouveau carnet vide à la fin.', 'Start fresh? Your online backup will be replaced by this new empty log at the end.'))) break; obSt.steps = ['home', 'prof', 'toi', 'obj', 'style', 'ready']; obSt.i = 1; obRender(); break;
     case 'ob-edit': closeAll(); openOnboard('edit'); break;
     case 'wl-lang': if (b.dataset.v !== (isEN() ? 'en' : 'fr')) { S.settings.lang = b.dataset.v; save(); location.reload(); } break;
     case 'wl-game': S.settings.game = b.dataset.v === '1'; save(); b.parentElement.querySelectorAll('.btn').forEach(x => x.classList.toggle('on', x === b)); break;
@@ -12731,62 +12780,103 @@ var obSt = null;
 function obEl() { let o = document.getElementById('ob'); if (!o) { o = document.createElement('div'); o.id = 'ob'; o.className = 'ob'; document.body.appendChild(o); } return o; }
 function openOnboard(mode = 'new') {
   const st = S.settings, lastW = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)).pop();
-  obSt = {mode, i: 0, steps: mode === 'edit' ? ['toi', 'obj'] : ['home', 'prof', 'toi', 'obj', 'style', 'cls'], u: null,
-    d: {name: st.name || '', avatar: st.avatar || '', unit: U(), sex: st.sex || '', age: ageOf() || '', dob: st.dob || '', ht: st.ht || '', w: lastW ? lastW.w : '', obj: st.obj || 'muscle', days: +st.goal || 4, game: st.game !== false, exp: st.exp || 'int'}};
+  obSt = {mode, i: 0, steps: mode === 'edit' ? ['toi', 'obj'] : ['home', 'prof', 'toi', 'obj', 'style', 'ready'], u: null,
+    d: {name: st.name || '', avatar: st.avatar || '', unit: U(), sex: st.sex || '', age: ageOf() || '', dob: st.dob || '', ht: st.ht || '', w: lastW ? lastW.w : '', obj: st.obj || 'muscle', days: +st.goal || 4, game: st.game !== false, exp: st.exp || 'int', cls: 'auto'}};
   if (mode === 'new') fbLoad().catch(() => {}); // prêt pour que la fenêtre Google s'ouvre tout de suite au toucher
   obRender();
 }
 function obClose() { const o = document.getElementById('ob'); if (o) { o.classList.add('out'); setTimeout(() => o.remove(), 250); } obSt = null; }
 var obSeg = (k, opts) => `<div class="ob-seg">${opts.map(([v, l]) => `<button class="${String(obSt.d[k]) === String(v) ? 'on' : ''}" data-act="ob-seg" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
-var obDots = () => { const n = obSt.steps.filter(s => s !== 'home').length, i = obSt.steps.slice(0, obSt.i + 1).filter(s => s !== 'home').length; return n > 1 ? `<div class="ob-dots">${Array.from({length: n}, (_, k) => `<i class="${k < i ? 'on' : ''}"></i>`).join('')}</div>` : ''; };
 function obHtCm() { const d = obSt.d; if (d.unit === 'kg') return d.htcm != null ? d.htcm : d.ht; return d.ht; }
+/* Accueil : 4 écrans qui défilent (glisser ou automatique), puis la connexion Google */
+const OB_DAYS = () => isEN() ? ['M', 'T', 'W', 'T', 'F', 'S', 'S'] : ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+const OB_DAY3 = () => isEN() ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+function obSlides() {
+  const vol = U() === 'kg' ? '4 820 kg' : '10 640 lb';
+  return [
+    {art: `<div class="obart obart-cls"><img class="c1" src="cls/m-f.webp" alt=""><img class="c2" src="cls/r-m.webp" alt=""><img class="c0" src="cls/g-m.webp" alt="">
+      <div class="obchip obxp"><b>${T('Niv.', 'Lv.')} 12</b><i><u style="width:68%"></u></i><em>+120 XP</em></div></div>`,
+      t: T('Ton entraînement devient une aventure', 'Your training becomes an adventure'), s: T('Chaque séance te donne de l\'XP. Monte de niveau, de rang et choisis ta classe.', 'Every workout earns XP. Level up, rank up and pick your class.')},
+    {art: `<div class="obart obart-boss"><img src="boss/b3.webp" alt=""><div class="obchip obhp"><span><b>${T('Raid de guilde', 'Guild raid')}</b><em>−58 %</em></span><i><u style="width:42%"></u></i></div></div>`,
+      t: T('Battez des boss en guilde', 'Beat bosses as a guild'), s: T('Tes séances te donnent des attaques. Avec ta guilde, faites tomber le boss et gagnez des récompenses.', 'Your workouts give you attacks. With your guild, take the boss down and earn rewards.')},
+    {art: `<div class="obart obart-feed"><div class="obfc back"><span class="obav" style="background:#60a5fa">M</span><b>Max</b><small>Lower B · 48 min</small></div>
+      <div class="obfc"><div class="obfh"><span class="obav" style="background:#a78bfa">L</span><span><b>Léa</b><small>${T('il y a 5 min', '5 min ago')}</small></span><em class="oblive">${T('En direct', 'Live')}</em></div>
+      <b class="obft">Upper A</b><div class="obfs"><span><small>${T('Durée', 'Time')}</small>52 min</span><span><small>Volume</small>${vol}</span><span><small>Records</small>3</span></div>
+      <div class="obfa"><span class="on">${ic('flame', 16)} 4</span><span>${ic('chat', 16)} 2</span></div></div></div>`,
+      t: T('Entraîne-toi avec tes amis', 'Train with your friends'), s: T('Vois leurs séances en direct, encourage-les et lance-leur des défis.', 'See their workouts live, cheer them on and challenge them.')},
+    {art: `<div class="obart obart-plan"><div class="obwk">${OB_DAYS().map((d, i) => `<span class="${[0, 1, 3, 4].includes(i) ? 'on' : ''}"><small>${d}</small><i></i></span>`).join('')}</div>
+      <div class="obrt"><b>Upper A</b><small>${T('6 exercices', '6 exercises')}</small></div><div class="obrt"><b>Lower A</b><small>${T('5 exercices', '5 exercises')}</small></div>
+      <div class="obchip obpr">${ic('trophy', 16)}<span>${T('Nouveau record', 'New record')}</span></div></div>`,
+      t: T('Un programme fait pour toi', 'A program made for you'), s: T('Selon ton objectif et tes jours d\'entraînement. Suis tes records et ta progression.', 'Based on your goal and training days. Track your records and progress.')}
+  ];
+}
+let obCarT = null, obCarTouch = 0;
+function obCarInit() {
+  clearInterval(obCarT); const c = document.getElementById('obcar'); if (!c) return;
+  const dots = [...document.querySelectorAll('#obpg i')], n = dots.length;
+  const at = () => Math.round(c.scrollLeft / Math.max(1, c.clientWidth));
+  c.addEventListener('scroll', () => { const i = at(); dots.forEach((d, k) => d.classList.toggle('on', k === i)); }, {passive: true});
+  ['touchstart', 'pointerdown', 'wheel'].forEach(ev => c.addEventListener(ev, () => { obCarTouch = Date.now(); }, {passive: true}));
+  obCarT = setInterval(() => { const c2 = document.getElementById('obcar'); if (!c2) { clearInterval(obCarT); return; } if (Date.now() - obCarTouch < 7000 || document.hidden) return; c2.scrollTo({left: ((at() + 1) % n) * c2.clientWidth, behavior: 'smooth'}); }, 4500);
+}
 function obRender() {
   if (!obSt) return; const o = obEl(), d = obSt.d, step = obSt.steps[obSt.i], edit = obSt.mode === 'edit';
-  const back = obSt.i > 0 || edit ? `<button class="ob-back" data-act="${obSt.i > 0 ? 'ob-back' : 'ob-later'}" aria-label="${T('Retour', 'Back')}">‹</button>` : '';
+  const n = obSt.steps.filter(s => s !== 'home').length, k = obSt.steps.slice(0, obSt.i + 1).filter(s => s !== 'home').length;
+  const head = step === 'home' ? '' : `<div class="ob-hd"><button class="ob-back" data-act="${obSt.i > 0 ? 'ob-back' : 'ob-later'}" aria-label="${T('Retour', 'Back')}">${ic('back', 22)}</button>${n > 1 && step !== 'back' ? `<div class="ob-prog"><i style="width:${Math.round(k / n * 100)}%"></i></div>` : '<span style="flex:1"></span>'}<span style="width:40px"></span></div>`;
   const nextBtn = (lbl, extra = '') => `<div class="ob-bot">${extra}<button class="btn primary block ob-big" data-act="ob-next">${lbl}</button></div>`;
+  const title = (t, s) => `<h2 class="ob-h2">${t}</h2>${s ? `<p class="ob-sub">${s}</p>` : ''}`;
   let h = '';
-  if (step === 'home') h = `<div class="ob-lang">${['fr', 'en'].map(l => `<button class="${(isEN() ? 'en' : 'fr') === l ? 'on' : ''}" data-act="wl-lang" data-v="${l}">${l.toUpperCase()}</button>`).join('')}</div>
-    <div class="ob-logo"><img src="icon-192.png" alt=""></div><h1 class="ob-h1 center">Runelift</h1>
-    <p class="muted center" style="margin:6px 0 0">${T('Ton entraînement devient une aventure. Note tes séances, monte de niveau et retrouve tes amis.', 'Turn your workouts into an adventure. Log your sessions, level up and train with your friends.')}</p>
-    <div class="ob-feats"><div><span>📈</span>${T('Suis tes records et ta progression', 'Track your records and progress')}</div><div><span>👥</span>${T('Vois les séances de tes amis en direct', 'See your friends\' workouts live')}</div><div><span>☁️</span>${T('Tout est sauvegardé automatiquement', 'Everything is backed up automatically')}</div></div>
-    <div class="ob-bot"><button class="ob-gbtn" data-act="ob-google"><svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.2C12.5 13.6 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.3 6.9-17.7z"/><path fill="#FBBC05" d="M10.5 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.2C1 16.5 0 20.1 0 24s1 7.5 2.7 10.7l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.7-6c-2.2 1.5-5 2.3-8.2 2.3-6.2 0-11.5-4.1-13.4-9.8l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>${T('Continuer avec Google', 'Continue with Google')}</button>
-    <p class="muted small center" style="margin:6px 0 0">${T('Un compte Google est nécessaire : c\'est lui qui sauvegarde tes séances et te relie à tes amis.', 'A Google account is required: it backs up your workouts and connects you with your friends.')}</p><p class="muted center" style="margin:6px 0 0;font-size:11px">${T('En continuant, tu acceptes la', 'By continuing, you accept the')} <a href="privacy.html" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">${T('politique de confidentialité', 'privacy policy')}</a>.</p></div>`;
-  else if (step === 'back') h = `<div class="ob-av big" style="margin-top:12vh">${d.avatar ? `<img src="${d.avatar}" alt="">` : esc((obSt.bk.name || d.name || '?')[0].toUpperCase())}</div>
-    <h1 class="ob-h1 center" style="margin-top:14px">${T('Bon retour', 'Welcome back')}${obSt.bk.name ? ' ' + esc(obSt.bk.name) : ''}!</h1><p class="muted center">${T('Ton compte a été retrouvé.', 'Your account was found.')}</p>
-    <div class="ob-feats card"><div><span>✅</span>${obSt.bk.sess} ${obSt.bk.sess > 1 ? T('séances', 'workouts') : T('séance', 'workout')}</div><div><span>✅</span>${obSt.bk.rout} routines</div><div><span>✅</span>${T('Records, amis et Guilde', 'Records, friends and Guild')}</div></div>
+  if (step === 'home') { const sl = obSlides();
+    h = `<div class="ob-top"><span class="ob-brand"><img src="icon-192.png" alt="">Runelift</span><div class="ob-lang">${['fr', 'en'].map(l => `<button class="${(isEN() ? 'en' : 'fr') === l ? 'on' : ''}" data-act="wl-lang" data-v="${l}">${l.toUpperCase()}</button>`).join('')}</div></div>
+    <div class="ob-car" id="obcar">${sl.map(x => `<div class="ob-sl">${x.art}<h1 class="ob-h1">${x.t}</h1><p>${x.s}</p></div>`).join('')}</div>
+    <div class="ob-pg" id="obpg">${sl.map((x, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>
+    <div class="ob-bot"><button class="ob-gbtn" data-act="ob-google">${G_SVG}${T('Continuer avec Google', 'Continue with Google')}</button>
+    <p class="ob-legal">${T('Ton compte Google sauvegarde tes séances et te relie à tes amis. En continuant, tu acceptes la', 'Your Google account backs up your workouts and connects you with your friends. By continuing, you accept the')} <a href="privacy.html" target="_blank" rel="noopener">${T('politique de confidentialité', 'privacy policy')}</a>.</p></div>`; }
+  else if (step === 'back') h = `<div class="ob-av big" style="margin-top:9vh">${d.avatar ? `<img src="${d.avatar}" alt="">` : esc((obSt.bk.name || d.name || '?')[0].toUpperCase())}</div>
+    <h1 class="ob-h1 center" style="margin-top:16px">${T('Bon retour', 'Welcome back')}${obSt.bk.name ? ' ' + esc(obSt.bk.name) : ''}!</h1><p class="ob-sub center">${T('Ton compte a été retrouvé.', 'Your account was found.')}</p>
+    <div class="sgrp" style="margin-top:22px">${sInfo(T('Séances', 'Workouts'), `<b style="color:var(--text)">${obSt.bk.sess}</b>`)}${sInfo('Routines', `<b style="color:var(--text)">${obSt.bk.rout}</b>`)}${sInfo(T('Records, amis et Guilde', 'Records, friends and Guild'), `<span style="color:var(--accent);display:flex">${ic('check', 18)}</span>`)}</div>
     <div class="ob-bot"><button class="btn primary block ob-big" data-act="ob-restore">${T('Ouvrir mon carnet', 'Open my log')}</button><button class="ob-ghost" data-act="ob-fresh">${T('Repartir à zéro sur ce téléphone', 'Start fresh on this phone')}</button></div>`;
-  else if (step === 'prof') h = `${obDots()}<h2 class="ob-h2">${T('Bienvenue!', 'Welcome!')}</h2><p class="muted">${obSt.u ? T('Connecté avec Google ✓ · ', 'Signed in with Google ✓ · ') : ''}${T('Dis-nous qui tu es.', 'Tell us who you are.')}</p>
-    <button class="ob-av" data-act="ob-avatar">${d.avatar ? `<img src="${d.avatar}" alt="">` : esc((d.name.trim()[0] || '?').toUpperCase())}<em>📷</em></button><p class="muted small center" style="margin:4px 0 0">${T('Photo de profil (optionnel)', 'Profile photo (optional)')}</p>
-    <label>${T('Ton nom', 'Your name')}</label><input id="ob_name" value="${esc(d.name)}" placeholder="${T('Ex. : Alex', 'E.g. Alex')}" autocomplete="given-name">
-    <p class="muted small" style="margin:5px 0 0">${T('C\'est le nom que tes amis vont voir.', 'This is the name your friends will see.')}</p>
+  else if (step === 'prof') h = `${title(T('Bienvenue!', 'Welcome!'), (obSt.u ? `<span class="ob-ok">${ic('check', 14)} ${T('Connecté avec Google', 'Signed in with Google')}</span> ` : '') + T('Dis-nous qui tu es.', 'Tell us who you are.'))}
+    <button class="ob-av" data-act="ob-avatar" aria-label="${T('Photo de profil', 'Profile photo')}">${d.avatar ? `<img src="${d.avatar}" alt="">` : esc((d.name.trim()[0] || '?').toUpperCase())}<em>${ic('camera', 14)}</em></button><p class="ob-sub center small" style="margin-top:6px">${T('Photo de profil (optionnel)', 'Profile photo (optional)')}</p>
+    <label>${T('Ton nom', 'Your name')}</label><input id="ob_name" value="${esc(d.name)}" placeholder="${T('Ex. : Alex', 'E.g. Alex')}" autocomplete="given-name" maxlength="30">
+    <p class="ob-hint">${T('C\'est le nom que tes amis vont voir.', 'This is the name your friends will see.')}</p>
     <label>${T('Unités', 'Units')}</label>${obSeg('unit', [['lb', T('lb · pi', 'lb · ft')], ['kg', 'kg · cm']])}
     ${nextBtn(T('Continuer', 'Continue'))}`;
-  else if (step === 'pseudo') h = `${obDots()}<h2 class="ob-h2">${T('Ton @pseudo', 'Your @username')}</h2><p class="muted">${T('Unique. Tes amis te trouvent avec, sans code à copier. Ton nom', 'Unique. Friends find you with it, no code to copy. Your name')} (${esc(d.name || '…')}) ${T('reste libre.', 'stays free.')}</p>
+  else if (step === 'pseudo') h = `${title(T('Ton @pseudo', 'Your @username'), T('Unique. Tes amis te trouvent avec, sans code à copier. Ton nom', 'Unique. Friends find you with it, no code to copy. Your name') + ` (${esc(d.name || '…')}) ` + T('reste libre.', 'stays free.'))}
     ${hField(d.h || hNorm(d.name))}${nextBtn(T('Continuer', 'Continue'))}`;
   else if (step === 'toi') { const ftIn = d.ht ? [Math.floor(d.ht / 30.48), Math.round((d.ht / 2.54) % 12)] : ['', ''];
     if (ftIn[1] === 12) { ftIn[0]++; ftIn[1] = 0; }
-    h = `${obDots()}<h2 class="ob-h2">${T('Parle-nous de toi', 'Tell us about you')}</h2><p class="muted">${T('Pour tes calories et tes besoins. Reste privé.', 'For your calories and needs. Stays private.')}</p>
+    h = `${title(T('Parle-nous de toi', 'Tell us about you'), T('Pour estimer tes calories et adapter tes séances.', 'To estimate your calories and adapt your workouts.'))}
     <label>${T('Sexe', 'Sex')}</label>${obSeg('sex', [['m', T('Homme', 'Male')], ['f', T('Femme', 'Female')], ['x', T('Autre', 'Other')]])}
-    <div class="grid2"><div><label>${T('Date de naissance', 'Birth date')}</label>${dobInput('ob_dob', d.dob)}</div>
-    <div><label>${T('Taille', 'Height')} (${d.unit === 'kg' ? 'cm' : T('pi / po', 'ft / in')})</label>${d.unit === 'kg' ? `<input id="ob_cm" inputmode="numeric" value="${d.ht ? Math.round(d.ht) : ''}" placeholder="cm">` : `<div class="row" style="gap:6px"><input id="ob_ft" inputmode="numeric" value="${ftIn[0]}" placeholder="${T('pi', 'ft')}"><input id="ob_in" inputmode="numeric" value="${ftIn[1]}" placeholder="${T('po', 'in')}"></div>`}</div></div>
-    <label>${T('Poids', 'Weight')} (${d.unit})</label><input id="ob_w" inputmode="decimal" value="${esc(d.w)}" placeholder="${d.unit}">
-    <div class="ob-note">🔒 ${T('Tes amis ne voient jamais ton âge, ta taille ni ton poids.', 'Your friends never see your age, height or weight.')}</div>
-    ${nextBtn(T('Continuer', 'Continue'), edit ? '' : `<button class="ob-ghost" data-act="ob-skip" style="order:2">${T('Passer', 'Skip')}</button>`)}`; }
-  else if (step === 'obj') h = `${obDots()}<h2 class="ob-h2">${T('Ton objectif', 'Your goal')}</h2><p class="muted">${T('On adapte les zones de reps et tes besoins.', 'We adapt rep ranges and your needs.')}</p>
-    <div style="margin-top:12px">${OB_GOALS().map(([k, ic, l, s]) => `<button class="ob-opt ${d.obj === k ? 'on' : ''}" data-act="ob-seg" data-k="obj" data-v="${k}"><span class="ob-ic">${ic}</span><span><b>${l}</b><small>${s}</small></span></button>`).join('')}</div>
-    <label>${T('Séances par semaine', 'Workouts per week')}</label><div class="ob-chips">${[2, 3, 4, 5, 6].map(n => `<button class="${+d.days === n ? 'on' : ''}" data-act="ob-seg" data-k="days" data-v="${n}">${n}</button>`).join('')}</div>
-    ${nextBtn(edit ? T('Enregistrer', 'Save') : T('Continuer', 'Continue'))}`;
-  else if (step === 'style') h = `${obDots()}<h2 class="ob-h2">${T('Ton style', 'Your style')}</h2><p class="muted">${T('Tu peux changer quand tu veux dans Réglages.', 'You can change it anytime in Settings.')}</p>
-    <div style="margin-top:12px"><button class="ob-mode ${d.game ? 'on' : ''}" data-act="ob-seg" data-k="game" data-v="1"><b>⚔️ ${T('Mode Aventurier', 'Adventurer mode')}<i></i></b><span>${T('Gagne de l\'XP, monte de rang dans la Guilde, accomplis des quêtes, ouvre des coffres et débloque des récompenses.', 'Earn XP, rank up in the Guild, complete quests, open chests and unlock rewards.')}</span></button>
-    <button class="ob-mode ${d.game ? '' : 'on'}" data-act="ob-seg" data-k="game" data-v=""><b>📒 ${T('Mode Classique', 'Classic mode')}<i></i></b><span>${T('Juste ton carnet : séances, records et statistiques. Sans jeu.', 'Just your log: workouts, records and stats. No game.')}</span></button></div>
-    <label>${T('Niveau d\'expérience', 'Experience level')}</label>${obSeg('exp', [['beg', T('Débutant', 'Beginner')], ['int', T('Interm.', 'Interm.')], ['adv', T('Avancé', 'Advanced')]])}
-    <p class="muted small" style="margin:8px 0 0">${EXP_WHAT()[d.exp]} ${T('Il monte tout seul au fil de tes séances.', 'It goes up on its own as you train.')}</p>
-    ${nextBtn(d.game ? T('Continuer', 'Continue') : T('C\'est parti!', 'Let\'s go!') + ' 🚀')}`;
-  else if (step === 'cls') { const sg = pclSuggest(); if (d.cls == null) d.cls = 'auto'; h = `${obDots()}<h2 class="ob-h2">${T('Ta classe', 'Your class')}</h2><p class="muted">${T('Elle donne des quêtes adaptées et +25 % d\'XP sur les séances de ton style. Le plus simple : la laisser se calculer d\'après ton entraînement.', 'It gives tailored quests and +25% XP on workouts in your style. Easiest: let it follow your training.')}</p>
-    <div style="margin-top:12px"><button class="ob-opt ${d.cls === 'auto' ? 'on' : ''}" data-act="ob-seg" data-k="cls" data-v="auto"><span class="ob-ic">${pclImg(sg ? sg.k : 'm', 40)}</span><span><b>${T('Automatique', 'Automatic')} · ${T('recommandé', 'recommended')}</b><small>${sg ? T(`Pour l'instant : ${pclName(sg.k)} (${sg.why})`, `For now: ${pclName(sg.k)} (${sg.why})`) : T('Ta classe se révélera après tes premières séances.', 'Your class will reveal itself after your first workouts.')}</small></span></button>${PCL_ALL.map(k => `<button class="ob-opt ${d.cls === k ? 'on' : ''}" data-act="ob-seg" data-k="cls" data-v="${k}"><span class="ob-ic">${pclImg(k, 40)}</span><span><b>${T('Objectif', 'Goal')} : ${esc(pclName(k))}</b><small>${esc(pclDesc(k))}</small></span></button>`).join('')}</div>
-    ${nextBtn(T('C\'est parti!', 'Let\'s go!') + ' 🚀')}`; }
-  o.innerHTML = `<div class="ob-in obs-${step}">${back}${h}</div>`;
-  try { iconize(o); } catch (e) {}
+    <label>${T('Date de naissance', 'Birth date')}</label>${dobInput('ob_dob', d.dob)}
+    <div class="grid2"><div><label>${T('Taille', 'Height')} (${d.unit === 'kg' ? 'cm' : T('pi / po', 'ft / in')})</label>${d.unit === 'kg' ? `<input id="ob_cm" inputmode="numeric" value="${d.ht ? Math.round(d.ht) : ''}" placeholder="cm">` : `<div class="row" style="gap:6px"><input id="ob_ft" inputmode="numeric" value="${ftIn[0]}" placeholder="${T('pi', 'ft')}"><input id="ob_in" inputmode="numeric" value="${ftIn[1]}" placeholder="${T('po', 'in')}"></div>`}</div>
+    <div><label>${T('Poids', 'Weight')} (${d.unit})</label><input id="ob_w" inputmode="decimal" value="${esc(d.w)}" placeholder="${d.unit}"></div></div>
+    <div class="ob-note">${ic('lock', 16)}<span>${T('Reste privé : tes amis ne voient jamais ton âge, ta taille ni ton poids.', 'Stays private: your friends never see your age, height or weight.')}</span></div>
+    ${nextBtn(T('Continuer', 'Continue'), edit ? '' : `<button class="ob-ghost" data-act="ob-skip" style="order:2">${T('Passer cette étape', 'Skip this step')}</button>`)}`; }
+  else if (step === 'obj') { const GI = {muscle: ['dumbbell', '#4ade80'], force: ['zap', '#facc15'], fat: ['flame', '#fb923c'], fit: ['heart', '#f472b6']};
+    h = `${title(T('Ton entraînement', 'Your training'), T('On s\'en sert pour tes répétitions, tes séries et ton programme de départ.', 'We use it for your reps, your sets and your starting program.'))}
+    <label>${T('Objectif', 'Goal')}</label><div>${OB_GOALS().map(([k, , l, s]) => `<button class="ob-opt ${d.obj === k ? 'on' : ''}" data-act="ob-seg" data-k="obj" data-v="${k}">${sTile((GI[k] || ['target'])[0], (GI[k] || [])[1], 20)}<span><b>${l}</b><small>${s}</small></span><i class="ob-rad"></i></button>`).join('')}</div>
+    <label>${T('Ton niveau', 'Your level')}</label>${obSeg('exp', [['beg', T('Débutant', 'Beginner')], ['int', T('Intermédiaire', 'Intermediate')], ['adv', T('Avancé', 'Advanced')]])}
+    <p class="ob-hint">${EXP_WHAT()[d.exp]}</p>
+    <label>${T('Séances par semaine', 'Workouts per week')}</label><div class="ob-chips">${[2, 3, 4, 5, 6].map(x => `<button class="${+d.days === x ? 'on' : ''}" data-act="ob-seg" data-k="days" data-v="${x}">${x}</button>`).join('')}</div>
+    ${nextBtn(edit ? T('Enregistrer', 'Save') : T('Continuer', 'Continue'))}`; }
+  else if (step === 'style') h = `${title(T('Ton style', 'Your style'), T('Tu peux changer quand tu veux dans Réglages → Général.', 'You can change it anytime in Settings → General.'))}
+    <div style="margin-top:18px"><button class="ob-mode ${d.game ? 'on' : ''}" data-act="ob-seg" data-k="game" data-v="1"><span class="ob-mhd">${sTile('swords', '#c6f135', 20)}<b>${T('Mode Aventurier', 'Adventurer mode')}</b><i class="ob-rad"></i></span><span class="ob-mtx">${T('Gagne de l\'XP, monte de rang dans la Guilde, accomplis des quêtes, affronte des boss et débloque des récompenses.', 'Earn XP, rank up in the Guild, complete quests, fight bosses and unlock rewards.')}</span>
+      <span class="ob-mimg"><img src="cls/g-m.webp" alt=""><img src="boss/b0.webp" alt=""><img src="chest/c2.webp" alt=""></span></button>
+    <button class="ob-mode ${d.game ? '' : 'on'}" data-act="ob-seg" data-k="game" data-v=""><span class="ob-mhd">${sTile('book', '#94a3b8', 20)}<b>${T('Mode Classique', 'Classic mode')}</b><i class="ob-rad"></i></span><span class="ob-mtx">${T('Juste ton carnet : séances, records et statistiques. Sans jeu.', 'Just your log: workouts, records and stats. No game.')}</span></button></div>
+    ${d.game ? `<p class="ob-hint">${T('Ta classe se choisit toute seule d\'après tes séances. Tu pourras la changer dans la Guilde.', 'Your class is picked for you based on your workouts. You can change it in the Guild.')}</p>` : ''}
+    ${nextBtn(T('Continuer', 'Continue'))}`;
+  else if (step === 'ready') { const prog = !S.history.length && !S.settings.xferDone; let sp = null; if (prog) { try { sp = starterProgram(d.obj, +d.days || 4, d.exp || 'int'); } catch (e) {} }
+    const gl = OB_GOALS().find(x => x[0] === d.obj);
+    h = `<div class="ob-done">${ic('check', 34)}</div>${title(`${T('Tout est prêt', 'All set')}${d.name.trim() ? ', ' + esc(d.name.trim().split(/\s+/)[0]) : ''}!`, sp ? T('Voici ton programme de départ. Tu pourras le modifier quand tu veux.', 'Here is your starting program. You can change it anytime.') : T('Ton carnet est prêt.', 'Your log is ready.'))}
+    ${sp ? `<div class="ob-wk">${OB_DAYS().map((x, i) => `<span class="${sp.sched[i] !== 'rest' ? 'on' : ''}"><small>${x}</small><i></i></span>`).join('')}</div>
+      <div class="sgrp" style="margin-top:14px">${sp.rs.map(r => sInfo(esc(r.name), sp.sched.map((v, i) => v === r.id ? OB_DAY3()[i] : '').filter(Boolean).join(' · '), r.exercises.length + ' ' + T('exercices', 'exercises'))).join('')}</div>
+      <p class="snote">${gl ? esc(gl[2]) + ' · ' : ''}${EXP_NAME(d.exp)} · ${+d.days || 4} ${T('séances par semaine', 'workouts per week')}</p>` : ''}
+    ${d.game ? `<div class="ob-note">${ic('swords', 16)}<span>${T('Ta première séance t\'inscrit à la Guilde : niveau, rang, quêtes et boss.', 'Your first workout signs you up to the Guild: level, rank, quests and bosses.')}</span></div>` : ''}
+    ${nextBtn(T('Commencer', 'Let\'s go'))}`; }
+  clearInterval(obCarT);
+  o.innerHTML = `<div class="ob-in obs-${step}">${head}${h}</div>`;
+  if (step === 'home') obCarInit();
   if (step === 'pseudo') setTimeout(hCheck, 30);
 }
 function obCollect() {
@@ -12800,7 +12890,8 @@ function obCollect() {
 }
 function obApply() {
   const d = obSt.d, st = S.settings;
-  if (obSt.mode === 'new') { if (d.name.trim()) st.name = d.name.trim(); if (d.avatar) st.avatar = d.avatar; st.unit = d.unit; st.game = !!d.game; st.exp = d.exp; }
+  if (obSt.mode === 'new') { if (d.name.trim()) st.name = d.name.trim(); if (d.avatar) st.avatar = d.avatar; st.unit = d.unit; st.game = !!d.game; }
+  if (d.exp) st.exp = d.exp;
   if (d.sex) st.sex = d.sex; if (d.dob) { st.dob = d.dob; st.by = +d.dob.slice(0, 4); } else if (d.age) st.by = new Date().getFullYear() - d.age; if (d.ht) st.ht = d.ht;
   st.obj = d.obj; st.goal = +d.days;
   if (d.w) { const k = dkey(new Date()), lastW = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)).pop(); if (!lastW || +lastW.w !== +d.w) { let e = S.body.find(x => x.d === k); if (!e) { e = {id: uid(), d: k, w: null, m: {}}; S.body.push(e); } e.w = +d.w; } }
@@ -12810,7 +12901,7 @@ async function obGoogle() {
   if (!u || !obSt) return; obSt.u = u;
   if (!obSt.d.name && u.displayName) obSt.d.name = u.displayName.trim().split(/\s+/)[0];
   try { const m = await cbMeta(u.uid); if (m && (m.sess || m.rout)) { let name = ''; try { const ud = await fbDb().collection('users').doc(u.uid).get(); name = ud.exists ? ud.data().name || '' : ''; } catch (e) {} obSt.bk = {sess: m.sess || 0, rout: m.rout || 0, name}; obSt.steps = ['home', 'back']; obSt.i = 1; obRender(); return; } } catch (e) {}
-  obSt.steps = ['home', 'prof', 'pseudo', 'toi', 'obj', 'style', 'cls']; obSt.i = 1; obRender();
+  obSt.steps = ['home', 'prof', 'pseudo', 'toi', 'obj', 'style', 'ready']; obSt.i = 1; obRender();
 }
 /* Compte Google : amis + sauvegarde activés tout seuls, sans fenêtre de code */
 async function obCloudOn(u, h) {
@@ -12835,7 +12926,7 @@ async function authGate() {
     const g = document.createElement('div'); g.id = 'authgate'; g.className = 'ob'; g.style.zIndex = 60;
     g.innerHTML = `<div class="ob-logo" style="margin-top:14vh"><img src="icon-192.png" alt=""></div><h1 class="ob-h1 center">${T('Connexion requise', 'Sign-in required')}</h1>
       <p class="muted center" style="margin:8px 0 0">${T('Tu n\'es pas connecté à ton compte Google. Tant que tu ne l\'es pas, tes séances ne sont pas sauvegardées en ligne et tes amis ne voient pas ce que tu fais.', 'You are not signed in to your Google account. Until you are, your workouts are not backed up online and your friends cannot see what you do.')}</p>
-      <div class="ob-feats"><div><span>☁️</span>${T('Sauvegarde automatique de tes séances', 'Automatic backup of your workouts')}</div><div><span>👥</span>${T('Tes amis et ta Guilde', 'Your friends and your Guild')}</div></div>
+      <div class="ob-feats"><div><span>${ic('cloud', 16)}</span>${T('Sauvegarde automatique de tes séances', 'Automatic backup of your workouts')}</div><div><span>${ic('users', 16)}</span>${T('Tes amis et ta Guilde', 'Your friends and your Guild')}</div></div>
       <div class="ob-bot"><button id="ag_btn" class="ob-gbtn" data-act="ag-login">${G_SVG}${T('Se reconnecter avec Google', 'Sign in with Google')}</button>
       <p id="ag_err" class="small center" style="color:var(--bad,#ff6b6b);margin:4px 0 0;min-height:1em"></p>
       <button class="ob-ghost" data-act="ag-later">${T('Plus tard', 'Later')}</button></div>`;
