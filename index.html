@@ -2257,6 +2257,28 @@ function genStart() {
   save(); closeAll(); openWorkout();
 }
 /* S'entraîner avec un ami : sa séance (exercices, nombre de séries, reps), avec MES poids (ma dernière fois sur chaque exercice) */
+/* « Faire cette séance » : la démarrer tout de suite, ou la garder comme routine pour plus tard */
+function frSessOf(c, sid) { const d = frData[c] && frData[c].d, s = d && Array.isArray(d.s) ? d.s.find(y => y && y.id === sid) : null; return s ? {d, s} : null; }
+function frTrainAsk(c, sid) {
+  const x = frSessOf(c, sid); if (!x) return; const ex = (x.s.ex || []).filter(e => e && e.n), fs = folders(), def = T('De mes amis', 'From friends');
+  modal(`<div class="row between"><h2 style="margin:0">${esc(x.s.n || T('Séance', 'Workout'))}</h2><button class="btn sm" data-act="close">✕</button></div>
+    <p class="small muted" style="margin:4px 0 12px">${T(`Séance de ${esc(x.d.name || '?')} · ${ex.length} exercice${ex.length > 1 ? 's' : ''}. Les séries et les reps viennent de sa séance, les poids de tes dernières fois.`, `${esc(x.d.name || '?')}'s workout · ${ex.length} exercise${ex.length > 1 ? 's' : ''}. Sets and reps come from their workout, weights from your last times.`)}</p>
+    <button class="btn primary block" data-act="fr-train-go" data-c="${esc(c)}" data-s="${esc(sid)}">${ic('play', 18)} ${T('Démarrer maintenant', 'Start now')}</button>
+    <div class="sep" style="margin:14px 0 10px;border-top:1px solid var(--line)"></div>
+    <label>${T('Ou l\'enregistrer comme routine', 'Or save it as a routine')}</label>
+    <input id="ftn" value="${esc(T(`${x.s.n || 'Séance'} (${x.d.name || '?'})`, `${x.s.n || 'Workout'} (${x.d.name || '?'})`).slice(0, 80))}">
+    <select id="ftf" style="margin-top:8px">${[...new Set([def, ...fs])].map(f => `<option${f === def ? ' selected' : ''}>${esc(f)}</option>`).join('')}</select>
+    <button class="btn block" style="margin-top:10px" data-act="fr-train-save" data-c="${esc(c)}" data-s="${esc(sid)}">${ic('save', 18)} ${T('Enregistrer la routine', 'Save the routine')}</button>`);
+}
+function frTrainSave(c, sid) {
+  const x = frSessOf(c, sid); if (!x) return; const ex = (x.s.ex || []).filter(e => e && e.n).slice(0, 25); if (!ex.length) return;
+  const f = (($('#ftf') || {}).value || T('De mes amis', 'From friends')).trim(); let n = (($('#ftn') || {}).value || '').trim().slice(0, 80) || x.s.n || T('Séance', 'Workout');
+  if (!folders().includes(f)) { S.folders = S.folders || []; S.folders.push(f); }
+  const taken = new Set(S.routines.filter(r => inFolder(r, f)).map(r => norm(r.name))), base = n; let k = 2; while (taken.has(norm(n))) n = `${base} (${k++})`;
+  S.routines.push({id: uid(), name: n, folder: f, from: x.d.name || '', exercises: ex.map(e => ({name: e.n, sets: Math.max(1, Math.min(10, +e.ns || 3)), reps: e.k === 'c' ? '' : String(Math.max(1, Math.round(+e.r || 10))), weight: '', note: e.k === 'c' && e.r ? T(`${Math.round(+e.r)} min`, `${Math.round(+e.r)} min`) : ''}))});
+  S.settings.folded = S.settings.folded || {}; delete S.settings.folded[f];
+  save(); closeAll(); render(); toast(T(`Routine « ${n} » enregistrée dans ${f}`, `Routine “${n}” saved in ${f}`));
+}
 function frTrainFrom(name, ex, who) {
   ex = (Array.isArray(ex) ? ex : []).filter(e => e && e.n).slice(0, 25); if (!ex.length) { toast(T('Rien à copier dans cette séance', 'Nothing to copy in this workout')); return; }
   if (S.active && !confirm(T('Une séance est déjà en cours. La remplacer?', 'A workout is already in progress. Replace it?'))) { openWorkout(); return; }
@@ -6827,9 +6849,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.113.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.113.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.113.1', d: '2026-11-22', fr: ['« Faire cette séance » dans le fil : choisis de la démarrer tout de suite, ou de l\'enregistrer comme routine (dans le dossier « De mes amis » ou celui de ton choix).'], en: ['“Do this workout” in the feed: choose to start it right away, or save it as a routine (in the “From friends” folder or one you pick).']},
   {v: '9.113.0', d: '2026-11-22', fr: ['Nouveau fil des amis : chaque séance a un titre, ses stats (durée, volume, records), la photo et les exercices avec leur image, regroupés par jour (Aujourd\'hui, Hier…).', 'Encouragements : un seul bouton flamme, avec qui a encouragé (Max, Sarah et 2 autres). Commentaires : aperçu sous la séance, réponses à un ami, et suppression de tes commentaires.'], en: ['New friends feed: each workout has a title, its stats (time, volume, records), the photo and the exercises with their image, grouped by day (Today, Yesterday…).', 'Cheers: a single flame button, showing who cheered (Max, Sarah and 2 others). Comments: preview under the workout, replies to a friend, and deleting your comments.']},
   {v: '9.112.2', d: '2026-11-22', fr: ['Photos de séance en grand : glisse vers la gauche ou la droite pour passer d\'une photo à l\'autre (avec 1 / 3 et des points en dessous).'], en: ['Workout photos full size: swipe left or right to go from one photo to the next (with 1 / 3 and dots below).']},
   {v: '9.112.1', d: '2026-11-22', fr: ['Statut : ton titre entre « » reste sur une seule ligne (le » ne tombe plus tout seul à la ligne).'], en: ['Status: your title in quotes stays on one line.']},
@@ -11305,7 +11328,9 @@ document.addEventListener('click', e => {
     case 'fr-stop': frStop(); break;
     case 'fr-code': frShowCode(); break;
     case 'fr-code-old': closeAll(); frShowCode(true); break;
-    case 'fr-train': { const d = frData[b.dataset.c] && frData[b.dataset.c].d, x = d && Array.isArray(d.s) ? d.s.find(y => y && y.id === b.dataset.s) : null; if (x) frTrainFrom(x.n || T('Séance', 'Workout'), x.ex, d.name || '?'); break; }
+    case 'fr-train': frTrainAsk(b.dataset.c, b.dataset.s); break;
+    case 'fr-train-go': { const x = frSessOf(b.dataset.c, b.dataset.s); if (x) frTrainFrom(x.s.n || T('Séance', 'Workout'), x.s.ex, x.d.name || '?'); break; }
+    case 'fr-train-save': frTrainSave(b.dataset.c, b.dataset.s); break;
     case 'fr-join': { const w = frLw(b.dataset.c), d = frData[b.dataset.c] && frData[b.dataset.c].d; if (w) frTrainFrom(w.n || T('Séance', 'Workout'), w.ex, (d && d.name) || '?'); else toast(T('Sa séance n\'est plus en cours', 'Their workout is no longer in progress')); break; }
     case 'fr-copy': try { navigator.clipboard.writeText(frMsg()); toast(T('📋 Code copié : colle-le à ton ami', '📋 Code copied: paste it to your friend')); } catch (e) { toast(FRS().file); } break;
     case 'fr-share': shareText(frMsg()); break;
