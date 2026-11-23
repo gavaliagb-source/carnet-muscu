@@ -653,6 +653,7 @@ label.srow,.srow.sbtn{cursor:pointer}
 /* Visite guidée */
 #tour{position:fixed;inset:0;z-index:9000;touch-action:none}
 #tour .tspot{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.72);border:2px solid var(--accent);transition:all .3s ease;pointer-events:none}
+#tour .tspot.cut{border-bottom-style:dashed;border-bottom-left-radius:4px;border-bottom-right-radius:4px}
 #tour .tspot.none{width:0!important;height:0!important;border:0;left:50%!important;top:40%!important}
 #tour .tbub{position:fixed;left:16px;right:16px;max-width:420px;margin:0 auto;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:14px 16px 0;box-shadow:0 14px 44px rgba(0,0,0,.55);transition:top .3s ease;overflow:visible}
 #tour .tbub::before{content:'';position:absolute;left:calc(var(--ax,50%) - 9px);width:18px;height:18px;background:var(--card);border:1px solid var(--line);transform:rotate(45deg);display:none}
@@ -7066,9 +7067,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.120.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.120.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.120.2', d: '2026-11-23', fr: ['Visites guidées : une section plus grande que l\'écran n\'est plus encadrée au complet. La visite montre son haut, juste sous le titre, et la bulle ne la cache plus. L\'étape du raid pointe directement sur le boss.'], en: ['Guided tours: a section taller than the screen is no longer framed whole. The tour shows its top, right under the title, and the bubble no longer hides it. The raid step points straight at the boss.']},
   {v: '9.120.1', d: '2026-11-23', fr: ['Mode test : bouton « Visites guidées », et l\'aperçu de l\'accueil se termine par la visite « Les bases », comme pour un vrai nouveau.'], en: ['Test mode: “Guided tours” button, and the welcome preview ends with “The basics” tour, like for a real new user.']},
   {v: '9.120.0', d: '2026-11-23', fr: ['Visites guidées refaites : textes à jour, nouveau look (icône, étape 3 / 8, petite flèche vers ce qu\'on montre) et plus d\'émojis.', 'La visite de la Guilde passe maintenant par ses 4 onglets (Aujourd\'hui, Raid, Classements, Collection), avec les ligues. Nouvelles étapes : séance générée, cardio en direct, fil d\'amis, défis et confidentialité.', 'Les fenêtres automatiques n\'apparaissent plus par-dessus une visite.'], en: ['Guided tours redone: up-to-date text, new look (icon, step 3 / 8, small arrow toward what is shown) and no more emojis.', 'The Guild tour now goes through its 4 tabs (Today, Raid, Rankings, Collection), with leagues. New steps: generated workout, live cardio, friends feed, challenges and privacy.', 'Automatic pop-ups no longer appear over a tour.']},
   {v: '9.119.0', d: '2026-11-23', fr: ['Accueil : plus de programme mis d\'office. Tu choisis comment commencer : un programme prêt (ceux qui vont avec tes jours sont marqués « Pour toi »), créer le tien, ou importer tes données d\'une autre appli (Hevy, Strong, FitNotes…) avec tes routines recréées.', 'Le programme prêt choisi à l\'accueil remplit aussi ton horaire de la semaine.'], en: ['Welcome: no more program set for you. You choose how to start: a ready-made program (the ones that fit your days are marked “For you”), create your own, or import your data from another app (Hevy, Strong, FitNotes…) with your routines rebuilt.', 'The ready-made program chosen at welcome also fills your weekly schedule.']},
@@ -7380,7 +7382,7 @@ const TOURS = {
     {ic: 'chart', gtab: 'day', sel: '#gstatus', t: ['Ton statut', 'Your status'], d: ['Ton niveau, ton rang et ta classe, choisie selon ta façon de t\'entraîner. Touche la barre d\'XP pour voir d\'où vient ton XP.', 'Your level, rank and class, picked from how you train. Tap the XP bar to see where your XP comes from.']},
     {ic: 'zap', gtab: 'day', sel: '.ctiles', t: ['Ta classe', 'Your class'], d: ['Ton pouvoir de la semaine, ton histoire, tes talents et ton arme. Ils changent tes quêtes et tes attaques de raid.', 'Your power of the week, your story, your talents and your weapon. They shape your quests and your raid attacks.']},
     {ic: 'target', gtab: 'day', sel: '[data-gid="today"]', t: ['Aujourd\'hui', 'Today'], d: ['Tes quêtes du jour, le donjon de la semaine et le boss du mois. Attention : une quête du jour ratée te coûte de l\'XP.', 'Your daily quests, the dungeon of the week and the boss of the month. Careful: a missed daily quest costs you XP.']},
-    {ic: 'shield', gtab: 'raid', sel: '[data-gid="myguild"]', t: ['Raid de guilde', 'Guild raid'], d: ['Crée ou rejoins une guilde avec tes amis. Vos séances donnent des attaques : ensemble, faites tomber le boss de la semaine.', 'Create or join a guild with your friends. Your workouts give attacks: together, take down the boss of the week.']},
+    {ic: 'shield', gtab: 'raid', sel: ['.raidbox', '[data-gid="myguild"]'], t: ['Raid de guilde', 'Guild raid'], d: () => S.guild ? ['Chaque semaine, ta guilde affronte un boss. Tes séances te donnent de l\'énergie : dépense-la en attaques de classe pour faire tomber ses PV avant dimanche soir.', 'Each week, your guild faces a boss. Your workouts give you energy: spend it on class attacks to bring its HP down before Sunday night.'] : ['Crée ou rejoins une guilde avec tes amis. Vos séances donnent des attaques : ensemble, faites tomber le boss de la semaine.', 'Create or join a guild with your friends. Your workouts give attacks: together, take down the boss of the week.']},
     {ic: 'trophy', gtab: 'rank', sel: '[data-gid="league"]', t: ['Ligues de la semaine', 'Weekly leagues'], d: ['Chaque semaine, tu affrontes les aventuriers de ta ligue. Seule l\'XP de la semaine compte : le haut du classement monte de ligue, le bas descend.', 'Each week, you face the adventurers in your league. Only this week\'s XP counts: the top moves up a league, the bottom moves down.']},
     {ic: 'crown', gtab: 'rank', sel: '[data-gid="season"]', t: ['Saison du mois', 'Season of the month'], d: ['Chaque mois, celui qui gagne le plus d\'XP parmi tes amis remporte le trophée de la saison.', 'Every month, whoever earns the most XP among your friends wins the season trophy.']},
     {ic: 'gem', gtab: 'coll', sel: '[data-gid="coll"]', t: ['Collection', 'Collection'], d: ['Titres, cadres, bannières, blasons, effets et thèmes. Touche une récompense pour la voir et savoir comment l\'obtenir.', 'Titles, frames, banners, crests, effects and themes. Tap a reward to preview it and see how to get it.']}
@@ -7404,30 +7406,33 @@ function tourEnd() {
   if (k === 'guild' && S.settings.gTab !== gt0 && cur().v === 'guild') { S.settings.gTab = gt0; render(); window.scrollTo(0, 0); }
   if (k === 'main' && cur().v !== 'train') { setRoot('train'); render(); window.scrollTo(0, 0); }
 }
+const tourHb = () => { const h = document.getElementById('hdr'); return h ? Math.max(0, h.getBoundingClientRect().bottom) : 0; };
 function tourGo(i) {
   const L = tourSt.L; if (i >= L.length) return tourEnd(); if (i < 0) i = 0;
   tourSt.i = i; const st = L[i];
   if (st.tab && (stack.length > 1 || stack[0].v !== st.tab)) { setRoot(st.tab); render(); window.scrollTo(0, 0); }
   if (st.gtab && cur().v === 'guild' && S.settings.gTab !== st.gtab) { S.settings.gTab = st.gtab; render(); window.scrollTo(0, 0); }
-  const find = () => st.sel ? [...[...document.querySelectorAll(st.sel)].filter(e => !e.closest('.tabghost'))].find(x => x.offsetParent !== null || getComputedStyle(x).position === 'fixed') : null;
+  const find = () => { for (const q of [].concat(st.sel || [])) { const x = [...document.querySelectorAll(q)].find(e => !e.closest('.tabghost') && (e.offsetParent !== null || getComputedStyle(e).position === 'fixed')); if (x) return x; } return null; };
   const tg = find();
-  if (tg && !tg.closest('nav, header')) { const r = tg.getBoundingClientRect(); if (r.top < 70 || r.bottom > innerHeight - 240) tg.scrollIntoView({block: r.height > innerHeight * .45 ? 'start' : 'center'}); }
+  if (tg && !tg.closest('nav, header')) { const r = tg.getBoundingClientRect(), hb = tourHb();
+    if (r.height > innerHeight * .45) window.scrollBy(0, r.top - hb - 12); // grande section : on montre son haut, juste sous l'en-tête
+    else if (r.top < hb + 8 || r.bottom > innerHeight - 240) tg.scrollIntoView({block: 'center'}); }
   setTimeout(() => tourPlace(find()), tg ? 280 : 0);
 }
 function tourPlace(tg) {
   const box = $('#tour'); if (!box || !tourSt) return;
   const L = tourSt.L, i = tourSt.i, st = L[i], sp = box.querySelector('.tspot'), bub = box.querySelector('.tbub'), last = i === L.length - 1;
-  bub.innerHTML = `<div class="thd"><span class="stile" style="--h:var(--accent)">${ic(st.ic || 'compass', 18)}</span><h3>${T(st.t[0], st.t[1])}</h3>${L.length > 1 ? `<span class="tnum">${i + 1} / ${L.length}</span>` : ''}</div><p>${T(st.d[0], st.d[1])}</p>
+  bub.innerHTML = `<div class="thd"><span class="stile" style="--h:var(--accent)">${ic(st.ic || 'compass', 18)}</span><h3>${T(st.t[0], st.t[1])}</h3>${L.length > 1 ? `<span class="tnum">${i + 1} / ${L.length}</span>` : ''}</div><p>${(d => T(d[0], d[1]))(typeof st.d === 'function' ? st.d() : st.d)}</p>
     <div class="tft">${last ? '' : `<button class="tskip" data-tour="skip">${T('Passer', 'Skip')}</button>`}<span style="flex:1"></span>${i ? `<button class="btn sm tprev" data-tour="prev" aria-label="${T('Précédent', 'Previous')}">${ic('back', 16)}</button>` : ''}<button class="btn sm primary" data-tour="next">${last ? T('Terminé', 'Done') : T('Suivant', 'Next')}</button></div>
     <div class="tbar"><i style="width:${Math.round((i + 1) / L.length * 100)}%"></i></div>`;
   bub.classList.remove('up', 'down');
   if (!tg) { sp.className = 'tspot none'; bub.style.top = Math.max(80, innerHeight * .3) + 'px'; return; }
-  const r = tg.getBoundingClientRect(), pd = 6, big = r.height > innerHeight * .5;
-  sp.className = 'tspot';
-  const top = Math.max(4, r.top - pd), bot = Math.min(innerHeight - 4, r.bottom + pd);
+  const r = tg.getBoundingClientRect(), pd = 6, big = r.height > innerHeight * .45, inHd = !!tg.closest('nav, header, #hdr');
+  sp.className = 'tspot' + (big ? ' cut' : '');
+  const top = Math.max(inHd ? 4 : tourHb() + 4, r.top - pd), bot = Math.min(innerHeight - 4, r.bottom + pd, big ? top + innerHeight * .4 : 1e9);
   Object.assign(sp.style, {left: (r.left - pd) + 'px', top: top + 'px', width: (r.width + pd * 2) + 'px', height: Math.max(20, bot - top) + 'px'});
   const bh = bub.offsetHeight || 190, below = bot + 16 + bh < innerHeight - 10, above = top - 16 - bh > 10;
-  let y; if (below) { y = bot + 16; bub.classList.add('down'); } else if (above) { y = top - 16 - bh; bub.classList.add('up'); } else y = big ? innerHeight - bh - 24 : Math.max(10, innerHeight - bh - 24);
+  let y; if (below) { y = bot + 16; bub.classList.add('down'); } else if (above) { y = top - 16 - bh; bub.classList.add('up'); } else y = Math.max(10, innerHeight - bh - 24);
   bub.style.top = y + 'px';
   const br = bub.getBoundingClientRect(); bub.style.setProperty('--ax', Math.max(22, Math.min(br.width - 22, r.left + r.width / 2 - br.left)) + 'px');
 }
