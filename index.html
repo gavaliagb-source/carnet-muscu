@@ -6732,9 +6732,9 @@ function safeCard(raw) { // carte d'un ami
   d.s = sArr(d.s, 60).map(s => {
     const o = {...s, id: sStr(s.id, 60), n: sStr(s.n, 80), d: sStr(s.d, 40), dur: sNum(s.dur), pr: sInt(s.pr, 0, 0, 99),
       ex: sArr(s.ex, 60).map(x => { const e = {n: sStr(x.n, 100), ns: sInt(x.ns, 0, 0, 99), r: sNum(x.r)}; if (x.k === 'c' || x.k === 's') e.k = x.k; if (x.st != null) e.st = sNum(x.st); if (x.kc != null) e.kc = sNum(x.kc); if (x.w != null) e.w = sNum(x.w); if (x.u === 'kg' || x.u === 'lb') e.u = x.u; if (x.pr) e.pr = 1; return e; })};
-    delete o.img; const im = sImg(s.img); if (im) o.img = im; return o;
+    delete o.img; delete o.pi; const im = sImg(s.img); if (im) o.img = im; const pi = sStr(s.pi, 80).replace(/[^A-Za-z0-9_-]/g, ''); if (pi) o.pi = pi; return o;
   }).filter(s => s.id && s.d);
-  d.p = sArr(d.p, 20).map(x => ({id: sStr(x.id, 60), d: sStr(x.d, 20), img: sImg(x.img)})).filter(x => x.id && x.img);
+  d.p = sArr(d.p, 20).map(x => ({id: sStr(x.id, 60), d: sStr(x.d, 20), img: sImg(x.img), pi: sStr(x.pi, 80).replace(/[^A-Za-z0-9_-]/g, '')})).filter(x => x.id && (x.img || x.pi)); // pi : photo rangée à part (users/{uid}/ph)
   d.re = sArr(d.re, 400).map(x => ({to: sStr(x.to, 140), s: sStr(x.s, 60), e: sStr(x.e, 8), d: sStr(x.d, 40)}));
   d.cm = sArr(d.cm, 200).map(x => ({...x, to: sStr(x.to, 140), s: sStr(x.s, 60), t: sStr(x.t, 300), d: sStr(x.d, 40)}));
   return d;
@@ -6855,9 +6855,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.115.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.116.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.116.0', d: '2026-11-22', fr: ['Amis encore plus légers : encouragements, commentaires, défis, raid et séance en direct passent par une petite fiche à part. Un « j\'aime » ne renvoie plus toute ta fiche à tes amis.', 'Correction : les photos de progrès de tes amis s\'affichent de nouveau dans le fil.'], en: ['Even lighter friends: cheers, comments, challenges, raid and live workout go through a small separate card. A like no longer resends your whole card to your friends.', 'Fix: your friends\' progress photos show in the feed again.']},
   {v: '9.115.0', d: '2026-11-22', fr: ['Signaler et bloquer : touche un joueur dans ta ligue ou le classement mondial, ou ouvre le profil d\'un ami, pour le signaler ou le bloquer. Un commentaire peut aussi être signalé. Les personnes bloquées sont dans Amis → Ce que tes amis voient.', 'Filtre de mots : insultes et propos haineux masqués, et pseudos ou noms grossiers refusés dans les ligues et le classement.', 'Ligues plus justes : plafonds réalistes d\'XP (3 séances par jour, 60 séries et 15 records par séance au plus) et scores impossibles écartés.'], en: ['Report and block: tap a player in your league or the world ranking, or open a friend\'s profile, to report or block them. A comment can be reported too. Blocked people are in Friends → What friends see.', 'Word filter: insults and hate speech masked, and rude usernames or names refused in leagues and the ranking.', 'Fairer leagues: realistic XP caps (3 workouts a day, 60 sets and 15 records per workout at most) and impossible scores removed.']},
   {v: '9.114.0', d: '2026-11-22', fr: ['Fil des amis plus léger : les photos ne sont plus dans ta fiche d\'ami. Chacune est envoyée une seule fois, chargée seulement quand elle arrive à l\'écran, puis gardée sur ton téléphone. Le fil se charge plus vite et utilise beaucoup moins de données.'], en: ['Lighter friends feed: photos are no longer inside your friend card. Each one is sent once, loaded only when it comes on screen, then kept on your phone. The feed loads faster and uses much less data.']},
   {v: '9.113.2', d: '2026-11-22', fr: ['Ligues : groupes de 30 aventuriers au plus, formés dans l\'ordre d\'arrivée de la semaine, pour que les ligues restent justes même avec des milliers de joueurs.'], en: ['Leagues: groups of at most 30 adventurers, formed in order of arrival each week, so leagues stay fair even with thousands of players.']},
@@ -8694,13 +8695,16 @@ async function fbPublish(touch) {
   try {
     let body = await frCardBody();
     try { body = JSON.stringify(await fbPhOut(JSON.parse(body), u.uid)); } catch (e) {} // si les règles ne le permettent pas encore : photos dans la fiche comme avant
+    try { body = await fbSocOut(body, u.uid); } catch (e) {} // encouragements, commentaires, raid… dans une petite fiche à part
+    const cardKey = body.replace(/"up":"[^"]*"/, '');
+    if (cardKey === fr.cardJ && !touch && !fr.pendingCard) { fr.pending = false; fr.err = ''; fr.last = new Date().toISOString(); fr.sig = frSig(); frBusy = false; saveLocal(); lbPush(); if (frAgain) { frAgain = false; setTimeout(() => frPublish(false), 300); } return; } // rien de neuf dans la fiche principale
     if (body.length > 900000) { const o = JSON.parse(body); o.p = (o.p || []).slice(-3); body = JSON.stringify(o); if (body.length > 900000) { o.p = []; (o.s || []).forEach(x => delete x.img); body = JSON.stringify(o); } }
     const sig = frSig();
     if (fbPubW) { throw new Error(T('envoi précédent pas encore arrivé', 'previous send not arrived yet')); }
     const w = fbPubW = fbDb().collection('users').doc(u.uid).set({card: body, name: (S.settings.name || '').trim(), code: fr.code || '', up: new Date().toISOString()}, {merge: true});
     w.then(() => { if (fbPubW === w) fbPubW = null; if (FRS().pending) frQueue(false); }, () => { if (fbPubW === w) fbPubW = null; });
     await Promise.race([w, new Promise((_, no) => setTimeout(() => no(new Error(T('connexion trop lente', 'connection too slow'))), 25000))]);
-    fr.pending = false; fr.err = ''; fr.last = new Date().toISOString(); fr.sig = sig; fr.pubName = (S.settings.name || '').trim();
+    fr.pending = false; fr.err = ''; fr.last = new Date().toISOString(); fr.sig = sig; fr.pubName = (S.settings.name || '').trim(); fr.cardJ = body.replace(/"up":"[^"]*"/, '');
     try { const hid = new Set(fr.hide || []), hs = S.history.filter(h => !hid.has(h.id)), L = hs[hs.length - 1]; if (L && fr.lastId !== L.id) fbDb().collection('users').doc(u.uid).set({last: {id: String(L.id), n: String(L.routineName || '').slice(0, 60), d: new Date(L.date).toISOString()}}, {merge: true}).then(() => { FRS().lastId = L.id; saveLocal(); }, () => {}); } catch (e) {}
   } catch (e) { fr.pending = true; fr.err = e.message || String(e); }
   frBusy = false; saveLocal(); lbPush(); hPub();
@@ -8743,6 +8747,22 @@ async function repSend(k) {
     ${isBlk(c.u) ? '' : `<button class="btn block" style="margin-top:8px;color:var(--bad)" data-act="usr-blk" data-u="${c.u}" data-n="${esc(c.n)}">${T('Bloquer aussi', 'Block as well')} ${esc(c.n)}</button>`}<button class="btn primary block" style="margin-top:8px" data-act="close">OK</button>`);
 }
 
+/* ---------- Fiche sociale à part : users/{uid}/x/soc ----------
+   Un « j'aime », un commentaire ou un coup au boss ne renvoie plus toute la fiche à chaque ami : seulement cette petite fiche. */
+const SOCK = ['re', 'cm', 'ch', 'ca', 'cn', 'cp', 'rd', 'rdp', 'lw', 'sx', 'sxp', 'cw'];
+async function fbSocOut(body, uid) {
+  const fr = FRS(), o = JSON.parse(body), soc = {}; SOCK.forEach(k => { if (k in o) soc[k] = o[k]; });
+  const j = JSON.stringify(soc);
+  if (j !== fr.socJ || !fr.socOk) { try { await fbDb().collection('users').doc(uid).collection('x').doc('soc').set({j, up: new Date().toISOString()}); fr.socJ = j; fr.socOk = 1; } catch (e) { fr.socOk = 0; return body; } } // règles pas encore là : tout reste dans la fiche
+  SOCK.forEach(k => delete o[k]); o.so = 1; return JSON.stringify(o);
+}
+const frSocPend = {};
+function frSocIn(c, j) { // fiche sociale reçue d'un ami : vérifiée, puis fusionnée dans sa fiche
+  let raw; try { raw = JSON.parse(j); } catch (e) { return null; } if (!raw || typeof raw !== 'object') return null;
+  const d = safeCard({app: 'carnet-muscu', name: '', ...raw}); if (!d) return null; const o = {}; SOCK.forEach(k => { if (k in d) o[k] = d[k]; }); return o;
+}
+function frSocMerge(c) { const x = frData[c], so = frSocPend[c]; if (x && x.d && x.d.so && so) Object.assign(x.d, so); }
+
 /* ---------- Photos des amis hors de la fiche ----------
    Avant : les photos étaient dans la fiche (jusqu'à 900 Ko), renvoyée en entier à chaque « j'aime ». Avec des milliers d'utilisateurs, c'est
    des dizaines de Go par mois. Maintenant : users/{uid}/ph/{id}, envoyée une seule fois, lue seulement quand elle arrive à l'écran, puis gardée sur le téléphone. */
@@ -8770,7 +8790,9 @@ async function fbFetch(c) {
   const u = await fbSignIn(false); if (!u) throw new Error(T('connexion Amis requise', 'Friends sign-in required'));
   const doc = await fbDb().collection('users').doc(c.slice(3)).get();
   if (!doc.exists || !doc.data().card) throw new Error('gone');
-  const d = cardIn(JSON.parse(doc.data().card), doc.data().h); if (!d) throw new Error('gone'); return d;
+  const d = cardIn(JSON.parse(doc.data().card), doc.data().h); if (!d) throw new Error('gone');
+  if (d.so) { try { const sd = await fbDb().collection('users').doc(c.slice(3)).collection('x').doc('soc').get(); const o = sd.exists ? frSocIn(c, String(sd.data().j || '')) : null; if (o) { frSocPend[c] = o; Object.assign(d, o); } } catch (e) {} }
+  return d;
 }
 async function fbResolve(code) {
   const d = await fbDb().collection('codes').doc(code.toUpperCase()).get();
@@ -8783,6 +8805,7 @@ async function fbNotifyAdd(c) {
 }
 const fbRerender = () => { clearTimeout(fbRT); fbRT = setTimeout(() => { frSaveCache(); saveLocal(); try { socialCheck(); } catch (e) {} if (['friends', 'profile', 'guild'].includes(cur().v) && !modals.length && cur().v !== 'workout') render(); }, 400); };
 /* Écoute en direct : les cartes de mes amis + les nouvelles demandes d'amis */
+const fbSocSubs = {};
 function fbWatch() {
   if (typeof firebase === 'undefined' || !firebase.apps.length) return;
   const u = firebase.auth().currentUser; if (!u) return;
@@ -8796,8 +8819,16 @@ function fbWatch() {
       const raw = doc.data().card, live = safeLive(doc.data().live), prev = frData[c], hd = sH(doc.data().h);
       if (prev && prev.raw === raw && (prev.d.h || '') === hd && JSON.stringify(prev.live || null) === JSON.stringify(live)) return; // rien de nouveau : pas de rechargement de la page
       let d; try { d = cardIn(JSON.parse(raw), hd); } catch (e) { return; } if (!d) return;
-      frData[c] = {d, raw, t: Date.now(), live}; if (f) { f.n = d.name; f.gone = false; f.err = ''; } fbRerender();
+      frData[c] = {d, raw, t: Date.now(), live}; frSocMerge(c); if (f) { f.n = d.name; f.gone = false; f.err = ''; } fbRerender();
     }, e => { const f = FRS().list.find(x => x.c === c); if (f) f.err = e.code || e.message; });
+  });
+  Object.keys(fbSocSubs).forEach(c => { if (!want.includes(c)) { fbSocSubs[c](); delete fbSocSubs[c]; delete frSocPend[c]; } });
+  want.forEach(c => {
+    if (fbSocSubs[c]) return;
+    fbSocSubs[c] = fbDb().collection('users').doc(c.slice(3)).collection('x').doc('soc').onSnapshot(doc => {
+      if (!doc.exists) return; const j = String(doc.data().j || ''); if (frSocPend[c] && frSocPend[c]._j === j) return;
+      const o = frSocIn(c, j); if (!o) return; Object.defineProperty(o, '_j', {value: j, enumerable: false}); frSocPend[c] = o; frSocMerge(c); fbRerender();
+    }, () => {}); // règles pas encore là ou ami pas encore passé à la fiche sociale : rien à faire
   });
   if (!fbInbox) fbInbox = fbDb().collection('inbox').doc(u.uid).collection('m').onSnapshot(qs => {
     qs.docChanges().forEach(ch => {
