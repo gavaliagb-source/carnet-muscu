@@ -5951,9 +5951,9 @@ function awakenClass(c, hu) {
   if (S.settings.haptic !== false) haptic([60, 80, 60, 80, 300]);
 }
 /* ---------- Compagnon : un œuf, puis la créature que TU choisis. Il grandit avec votre lien (cœurs), et chaque « Meilleur ami » donne un nouvel œuf ---------- */
-/* f : fichier image · s : espèce · n : noms des 3 stades · c : couleur · k : classe suggérée · ok : images prêtes · an : animations prêtes · old : ancienne image (temporaire) */
+/* f : fichier image · s : espèce · n : noms des 3 stades · c : couleur · k : classe suggérée · ok : images prêtes · an : animations prêtes (1 = toutes, ou [bébé, jeune, adulte]) · old : ancienne image (temporaire) */
 var COMP = {
-  panda: {f: 'panda', s: ['Panda roux de braise', 'Ember red panda'], n: [['Petit panda roux', 'Red panda cub'], ['Panda de braise', 'Ember red panda'], ['Maître panda flamboyant', 'Blazing panda master']], c: '#f97316', k: 'm'},
+  panda: {f: 'panda', s: ['Panda roux de braise', 'Ember red panda'], n: [['Petit panda roux', 'Red panda cub'], ['Panda de braise', 'Ember red panda'], ['Maître panda flamboyant', 'Blazing panda master']], c: '#f97316', k: 'm', ok: 1, an: [1, 1, 0]},
   rhino: {f: 'rhino', s: ['Rhinocéros de fer', 'Iron rhino'], n: [['Petit rhino', 'Rhino calf'], ['Rhino de fer', 'Iron rhino'], ['Rhino cuirassé', 'Armored war rhino']], c: '#ef4444', k: 'g'},
   faucon: {f: 'faucon', s: ['Faucon', 'Falcon'], n: [['Fauconneau', 'Falcon chick'], ['Faucon des bois', 'Woodland falcon'], ['Grand faucon traqueur', 'Great hunting falcon']], c: '#22c55e', k: 'r'},
   axolotl: {f: 'axolotl', s: ['Axolotl de cristal', 'Crystal axolotl'], n: [['Petit axolotl', 'Baby axolotl'], ['Axolotl des sources', 'Spring axolotl'], ['Grand axolotl de cristal', 'Great crystal axolotl']], c: '#38bdf8', k: 's'},
@@ -6047,7 +6047,7 @@ function bondHtml(h, today, k) { // carte du lien (fiche du compagnon et mode te
 function compStill() { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
 var COMP_MOODV = {golem0: ['happy']}; // animations d'humeur dédiées déjà faites, ex. {golem0: ['happy', 'sleep', 'sad']}
 function compSrc(k) {
-  const D = COMP[k.sp]; if (k.st < 0 || compStill() || !D || !D.an) return k.img; // pas d'animation : pas de requête inutile
+  const D = COMP[k.sp], an = D && (Array.isArray(D.an) ? D.an[Math.min(k.st, 2)] : D.an); if (k.st < 0 || compStill() || !an) return k.img; // pas d'animation : pas de requête inutile
   const n = k.img.slice(5, -5), m = (COMP_MOODV[n] || []).includes(k.mood);
   return `comp/a_${n}${m ? '_' + k.mood : ''}.webp`;
 }
@@ -7265,7 +7265,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.123.6'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.123.7'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
   {v: '9.123.2', d: '2026-11-23', fr: ['Fin de séance : une fois le coffre ouvert, le bouton devient « Coffre ouvert · revoir le butin » au lieu de « Ouvrir ton coffre ».'], en: ['End of workout: once the chest is opened, the button becomes “Chest opened · see the loot” instead of “Open your chest”.']},
