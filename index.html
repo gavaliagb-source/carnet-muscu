@@ -3111,7 +3111,7 @@ function setData() {
   return sGrp(T('Confidentialité', 'Privacy'), sTog('bugOn', !S.settings.bugOff, T('Rapports d\'erreur automatiques', 'Automatic error reports'), T('Seulement le message d\'erreur, l\'écran, la version et le type de téléphone. Jamais tes séances.', 'Only the error message, the screen, the version and the phone type. Never your workouts.')) +
       sLink('privacy.html', T('Politique de confidentialité', 'Privacy policy'), {blank: true})) +
     sGrp(T('Effacer', 'Erase'), sBtn('reset', T('Tout effacer sur ce téléphone', 'Erase everything on this phone'), {dng: true, sub: T('Séances, routines et mesures. Crée d\'abord une copie si tu veux les garder.', 'Workouts, routines and measurements. Make a copy first if you want to keep them.'), nochev: true}) +
-      sBtn('acc-del', T('Supprimer mon compte', 'Delete my account'), {dng: true, sub: T('Ton compte et tes données en ligne', 'Your account and your online data'), nochev: true}));
+      sBtn('acc-del', T('Supprimer mon compte', 'Delete my account'), {dng: true, sub: T('Ton compte et tes données, ici et en ligne', 'Your account and your data, here and online'), nochev: true}));
 }
 const SETP = {
   profil: {t: () => T('Profil', 'Profile'), ic: 'user', h: '#60a5fa', b: setProfil, kw: 'nom name infos info sexe sex age taille height objectif goal'},
@@ -7004,9 +7004,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.117.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.117.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.117.1', d: '2026-11-23', fr: ['« Tout effacer » demande maintenant une vraie confirmation : ce qui sera effacé, si ta sauvegarde en ligne est gardée, et un bouton pour créer une copie d\'abord.'], en: ['“Erase everything” now asks for a real confirmation: what will be erased, whether your online backup is kept, and a button to make a copy first.']},
   {v: '9.117.0', d: '2026-11-23', fr: ['Réglages refaits : une page principale claire, groupée comme les réglages d\'un téléphone, avec une recherche. Chaque sujet a sa page, avec de vrais interrupteurs.', 'Les notifications et les rappels sont maintenant ensemble, et les charges et le matériel ont leur propre page.', 'Nouvelle page Aide : visites guidées, nouveautés et un bouton pour nous écrire.'], en: ['Settings redone: a clear main page, grouped like phone settings, with search. Each topic has its own page, with real switches.', 'Notifications and reminders are now together, and weights and equipment have their own page.', 'New Help page: guided tours, what\'s new and a button to contact us.']},
   {v: '9.116.4', d: '2026-11-23', fr: ['Correction : si tu fermais l\'appli sur l\'onglet Cardio, elle restait vide au démarrage suivant (et les rappels, la sauvegarde et la mise à jour automatique ne démarraient pas).', 'Correction d\'un plantage possible dans les récompenses de guilde.'], en: ['Fix: if you closed the app on the Cardio tab, it stayed blank on the next start (and reminders, backup and auto-update did not start).', 'Fixed a possible crash in guild rewards.']},
   {v: '9.116.3', d: '2026-11-22', fr: ['Correction : la fenêtre de fin de semaine des ligues (montée, descente, podium) plantait au lieu de s\'afficher.'], en: ['Fix: the end-of-week league window (promotion, demotion, podium) crashed instead of showing.']},
@@ -12260,7 +12261,8 @@ document.addEventListener('click', e => {
     case 'plate-tog': { const u = U(), own = (S.settings.plates = S.settings.plates || {})[u] || PLATES[u].slice(), v = +b.dataset.v; S.settings.plates[u] = own.includes(v) ? own.filter(x => x !== v) : [...own, v]; save(); render(); break; }
     case 'plate-reset': if (S.settings.plates) delete S.settings.plates[U()]; save(); render(); break;
     case 'import': $('#fileIn').click(); break;
-    case 'reset': if (confirm('Effacer TOUTES tes données? Exporte d\'abord si tu veux les garder.')) { S = migrate(seed()); save(); setRoot('train'); render(); } break;
+    case 'reset': openReset(); break;
+    case 'reset-go': closeAll(); S = migrate(seed()); save(); stack = [{v: 'train'}]; render(); toast(T('Tout a été effacé sur ce téléphone', 'Everything was erased on this phone')); break;
   }
 });
 document.addEventListener('toggle', e => { const d = e.target; if (d && d.classList && d.classList.contains('mcatd')) { S.settings.medOpen = S.settings.medOpen || {}; S.settings.medOpen[d.dataset.c] = d.open; saveLocal(); } }, true);
@@ -12394,6 +12396,16 @@ const dobAge = dob => { if (!/^\d{4}-\d{2}-\d{2}$/.test(dob || '')) return null;
 const ageOf = () => dobAge(S.settings.dob) || (S.settings.by ? new Date().getFullYear() - S.settings.by : null);
 const dobInput = (id, v) => `<input id="${id}" type="date" value="${esc(v || '')}" min="1920-01-01" max="${dkey(new Date())}" style="color-scheme:dark">`;
 /* ===================== Supprimer mon compte (exigé par Google Play et l'App Store) ===================== */
+function openReset() {
+  const on = cbOn() || cloudOn() || gdOn();
+  modal(`<div class="row between"><h2 style="margin:0">${T('Tout effacer?', 'Erase everything?')}</h2><button class="btn sm" data-act="close" aria-label="${T('Fermer', 'Close')}">✕</button></div>
+    <p class="small">${T('Ceci efface <b>de ce téléphone</b> :', 'This erases <b>from this phone</b>:')}</p>
+    <ul class="small" style="margin:4px 0 10px;padding-left:18px;line-height:1.6"><li>${(() => { const h = S.history.length, r = S.routines.length, pl = n => n > 1 ? 's' : ''; return T(`${h ? h + ' séance' + pl(h) : 'tes séances'}, ${r ? r + ' routine' + pl(r) : 'tes routines'} et tes mesures`, `${h ? h + ' workout' + (h === 1 ? '' : 's') : 'your workouts'}, ${r ? r + ' routine' + (r === 1 ? '' : 's') : 'your routines'} and your measurements`); })()}</li><li>${T('tes photos, tes récompenses et tes réglages', 'your photos, rewards and settings')}</li></ul>
+    <p class="small" style="color:${on ? 'var(--muted)' : 'var(--warm)'}">${on ? T('Ta sauvegarde en ligne n\'est pas effacée : tu pourras la restaurer dans Réglages → Sauvegarde.', 'Your online backup is not erased: you can restore it in Settings → Backup.') : T('Tu n\'as pas de sauvegarde automatique : sans copie, tout sera perdu pour toujours.', 'You have no automatic backup: without a copy, everything will be lost forever.')}</p>
+    <button class="btn block" data-act="export" style="margin-top:4px">${T('Créer une copie d\'abord', 'Make a copy first')}</button>
+    <button class="btn danger block" style="margin-top:8px" data-act="reset-go">${T('Tout effacer', 'Erase everything')}</button>
+    <button class="btn ghost block" style="margin-top:8px" data-act="close">${T('Annuler', 'Cancel')}</button>`);
+}
 function openDelAccount() {
   const u = fbMe();
   modal(`<div class="row between"><h2 style="margin:0">⚠️ ${T('Supprimer mon compte', 'Delete my account')}</h2><button class="btn sm" data-act="close">✕</button></div>
