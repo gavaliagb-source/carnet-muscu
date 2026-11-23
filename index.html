@@ -6849,9 +6849,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.113.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.114.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.114.0', d: '2026-11-22', fr: ['Fil des amis plus léger : les photos ne sont plus dans ta fiche d\'ami. Chacune est envoyée une seule fois, chargée seulement quand elle arrive à l\'écran, puis gardée sur ton téléphone. Le fil se charge plus vite et utilise beaucoup moins de données.'], en: ['Lighter friends feed: photos are no longer inside your friend card. Each one is sent once, loaded only when it comes on screen, then kept on your phone. The feed loads faster and uses much less data.']},
   {v: '9.113.2', d: '2026-11-22', fr: ['Ligues : groupes de 30 aventuriers au plus, formés dans l\'ordre d\'arrivée de la semaine, pour que les ligues restent justes même avec des milliers de joueurs.'], en: ['Leagues: groups of at most 30 adventurers, formed in order of arrival each week, so leagues stay fair even with thousands of players.']},
   {v: '9.113.1', d: '2026-11-22', fr: ['« Faire cette séance » dans le fil : choisis de la démarrer tout de suite, ou de l\'enregistrer comme routine (dans le dossier « De mes amis » ou celui de ton choix).'], en: ['“Do this workout” in the feed: choose to start it right away, or save it as a routine (in the “From friends” folder or one you pick).']},
   {v: '9.113.0', d: '2026-11-22', fr: ['Nouveau fil des amis : chaque séance a un titre, ses stats (durée, volume, records), la photo et les exercices avec leur image, regroupés par jour (Aujourd\'hui, Hier…).', 'Encouragements : un seul bouton flamme, avec qui a encouragé (Max, Sarah et 2 autres). Commentaires : aperçu sous la séance, réponses à un ami, et suppression de tes commentaires.'], en: ['New friends feed: each workout has a title, its stats (time, volume, records), the photo and the exercises with their image, grouped by day (Today, Yesterday…).', 'Cheers: a single flame button, showing who cheered (Max, Sarah and 2 others). Comments: preview under the workout, replies to a friend, and deleting your comments.']},
@@ -8685,6 +8686,7 @@ async function fbPublish(touch) {
   frBusy = true;
   try {
     let body = await frCardBody();
+    try { body = JSON.stringify(await fbPhOut(JSON.parse(body), u.uid)); } catch (e) {} // si les règles ne le permettent pas encore : photos dans la fiche comme avant
     if (body.length > 900000) { const o = JSON.parse(body); o.p = (o.p || []).slice(-3); body = JSON.stringify(o); if (body.length > 900000) { o.p = []; (o.s || []).forEach(x => delete x.img); body = JSON.stringify(o); } }
     const sig = frSig();
     if (fbPubW) { throw new Error(T('envoi précédent pas encore arrivé', 'previous send not arrived yet')); }
@@ -8697,6 +8699,29 @@ async function fbPublish(touch) {
   frBusy = false; saveLocal(); lbPush(); hPub();
   if (frAgain) { frAgain = false; setTimeout(() => frPublish(false), 300); }
   if (cur().v === 'friends') render();
+}
+/* ---------- Photos des amis hors de la fiche ----------
+   Avant : les photos étaient dans la fiche (jusqu'à 900 Ko), renvoyée en entier à chaque « j'aime ». Avec des milliers d'utilisateurs, c'est
+   des dizaines de Go par mois. Maintenant : users/{uid}/ph/{id}, envoyée une seule fois, lue seulement quand elle arrive à l'écran, puis gardée sur le téléphone. */
+const phHash = v => { let h = 0; for (let i = Math.max(0, v.length - 200); i < v.length; i++) h = (h * 31 + v.charCodeAt(i)) | 0; return (v.length.toString(36) + (h >>> 0).toString(36)).slice(0, 14); };
+const phSafeId = v => String(v).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40);
+async function fbPhOut(o, uid) {
+  const fr = FRS(), up = new Set(fr.phUp || []), keep = new Set(), col = fbDb().collection('users').doc(uid).collection('ph');
+  const put = async (pid, img, d) => { keep.add(pid); if (up.has(pid)) return true; try { await col.doc(pid).set({img, d: String(d || '')}); up.add(pid); return true; } catch (e) { return false; } };
+  for (const x of o.s || []) if (x.img) { const pid = 's_' + phSafeId(x.id) + '_' + phHash(x.img); if (await put(pid, x.img, x.d)) { x.pi = pid; delete x.img; } }
+  for (const x of o.p || []) if (x.img) { const pid = 'p_' + phSafeId(x.id) + '_' + phHash(x.img); if (await put(pid, x.img, x.d)) { x.pi = pid; delete x.img; } }
+  for (const pid of [...up]) if (!keep.has(pid)) { col.doc(pid).delete().catch(() => {}); up.delete(pid); } // photo retirée ou trop vieille : on la supprime du serveur
+  fr.phUp = [...up]; return o;
+}
+const FRP_MAX = 150; // photos d'amis gardées sur le téléphone (les plus anciennes sont effacées)
+async function frpGet(c, pid) {
+  const k = 'fr:' + c + ':' + pid; let d = await phSrc(k); if (d) return d;
+  const u = await fbSignIn(false).catch(() => null); if (!u || !fbIs(c)) return '';
+  try { const doc = await fbDb().collection('users').doc(c.slice(3)).collection('ph').doc(pid).get(); d = doc.exists ? String(doc.data().img || '') : ''; } catch (e) { return ''; }
+  if (!/^data:image\/(jpeg|png|webp);base64,/.test(d)) return '';
+  phCache[k] = d; phPut(k, d).catch(() => {});
+  try { const L = JSON.parse(localStorage.getItem('cm-frp') || '[]').filter(x => x !== k); L.push(k); while (L.length > FRP_MAX) { const o = L.shift(); phDel(o).catch(() => {}); delete phCache[o]; } localStorage.setItem('cm-frp', JSON.stringify(L)); } catch (e) {}
+  return d;
 }
 async function fbFetch(c) {
   const u = await fbSignIn(false); if (!u) throw new Error(T('connexion Amis requise', 'Friends sign-in required'));
@@ -9283,12 +9308,13 @@ const FR_EMO = ['🔥', '💪', '👏'];
 const FRIMG = new Map(); let friObs = null;
 function friKey(src) { const k = 'f' + src.length + '_' + src.slice(-24).replace(/[^A-Za-z0-9]/g, ''); FRIMG.set(k, src); return k; }
 function friFill() {
-  const ims = document.querySelectorAll('img[data-fri]:not([src])'); if (!ims.length) return;
-  if (!('IntersectionObserver' in window)) { ims.forEach(im => { im.src = FRIMG.get(im.dataset.fri) || ''; }); return; }
-  if (!friObs) friObs = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return; const im = e.target; friObs.unobserve(im); const v = FRIMG.get(im.dataset.fri); if (v) im.src = v; }), {rootMargin: '800px 0px'});
+  const ims = document.querySelectorAll('img[data-fri]:not([src]), img[data-frp]:not([src])'); if (!ims.length) return;
+  const set = im => { if (im.dataset.fri) { const v = FRIMG.get(im.dataset.fri); if (v) im.src = v; return; } const [c, pi] = im.dataset.frp.split('|'); frpGet(c, pi).then(v => { if (v) im.src = v; }); };
+  if (!('IntersectionObserver' in window)) { ims.forEach(set); return; }
+  if (!friObs) friObs = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return; const im = e.target; friObs.unobserve(im); set(im); }), {rootMargin: '800px 0px'});
   ims.forEach(im => friObs.observe(im));
 }
-const frImg = (f, s, src) => `<img ${src ? `data-fri="${friKey(src)}" decoding="async"` : `data-ph="${s.phId || s.id}"`} alt="" data-act="fr-phbig" data-c="${f.c}" style="width:100%;max-height:55vh;object-fit:cover;border-radius:12px;margin-top:10px;display:block;cursor:zoom-in;background:var(--card2);min-height:120px">`;
+const frImg = (f, s, src, pi) => `<img ${pi ? `data-frp="${esc(f.c)}|${esc(pi)}" decoding="async"` : src ? `data-fri="${friKey(src)}" decoding="async"` : `data-ph="${s.phId || s.id}"`} alt="" data-act="fr-phbig" data-c="${f.c}" style="width:100%;max-height:55vh;object-fit:cover;border-radius:12px;margin-top:10px;display:block;cursor:zoom-in;background:var(--card2);min-height:120px">`;
 /* ---------- Carte de séance du fil (inspirée de Hevy et Strava) : en-tête, titre, stats, photo, exercices, actions ---------- */
 const FRX = new Set(); // séances dont on a ouvert tous les exercices
 function frStats(s) {
@@ -9307,7 +9333,7 @@ function frPost({f, d, s}) {
   const ex = s.ex || [], k = f.c + '|' + s.id, open = FRX.has(k), sh = open ? ex : ex.slice(0, 4);
   return `<article class="card frpost">${frHead(f, d, s)}
     <h3 class="frt">${esc(s.n)}</h3>${frStats(s)}
-    ${s.img ? frImg(f, s, s.img) : f.me && s.phId ? frImg(f, s) : ''}
+    ${s.pi && !f.me ? frImg(f, s, '', s.pi) : s.img ? frImg(f, s, s.img) : f.me && s.phId ? frImg(f, s) : ''}
     <div class="frexl">${sh.map(o => `<div class="frer">${thumb(o.n, 34)}<span>${frExLine(o)}</span></div>`).join('')}
       ${ex.length > 4 ? `<button class="linkbtn small" data-act="fr-more" data-k="${esc(k)}">${open ? T('Voir moins', 'Show less') : T(`Voir les ${ex.length} exercices`, `See all ${ex.length} exercises`)}</button>` : ''}</div>
     ${frActs(f, s)}${frCmRow(f, s)}</article>`;
@@ -9334,7 +9360,7 @@ const rkFrame = (rk, f) => GAME() && rk && RKC[rk] ? ` rkf rkf-${String(rk).repl
 const frAv = (d, c, cls = '') => d.av ? `<img class="frav ${cls}${rkFrame(d.hu && d.hu.r, d.hu && d.hu.f)}" src="${esc(d.av)}" alt="" data-act="fr-who" data-c="${c}">` : `<span class="frav ${cls}${rkFrame(d.hu && d.hu.r, d.hu && d.hu.f)}" data-act="fr-who" data-c="${c}">${esc((String(d.name || '').replace(/^@/, '') || '?')[0].toUpperCase())}</span>`;
 function frPhotoPost({f, d, s}) {
   return `<article class="card frpost">${frHead(f, d, s, T('photo de progrès', 'progress photo'))}
-    ${f.me ? (setTimeout(phFill, 0), frImg(f, s)) : frImg(f, s, s.ph.img)}
+    ${f.me ? (setTimeout(phFill, 0), frImg(f, s)) : s.ph.pi ? frImg(f, s, '', s.ph.pi) : frImg(f, s, s.ph.img)}
     ${frActs(f, s)}${frCmRow(f, s)}</article>`;
 }
 /* ===================== Social : commentaires, défis, raid de guilde, saisons ===================== */
