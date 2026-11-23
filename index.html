@@ -814,6 +814,8 @@ html.moving :is(.fra-rot .frimg,.fra-pulse .frimg,.fra-sheen::after,.frsp){anima
 .ob{position:fixed;inset:0;z-index:14;background:var(--bg);overflow-y:auto;animation:obIn .25s ease}.ob.out{opacity:0;transition:opacity .25s}
 @keyframes obIn{from{opacity:0}to{opacity:1}}
 /* Accueil des nouveaux utilisateurs */
+.ob-demo{position:fixed;top:calc(var(--sat) + 8px);left:50%;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:6px;background:#60a5fa;color:#08152b;border:0;border-radius:99px;padding:6px 10px 6px 12px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px #0006;white-space:nowrap}
+.ob-demo~.ob-in{padding-top:calc(var(--sat) + 50px)}
 .ob-in{max-width:460px;margin:0 auto;min-height:100%;box-sizing:border-box;padding:calc(var(--sat) + 14px) 22px 0;display:flex;flex-direction:column;position:relative}
 .ob-in label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin:18px 0 7px;text-transform:uppercase;letter-spacing:.06em}
 .ob-h1,.ob-h2{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-weight:700;letter-spacing:.01em;line-height:1.15}
@@ -3210,7 +3212,7 @@ function vSettings() {
     <div id="setmain" ${norm(setQ) ? 'hidden' : ''}>
     ${back ? `<button class="sban" data-act="setp" data-k="cloud">${sTile('cloud', '#60a5fa', 20)}${sLab(T('Protège tes séances', 'Protect your workouts'), T('Active la sauvegarde automatique : sur un nouveau téléphone, tout revient.', 'Turn on automatic backup: on a new phone, everything comes back.'))}<span class="chev">${CHEV}</span></button>` : ''}
     ${SET_GRP().map(([h, ks]) => { const k2 = ks.filter(setOk); return k2.length ? sGrp(h, k2.map(setRow).join('')) : ''; }).join('')}
-    ${S.settings.lab ? sGrp(T('Mode test', 'Test mode'), sBtn('lab', T('Compagnons', 'Companions'), {ic: 'flask', h: '#facc15'}) + sBtn('lab-cls', T('Classes et coffres', 'Classes and chests'), {ic: 'flask', h: '#facc15'}) + sBtn('lab-frames', T('Cadres peints', 'Painted frames'), {ic: 'flask', h: '#facc15'}) + sBtn('bug-list', T('Rapports de bugs', 'Bug reports'), {ic: 'alert', h: '#f87171'}) + sBtn('go', T('Galerie des boss', 'Boss gallery'), {x: 'data-v="bosslab"', ic: 'skull', h: '#a78bfa'})) : ''}
+    ${S.settings.lab ? sGrp(T('Mode test', 'Test mode'), sBtn('lab', T('Compagnons', 'Companions'), {ic: 'flask', h: '#facc15'}) + sBtn('lab-cls', T('Classes et coffres', 'Classes and chests'), {ic: 'flask', h: '#facc15'}) + sBtn('lab-frames', T('Cadres peints', 'Painted frames'), {ic: 'flask', h: '#facc15'}) + sBtn('ob-demo', T('Aperçu de l\'accueil (nouveau compte)', 'Welcome preview (new account)'), {ic: 'eye', h: '#60a5fa'}) + sBtn('bug-list', T('Rapports de bugs', 'Bug reports'), {ic: 'alert', h: '#f87171'}) + sBtn('go', T('Galerie des boss', 'Boss gallery'), {x: 'data-v="bosslab"', ic: 'skull', h: '#a78bfa'})) : ''}
     <p class="sfoot" data-act="ver-tap">Runelift v${APP_VERSION} · ${S.history.length} ${T('séances', 'workouts')} · ${S.routines.length} routines<br>Animations © Gym visual · base exercises-dataset</p></div>`;
 }
 function vSetPage() {
@@ -7052,9 +7054,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.118.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.118.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.118.1', d: '2026-11-23', fr: ['Mode test : « Aperçu de l\'accueil » montre tout le parcours d\'un nouveau compte, sans connexion et sans rien changer.'], en: ['Test mode: “Welcome preview” shows the whole new-account flow, without signing in and without changing anything.']},
   {v: '9.118.0', d: '2026-11-23', fr: ['Nouvel accueil pour les nouveaux : 4 écrans qui présentent Runelift (aventure, boss de guilde, amis, programme), puis la connexion Google.', 'Création du profil plus simple : objectif, niveau et jours dans une même étape, la classe se choisit toute seule, et un dernier écran montre ton programme de départ jour par jour.'], en: ['New welcome for new users: 4 screens that introduce Runelift (adventure, guild bosses, friends, program), then Google sign-in.', 'Simpler profile setup: goal, level and days in one step, your class is picked for you, and a last screen shows your starting program day by day.']},
   {v: '9.117.2', d: '2026-11-23', fr: ['Apparence : « Écran déplié » devient « Deux colonnes sur grand écran », avec une explication claire. L\'option n\'apparaît que sur une tablette ou un téléphone pliable ouvert.'], en: ['Appearance: “Unfolded screen” is now “Two columns on large screens”, with a clear explanation. The option only shows on a tablet or an unfolded phone.']},
   {v: '9.117.1', d: '2026-11-23', fr: ['« Tout effacer » demande maintenant une vraie confirmation : ce qui sera effacé, si ta sauvegarde en ligne est gardée, et un bouton pour créer une copie d\'abord.'], en: ['“Erase everything” now asks for a real confirmation: what will be erased, whether your online backup is kept, and a button to make a copy first.']},
@@ -7292,7 +7295,7 @@ const newsPending = () => !!S.settings.seenVer && verCmp(APP_VERSION, S.settings
 function checkNews() {
   if (!S.settings.onboarded) { S.settings.seenVer = APP_VERSION; saveLocal(); return; }
   if (!S.settings.seenVer) { S.settings.seenVer = '7.2.1'; }
-  if (newsPending() && S.settings.newsDay !== dkey(new Date())) setTimeout(() => { if (!modals.length) openNews(false); }, 700);
+  if (newsPending() && S.settings.newsDay !== dkey(new Date())) setTimeout(() => { if (!modals.length && !$('#ob')) openNews(false); }, 700);
 }
 
 
@@ -9385,7 +9388,7 @@ async function lgRoll() { // nouvelle semaine : on regarde où j'ai fini la sema
   } catch (e) {} finally { lgRolling = false; }
 }
 function lgResult(h, n = 0) {
-  if (!h) return; if (modals.length || S.active) { if (n < 40) setTimeout(() => lgResult(h, n + 1), 5000); return; } // une autre fenêtre est ouverte : on attend son tour
+  if (!h) return; if (modals.length || S.active || $('#ob')) { if (n < 40) setTimeout(() => lgResult(h, n + 1), 5000); return; } // une autre fenêtre est ouverte : on attend son tour
   const up = h.mv > 0, dn = h.mv < 0, nt = Math.max(0, Math.min(LG.length - 1, h.t + h.mv));
   modal(`<div style="text-align:center"><div class="sysh">[ ${T('FIN DE LA SEMAINE', 'END OF THE WEEK')} ]</div><h2 style="margin:6px 0">${esc(T('Ligue ' + LG[h.t][0], LG[h.t][1] + ' League'))}</h2>
     <p>${h.r ? T(`Tu finis <b>${h.r}${h.r === 1 ? 'er' : 'e'}</b> sur ${h.n}`, `You finish <b>#${h.r}</b> of ${h.n}`) : T('Tu ne t\'es pas entraîné cette semaine-là.', 'You did not train that week.')}${h.g ? ` · <b>+${h.g} XP</b>` : ''}</p>
@@ -12011,7 +12014,7 @@ document.addEventListener('click', e => {
     case 'tm-pause': if (tmp) { if (tmp.paused != null) { tmp.end = Date.now() + tmp.paused; tmp.paused = null; } else tmp.paused = Math.max(0, tmp.end - Date.now()); tmDraw(true); } break;
     case 'tm-next': if (tmp) { if (tmp.i + 1 >= tmp.seq.length) tmFinish(); else tmGoto(tmp.i + 1); } break;
     case 'tm-prev': if (tmp) tmGoto(Math.max(0, (tmp.end - Date.now()) / 1000 < tmp.seq[tmp.i].sec - 2 ? tmp.i : tmp.i - 1)); break;
-    case 'ob-google': obGoogle(); break;
+    case 'ob-google': if (obSt && obSt.mode === 'demo') { obSt.u = {demo: 1}; obSt.i = 1; obRender(); break; } obGoogle(); break;
     case 'ag-login': agLogin(); break;
     case 'ag-later': agLater = Date.now() + 15 * 60e3; { const g = document.getElementById('authgate'); if (g) g.remove(); } break;
     case 'ob-noacc': obSt.i = 1; obRender(); break;
@@ -12019,13 +12022,14 @@ document.addEventListener('click', e => {
     case 'ob-later': obClose(); break;
     case 'ob-skip': obSt.i++; obRender(); break;
     case 'ob-next': obCollect(); if (obSt.steps[obSt.i] === 'prof' && !obSt.d.name.trim()) { toast(T('Écris ton nom', 'Enter your name')); break; }
-      if (obSt.steps[obSt.i] === 'pseudo' && hOk !== obSt.d.h) { toast(H_RE.test(obSt.d.h || '') ? T('Choisis un pseudo disponible', 'Pick an available username') : T('3 caractères min.', '3 characters min.')); break; } if (obSt.i >= obSt.steps.length - 1) obFinish(); else { obSt.i++; obRender(); window.scrollTo && document.getElementById('ob').scrollTo(0, 0); } break;
+      if (obSt.steps[obSt.i] === 'pseudo' && hOk !== obSt.d.h && obSt.mode !== 'demo') { toast(H_RE.test(obSt.d.h || '') ? T('Choisis un pseudo disponible', 'Pick an available username') : T('3 caractères min.', '3 characters min.')); break; } if (obSt.i >= obSt.steps.length - 1) obFinish(); else { obSt.i++; obRender(); window.scrollTo && document.getElementById('ob').scrollTo(0, 0); } break;
     case 'ob-seg': { obCollect(); const k = b.dataset.k, v = b.dataset.v; obSt.d[k] = k === 'game' ? v === '1' : k === 'days' ? +v : v; obRender(); break; }
     case 'ob-avatar': obCollect(); pickImage(async f => { try { obSt.d.avatar = await shrinkImg(f, 240, .82); obRender(); } catch (e) { toast('⚠️ ' + e.message); } }, true); break;
     case 'ob-restore': { const done = () => { obClose(); try { frLoad(); } catch (e) {} }; cbRestore(false).then(done, done); break; }
     case 'ob-fresh': if (!confirm(T('Repartir à zéro? Ta sauvegarde en ligne sera remplacée par ce nouveau carnet vide à la fin.', 'Start fresh? Your online backup will be replaced by this new empty log at the end.'))) break; obSt.steps = ['home', 'prof', 'toi', 'obj', 'style', 'ready']; obSt.i = 1; obRender(); break;
     case 'ob-edit': closeAll(); openOnboard('edit'); break;
-    case 'wl-lang': if (b.dataset.v !== (isEN() ? 'en' : 'fr')) { S.settings.lang = b.dataset.v; save(); location.reload(); } break;
+    case 'ob-demo': closeAll(); openOnboard('demo'); break;
+    case 'wl-lang': if (obSt && obSt.mode === 'demo') { S.settings.lang = b.dataset.v; obRender(); break; } if (b.dataset.v !== (isEN() ? 'en' : 'fr')) { S.settings.lang = b.dataset.v; save(); location.reload(); } break;
     case 'wl-game': S.settings.game = b.dataset.v === '1'; save(); b.parentElement.querySelectorAll('.btn').forEach(x => x.classList.toggle('on', x === b)); break;
     case 'wl-unit': S.settings.unit = b.dataset.v; save(); b.parentElement.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); break;
     case 'wl-eff': S.settings.effort = b.dataset.v; S.settings.failDefault = b.dataset.v === 'fail'; save(); b.parentElement.querySelectorAll('.btn').forEach(x => x.classList.toggle('on', x === b)); break;
@@ -12780,12 +12784,14 @@ var obSt = null;
 function obEl() { let o = document.getElementById('ob'); if (!o) { o = document.createElement('div'); o.id = 'ob'; o.className = 'ob'; document.body.appendChild(o); } return o; }
 function openOnboard(mode = 'new') {
   const st = S.settings, lastW = S.body.filter(b => b.w != null).sort((a, b) => a.d.localeCompare(b.d)).pop();
-  obSt = {mode, i: 0, steps: mode === 'edit' ? ['toi', 'obj'] : ['home', 'prof', 'toi', 'obj', 'style', 'ready'], u: null,
+  const demo = mode === 'demo';
+  obSt = {mode, i: 0, steps: mode === 'edit' ? ['toi', 'obj'] : demo ? ['home', 'prof', 'pseudo', 'toi', 'obj', 'style', 'ready'] : ['home', 'prof', 'toi', 'obj', 'style', 'ready'], u: null, lang0: st.lang,
     d: {name: st.name || '', avatar: st.avatar || '', unit: U(), sex: st.sex || '', age: ageOf() || '', dob: st.dob || '', ht: st.ht || '', w: lastW ? lastW.w : '', obj: st.obj || 'muscle', days: +st.goal || 4, game: st.game !== false, exp: st.exp || 'int', cls: 'auto'}};
+  if (demo) obSt.d = {name: '', avatar: '', unit: U(), sex: '', age: '', dob: '', ht: '', w: '', obj: 'muscle', days: 4, game: true, exp: 'int', cls: 'auto'}; // aperçu : comme un tout nouveau compte, rien n'est enregistré
   if (mode === 'new') fbLoad().catch(() => {}); // prêt pour que la fenêtre Google s'ouvre tout de suite au toucher
   obRender();
 }
-function obClose() { const o = document.getElementById('ob'); if (o) { o.classList.add('out'); setTimeout(() => o.remove(), 250); } obSt = null; }
+function obClose() { const o = document.getElementById('ob'); if (o) { o.classList.add('out'); setTimeout(() => o.remove(), 250); } if (obSt && obSt.mode === 'demo' && S.settings.lang !== obSt.lang0) { S.settings.lang = obSt.lang0; save(); render(); } obSt = null; }
 var obSeg = (k, opts) => `<div class="ob-seg">${opts.map(([v, l]) => `<button class="${String(obSt.d[k]) === String(v) ? 'on' : ''}" data-act="ob-seg" data-k="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
 function obHtCm() { const d = obSt.d; if (d.unit === 'kg') return d.htcm != null ? d.htcm : d.ht; return d.ht; }
 /* Accueil : 4 écrans qui défilent (glisser ou automatique), puis la connexion Google */
@@ -12866,7 +12872,7 @@ function obRender() {
     <button class="ob-mode ${d.game ? '' : 'on'}" data-act="ob-seg" data-k="game" data-v=""><span class="ob-mhd">${sTile('book', '#94a3b8', 20)}<b>${T('Mode Classique', 'Classic mode')}</b><i class="ob-rad"></i></span><span class="ob-mtx">${T('Juste ton carnet : séances, records et statistiques. Sans jeu.', 'Just your log: workouts, records and stats. No game.')}</span></button></div>
     ${d.game ? `<p class="ob-hint">${T('Ta classe se choisit toute seule d\'après tes séances. Tu pourras la changer dans la Guilde.', 'Your class is picked for you based on your workouts. You can change it in the Guild.')}</p>` : ''}
     ${nextBtn(T('Continuer', 'Continue'))}`;
-  else if (step === 'ready') { const prog = !S.history.length && !S.settings.xferDone; let sp = null; if (prog) { try { sp = starterProgram(d.obj, +d.days || 4, d.exp || 'int'); } catch (e) {} }
+  else if (step === 'ready') { const prog = obSt.mode === 'demo' || (!S.history.length && !S.settings.xferDone); let sp = null; if (prog) { try { sp = starterProgram(d.obj, +d.days || 4, d.exp || 'int'); } catch (e) {} }
     const gl = OB_GOALS().find(x => x[0] === d.obj);
     h = `<div class="ob-done">${ic('check', 34)}</div>${title(`${T('Tout est prêt', 'All set')}${d.name.trim() ? ', ' + esc(d.name.trim().split(/\s+/)[0]) : ''}!`, sp ? T('Voici ton programme de départ. Tu pourras le modifier quand tu veux.', 'Here is your starting program. You can change it anytime.') : T('Ton carnet est prêt.', 'Your log is ready.'))}
     ${sp ? `<div class="ob-wk">${OB_DAYS().map((x, i) => `<span class="${sp.sched[i] !== 'rest' ? 'on' : ''}"><small>${x}</small><i></i></span>`).join('')}</div>
@@ -12875,7 +12881,8 @@ function obRender() {
     ${d.game ? `<div class="ob-note">${ic('swords', 16)}<span>${T('Ta première séance t\'inscrit à la Guilde : niveau, rang, quêtes et boss.', 'Your first workout signs you up to the Guild: level, rank, quests and bosses.')}</span></div>` : ''}
     ${nextBtn(T('Commencer', 'Let\'s go'))}`; }
   clearInterval(obCarT);
-  o.innerHTML = `<div class="ob-in obs-${step}">${head}${h}</div>`;
+  const demo = obSt.mode === 'demo' ? `<button class="ob-demo" data-act="ob-later">${T('Aperçu · rien n\'est enregistré', 'Preview · nothing is saved')}<span>${ic('x', 14)}</span></button>` : '';
+  o.innerHTML = `${demo}<div class="ob-in obs-${step}">${head}${h}</div>`;
   if (step === 'home') obCarInit();
   if (step === 'pseudo') setTimeout(hCheck, 30);
 }
@@ -12955,6 +12962,7 @@ setInterval(authGate, 45000);
 window.addEventListener('online', () => setTimeout(authGate, 1500));
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(authGate, 1500); });
 function obFinish() {
+  if (obSt && obSt.mode === 'demo') { obClose(); toast(T('Fin de l\'aperçu : rien n\'a été changé', 'End of preview: nothing was changed')); return; }
   const u = obSt && obSt.u, mode = obSt && obSt.mode, obSt0h = obSt && obSt.d.h; obApply(); S.settings.onboarded = true; if (mode === 'new' && obSt.d.game && obSt.d.cls && (obSt.d.cls === 'auto' || PCL[obSt.d.cls]) && !(S.pcl && S.pcl.mode)) pclSet(obSt.d.cls);
   if (mode === 'new') { S.settings.tourPending = true;
     if (!S.history.length && !S.settings.xferDone) { const sp = starterProgram(S.settings.obj, +S.settings.goal || 4, S.settings.exp || 'int'); S.routines = sp.rs; S.schedule = sp.sched; S.settings.starter = 1; } }
@@ -13031,8 +13039,8 @@ function maybeTourMain() {
   S.settings.tourPending = false; saveLocal(); tourStart('main');
 }
 if (!S.settings.onboarded) openOnboard('new');
-else if (isIOS && !isStandalone() && !S.settings.iosHintOff) setTimeout(() => { if (!modals.length) iosHint(); }, 1200);
-if (S.settings.onboarded) setTimeout(() => { if (!S.settings.sex && !S.settings.obAsk && !S.active && !modals.length && S.history.length) { S.settings.obAsk = true; saveLocal(); modal(`<div style="text-align:center"><div style="font-size:46px">🧍</div><h2 style="margin:4px 0">${T('Nouveau : ton profil', 'New: your profile')}</h2></div><p class="small">${T('Ajoute ton sexe, ton âge, ta taille et ton objectif pour voir ton IMC et tes <b>besoins en calories</b>. Ça reste privé : tes amis ne le voient pas.', 'Add your sex, age, height and goal to see your BMI and <b>calorie needs</b>. It stays private.')}</p><button class="btn primary block" data-act="ob-edit">${T('Compléter (30 secondes)', 'Complete (30 seconds)')}</button><button class="btn block" data-act="close" style="margin-top:8px">${T('Plus tard', 'Later')}</button>`); } }, 3500);
+else if (isIOS && !isStandalone() && !S.settings.iosHintOff) setTimeout(() => { if (!modals.length && !$('#ob')) iosHint(); }, 1200);
+if (S.settings.onboarded) setTimeout(() => { if (!S.settings.sex && !S.settings.obAsk && !S.active && !modals.length && !$('#ob') && S.history.length) { S.settings.obAsk = true; saveLocal(); modal(`<div style="text-align:center"><div style="font-size:46px">🧍</div><h2 style="margin:4px 0">${T('Nouveau : ton profil', 'New: your profile')}</h2></div><p class="small">${T('Ajoute ton sexe, ton âge, ta taille et ton objectif pour voir ton IMC et tes <b>besoins en calories</b>. Ça reste privé : tes amis ne le voient pas.', 'Add your sex, age, height and goal to see your BMI and <b>calorie needs</b>. It stays private.')}</p><button class="btn primary block" data-act="ob-edit">${T('Compléter (30 secondes)', 'Complete (30 seconds)')}</button><button class="btn block" data-act="close" style="margin-top:8px">${T('Plus tard', 'Later')}</button>`); } }, 3500);
 checkNews();
 if (S.settings.onboarded) setTimeout(checkImport, 450);
 setTimeout(restResume, 200);
