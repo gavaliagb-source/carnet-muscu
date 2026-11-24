@@ -7437,7 +7437,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.125.8'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.125.9'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
   {v: '9.123.2', d: '2026-11-23', fr: ['Fin de séance : une fois le coffre ouvert, le bouton devient « Coffre ouvert · revoir le butin » au lieu de « Ouvrir ton coffre ».'], en: ['End of workout: once the chest is opened, the button becomes “Chest opened · see the loot” instead of “Open your chest”.']},
@@ -12724,14 +12724,13 @@ document.addEventListener('click', e => {
     case 'st-type': { const s = setCtx.sets[setCtx.si]; if (b.dataset.t === 'N') delete s.t; else s.t = b.dataset.t; document.querySelectorAll('#sttypes .btn').forEach(x => x.classList.toggle('on', x === b)); break; }
     case 'st-del': { snap(); setCtx.sets.splice(setCtx.si, 1); closeModal(); undoToast(T('Série supprimée', 'Set deleted')); break; }
     case 'ex-menu': openExMenu(ei); break;
-    case 'side-set': { const n = b.dataset.n, k = norm(n); S.side = S.side || {}; const x = S.side[k] = S.side[k] || {}; x.on = !!b.dataset.v; if (x.bar == null) x.bar = sideBarDef(n); save(); closeAll();
+    case 'side-set': { const n = b.dataset.n, k = norm(n); S.side = S.side || {}; const x = S.side[k] = S.side[k] || {}; x.on = !!b.dataset.v; if (x.bar == null) x.bar = sideBarDef(n); sideFixLive(k, x, !x.on); save(); closeAll();
       const old = x.on ? S.history.reduce((a, h) => a + (h.exercises || []).filter(e => norm(e.name) === k).reduce((c, e) => c + e.sets.filter(st => st.sc == null && +st.w > 0).length, 0), 0) : 0;
       let ex = 0; S.history.forEach(h => (h.exercises || []).forEach(e => { if (norm(e.name) === k) e.sets.forEach(st => { if (st.sc == null && +st.w > 0) ex = +st.w; }); }));
       const tot = ex * 2 + (+x.bar || 0), u = U();
       if (old) { modal(`<h2 style="margin-top:0">${T('Et tes anciennes séances?', 'And your past workouts?')}</h2><p class="small">${T(`Quand tu écrivais <b>${dec1(ex)} ${u}</b> pour <b>${esc(n)}</b>, c'était <b>${dec1(ex)} de chaque côté</b> (donc ${dec1(ex * 2)}${+x.bar ? ' + la barre de ' + dec1(+x.bar) + ' = ' + dec1(tot) : ''} au total)? Tu as ${old} séries dans ton historique.`, `When you wrote <b>${dec1(ex)} ${u}</b> for <b>${esc(n)}</b>, was it <b>${dec1(ex)} on each side</b> (so ${dec1(ex * 2)}${+x.bar ? ' + the ' + dec1(+x.bar) + ' bar = ' + dec1(tot) : ''} total)? You have ${old} sets in your history.`)}</p>
         <p class="small muted">${T(`Si oui, on les corrige (charge × 2${+x.bar ? ' + barre de ' + dec1(+x.bar) : ''}) pour que tes records et tes stats soient justes. Tu pourras annuler.`, `If so, we fix them (weight × 2${+x.bar ? ' + ' + dec1(+x.bar) + ' bar' : ''}) so your records and stats are right. You can undo it.`)}</p>
         <button class="btn primary block" data-act="side-conv" data-n="${esc(n)}" data-q="1">${T('Oui, c\'était par côté : corriger', 'Yes, it was per side: fix them')}</button><button class="btn block" style="margin-top:8px" data-act="side-keep" data-n="${esc(n)}">${T('Non, j\'écrivais déjà le total', 'No, I already wrote the total')}</button>`); render(); break; }
-      if (x.on) sideFixLive(k, x); save();
       if (S.active) { const i = S.active.exercises.findIndex(e => norm(e.name) === k); if (i >= 0) openExMenu(i); } render(); break; }
     case 'side-keep': { const k = norm(b.dataset.n); closeAll(); if (S.active) { const i = S.active.exercises.findIndex(e => norm(e.name) === k); if (i >= 0) openExMenu(i); } render(); break; }
     case 'side-bar': { const n = b.dataset.n, k = norm(n); S.side = S.side || {}; const x = S.side[k] = S.side[k] || {on: true}; x.bar = +b.dataset.v; save(); closeAll(); if (S.active) { const i = S.active.exercises.findIndex(e => norm(e.name) === k); if (i >= 0) openExMenu(i); } render(); break; }
