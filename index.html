@@ -6147,7 +6147,7 @@ class RlPup extends HTMLElement {
       if (/(^|\/)comp\/[a-z]+\d\.webp$/.test(sc)) { const im2 = new Image(); im2.onload = () => { if (!this._gl || !this._t2) return;
         try { const c4 = document.createElement('canvas'); c4.width = c4.height = S; const g4 = c4.getContext('2d'); g4.drawImage(im2, (S - im.width * k) / 2, S - im.height * k, im.width * k, im.height * k);
           this._real = 1; // en repos on affiche TON image yeux fermés en entier ; pour un clignement, seulement la zone des yeux
-          gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this._t2); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c4); } catch (e) {} }; im2.src = sc.replace(/\.webp$/, 'c.webp'); }
+          gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this._t2); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c4); } catch (e) {} }; im2.src = sc.replace(/\.webp$/, 'c.webp') + '?v=' + APP_VERSION; }
       this._t0 = performance.now() - Math.random() * 3000; this._nb = 1 + Math.random() * 2;
       try { this.fxPos(); } catch (e) {}
       this._io = new IntersectionObserver(es => { this._vis = es[0].isIntersecting; if (this._vis && !this._raf) this.frame(); }, {threshold: 0}); this._io.observe(this);
@@ -7433,7 +7433,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.125.5'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.125.6'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
   {v: '9.123.2', d: '2026-11-23', fr: ['Fin de séance : une fois le coffre ouvert, le bouton devient « Coffre ouvert · revoir le butin » au lieu de « Ouvrir ton coffre ».'], en: ['End of workout: once the chest is opened, the button becomes “Chest opened · see the loot” instead of “Open your chest”.']},
