@@ -6226,7 +6226,7 @@ function compSrc(k) {
 }
 function compArt(k, cls = '') {
   const sl = k.st >= 0 && k.mood === 'sleep' && COMP[k.sp] && (COMP_SL[k.sp] || [])[Math.min(k.st, 2)];
-  if (sl) { const src = `comp/${COMP[k.sp].f}${Math.min(k.st, 2)}s.webp?v=2`; // v= : à augmenter quand on remplace ces images (sinon l'ancienne reste en cache) // au repos le compagnon dort couché : image dédiée, respiration lente, « z » au-dessus de sa tête
+  if (sl) { const src = `comp/${COMP[k.sp].f}${Math.min(k.st, 2)}s.webp?v=3`; // v= : à augmenter quand on remplace ces images (sinon l'ancienne reste en cache) // au repos le compagnon dort couché : image dédiée, respiration lente, « z » au-dessus de sa tête
     return `<div class="cpw ${cls} slp m-sleep${k.st === 3 ? ' gold' : ''}" style="--cpm:url(${src})"><span class="cpsq" style="width:${Math.min(100, sl[0] / sl[1] * 100).toFixed(1)}%;aspect-ratio:${sl[0]}/${sl[1]};--zx:${sl[2]}%;--zy:${sl[3]}%"><img src="${src}" onerror="this.onerror=null;this.src='${k.img}'" alt="${esc(k.name)}" loading="lazy"><i class="cpfx">z</i><i class="cpfx b">z</i></span></div>`; }
   const own = k.st >= 0 && (COMP_MOODV[k.img.slice(5, -5)] || []).includes(k.mood), D = COMP[k.sp], pc = k.st >= 0 && D && D.pup && D.pup[Math.min(k.st, 2)];
   if (pc && !compStill() && pupOk()) return `<div class="cpw ${cls} pup m-${k.mood}${k.st === 3 ? ' gold' : ''}" style="--cpm:url(${k.img})"><rl-pup src="${k.img}" mood="${k.mood}" cfg='${JSON.stringify(pc)}'></rl-pup><i class="cpfx">${k.mood === 'sleep' ? 'z' : k.mood === 'sad' ? '💧' : '✦'}</i><i class="cpfx b">${k.mood === 'sleep' ? 'z' : '✦'}</i></div>`;
@@ -7442,7 +7442,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.126.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.126.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
   {v: '9.126.0', d: '2026-11-24', fr: ['Nouveau : les compagnons arrivent. À ton premier niveau 5, ton œuf éclot et tu choisis ton compagnon parmi 10 créatures. Il grandit avec votre lien (cœurs gagnés en t\'entraînant, en battant des records, en finissant tes quêtes), prend 4 formes et dort couché quand tu te reposes. Il ne perd jamais rien si tu t\'absentes.'], en: ['New: companions are here. At your first level 5 your egg hatches and you choose your companion among 10 creatures. It grows with your bond (hearts earned by training, beating records, finishing quests), takes 4 forms and sleeps lying down when you rest. It never loses anything if you take a break.']},
