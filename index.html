@@ -1641,6 +1641,10 @@ function isDB(name) { const L = typeof libEntry === 'function' ? libEntry(name) 
 const sideOf = n => { const x = (S.side || {})[norm(n || '')]; return x && x.on ? x : null; };
 const sideBarDef = n => /barre|barbell|smith|\bez\b|trap bar|hex/i.test(n || '') && !/halt[eè]re|dumbbell|poulie|c[aâ]ble|cable/i.test(n || '') ? (S.settings.bar != null ? +S.settings.bar : (U() === 'kg' ? 20 : 45)) : 0;
 const wShow = (n, w) => { const x = sideOf(n); if (!x || w === '' || w == null || isNaN(+w)) return w; const v = (+w - (+x.bar || 0)) / 2; return v >= 0 ? String(Math.round(v * 100) / 100) : String(w); };
+// Séance en cours : les charges déjà là (écrites ou reprises de l'historique) sont celles du « côté » : 20 reste 20 à l'écran, le total devient 20 x 2 (+ barre)
+const sideFixLive = (k, x, back) => { let c = 0; if (!S.active) return 0; S.active.exercises.forEach(e => { if (norm(e.name) !== k) return; (e.sets || []).forEach(st => {
+  if (back) { if (st.sc != null) { st.w = st.sc; delete st.sc; c++; } }
+  else if (st.sc == null && +st.w > 0) { st.sc = st.w; st.w = String(Math.round((+st.w * 2 + (+x.bar || 0)) * 100) / 100); c++; } }); }); return c; };
 const wSave = (n, v) => { const x = sideOf(n); if (!x || v === '' || v == null) return v; const t = +String(v).replace(',', '.'); return isNaN(t) ? v : String(Math.round((t * 2 + (+x.bar || 0)) * 100) / 100); };
 const sideNote = n => { const x = sideOf(n); return x ? T(`Charge écrite par côté${+x.bar ? ` · barre ${dec1(+x.bar)} ${U()}` : ''} : le total est calculé pour toi`, `Weight written per side${+x.bar ? ` · bar ${dec1(+x.bar)} ${U()}` : ''}: the total is calculated for you`) : ''; };
 function incFor(name) {
@@ -7433,7 +7437,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.125.7'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.125.8'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
   {v: '9.123.2', d: '2026-11-23', fr: ['Fin de séance : une fois le coffre ouvert, le bouton devient « Coffre ouvert · revoir le butin » au lieu de « Ouvrir ton coffre ».'], en: ['End of workout: once the chest is opened, the button becomes “Chest opened · see the loot” instead of “Open your chest”.']},
@@ -12727,16 +12731,17 @@ document.addEventListener('click', e => {
       if (old) { modal(`<h2 style="margin-top:0">${T('Et tes anciennes séances?', 'And your past workouts?')}</h2><p class="small">${T(`Quand tu écrivais <b>${dec1(ex)} ${u}</b> pour <b>${esc(n)}</b>, c'était <b>${dec1(ex)} de chaque côté</b> (donc ${dec1(ex * 2)}${+x.bar ? ' + la barre de ' + dec1(+x.bar) + ' = ' + dec1(tot) : ''} au total)? Tu as ${old} séries dans ton historique.`, `When you wrote <b>${dec1(ex)} ${u}</b> for <b>${esc(n)}</b>, was it <b>${dec1(ex)} on each side</b> (so ${dec1(ex * 2)}${+x.bar ? ' + the ' + dec1(+x.bar) + ' bar = ' + dec1(tot) : ''} total)? You have ${old} sets in your history.`)}</p>
         <p class="small muted">${T(`Si oui, on les corrige (charge × 2${+x.bar ? ' + barre de ' + dec1(+x.bar) : ''}) pour que tes records et tes stats soient justes. Tu pourras annuler.`, `If so, we fix them (weight × 2${+x.bar ? ' + ' + dec1(+x.bar) + ' bar' : ''}) so your records and stats are right. You can undo it.`)}</p>
         <button class="btn primary block" data-act="side-conv" data-n="${esc(n)}" data-q="1">${T('Oui, c\'était par côté : corriger', 'Yes, it was per side: fix them')}</button><button class="btn block" style="margin-top:8px" data-act="side-keep" data-n="${esc(n)}">${T('Non, j\'écrivais déjà le total', 'No, I already wrote the total')}</button>`); render(); break; }
+      if (x.on) sideFixLive(k, x); save();
       if (S.active) { const i = S.active.exercises.findIndex(e => norm(e.name) === k); if (i >= 0) openExMenu(i); } render(); break; }
     case 'side-keep': { const k = norm(b.dataset.n); closeAll(); if (S.active) { const i = S.active.exercises.findIndex(e => norm(e.name) === k); if (i >= 0) openExMenu(i); } render(); break; }
     case 'side-bar': { const n = b.dataset.n, k = norm(n); S.side = S.side || {}; const x = S.side[k] = S.side[k] || {on: true}; x.bar = +b.dataset.v; save(); closeAll(); if (S.active) { const i = S.active.exercises.findIndex(e => norm(e.name) === k); if (i >= 0) openExMenu(i); } render(); break; }
     case 'side-conv': { const n = b.dataset.n, k = norm(n), x = sideOf(n); if (!x) break; let c = 0;
       if (!b.dataset.q && !confirm(T(`Corriger tes anciennes séances de ${n}? Chaque charge devient : charge × 2${+x.bar ? ' + ' + dec1(+x.bar) : ''}. Tu pourras annuler.`, `Fix your past ${n} workouts? Each weight becomes: weight × 2${+x.bar ? ' + ' + dec1(+x.bar) : ''}. You can undo it.`))) break;
       S.history.forEach(h => (h.exercises || []).forEach(e => { if (norm(e.name) !== k) return; e.sets.forEach(st => { if (st.sc == null && +st.w > 0) { st.sc = st.w; st.w = String(Math.round((+st.w * 2 + (+x.bar || 0)) * 100) / 100); c++; } }); }));
-      save(); toast(T(`${c} séries corrigées`, `${c} sets fixed`)); closeAll(); if (S.active) { const i = S.active.exercises.findIndex(e => norm(e.name) === k); if (i >= 0) openExMenu(i); } render(); break; }
+      c += sideFixLive(k, x); save(); toast(T(`${c} séries corrigées`, `${c} sets fixed`)); closeAll(); if (S.active) { const i = S.active.exercises.findIndex(e => norm(e.name) === k); if (i >= 0) openExMenu(i); } render(); break; }
     case 'side-unconv': { const k = norm(b.dataset.n); let c = 0;
       S.history.forEach(h => (h.exercises || []).forEach(e => { if (norm(e.name) !== k) return; e.sets.forEach(st => { if (st.sc != null) { st.w = st.sc; delete st.sc; c++; } }); }));
-      save(); toast(T(`${c} séries remises comme avant`, `${c} sets restored`)); closeAll(); if (S.active) { const i = S.active.exercises.findIndex(e => norm(e.name) === k); if (i >= 0) openExMenu(i); } render(); break; }
+      c += sideFixLive(k, {}, 1); save(); toast(T(`${c} séries remises comme avant`, `${c} sets restored`)); closeAll(); if (S.active) { const i = S.active.exercises.findIndex(e => norm(e.name) === k); if (i >= 0) openExMenu(i); } render(); break; }
     case 'ex-replace': closeModal(); openPicker({title: `Remplacer « ${A.exercises[ei].name} »`, alt: A.exercises[ei].name, cb: p => replaceExercise(ei, p)}); break;
     case 'ex-ss': {
       const list = A.exercises, e = list[ei], nx = list[ei + 1];
