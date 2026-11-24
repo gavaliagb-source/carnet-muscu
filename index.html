@@ -6092,9 +6092,9 @@ const PUP_FS = `precision mediump float;
 varying vec2 uv; uniform sampler2D tex, tex2; uniform float t, dim, blink; uniform vec4 eyes, erad; uniform vec3 g0, g1, g2;
 vec4 lid(vec4 c, vec2 e, vec2 r){
   vec2 d = (uv - e) / r; float rr = dot(d, d);
-  if (rr > 2.6 || blink < 0.01) return c;
+  if (rr > 1.9 || blink < 0.01) return c;
   vec4 z = texture2D(tex2, uv);
-  return vec4(mix(c.rgb, z.rgb, smoothstep(2.4, 1.7, rr) * smoothstep(0.08, 0.6, blink)), c.a);
+  return vec4(mix(c.rgb, z.rgb, smoothstep(1.8, 1.05, rr) * smoothstep(0.08, 0.6, blink)), c.a);
 }
 float fl(vec3 g, float k){ if (g.z <= 0.0) return 0.0; vec2 d = (uv - g.xy) / g.z;
   return exp(-dot(d, d)) * (0.22 + 0.2 * (sin(t * 9.0 + k) * 0.5 + sin(t * 13.7 + k * 2.3) * 0.3 + sin(t * 5.1 + uv.y * 30.0) * 0.2)); }
@@ -6139,10 +6139,14 @@ class RlPup extends HTMLElement {
       this._ox = (S - im.width * k) / 2 / S; this._sx = im.width * k / S; this._oy = 1 - im.height * k / S; this._sy = im.height * k / S;
       const c3 = document.createElement('canvas'); c3.width = c3.height = S; const x3 = c3.getContext('2d'); x3.drawImage(c2, 0, 0);
       try { this.closeEyes(x3, x, S); } catch (e) {} // 2e image : les yeux effacés puis refermés d'un trait (clignement et sommeil)
-      [c2, c3].forEach((cvs, n) => { gl.activeTexture(gl.TEXTURE0 + n); gl.bindTexture(gl.TEXTURE_2D, gl.createTexture()); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cvs);
+      [c2, c3].forEach((cvs, n) => { gl.activeTexture(gl.TEXTURE0 + n); const tx = gl.createTexture(); if (n) this._t2 = tx; gl.bindTexture(gl.TEXTURE_2D, tx); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cvs);
         [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER].forEach(p => gl.texParameteri(gl.TEXTURE_2D, p, gl.LINEAR));
         [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T].forEach(p => gl.texParameteri(gl.TEXTURE_2D, p, gl.CLAMP_TO_EDGE)); });
       gl.uniform1i(this._U.tex, 0); gl.uniform1i(this._U.tex2, 1);
+      const sc = this.getAttribute('src') || ''; // vraie image « yeux fermés » (fichier ...c.webp) : remplace l'œil effacé dès qu'elle est chargée
+      if (/\/comp\/[a-z]+\d\.webp$/.test(sc)) { const im2 = new Image(); im2.onload = () => { if (!this._gl || !this._t2) return;
+        try { const c4 = document.createElement('canvas'); c4.width = c4.height = S; c4.getContext('2d').drawImage(im2, (S - im.width * k) / 2, S - im.height * k, im.width * k, im.height * k);
+          gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this._t2); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c4); } catch (e) {} }; im2.src = sc.replace(/\.webp$/, 'c.webp'); }
       this._t0 = performance.now() - Math.random() * 3000; this._nb = 1 + Math.random() * 2;
       try { this.fxPos(); } catch (e) {}
       this._io = new IntersectionObserver(es => { this._vis = es[0].isIntersecting; if (this._vis && !this._raf) this.frame(); }, {threshold: 0}); this._io.observe(this);
@@ -7428,7 +7432,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.125.1'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.125.2'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
   {v: '9.123.2', d: '2026-11-23', fr: ['Fin de séance : une fois le coffre ouvert, le bouton devient « Coffre ouvert · revoir le butin » au lieu de « Ouvrir ton coffre ».'], en: ['End of workout: once the chest is opened, the button becomes “Chest opened · see the loot” instead of “Open your chest”.']},
