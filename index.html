@@ -549,7 +549,7 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .cpw rl-pup{display:block;width:100%;height:100%;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}.cpw.gold rl-pup{filter:sepia(.9) saturate(2.4) hue-rotate(-8deg) brightness(1.08) drop-shadow(0 0 10px #facc15)}
 .cpw.gold img{filter:sepia(.9) saturate(2.4) hue-rotate(-8deg) brightness(1.08) drop-shadow(0 0 10px #facc15)}
 .cpw.gold::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%) -150% 0/250% 100% no-repeat;-webkit-mask:var(--cpm) center bottom/contain no-repeat;mask:var(--cpm) center bottom/contain no-repeat;animation:cpShine 3s ease-in-out infinite;pointer-events:none}
-.cpfx{position:absolute;pointer-events:none;font-weight:800;opacity:0}
+.cpfx{position:absolute;pointer-events:none;font-weight:800;opacity:0;filter:drop-shadow(0 0 1px rgba(0,0,0,.85)) drop-shadow(0 0 2px rgba(0,0,0,.5))}
 .m-sleep .cpfx{color:#93c5fd;font-size:15px;top:4%;right:6%;animation:cpZ 2.8s ease-in infinite}
 .m-sleep .cpfx.b{animation-delay:1.4s;font-size:11px}
 .m-happy .cpfx{color:#facc15;font-size:14px;top:8%;left:8%;animation:cpSp 1.6s ease-out infinite}.m-happy .cpfx.b{left:auto;right:8%;animation-delay:.8s}
@@ -5959,15 +5959,36 @@ var COMP = {
     pup: [{eyes: [[.155, .307, .052, .045], [.36, .306, .062, .047]], head: [[.26, .29], [.28, .52], .30], tail: [[.42, .80], [.68, .86], .26], glow: [[.49, .875, .07]]},
       {eyes: [[.243, .226, .024, .018], [.357, .23, .03, .019]], head: [[.32, .19], [.35, .33], .20], tail: [[.60, .73], [.82, .55], .24], glow: [[.82, .55, .2]], ts: .8},
       {eyes: [[.255, .168, .022, .016], [.385, .165, .03, .018]], head: [[.34, .16], [.37, .29], .17], tail: [[.62, .72], [.82, .55], .26], glow: [[.82, .58, .22], [.06, .40, .1], [.50, .42, .09]], ts: .7}]},
-  rhino: {f: 'rhino', s: ['Rhinocéros de fer', 'Iron rhino'], n: [['Petit rhino', 'Rhino calf'], ['Rhino de fer', 'Iron rhino'], ['Rhino cuirassé', 'Armored war rhino']], c: '#ef4444', k: 'g'},
+  rhino: {f: 'rhino', s: ['Rhinocéros de fer', 'Iron rhino'], n: [['Petit rhino', 'Rhino calf'], ['Rhino de fer', 'Iron rhino'], ['Rhino cuirassé', 'Armored war rhino']], c: '#ef4444', k: 'g', ok: 1,
+    pup: [{eyes: [[0.306, 0.368, 0.052, 0.05], [-1, -1, 0.01, 0.01]], head: [[0.25, 0.36], [0.42, 0.55], 0.28], tail: [[0.88, 0.55], [0.95, 0.62], 0.09]},
+      {eyes: [[0.276, 0.362, 0.028, 0.025], [-1, -1, 0.01, 0.01]], head: [[0.22, 0.4], [0.4, 0.55], 0.26], tail: [[0.92, 0.52], [0.97, 0.6], 0.08]},
+      {eyes: [[0.272, 0.335, 0.035, 0.032], [-1, -1, 0.01, 0.01]], head: [[0.22, 0.33], [0.4, 0.5], 0.25], tail: [[0.94, 0.6], [0.98, 0.68], 0.07], glow: [[0.265, 0.335, 0.05]]}]},
   faucon: {f: 'faucon', s: ['Faucon', 'Falcon'], n: [['Fauconneau', 'Falcon chick'], ['Faucon des bois', 'Woodland falcon'], ['Grand faucon traqueur', 'Great hunting falcon']], c: '#22c55e', k: 'r'},
-  axolotl: {f: 'axolotl', s: ['Axolotl de cristal', 'Crystal axolotl'], n: [['Petit axolotl', 'Baby axolotl'], ['Axolotl des sources', 'Spring axolotl'], ['Grand axolotl de cristal', 'Great crystal axolotl']], c: '#38bdf8', k: 's'},
-  lion: {f: 'lion', s: ['Lion de fer', 'Iron lion'], n: [['Lionceau', 'Lion cub'], ['Lion de fer', 'Iron lion'], ['Lion templier', 'Templar lion']], c: '#e11d48', k: 'gm'},
+  axolotl: {f: 'axolotl', s: ['Axolotl de cristal', 'Crystal axolotl'], n: [['Petit axolotl', 'Baby axolotl'], ['Axolotl des sources', 'Spring axolotl'], ['Grand axolotl de cristal', 'Great crystal axolotl']], c: '#38bdf8', k: 's', ok: 1,
+    pup: [{eyes: [[0.218, 0.343, 0.03, 0.036], [0.487, 0.352, 0.032, 0.038]], head: [[0.33, 0.35], [0.35, 0.62], 0.32], tail: [[0.62, 0.78], [0.85, 0.74], 0.22], glow: [[0.08, 0.32, 0.12], [0.68, 0.25, 0.14]]},
+      {eyes: [[0.325, 0.367, 0.016, 0.024], [0.52, 0.348, 0.025, 0.027]], head: [[0.47, 0.36], [0.5, 0.48], 0.18], tail: [[0.55, 0.62], [0.45, 0.8], 0.2], glow: [[0.35, 0.27, 0.09], [0.65, 0.24, 0.09]]},
+      {eyes: [[0.362, 0.366, 0.021, 0.016], [0.578, 0.364, 0.021, 0.016]], head: [[0.5, 0.37], [0.5, 0.48], 0.14], tail: [[0.5, 0.66], [0.6, 0.86], 0.2], glow: [[0.5, 0.12, 0.14], [0.18, 0.27, 0.08], [0.82, 0.27, 0.08]]}]},
+  lion: {f: 'lion', s: ['Lion de fer', 'Iron lion'], n: [['Lionceau', 'Lion cub'], ['Lion de fer', 'Iron lion'], ['Lion templier', 'Templar lion']], c: '#e11d48', k: 'gm', ok: 1,
+    pup: [{eyes: [[0.1, 0.27, 0.03, 0.026], [0.31, 0.265, 0.05, 0.04]], head: [[0.25, 0.25], [0.32, 0.45], 0.26], tail: [[0.8, 0.8], [0.93, 0.72], 0.12], glow: [[0.27, 0.06, 0.08]]},
+      {eyes: [[0.12, 0.275, 0.018, 0.016], [0.268, 0.268, 0.028, 0.018]], head: [[0.3, 0.28], [0.36, 0.45], 0.22], tail: [[0.78, 0.56], [0.92, 0.64], 0.14], glow: [[0.25, 0.14, 0.2], [0.48, 0.28, 0.14]]},
+      {eyes: [[0.31, 0.236, 0.03, 0.02], [-1, -1, 0.01, 0.01]], head: [[0.33, 0.24], [0.42, 0.42], 0.2], tail: [[0.8, 0.56], [0.93, 0.62], 0.13], glow: [[0.18, 0.2, 0.16], [0.58, 0.24, 0.16]]}]},
   pegase: {f: 'pegase', s: ['Pégase solaire', 'Solar pegasus'], n: [['Poulain ailé', 'Winged foal'], ['Jeune pégase', 'Young pegasus'], ['Pégase solaire', 'Solar pegasus']], c: '#facc15', k: 'gs'},
-  sanglier: {f: 'sanglier', s: ['Sanglier de bronze', 'Bronze boar'], n: [['Marcassin', 'Boar piglet'], ['Sanglier de bronze', 'Bronze boar'], ['Grand sanglier spartiate', 'Great spartan boar']], c: '#d97706', k: 'gr'},
-  panthere: {f: 'panthere', s: ['Panthère lunaire', 'Moon panther'], n: [['Chaton d\'ombre', 'Shadow kitten'], ['Panthère lunaire', 'Moon panther'], ['Grande panthère des ombres', 'Great shadow panther']], c: '#a78bfa', k: 'mr'},
-  ours: {f: 'ours', s: ['Ours de mousse', 'Moss bear'], n: [['Ourson de mousse', 'Moss cub'], ['Ours des bois', 'Woodland bear'], ['Ours gardien de la forêt', 'Forest guardian bear']], c: '#4ade80', k: 'rs'},
-  tortue: {f: 'tortue', s: ['Tortue des runes', 'Rune tortoise'], n: [['Bébé tortue', 'Baby tortoise'], ['Tortue lanterne', 'Lantern tortoise'], ['Grande tortue sage', 'Great sage tortoise']], c: '#2dd4bf', k: 'ms'},
+  sanglier: {f: 'sanglier', s: ['Sanglier de bronze', 'Bronze boar'], n: [['Marcassin', 'Boar piglet'], ['Sanglier de bronze', 'Bronze boar'], ['Grand sanglier spartiate', 'Great spartan boar']], c: '#d97706', k: 'gr', ok: 1,
+    pup: [{eyes: [[0.33, 0.523, 0.04, 0.035], [-1, -1, 0.01, 0.01]], head: [[0.25, 0.5], [0.42, 0.6], 0.3], tail: [[0.86, 0.52], [0.93, 0.58], 0.08]},
+      {eyes: [[0.325, 0.437, 0.025, 0.014], [-1, -1, 0.01, 0.01]], head: [[0.25, 0.45], [0.45, 0.52], 0.25], tail: [[0.9, 0.46], [0.96, 0.55], 0.08]},
+      {eyes: [[0.352, 0.415, 0.025, 0.016], [-1, -1, 0.01, 0.01]], head: [[0.28, 0.4], [0.45, 0.46], 0.23], tail: [[0.93, 0.42], [0.98, 0.35], 0.08], glow: [[0.352, 0.415, 0.05]]}]},
+  panthere: {f: 'panthere', s: ['Panthère lunaire', 'Moon panther'], n: [['Chaton d\'ombre', 'Shadow kitten'], ['Panthère lunaire', 'Moon panther'], ['Grande panthère des ombres', 'Great shadow panther']], c: '#a78bfa', k: 'mr', ok: 1,
+    pup: [{eyes: [[0.48, 0.33, 0.055, 0.046], [0.735, 0.33, 0.055, 0.046]], head: [[0.48, 0.3], [0.48, 0.52], 0.3], tail: [[0.25, 0.85], [0.12, 0.8], 0.12], glow: [[0.48, 0.17, 0.06], [0.37, 0.33, 0.07], [0.6, 0.33, 0.07]]},
+      {eyes: [[0.695, 0.182, 0.02, 0.015], [0.8, 0.185, 0.022, 0.016]], head: [[0.74, 0.15], [0.72, 0.28], 0.14], tail: [[0.3, 0.45], [0.12, 0.45], 0.2], glow: [[0.62, 0.5, 0.06], [0.75, 0.07, 0.05], [0.12, 0.4, 0.1]]},
+      {eyes: [[0.781, 0.167, 0.025, 0.016], [0.92, 0.164, 0.025, 0.016]], head: [[0.85, 0.15], [0.8, 0.3], 0.14], tail: [[0.25, 0.35], [0.1, 0.55], 0.22], glow: [[0.57, 0.37, 0.05], [0.66, 0.42, 0.05], [0.1, 0.55, 0.12]]}]},
+  ours: {f: 'ours', s: ['Ours de mousse', 'Moss bear'], n: [['Ourson de mousse', 'Moss cub'], ['Ours des bois', 'Woodland bear'], ['Ours gardien de la forêt', 'Forest guardian bear']], c: '#4ade80', k: 'rs', ok: 1,
+    pup: [{eyes: [[0.12, 0.34, 0.045, 0.04], [0.335, 0.345, 0.045, 0.04]], head: [[0.24, 0.33], [0.3, 0.56], 0.28], tail: [[0.5, 0.9], [0.5, 0.95], 0.01], ts: 0},
+      {eyes: [[0.28, 0.16, 0.025, 0.02], [0.43, 0.157, 0.028, 0.02]], head: [[0.34, 0.15], [0.35, 0.26], 0.14], tail: [[0.5, 0.9], [0.5, 0.95], 0.01], glow: [[0.12, 0.62, 0.1], [0.75, 0.63, 0.1]], ts: 0},
+      {eyes: [[0.12, 0.29, 0.03, 0.022], [0.266, 0.287, 0.03, 0.022]], head: [[0.19, 0.3], [0.28, 0.42], 0.16], tail: [[0.5, 0.9], [0.5, 0.95], 0.01], glow: [[0.19, 0.29, 0.12], [0.5, 0.6, 0.25], [0.18, 0.62, 0.15]], ts: 0}]},
+  tortue: {f: 'tortue', s: ['Tortue des runes', 'Rune tortoise'], n: [['Bébé tortue', 'Baby tortoise'], ['Tortue lanterne', 'Lantern tortoise'], ['Grande tortue sage', 'Great sage tortoise']], c: '#2dd4bf', k: 'ms', ok: 1,
+    pup: [{eyes: [[0.27, 0.355, 0.045, 0.045], [-1, -1, 0.01, 0.01]], head: [[0.18, 0.36], [0.32, 0.46], 0.25], tail: [[0.5, 0.3], [0.52, 0.12], 0.15], glow: [[0.52, 0.12, 0.12]], ts: 0.5},
+      {eyes: [[0.18, 0.415, 0.03, 0.03], [-1, -1, 0.01, 0.01]], head: [[0.16, 0.42], [0.28, 0.48], 0.16], tail: [[0.55, 0.25], [0.56, 0.12], 0.14], glow: [[0.56, 0.14, 0.08], [0.65, 0.45, 0.2]], ts: 0.5},
+      {eyes: [[0.177, 0.473, 0.025, 0.02], [-1, -1, 0.01, 0.01]], head: [[0.15, 0.49], [0.27, 0.55], 0.14], tail: [[0.45, 0.25], [0.45, 0.05], 0.1], glow: [[0.45, 0.04, 0.08], [0.7, 0.55, 0.2]], ts: 0.5}]},
   dragon: {f: 'dragon', s: ['Dragon', 'Dragon'], n: [['Dragonnet', 'Dragonling'], ['Jeune dragon', 'Young dragon'], ['Dragon de guerre', 'War dragon']], c: '#f97316', ok: 1, an: 1, old: 1},
   loup: {f: 'loup', s: ['Loup', 'Wolf'], n: [['Louveteau', 'Wolf pup'], ['Loup des ombres', 'Shadow wolf'], ['Loup spectral', 'Spectral wolf']], c: '#818cf8', ok: 1, an: 1, old: 1},
   golem: {f: 'golem', s: ['Golem', 'Golem'], n: [['Petit golem', 'Little golem'], ['Golem de pierre', 'Stone golem'], ['Golem colosse', 'Colossus golem']], c: '#38bdf8', ok: 1, an: 1, old: 1},
@@ -6133,7 +6154,7 @@ class RlPup extends HTMLElement {
     const M = .05, pc = q => ((M + q * (1 - 2 * M)) * 100).toFixed(1) + '%';
     const hc = this.P(c.head[0][0], c.head[0][1]), hp = this.P(c.head[1][0], c.head[1][1]), hr = c.head[2] * this._sy;
     const turn = (q, a) => { const d = [(q[0] - hc[0]) / hr, (q[1] - hc[1]) / hr], w = Math.exp(-(d[0] * d[0] + d[1] * d[1]) * .9), r = a * w, sn = Math.sin(r), co = Math.cos(r), x = q[0] - hp[0], y = q[1] - hp[1]; return [hp[0] + co * x - sn * y, hp[1] + sn * x + co * y]; };
-    const e = c.eyes[1], t = turn(this.P(e[0] + e[2] * .2, e[1] + e[3] * .9), .09 * (c.hs || 1));
+    const e = c.eyes[1][0] >= 0 ? c.eyes[1] : c.eyes[0], t = turn(this.P(e[0] + e[2] * .2, e[1] + e[3] * .9), .09 * (c.hs || 1));
     const z = turn(this.P(Math.min(.95, c.head[0][0] + c.head[2] * .55), Math.max(.02, c.head[0][1] - c.head[2] * .8)), .07 * (c.hs || 1));
     const s0 = this.P(Math.max(.03, c.head[0][0] - c.head[2] * .85), c.head[0][1] - c.head[2] * .45), s1 = this.P(Math.min(.97, c.head[0][0] + c.head[2] * .85), c.head[0][1] - c.head[2] * .25);
     [['tx', t[0]], ['ty', t[1]], ['zx', z[0]], ['zy', z[1]], ['s0x', s0[0]], ['s0y', s0[1]], ['s1x', s1[0]], ['s1y', s1[1]]].forEach(([k, v]) => par.style.setProperty('--' + k, pc(v)));
@@ -7386,7 +7407,7 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.123.10'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.124.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
   {v: '9.123.2', d: '2026-11-23', fr: ['Fin de séance : une fois le coffre ouvert, le bouton devient « Coffre ouvert · revoir le butin » au lieu de « Ouvrir ton coffre ».'], en: ['End of workout: once the chest is opened, the button becomes “Chest opened · see the loot” instead of “Open your chest”.']},
