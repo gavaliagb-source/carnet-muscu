@@ -547,6 +547,7 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .cpw.egg img{animation:cpWob 2.6s ease-in-out infinite}.cpw.egg.near img{animation-duration:1.1s}
 .cpw.cpfa.m-sad .cpfx{left:var(--tx);top:var(--ty);right:auto;margin-left:-.25em}.cpw.cpfa.m-sleep .cpfx{left:var(--zx);top:var(--zy);right:auto}.cpw.cpfa.m-sleep .cpfx.b{margin:-.5em 0 0 .7em}.cpw.cpfa.m-happy .cpfx{left:var(--s0x);top:var(--s0y);right:auto}.cpw.cpfa.m-happy .cpfx.b{left:var(--s1x);top:var(--s1y)}
 .cpw rl-pup{display:block;width:100%;height:100%;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}.cpw.gold rl-pup{filter:sepia(.9) saturate(2.4) hue-rotate(-8deg) brightness(1.08) drop-shadow(0 0 10px #facc15)}
+.hurtnote{color:var(--warm,#f59e0b)}.hurtnote.hi{color:#fb7185}.hurtnote u{text-decoration:underline}.hurtseg button{font-size:12px;padding:6px 4px}
 .cpw.slp .cpsq{position:relative;display:block;max-width:100%}.cpw.slp .cpsq img{display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:fill;animation:cpBr 4.8s ease-in-out infinite}.cpw.slp .cpfx{left:var(--zx);top:var(--zy);right:auto}.cpw.slp .cpfx.b{margin:-.5em 0 0 .7em}@keyframes cpBr{0%,100%{transform:scale(1,1)}50%{transform:scale(1.008,1.03)}}
 .cpw.gold img{filter:sepia(.9) saturate(2.4) hue-rotate(-8deg) brightness(1.08) drop-shadow(0 0 10px #facc15)}
 .cpw.gold::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%) -150% 0/250% 100% no-repeat;-webkit-mask:var(--cpm) center bottom/contain no-repeat;mask:var(--cpm) center bottom/contain no-repeat;animation:cpShine 3s ease-in-out infinite;pointer-events:none}
@@ -1815,6 +1816,49 @@ function newSSTag(list) {
 }
 const routineEx = (rid, name) => { const r = S.routines.find(x => x.id === rid); return r && r.exercises.find(x => norm(x.name) === norm(name)); };
 
+/* ---------- Augmentation par exercice venue de l'IA (INC:5) ---------- */
+function incsFrom(res) { let n = 0; (res || []).forEach(r => (r.exercises || []).forEach(e => { if (+e.inc > 0) { S.incs = S.incs || {}; S.incs[norm(e.name)] = +e.inc; n++; } delete e.inc; })); return n; }
+/* ===================== Douleurs et blessures : prises en compte par l'IA, la séance générée et pendant la séance ===================== */
+const HURT_Z = [
+  ['neck', ['Cou et nuque', 'Neck'], /haussement|hausse.*epaule|shrug|upright|rowing menton|tirage menton|neck|nuque/, []],
+  ['shoulder', ['Épaules', 'Shoulders'], /militaire|overhead|ohp|arnold|elevation|lateral raise|front raise|dips|developpe|bench|shoulder press|chest press|incline press|dumbbell press|upright|ecarte|\bfly|pull.?over|pompe|push.?up|handstand/, ['delts']],
+  ['elbow', ['Coudes', 'Elbows'], /curl|triceps|skull|barre au front|dips|pushdown|kickback|close.?grip|prise serree/, ['biceps', 'triceps']],
+  ['wrist', ['Poignets', 'Wrists'], /poignet|wrist|front squat|pompe|push.?up|planche|plank|farmer|fermier/, ['forearms']],
+  ['upback', ['Haut du dos', 'Upper back'], /rowing|\brow\b|tirage|traction|pull.?up|chin.?up|face pull/, []],
+  ['lowback', ['Bas du dos', 'Lower back'], /souleve|deadlift|good.?morning|rowing.*barre|barbell row|bent.?over|pendlay|t.?bar|squat|hyperext|back ext|extension.*(dos|lomb)|clean|snatch|arrache|epaule.?jete|swing|superman/, ['spine']],
+  ['hip', ['Hanches', 'Hips'], /squat|fente|lunge|hip thrust|abduct|adduct|souleve|deadlift|presse|leg press|step.?up|bulgare/, ['abductors', 'adductors']],
+  ['knee', ['Genoux', 'Knees'], /squat|fente|lunge|leg extension|extension.*jambe|presse|leg press|saut|jump|step.?up|bulgare|hack|sissy|box/, ['quads']],
+  ['ankle', ['Chevilles', 'Ankles'], /mollet|calf|saut|jump|corde|skipping|course|\brun/, ['calves']]];
+const HURT_LV = [['Aucune', 'None'], ['Gêne légère', 'Mild discomfort'], ['Douleur', 'Pain'], ['Blessure', 'Injury']];
+const hurtMap = () => S.settings.hurt || {};
+const hurtOn = () => Object.values(hurtMap()).some(v => +v > 0);
+const hurtZN = z => { const x = HURT_Z.find(y => y[0] === z); return x ? T(x[1][0], x[1][1]) : z; };
+function hurtOf(name) { // zones en douleur sollicitées par cet exercice : [{z, lv}], la plus grave en premier
+  if (!hurtOn()) return []; const H = hurtMap(), k = norm(name); let L = null; try { L = libEntry(name); } catch (e) {}
+  return HURT_Z.filter(([z, n, re, m]) => +H[z] > 0 && (re.test(k) || (L && (L.p || []).some(x => m.includes(x))))).map(([z]) => ({z, lv: +H[z]})).sort((a, b) => b.lv - a.lv);
+}
+function hurtNote(name, ei) {
+  const h = hurtOf(name); if (!h.length) return ''; const w = h[0];
+  const msg = w.lv >= 3 ? T('à éviter tant que ce n\'est pas guéri', 'avoid until it has healed') : w.lv === 2 ? T('charge plus légère et amplitude sans douleur', 'lighter weight, pain-free range') : T('vas-y doucement', 'take it easy');
+  return `<div class="last hurtnote${w.lv >= 2 ? ' hi' : ''}" data-act="ex-replace" data-e="${ei}">${ic('alert', 13)} ${esc(h.map(x => hurtZN(x.z)).join(', '))} : ${msg}${w.lv >= 2 ? ` · <u>${T('Remplacer', 'Replace')}</u>` : ''}</div>`;
+}
+function hurtTxt() {
+  if (!hurtOn()) return ''; const H = hurtMap();
+  const parts = HURT_Z.filter(([z]) => +H[z] > 0).map(([z, n]) => `${T(n[0], n[1]).toLowerCase()} (${T(HURT_LV[+H[z]][0], HURT_LV[+H[z]][1]).toLowerCase()})`);
+  const note = String(S.settings.hurtNote || '').replace(/\s+/g, ' ').trim().slice(0, 300);
+  return T(`\n\nIMPORTANT, douleurs et blessures à respecter : ${parts.join(', ')}.${note ? ' Précisions : ' + note + '.' : ''} Adapte en conséquence : évite les exercices qui chargent une zone en douleur ou blessée, propose des variantes plus sûres (machine, appui, amplitude réduite, charge plus légère), continue d'entraîner le reste du corps, et ajoute une courte note de prudence sur les exercices qui touchent ces zones.`,
+    `\n\nIMPORTANT, pain and injuries to respect: ${parts.join(', ')}.${note ? ' Details: ' + note + '.' : ''} Adapt accordingly: avoid exercises that load a painful or injured area, suggest safer variations (machine, supported, reduced range, lighter weight), keep training the rest of the body, and add a short caution note on exercises that involve these areas.`);
+}
+function aiExtra() {
+  return T(` Pour CHAQUE exercice avec charge, ajoute INC: avec l'augmentation de charge qui convient pour progresser (petite pour les épaules, les bras et les isolations, plus grande pour les jambes et les gros mouvements; garde mes INC actuels s'ils sont bons).`, ` For EACH weighted exercise, add INC: with the right weight increase to progress (small for shoulders, arms and isolation, bigger for legs and big lifts; keep my current INC values if they are good).`) + hurtTxt();
+}
+function setHurt() {
+  const H = hurtMap();
+  return sGrp(T('Où as-tu mal?', 'Where does it hurt?'), HURT_Z.map(([z, n]) => `<div class="srow col" data-st="${esc(T(n[0], n[1]))}"><span class="stx"><b>${T(n[0], n[1])}</b></span><div class="seg hurtseg">${HURT_LV.map((l, v) => `<button class="${(+H[z] || 0) === v ? 'on' : ''}" data-act="hurt-lv" data-z="${z}" data-v="${v}">${T(l[0], l[1])}</button>`).join('')}</div></div>`).join(''),
+      T('Les séances générées évitent les zones en douleur ou blessées, chaque exercice qui les sollicite est signalé pendant ta séance, et tout ce que tu copies pour l\'IA lui demande d\'adapter ton programme.', 'Generated workouts avoid painful or injured areas, each exercise that involves them is flagged during your workout, and everything you copy for the AI asks it to adapt your program.')) +
+    sGrp(T('Précisions', 'Details'), `<div class="srow col" data-st="${esc(T('Précisions', 'Details'))}"><textarea data-set="hurtNote" maxlength="300" rows="3" style="width:100%;font:inherit" placeholder="${esc(T('Ex. : hernie discale L5, opéré du genou droit en 2023, douleur en fin d\'amplitude au développé…', 'E.g. L5 disc herniation, right knee surgery in 2023, pain at the end of range on presses…'))}">${esc(S.settings.hurtNote || '')}</textarea></div>`,
+      T('Runelift ne remplace pas un médecin ou un physiothérapeute : si la douleur est vive, augmente ou dure, consulte un professionnel.', 'Runelift doesn\'t replace a doctor or physiotherapist: if the pain is sharp, getting worse or lasting, see a professional.'));
+}
 /* ---------- Format texte (partage IA) ---------- */
 function routineToText(r) {
   return 'ROUTINE: ' + r.name + '\n' + r.exercises.map(e => {
@@ -1823,6 +1867,7 @@ function routineToText(r) {
     if (e.timed) f.push(T('DURÉE', 'TIMED'));
     if (e.rest) f.push('R:' + (e.rest < 0 ? 0 : e.rest));
     if (e.ss) f.push('SS:' + e.ss);
+    { const v = (S.incs || {})[norm(e.name)]; if (+v > 0) f.push('INC:' + dec1(+v)); }
     if (Array.isArray(e.sl) && e.sl.some(s => s.t)) { const nw = e.sl.filter(s => s.t === 'W').length, nf = e.sl.filter(s => s.t === 'F').length; f.push('F:' + nf); if (nw) f.push('W:' + nw); }
     return '- ' + f.join(' | ');
   }).join('\n');
@@ -1846,11 +1891,13 @@ function parseText(txt, defaultName) {
     sets = Math.max(1, Math.min(sets || 2, 10));
     const reps = sr ? sr[2].trim().replace(/[–—]/g, '-').replace(/\s*reps?$/i, '') : (p[1] || '8-12');
     const wm = (p[2] || '').replace(',', '.').match(/\d+(\.\d+)?/);
-    let ss = null, rest = null, timed = false, fF = null, fW = 0; const notes = [];
+    let ss = null, rest = null, timed = false, fF = null, fW = 0, inc = 0; const notes = [];
     p.slice(3).forEach(f => {
       const sm = f.match(/^SS\s*:?\s*([A-Za-z0-9]+)$/i);
       const rm = f.match(/^(?:R|REPOS|REST)\s*:?\s*(\d+(?:[.,]\d+)?)\s*(s|sec|secondes?|m|min|minutes?)?$/i);
       const fm2 = f.match(/^(?:F|ECHEC|ÉCHEC|FAIL(?:URE)?)\s*:\s*(\d+|all|toutes?|tout)$/i), wm2 = f.match(/^(?:W|É|ECH|ÉCH|WARM(?:UP)?|ÉCHAUF\w*)\s*:\s*(\d+)$/i);
+      const im2 = f.match(/^(?:INC|AUG(?:MENTATION)?|INCREMENT)\s*:?\s*\+?\s*(\d+(?:[.,]\d+)?)\s*(?:lbs?|kg)?$/i);
+      if (im2) { const v = parseFloat(im2[1].replace(',', '.')); if (v > 0 && v <= 50) inc = v; return; }
       if (fm2) { fF = /^\d+$/.test(fm2[1]) ? +fm2[1] : 99; return; }
       if (wm2) { fW = Math.min(4, +wm2[1]); return; }
       if (/^(DUR[EÉ]E|TEMPS|TIMED|CHRONO|DURATION|TIME)$/i.test(f)) timed = true;
@@ -1862,6 +1909,7 @@ function parseText(txt, defaultName) {
     if (!wm && /\?/.test(p[2] || '')) o.nw = true;
     if (rest === 0) o.rest = -1; else if (rest >= 5 && rest <= 900) o.rest = rest;
     if (ss) o.ss = ss;
+    if (inc) o.inc = inc;
     if (timed || TIMED_RE.test(p[0])) o.timed = true;
     if (fF != null || fW) { // séries planifiées : échauffements + dernières séries à l'échec
       o.fplan = true; const nf = Math.min(sets, fF || 0);
@@ -1891,14 +1939,14 @@ function aiPrompt(routines) {
   }).join('\n\n');
   if (isEN()) return `Here is my workout ${routines.length > 1 ? 'program' : 'routine'} (weights in ${U()}${effTxt()}).\n\n${blocks}${routines.length > 1 ? schedTxt() : ''}\n\n` +
     `Reply with the modified version in EXACTLY this format, one exercise per line:\n` +
-    `ROUTINE: Routine name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note (optional) | R:90 (rest in seconds, optional) | SS:A (optional) | F:1 (optional: number of last sets to take to failure) | W:2 (optional: warm-up sets) | TIMED (optional, if reps are seconds)\n` +
+    `ROUTINE: Routine name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note (optional) | R:90 (rest in seconds, optional) | SS:A (optional) | F:1 (optional: number of last sets to take to failure) | W:2 (optional: warm-up sets) | INC:5 (weight increase in ${U()} for the next progression) | TIMED (optional, if reps are seconds)\n` +
     `ALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. For EACH exercise, decide what's best: put F:1 (or F:2) only where training to failure is useful (often the last set of isolation and machine exercises), and F:0 on heavy compound lifts (squat, deadlift, heavy bench…) where it's risky. Add W:1 to W:3 on the first heavy exercises that need a warm-up. Write BW for bodyweight (“?” = weight to be determined: suggest a starting weight). Keep my R:… (rest in seconds) values, or adjust them if relevant. For a superset, put the same SS:A (or SS:B…) on consecutive exercises done together. ` +
-    `Keep the same routine name so my app replaces it.\n\nMy request: `;
+    `Keep the same routine name so my app replaces it.${aiExtra()}\n\nMy request: `;
   return `Voici ${routines.length > 1 ? 'mon programme' : 'ma routine'} d'entraînement (charges en ${U()}${effTxt()}).\n\n${blocks}${routines.length > 1 ? schedTxt() : ''}\n\n` +
     `Réponds avec la version modifiée dans EXACTEMENT ce format, un exercice par ligne :\n` +
-    `ROUTINE: Nom de la routine\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note (optionnelle) | R:90 (repos en secondes, optionnel) | SS:A (optionnel) | F:1 (optionnel : nombre de dernières séries à faire à l'échec) | W:2 (optionnel : séries d'échauffement) | DURÉE (optionnel, si les reps sont des secondes)\n` +
+    `ROUTINE: Nom de la routine\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note (optionnelle) | R:90 (repos en secondes, optionnel) | SS:A (optionnel) | F:1 (optionnel : nombre de dernières séries à faire à l'échec) | W:2 (optionnel : séries d'échauffement) | INC:5 (augmentation de charge en ${U()} pour la prochaine progression) | DURÉE (optionnel, si les reps sont des secondes)\n` +
     `Donne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. Pour CHAQUE exercice, décide ce qui est le mieux : mets F:1 (ou F:2) seulement là où aller à l'échec est utile (souvent la dernière série des exercices d'isolation et des machines), et F:0 sur les gros mouvements lourds (squat, soulevé de terre, développé couché lourd…) où c'est risqué. Ajoute W:1 à W:3 sur les premiers exercices lourds qui ont besoin d'échauffement. Écris PDC pour le poids du corps (« ? » = charge à déterminer : propose une charge de départ). Garde les R:… (repos en secondes) de mes exercices, ou ajuste-les si c'est pertinent. Pour un superset, mets le même SS:A (ou SS:B…) sur les exercices consécutifs faits ensemble. ` +
-    `Garde le même nom de routine pour que mon appli la remplace.\n\nMa demande : `;
+    `Garde le même nom de routine pour que mon appli la remplace.${aiExtra()}\n\nMa demande : `;
 }
 function freshPrompt() {
   const since = Date.now() - 90 * 864e5, best = {}, cnt = {};
@@ -1912,14 +1960,14 @@ function freshPrompt() {
     `Choose the exercises and structure freely: do NOT base it on my old routines, new exercises are welcome. ` +
     (perf ? `To help you estimate starting weights, here are my best recent sets (last 90 days):\n${perf}\n\n` : '\n') +
     `Reply in EXACTLY this format, one ROUTINE: line per workout day, one exercise per line:\n` +
-    `FOLDER: Program name\nROUTINE: Routine name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note (optional) | R:90 (rest in seconds) | SS:A (optional, superset) | F:1 (optional: number of last sets to take to failure) | W:2 (optional: warm-up sets) | TIMED (optional, if reps are seconds)\n` +
-    `ALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. For EACH exercise, decide what's best: put F:1 (or F:2) only where training to failure is useful (often the last set of isolation and machine exercises), and F:0 on heavy compound lifts (squat, deadlift, heavy bench…) where it's risky. Add W:1 to W:3 on the first heavy exercises that need a warm-up. Write BW for bodyweight. Start with a FOLDER: line with a short program name (e.g. FOLDER: PPL 5 days), then give each routine a new, clear name (e.g. Push A, Pull A, Legs A).\n\nMy request (number of days per week, split, goals…): `;
+    `FOLDER: Program name\nROUTINE: Routine name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note (optional) | R:90 (rest in seconds) | SS:A (optional, superset) | F:1 (optional: number of last sets to take to failure) | W:2 (optional: warm-up sets) | INC:5 (weight increase in ${U()} for the next progression) | TIMED (optional, if reps are seconds)\n` +
+    `ALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. For EACH exercise, decide what's best: put F:1 (or F:2) only where training to failure is useful (often the last set of isolation and machine exercises), and F:0 on heavy compound lifts (squat, deadlift, heavy bench…) where it's risky. Add W:1 to W:3 on the first heavy exercises that need a warm-up. Write BW for bodyweight. Start with a FOLDER: line with a short program name (e.g. FOLDER: PPL 5 days), then give each routine a new, clear name (e.g. Push A, Pull A, Legs A).${aiExtra()}\n\nMy request (number of days per week, split, goals…): `;
   return `Crée-moi un NOUVEAU programme d'entraînement à partir de zéro (charges en ${U()}${effTxt()}). ` +
     `Choisis librement les exercices et la structure : ne te base PAS sur mes anciennes routines, tu peux proposer de nouveaux exercices. ` +
     (perf ? `Pour t'aider à estimer mes charges de départ, voici mes meilleures séries récentes (90 derniers jours) :\n${perf}\n\n` : '\n') +
     `Réponds dans EXACTEMENT ce format, une ligne ROUTINE: par séance, un exercice par ligne :\n` +
-    `DOSSIER: Nom du programme\nROUTINE: Nom de la routine\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note (optionnelle) | R:90 (repos en secondes) | SS:A (optionnel, superset) | F:1 (optionnel : nombre de dernières séries à faire à l'échec) | W:2 (optionnel : séries d'échauffement) | DURÉE (optionnel, si les reps sont des secondes)\n` +
-    `Donne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. Pour CHAQUE exercice, décide ce qui est le mieux : mets F:1 (ou F:2) seulement là où aller à l'échec est utile (souvent la dernière série des exercices d'isolation et des machines), et F:0 sur les gros mouvements lourds (squat, soulevé de terre, développé couché lourd…) où c'est risqué. Ajoute W:1 à W:3 sur les premiers exercices lourds qui ont besoin d'échauffement. Écris PDC pour le poids du corps. Commence par une ligne DOSSIER: avec un nom court pour le programme (ex. DOSSIER: PPL 5 jours), puis donne à chaque routine un nouveau nom clair (ex. Push A, Pull A, Jambes A).\n\nMa demande (nombre de jours par semaine, split, objectifs…) : `;
+    `DOSSIER: Nom du programme\nROUTINE: Nom de la routine\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note (optionnelle) | R:90 (repos en secondes) | SS:A (optionnel, superset) | F:1 (optionnel : nombre de dernières séries à faire à l'échec) | W:2 (optionnel : séries d'échauffement) | INC:5 (augmentation de charge en ${U()} pour la prochaine progression) | DURÉE (optionnel, si les reps sont des secondes)\n` +
+    `Donne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. Pour CHAQUE exercice, décide ce qui est le mieux : mets F:1 (ou F:2) seulement là où aller à l'échec est utile (souvent la dernière série des exercices d'isolation et des machines), et F:0 sur les gros mouvements lourds (squat, soulevé de terre, développé couché lourd…) où c'est risqué. Ajoute W:1 à W:3 sur les premiers exercices lourds qui ont besoin d'échauffement. Écris PDC pour le poids du corps. Commence par une ligne DOSSIER: avec un nom court pour le programme (ex. DOSSIER: PPL 5 jours), puis donne à chaque routine un nouveau nom clair (ex. Push A, Pull A, Jambes A).${aiExtra()}\n\nMa demande (nombre de jours par semaine, split, objectifs…) : `;
 }
 async function copy(t) {
   try { await navigator.clipboard.writeText(t); toast('✅ Copié! Colle-le dans ton IA'); return; } catch (e) {}
@@ -1980,6 +2028,7 @@ function applyPaste(rid) {
   const r = S.routines.find(x => x.id === rid);
   const res = parseText($('#pasteTa').value, r && r.name);
   if (!res.length) { toast('Aucun exercice reconnu'); return; }
+  incsFrom(res);
   const newF = new Set();
   res.forEach(x => {
     const fx = pasteFolder || x.folder || null;
@@ -2445,6 +2494,7 @@ function genBuild() {
     let best = null, bv = 0;
     pool.forEach((name, k) => { if (picks.some(x => x.name === name || libId(x.name) === libId(name))) return; const L = libEntry(name); if (!L || !L.p.length) return;
       if (L.p.some(m => score(m) < 0) || L.s.some(m => (rec[m] || 0) > .5)) return;
+      if (hurtOf(name).some(h => h.lv >= 2)) return; // zone en douleur ou blessée
       let v = L.p.reduce((a, m) => a + score(m) * Math.pow(.3, cov[m] || 0), 0) / Math.sqrt(L.p.length) + L.s.reduce((a, m) => a + Math.max(0, score(m)) * .2 * Math.pow(.3, cov[m] || 0), 0);
       const comp = L.p.length + L.s.length >= 3; if (comp && i < 3) v *= 1.25;
       v *= 1 + Math.min(.25, (cnt[name] || 0) * .03) + (genSt.seed ? rnd(k) * 1.3 : 0);
@@ -2463,6 +2513,7 @@ function openGen(keep) {
     <p class="muted small" style="margin:8px 0">${T('Choisie pour toi selon tes muscles reposés et ce que tu as moins travaillé cette semaine.', 'Picked for you from your rested muscles and what you trained less this week.')}</p>
     <div class="seg" style="margin-bottom:10px">${seg}</div>
     ${L.length ? L.map(x => `<div class="row between" style="padding:8px 0;border-bottom:1px solid var(--line);gap:8px"><span style="min-width:0"><b>${esc(x.e.name)}</b><br><span class="muted small">${x.mus.map(musN).join(', ')}</span></span><span class="muted small" style="white-space:nowrap">${x.e.sets} × ${esc(String(x.e.reps || ''))}</span></div>`).join('') : `<p class="center muted" style="margin:18px 0">${T('Tous tes muscles sont encore fatigués. Une journée de repos ou des étirements seraient mieux aujourd\'hui.', 'All your muscles are still tired. A rest day or some stretching would be better today.')}</p>`}
+    ${hurtOn() ? `<p class="muted small" style="margin:10px 0 0">${ic('alert', 13)} ${T('Adaptée à tes douleurs', 'Adapted to your pain')}${CLN()} ${esc(HURT_Z.filter(([z]) => +hurtMap()[z] >= 2).map(([z]) => hurtZN(z)).join(', ') || T('gênes légères seulement', 'mild discomfort only'))}</p>` : ''}
     ${genSt.tired.length && L.length ? `<p class="muted small" style="margin:10px 0 0">${T('Laissés au repos', 'Left to rest')}${CLN()} ${genSt.tired.map(musN).join(', ')}</p>` : ''}
     ${L.length ? `<button class="btn primary block" data-act="gen-go" style="margin-top:12px">${T('Démarrer cette séance', 'Start this workout')}</button><button class="btn block" data-act="gen-other" style="margin-top:8px">${T('Autre proposition', 'Another suggestion')}</button>` : ''}`, {id: 'gensheet'});
 }
@@ -2822,7 +2873,7 @@ function vWorkout() {
       ${!last ? '<div class="last">Première fois</div>' : ''}
       ${stagBtn(e.name, ei)}
       ${bossLine(e.name, ei)}
-      ${sideOf(e.name) ? `<div class="last sidenote" data-act="ex-menu" data-e="${ei}">${ic('scale', 13)} ${sideNote(e.name)}</div>` : ''}
+      ${sideOf(e.name) ? `<div class="last sidenote" data-act="ex-menu" data-e="${ei}">${ic('scale', 13)} ${sideNote(e.name)}</div>` : ''}${hurtNote(e.name, ei)}
       ${e.mach ? `<div class="last">⚖️ ${T('Machine', 'Machine')}${CLN()} ${dec1(e.mach.v)} ${e.mach.u} = ${dec1(e.mach.u === 'kg' ? e.mach.v * KG : e.mach.v / KG)} ${U()}</div>` : ''}
       ${(() => { const sg = suggestFor(e); return sg ? `<div class="sug"><span>💡 Haut de la fourchette atteint (${esc(sg.from)}). Essaie <b>${dec1(sg.top)} ${U()}${sg.bw ? ' de lest' : ''}</b>${sideOf(e.name) && !sg.bw ? ` (${dec1(+wShow(e.name, sg.top))} ${T('par côté', 'per side')})` : ''}.${(() => { const lw = Math.max(...e.sets.filter(s => s.t !== 'W').map(s => +s.w || 0)); return lw > 0 && (sg.top - lw) / lw > 0.1 ? `<br><span class="small muted">${T('Gros saut : vise d\'abord le bas de ta plage de reps avec la nouvelle charge.', 'Big jump: aim for the bottom of your rep range with the new weight first.')}</span>` : ''; })()}</span><span class="row" style="gap:4px;flex-direction:column"><button class="btn primary sm" data-act="apply-sug" data-e="${ei}">Appliquer</button><button class="linkbtn small" data-act="inc-menu" data-e="${ei}">${isDB(e.name) && +S.settings.dbStep > 0 ? T('haltères ', 'dumbbells ') + dec1(+S.settings.dbStep) : '+' + dec1(incFor(e.name))} ${U()} ⚙️</button></span></div>` : ''; })()}
       <div class="colhead w5"><span>#</span><span>${S.settings.prevMode === 'best' ? T('Meilleur', 'Best') : 'Précédent'}</span><span>${sideOf(e.name) ? U() + T('/côté', '/side') : U()}</span><span>${tm ? 'Sec' : 'Reps'}</span><span></span></div>
@@ -3296,6 +3347,7 @@ const SETP = {
   seance: {t: () => T('Séance', 'Workout'), ic: 'dumbbell', h: '#4ade80', b: setSeance, v: () => `${U()} · ${fmtRest(+S.settings.rest || 150)}`, kw: 'unite unit lb kg km milles miles repos rest superset precedent previous intensite intensity echec failure rir plateau ecran screen'},
   charges: {t: () => T('Charges et matériel', 'Weights and equipment'), ic: 'scale', h: '#fb923c', b: setCharges, v: () => `+${dec1(incr())} ${U()}`, kw: 'augmentation increment halteres dumbbells barre bar disques plates calculateur calculator'},
   son: {t: () => T('Minuteur et son', 'Timer and sound'), ic: 'vol', h: '#2dd4bf', b: setSon, v: () => S.settings.sound !== false ? T('Bip activé', 'Beep on') : T('Bip coupé', 'Beep off'), kw: 'bip beep son sound volume vibration haptique minuteur timer'},
+  hurt: {t: () => T('Douleurs et blessures', 'Pain and injuries'), ic: 'alert', h: '#fb7185', b: setHurt, v: () => { const n = Object.values(hurtMap()).filter(v => +v > 0).length; return n ? T(`${n} zone${n > 1 ? 's' : ''}`, `${n} area${n > 1 ? 's' : ''}`) : T('Aucune', 'None'); }, kw: 'douleur pain blessure injury dos back genou knee epaule shoulder mal hurt physio'},
   notifs: {t: () => T('Notifications et rappels', 'Notifications and reminders'), ic: 'bell', h: '#f87171', b: setNotifs, v: () => S.settings.notif === true || S.settings.remind === true ? T('Activées', 'On') : T('Désactivées', 'Off'), kw: 'notification rappel reminder montre watch'},
   watch: {t: () => T('Montre', 'Watch'), ic: 'watch', h: '#a78bfa', on: () => !!WR(), b: setWatch, v: () => wearSt ? (wearSt.nodes > 0 ? T('Connectée', 'Connected') : T('Non connectée', 'Not connected')) : '', kw: 'galaxy wear os montre watch', noidx: 1},
   phone: {t: () => T('Téléphone Android', 'Android phone'), ic: 'phone', h: '#a78bfa', on: () => !!LV(), b: setPhone, kw: 'ecran verrouille lock screen widget amis friends'},
@@ -3308,7 +3360,7 @@ const SETP = {
   ai: {t: () => T('IA et partage', 'AI and sharing'), ic: 'spark', h: '#c6f135', b: setAi, kw: 'ia ai chatgpt claude gemini partager share ami friend'},
   data: {t: () => T('Confidentialité et compte', 'Privacy and account'), ic: 'shield', h: '#94a3b8', b: setData, kw: 'confidentialite privacy effacer erase supprimer delete compte account rapports reports erreur error'}
 };
-const SET_GRP = () => [[T('Entraînement', 'Training'), ['seance', 'charges', 'son', 'notifs']], [T('Appareils', 'Devices'), ['watch', 'phone', 'health']], [T('Appli', 'App'), ['general', 'look', 'aide']], [T('Données', 'Data'), ['cloud', 'import', 'ai']], [T('Compte', 'Account'), ['data']]];
+const SET_GRP = () => [[T('Entraînement', 'Training'), ['seance', 'charges', 'hurt', 'son', 'notifs']], [T('Appareils', 'Devices'), ['watch', 'phone', 'health']], [T('Appli', 'App'), ['general', 'look', 'aide']], [T('Données', 'Data'), ['cloud', 'import', 'ai']], [T('Compte', 'Account'), ['data']]];
 const setOk = k => SETP[k] && (!SETP[k].on || SETP[k].on());
 const setRow = k => { const p = SETP[k]; let v = ''; try { v = p.v ? p.v() : ''; } catch (e) {} return sBtn('setp', p.t(), {x: `data-k="${k}"`, ic: p.ic, h: p.h, val: v}); };
 function setIdx() {
@@ -3593,12 +3645,12 @@ function historyPrompt() {
     hs.map(h => `${new Date(h.date).toLocaleDateString('en-CA')} — ${h.routineName} (${hm(h.duration)})\n` +
       h.exercises.map(e => `  ${e.name}: ${e.sets.map(s => fmtSet(s, false).replace(' (échec)', '')).join(', ')}${e.note ? ' — note: ' + e.note : ''}`).join('\n')).join('\n\n') +
     `\n\nMy current routines:\n\n${S.routines.map(routineToText).join('\n\n')}\n\n` +
-    `If you suggest routine changes, give them in EXACTLY this format so I can paste them into my app:\nROUTINE: Name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note | R:90 (rest in s, optional) | SS:A (optional, for a superset) | F:1 (optional: number of last sets to take to failure) | W:2 (optional: warm-up sets)\nALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. \n\nMy question (if I write nothing here: tell me what is progressing, what is stalling, and give me 3 concrete changes): `;
+    `If you suggest routine changes, give them in EXACTLY this format so I can paste them into my app:\nROUTINE: Name\n- Exercise | sets x rep range (e.g. 3 x 8-10) | weight ${U()} | note | R:90 (rest in s, optional) | SS:A (optional, for a superset) | F:1 (optional: number of last sets to take to failure) | W:2 (optional: warm-up sets) | INC:5 (weight increase in ${U()} for the next progression)\nALWAYS give a rep range (e.g. 8-10, 10-12, 12-15), never a single number, except for timed exercises. ${aiExtra()}\n\nMy question (if I write nothing here: tell me what is progressing, what is stalling, and give me 3 concrete changes): `;
   return `Voici mes séances d'entraînement des 30 derniers jours (charges en ${U()}, format charge×reps${effTxt()}) :\n\n` +
     hs.map(h => `${new Date(h.date).toLocaleDateString(LOC())} — ${h.routineName} (${hm(h.duration)})\n` +
       h.exercises.map(e => `  ${e.name} : ${e.sets.map(s => fmtSet(s, false).replace(' (échec)', '')).join(', ')}${e.note ? ' — note : ' + e.note : ''}`).join('\n')).join('\n\n') +
     `\n\nMes routines actuelles :\n\n${S.routines.map(routineToText).join('\n\n')}\n\n` +
-    `Si tu proposes des changements de routines, donne-les dans EXACTEMENT ce format pour que je puisse les coller dans mon appli :\nROUTINE: Nom\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note | R:90 (repos en s, optionnel) | SS:A (optionnel pour un superset) | F:1 (optionnel : nombre de dernières séries à faire à l'échec) | W:2 (optionnel : séries d'échauffement)\nDonne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. \n\nMa question (si je n'écris rien ici : dis-moi ce qui progresse, ce qui stagne, et donne-moi 3 changements concrets) : `;
+    `Si tu proposes des changements de routines, donne-les dans EXACTEMENT ce format pour que je puisse les coller dans mon appli :\nROUTINE: Nom\n- Exercice | séries x plage de reps (ex. 3 x 8-10) | charge ${U()} | note | R:90 (repos en s, optionnel) | SS:A (optionnel pour un superset) | F:1 (optionnel : nombre de dernières séries à faire à l'échec) | W:2 (optionnel : séries d'échauffement) | INC:5 (augmentation de charge en ${U()} pour la prochaine progression)\nDonne TOUJOURS une plage de reps (ex. 8-10, 10-12, 12-15), jamais un seul chiffre, sauf pour les exercices en durée. ${aiExtra()}\n\nMa question (si je n'écris rien ici : dis-moi ce qui progresse, ce qui stagne, et donne-moi 3 changements concrets) : `;
 }
 
 /* ===================== Graphique ===================== */
@@ -7467,9 +7519,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.127.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.128.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.128.0', d: '2026-11-25', fr: ['Nouveau : Réglages → Douleurs et blessures. Dis où tu as mal (dos, genoux, épaules…) : la séance générée évite ces zones, chaque exercice qui les sollicite est signalé pendant ta séance avec un bouton pour le remplacer, et tout ce que tu copies pour l\'IA lui demande d\'adapter ton programme.', 'IA : elle propose maintenant l\'augmentation de charge pour chaque exercice (INC:5), et l\'appli l\'enregistre quand tu colles sa réponse.'], en: ['New: Settings → Pain and injuries. Say where it hurts (back, knees, shoulders…): the generated workout avoids those areas, each exercise that involves them is flagged during your workout with a button to replace it, and everything you copy for the AI asks it to adapt your program.', 'AI: it now suggests the weight increase for each exercise (INC:5), and the app saves it when you paste its answer.']},
   {v: '9.127.0', d: '2026-11-25', fr: ['Amis : quand un ami commence sa séance, tu reçois une notification (appli Android, même fermée). Tu peux couper ça dans Réglages → Notifications.', 'Compagnons : une bannière à gagner pour chaque créature amenée au rang Meilleur ami, et la bannière « Meilleur ami de la nature » quand tu les as toutes. Le nom de ton compagnon est maintenant définitif.', 'Appli Android : rappels d\'entraînement et vibrations qui marchent vraiment (avec la nouvelle version de l\'appli).', 'Plus de minuteur de repos après la toute dernière série de la séance. Le calculateur de disques ne bloque plus avec une charge énorme.'], en: ['Friends: when a friend starts a workout, you get a notification (Android app, even closed). You can turn it off in Settings → Notifications.', 'Companions: a banner to win for each creature brought to Best friend, and the “Nature\'s best friend” banner when you have them all. Your companion\'s name is now permanent.', 'Android app: workout reminders and vibration that really work (with the new app version).', 'No more rest timer after the very last set of the workout. The plate calculator no longer freezes with a huge weight.']},
   {v: '9.126.0', d: '2026-11-24', fr: ['Nouveau : les compagnons arrivent. À ton premier niveau 5, ton œuf éclot et tu choisis ton compagnon parmi 10 créatures. Il grandit avec votre lien (cœurs gagnés en t\'entraînant, en battant des records, en finissant tes quêtes), prend 4 formes et dort couché quand tu te reposes. Il ne perd jamais rien si tu t\'absentes.'], en: ['New: companions are here. At your first level 5 your egg hatches and you choose your companion among 10 creatures. It grows with your bond (hearts earned by training, beating records, finishing quests), takes 4 forms and sleeps lying down when you rest. It never loses anything if you take a break.']},
   {v: '9.123.2', d: '2026-11-23', fr: ['Fin de séance : une fois le coffre ouvert, le bouton devient « Coffre ouvert · revoir le butin » au lieu de « Ouvrir ton coffre ».'], en: ['End of workout: once the chest is opened, the button becomes “Chest opened · see the loot” instead of “Open your chest”.']},
@@ -12795,6 +12848,7 @@ document.addEventListener('click', e => {
     case 'add-exo': openPicker({title: 'Ajouter un exercice', cb: addExercise}); break;
     case 'finish': finishWorkout(); if (!S.active && S.guild) setTimeout(() => gldSync(true), 4000); if (!S.active) hcPush(S.history[S.history.length - 1]); if (frOn() && !S.active) frPublish(true); if (!S.active) { liveSync(true); if (cbOn()) cbPush(false); } if (gdOn() && !S.active) { if (gdTok()) gdPush(); else if (!cbOn() && (!S.gd.last || Date.now() - new Date(S.gd.last) > 20 * 3600e3)) gdSync(); else { S.gd.pending = true; saveLocal(); } } break;
     case 'cancel-workout': if (confirm('Abandonner cette séance sans l\'enregistrer?')) { S.active = null; save(); liveSync(true); stopTimer(); setRoot('train'); render(); } break;
+    case 'hurt-lv': { S.settings.hurt = S.settings.hurt || {}; const v = +b.dataset.v; if (v > 0) S.settings.hurt[b.dataset.z] = v; else delete S.settings.hurt[b.dataset.z]; save(); render(); break; }
     case 'inc-set': { S.incs = S.incs || {}; S.incs[norm(b.dataset.n)] = +b.dataset.v; save(); b.parentElement.querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === b)); if (!b.closest('.sheet .chips[data-ret]')) {} break; }
     case 'inc-menu': { const e = A.exercises[ei]; modal(`<h2>${T('Augmentation suggérée', 'Suggested increase')}</h2><p class="muted small">${esc(e.name)} · ${T("Quand tu atteins le haut de ta plage de reps, l'appli propose d'ajouter ce poids.", 'When you reach the top of your rep range, the app suggests adding this weight.')}</p>
       <div class="chips">${INC_OPTS().map(v => `<button class="chip ${incFor(e.name) === v ? 'on' : ''}" data-act="inc-set" data-n="${esc(e.name)}" data-v="${v}">+${dec1(v)} ${U()}</button>`).join('')}</div>
