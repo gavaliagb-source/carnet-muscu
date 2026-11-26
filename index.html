@@ -548,7 +548,8 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .cpw.cpfa.m-sad .cpfx{left:var(--tx);top:var(--ty);right:auto;margin-left:-.25em}.cpw.cpfa.m-sleep .cpfx{left:var(--zx);top:var(--zy);right:auto}.cpw.cpfa.m-sleep .cpfx.b{margin:-.5em 0 0 .7em}.cpw.cpfa.m-happy .cpfx{left:var(--s0x);top:var(--s0y);right:auto}.cpw.cpfa.m-happy .cpfx.b{left:var(--s1x);top:var(--s1y)}
 .cpw rl-pup{display:block;width:100%;height:100%;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}.cpw.gold rl-pup{filter:sepia(.9) saturate(2.4) hue-rotate(-8deg) brightness(1.08) drop-shadow(0 0 10px #facc15)}
 .hurtnote{color:var(--warm,#f59e0b)}.hurtnote.hi{color:#fb7185}.hurtnote u{text-decoration:underline}.hurtseg button{font-size:12px;padding:6px 4px}
-.cdseg{margin:0 0 12px}nav button{position:relative}.navdot{display:none;position:absolute;top:6px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--bg)}nav button.new .navdot{display:block}
+.cdseg{margin:0 0 12px}.nkcal{margin:8px 0 8px}.nkcal b{font-size:30px;font-weight:900}.nbar{display:flex;height:10px;border-radius:6px;overflow:hidden;gap:2px}.nbar i{display:block}.nmac{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}.nmac span{flex:1;min-width:90px;display:flex;flex-direction:column;font-size:12px;color:var(--muted)}.nmac span i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}.nmac b{color:var(--text);font-size:17px}
+.guide .gbar{height:6px;border-radius:4px;background:var(--line);margin:10px 0 6px;overflow:hidden}.guide .gbar i{display:block;height:100%;background:var(--accent)}.grow{display:flex;align-items:center;gap:10px;width:100%;padding:10px 2px;border:0;border-top:1px solid var(--line);background:none;color:inherit;font:inherit}.grow.ok{opacity:.55}.gck{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:#111}.grow.ok .gck{background:var(--accent);border-color:var(--accent)}nav button{position:relative}.navdot{display:none;position:absolute;top:6px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--bg)}nav button.new .navdot{display:block}
 .cpw.slp .cpsq{position:relative;display:block;max-width:100%}.cpw.slp .cpsq img{display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:fill;animation:cpBr 4.8s ease-in-out infinite}.cpw.slp .cpfx{left:var(--zx);top:var(--zy);right:auto}.cpw.slp .cpfx.b{margin:-.5em 0 0 .7em}@keyframes cpBr{0%,100%{transform:scale(1,1)}50%{transform:scale(1.008,1.03)}}
 .cpw.gold img{filter:sepia(.9) saturate(2.4) hue-rotate(-8deg) brightness(1.08) drop-shadow(0 0 10px #facc15)}
 .cpw.gold::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%) -150% 0/250% 100% no-repeat;-webkit-mask:var(--cpm) center bottom/contain no-repeat;mask:var(--cpm) center bottom/contain no-repeat;animation:cpShine 3s ease-in-out infinite;pointer-events:none}
@@ -3132,7 +3133,7 @@ function vBody() {
   const today = dkey(new Date());
   const lastEntry = S.body.slice().sort((a, b) => a.d.localeCompare(b.d)).pop();
   const nut = NUTRI.map(([k, l, u]) => { const pts = bodySeries(k).filter(x => Date.now() - new Date(x.d + 'T12:00') <= 7 * 864e5); return pts.length ? `<div class="stat"><span class="muted small">${l} · 7 j</span><b>${Math.round(pts.reduce((a, x) => a + +x.v, 0) / pts.length).toLocaleString(LOC())}</b><span class="muted small">${u}/jour</span></div>` : ''; }).join('');
-  return meCard() + photosCard() + stats + wGoalCard(ws) + (nut ? `<div class="row" style="margin-bottom:12px;align-items:stretch">${nut}</div>` : '') + `
+  return meCard() + nutriCard(false) + photosCard() + stats + wGoalCard(ws) + (nut ? `<div class="row" style="margin-bottom:12px;align-items:stretch">${nut}</div>` : '') + `
     <div class="bmrow">${opts.map(([k, l]) => `<button class="btn sm ${k === bodyMetric ? 'on' : ''}" data-act="bm-pick" data-k="${k}">${esc(l)}</button>`).join('')}</div>
     <div class="card" style="margin-top:12px">${pts.length ? `<canvas id="chart"></canvas>${NUTRI.some(x => x[0] === bodyMetric) ? '' : predictHtml(pts.map(p => ({d: p.d + 'T12:00', v: +p.v})), bodyMetric === 'w' ? 'body' : 'cm')}` : '<div class="empty">Aucune donnée pour cette mesure.</div>'}</div>
     <details class="card" id="bodyNew"><summary class="nomark" style="cursor:pointer;font-weight:800;font-size:16px">＋ Nouvelle mesure</summary>
@@ -4378,6 +4379,7 @@ function vTrain() {
   let h = '';
   if (a) h += `<div class="card" style="border-color:var(--accent)"><div class="row between"><div><h3>Séance en cours</h3><span class="muted small">${esc(a.routineName)} · ⏱ <span id="elapsed2">${fmtDur(Date.now() - new Date(a.start))}</span></span></div><button class="btn primary sm" data-act="go-workout">Reprendre</button></div></div>`;
   h += recCard();
+  if (!a) h += startGuide();
   h += todayCard();
   syncSystem(); if (GAME()) { clsSync(); evCheck(); h += guildStrip(); setTimeout(evAnnounce, 0); }
   h += cloudNag();
@@ -4953,7 +4955,50 @@ function secSave(c, ids) { const cf = SECCFG[c], rest = cf.all().filter(x => !id
     document.addEventListener('pointermove', mv); document.addEventListener('pointerup', up); document.addEventListener('pointercancel', up); raf = requestAnimationFrame(loop);
   });
 })();
-const PF_IDS = ['body', 'friends', 'year', 'stag', 'chart', 'tiles'], PF_NAMES = {body: ['Poids et photos', 'Weight & photos'], friends: ['Amis', 'Friends'], year: ['Bilan de l\'année', 'Year review'], stag: ['Rappel de stagnation', 'Plateau reminder'], chart: ['Graphique d\'activité', 'Activity chart'], tiles: ['Tableau de bord (tuiles)', 'Dashboard (tiles)']};
+/* ===================== Mon plan nutrition : calories et macros selon ton profil et ton objectif =====================
+   Mifflin-St Jeor × activité (séances par semaine), ajusté à l'objectif. Protéines et lipides par kilo (poids de référence
+   plafonné à un IMC de 25 pour ne pas gonfler les chiffres), glucides = le reste. Ce sont des points de départ. */
+function nutriPlan() {
+  const L = S.body.filter(b => b.w != null && +b.w > 0).sort((a, b) => a.d.localeCompare(b.d)).pop(), m = ME();
+  const miss = [!L && T('ton poids', 'your weight'), !m.h && T('ta taille', 'your height'), !m.age && T('ton âge', 'your age'), !m.sex && T('ton sexe', 'your sex')].filter(Boolean);
+  if (miss.length) return {miss};
+  const kg = U() === 'kg' ? +L.w : +L.w / 2.20462, hm = +m.h / 100, f = m.sex === 'f', days = +S.settings.goal || 3, obj = S.settings.obj || 'muscle';
+  const bmr = 10 * kg + 6.25 * +m.h - 5 * +m.age + (f ? -161 : 5);
+  const act = days <= 1 ? 1.2 : days <= 3 ? 1.375 : days <= 5 ? 1.55 : 1.725, tdee = bmr * act;
+  const adj = {fat: -0.2, muscle: S.settings.exp === 'beg' ? 0.12 : 0.08, force: 0.05, fit: 0}[obj] ?? 0;
+  let kcal = Math.max(tdee * (1 + adj), f ? 1300 : 1600, bmr * 1.05); kcal = Math.round(kcal / 10) * 10;
+  const ref = Math.min(kg, 25 * hm * hm), prot = Math.round(ref * ({fat: 2.1, muscle: 1.8, force: 1.8, fit: 1.6}[obj] || 1.8) / 5) * 5;
+  const fat = Math.round(Math.max(ref * 0.8, kcal * 0.25 / 9) / 5) * 5, carb = Math.max(0, Math.round((kcal - prot * 4 - fat * 9) / 4 / 5) * 5);
+  return {kcal, prot, fat, carb, tdee: Math.round(tdee / 10) * 10, water: Math.round(kg * 0.035 * 10) / 10, obj, days, adj};
+}
+function nutriCard(full) {
+  const n = nutriPlan(), OBJ = {fat: T('perte de gras', 'fat loss'), muscle: T('prise de muscle', 'muscle gain'), force: T('force', 'strength'), fit: T('rester en forme', 'staying fit')};
+  if (n.miss) return `<div class="card nutri"><b>${T('Mon plan nutrition', 'My nutrition plan')}</b><p class="small muted" style="margin:6px 0 10px">${T(`Il manque ${n.miss.join(', ')} pour calculer tes calories et tes macros.`, `Missing ${n.miss.join(', ')} to work out your calories and macros.`)}</p><button class="btn sm" data-act="${n.miss.length === 1 && /poids|weight/.test(n.miss[0]) ? 'go" data-v="measures' : 'ob-edit'}">${T('Compléter', 'Complete')}</button></div>`;
+  const bar = (v, c) => `<i style="flex:${v};background:${c}"></i>`, kp = n.prot * 4, kc = n.carb * 4, kf = n.fat * 9;
+  return `<div class="card nutri"><div class="row between"><b>${T('Mon plan nutrition', 'My nutrition plan')}</b><span class="small muted">${OBJ[n.obj] || ''}</span></div>
+    <div class="nkcal"><b>${n.kcal.toLocaleString(LOC())}</b> <span class="muted">kcal / ${T('jour', 'day')}</span></div>
+    <div class="nbar">${bar(kp, '#60a5fa')}${bar(kc, '#facc15')}${bar(kf, '#fb7185')}</div>
+    <div class="nmac"><span><i style="background:#60a5fa"></i>${T('Protéines', 'Protein')}<b>${n.prot} g</b></span><span><i style="background:#facc15"></i>${T('Glucides', 'Carbs')}<b>${n.carb} g</b></span><span><i style="background:#fb7185"></i>${T('Lipides', 'Fat')}<b>${n.fat} g</b></span></div>
+    ${full ? `<p class="small muted" style="margin:10px 0 0">${T(`Ta dépense estimée : ${n.tdee.toLocaleString(LOC())} kcal par jour avec ${n.days} séance${n.days > 1 ? 's' : ''} par semaine. ${n.adj < 0 ? 'Un déficit d\'environ 20 % fait perdre du gras sans fondre le muscle, surtout avec assez de protéines.' : n.adj > 0 ? 'Un petit surplus suffit pour construire du muscle sans trop de gras.' : 'Tu manges ce que tu dépenses.'} Eau : environ ${dec1(n.water)} L par jour, plus pendant l'entraînement. Pèse-toi chaque semaine : si ton poids ne bouge pas comme prévu après 2 à 3 semaines, ajuste de 100 à 200 kcal.`, `Your estimated expenditure: ${n.tdee.toLocaleString(LOC())} kcal a day with ${n.days} workout${n.days > 1 ? 's' : ''} a week. ${n.adj < 0 ? 'A deficit of about 20% loses fat without losing muscle, especially with enough protein.' : n.adj > 0 ? 'A small surplus is enough to build muscle without much fat.' : 'You eat what you burn.'} Water: about ${dec1(n.water)} L a day, more when training. Weigh yourself weekly: if your weight doesn't move as planned after 2 to 3 weeks, adjust by 100 to 200 kcal.`)}</p>
+      <p class="small muted" style="margin:8px 0 0">${T('Des points de départ, pas un avis médical. Grossesse, maladie ou trouble alimentaire : parles-en à un professionnel.', 'Starting points, not medical advice. Pregnancy, illness or an eating disorder: talk to a professional.')}</p>` : `<button class="linkbtn small" data-act="nutri-info" style="margin-top:8px">${T('Comment c\'est calculé', 'How it\'s calculated')}</button>`}</div>`;
+}
+/* ===================== Guide de départ : pour qu'un nouveau ne soit jamais perdu ===================== */
+function startGuide() {
+  if (S.settings.guideOff || S.history.length >= 8) return '';
+  const m = ME(), hasW = S.body.some(b => +b.w > 0), fr = (S.settings.fr || {}).list || [];
+  const steps = [
+    [!!(m.h && m.age && m.sex), T('Complète tes infos', 'Complete your info'), T('Taille, âge, objectif : pour tes reps, tes séries et ton plan nutrition', 'Height, age, goal: for your reps, sets and nutrition plan'), 'data-act="ob-edit"'],
+    [hasW, T('Ajoute ton poids', 'Add your weight'), T('Pour suivre tes progrès et calculer tes calories', 'To track progress and work out your calories'), 'data-act="go" data-v="measures"'],
+    [S.settings.hurtSeen || hurtOn(), T('Dis-nous si tu as mal quelque part', 'Tell us if something hurts'), T('Dos, genoux, épaules… tout s\'adapte', 'Back, knees, shoulders… everything adapts'), 'data-act="guide-hurt"'],
+    [S.history.length > 0, T('Fais ta première séance', 'Do your first workout'), T('Touche « Démarrer » sur une routine : les charges se remplissent toutes seules ensuite', 'Tap “Start” on a routine: weights fill in by themselves after that'), ''],
+    [!!S.settings.nutriSeen, T('Regarde ton plan nutrition', 'See your nutrition plan'), T('Calories, protéines, glucides et lipides pour ton objectif', 'Calories, protein, carbs and fat for your goal'), 'data-act="nutri-info"'],
+    [fr.length > 0, T('Ajoute un ami', 'Add a friend'), T('On progresse mieux à deux', 'You progress better together'), 'data-act="go" data-v="friends"']];
+  const done = steps.filter(x => x[0]).length; if (done === steps.length) return '';
+  return `<div class="card guide"><div class="row between"><b>${T('Bien démarrer', 'Get started')}</b><span class="row" style="gap:8px"><span class="small muted">${done}/${steps.length}</span><button class="btn sm ghost" data-act="guide-off" aria-label="${T('Masquer', 'Hide')}">${ic('x', 14)}</button></span></div>
+    <div class="gbar"><i style="width:${Math.round(done / steps.length * 100)}%"></i></div>
+    ${steps.map(([ok, t, sub, a]) => `<button class="grow${ok ? ' ok' : ''}" ${ok || !a ? 'disabled' : a}><span class="gck">${ok ? ic('check', 14) : ''}</span><span style="flex:1;min-width:0;text-align:left"><b>${t}</b><br><span class="small muted">${sub}</span></span>${ok || !a ? '' : `<span class="chev">${CHEV}</span>`}</button>`).join('')}</div>`;
+}
+const PF_IDS = ['nutri', 'body', 'friends', 'year', 'stag', 'chart', 'tiles'], PF_NAMES = {nutri: ['Plan nutrition', 'Nutrition plan'], body: ['Poids et photos', 'Weight & photos'], friends: ['Amis', 'Friends'], year: ['Bilan de l\'année', 'Year review'], stag: ['Rappel de stagnation', 'Plateau reminder'], chart: ['Graphique d\'activité', 'Activity chart'], tiles: ['Tableau de bord (tuiles)', 'Dashboard (tiles)']};
 function pfOrder() { const o = (S.settings.pfOrder || []).filter(x => PF_IDS.includes(x)); PF_IDS.forEach(x => { if (!o.includes(x)) o.push(x); }); return o; }
 function pfCustom() {
   const o = pfOrder(), hid = S.settings.pfHide || [];
@@ -4979,7 +5024,7 @@ function vProfile() {
   const n0 = new Date();
   const month = S.history.filter(h => { const d = new Date(h.date); return d.getMonth() === n0.getMonth() && d.getFullYear() === n0.getFullYear(); }).length;
   const PFS = {
-    body: () => bodyCard(), friends: () => friendsCard(), year: () => yearBanner(), stag: () => stagCard(),
+    nutri: () => nutriCard(false), body: () => bodyCard(), friends: () => friendsCard(), year: () => yearBanner(), stag: () => stagCard(),
     chart: () => `${!S.history.length ? '' : `<div class="card pfchart"><div class="seg" style="margin:0 0 12px">${[['act', T('Activité', 'Activity')], ['dur', T('Durée', 'Time')], ['vol', 'Volume'], ['reps', T('Réps', 'Reps')]].map(([k, l]) => `<button class="${pfMetric === k ? 'on' : ''}" data-act="pf-metric" data-m="${k}">${l}</button>`).join('')}</div>
     ${pfMetric === 'act' ? actGrid(true) : `<div class="row between"><span>${headline}</span><select style="width:auto" data-pf="range"><option value="12" ${pfWeeks === 12 ? 'selected' : ''}>3 derniers mois</option><option value="26" ${pfWeeks === 26 ? 'selected' : ''}>6 mois</option><option value="52" ${pfWeeks === 52 ? 'selected' : ''}>1 an</option><option value="0" ${pfWeeks === 0 ? 'selected' : ''}>Tout</option></select></div>
     <div style="margin-top:8px">${barsSVG(vals, labels, fmtV, window._chtips, pfSel)}<div class="chtip" id="chtip">${pfSel != null ? window._chtips[pfSel] : T('Touche une barre pour voir le détail · glisse pour voir avant', 'Tap a bar for details · swipe to see earlier weeks')}</div></div>`}</div>`}`,
@@ -7641,9 +7686,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.130.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.131.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.131.0', d: '2026-11-25', fr: ['Nouveau : ton plan nutrition. Selon ton poids, ta taille, ton âge, ton objectif et tes séances par semaine : les calories par jour, les protéines, les glucides et les lipides, et l\'eau. Dans ton Profil et dans Corps et progrès.', 'Nouveau guide « Bien démarrer » pour les nouveaux : infos, poids, douleurs, première séance, plan nutrition et un ami, coché au fur et à mesure.'], en: ['New: your nutrition plan. From your weight, height, age, goal and workouts per week: daily calories, protein, carbs and fat, and water. In your Profile and in Body & progress.', 'New “Get started” guide for newcomers: info, weight, pain, first workout, nutrition plan and a friend, checked off as you go.']},
   {v: '9.130.0', d: '2026-11-25', fr: ['Nouvel onglet Amis dans la barre du bas : le fil des séances de tes amis, tes demandes, tes défis et le classement, à un seul toucher (un point s\'allume quand un ami a une nouvelle séance). Cardio et Intervalles sont maintenant ensemble dans l\'onglet Cardio.'], en: ['New Friends tab in the bottom bar: your friends\' workout feed, requests, challenges and ranking, one tap away (a dot lights up when a friend has a new workout). Cardio and Intervals are now together in the Cardio tab.']},
   {v: '9.129.0', d: '2026-11-25', fr: ['Étirements refaits : chaque exercice peut être tenu (secondes) ou en répétitions, avec des séries, chaque côté, des consignes et un lien vidéo. L\'éditeur est plus simple (boutons + et −), et le lecteur montre les répétitions avec un bouton « Fait », les consignes et la vidéo.', 'Nouveau bouton IA dans Étirements : copie une demande pour ChatGPT, Gemini ou Claude (tes douleurs incluses), puis colle sa réponse. N\'importe quelle routine de mobilité ou de rééducation écrite par une IA est reconnue, même collée par erreur dans Entraînement.', 'Tes photos et vidéos : dans la fiche d\'un exercice, ajoute ta propre photo (elle remplace l\'animation, pour toi seulement) et un lien YouTube. Un exercice créé par toi peut avoir un type : machine, poids du corps, haltères, étirement…'], en: ['Stretching rebuilt: each exercise can be held (seconds) or done in reps, with sets, each side, instructions and a video link. The editor is simpler (+ and − buttons), and the player shows reps with a “Done” button, the instructions and the video.', 'New AI button in Stretching: copy a request for ChatGPT, Gemini or Claude (your pain areas included), then paste its answer. Any mobility or rehab routine written by an AI is recognized, even if pasted by mistake in Workout.', 'Your photos and videos: in an exercise\'s info page, add your own photo (it replaces the animation, for you only) and a YouTube link. An exercise you create can have a type: machine, bodyweight, dumbbells, stretch…']},
   {v: '9.128.0', d: '2026-11-25', fr: ['Nouveau : Réglages → Douleurs et blessures. Dis où tu as mal (dos, genoux, épaules…) : la séance générée évite ces zones, chaque exercice qui les sollicite est signalé pendant ta séance avec un bouton pour le remplacer, et tout ce que tu copies pour l\'IA lui demande d\'adapter ton programme.', 'IA : elle propose maintenant l\'augmentation de charge pour chaque exercice (INC:5), et l\'appli l\'enregistre quand tu colles sa réponse.'], en: ['New: Settings → Pain and injuries. Say where it hurts (back, knees, shoulders…): the generated workout avoids those areas, each exercise that involves them is flagged during your workout with a button to replace it, and everything you copy for the AI asks it to adapt your program.', 'AI: it now suggests the weight increase for each exercise (INC:5), and the app saves it when you paste its answer.']},
@@ -13016,6 +13062,9 @@ document.addEventListener('click', e => {
     case 'hist-edit': openEditor(b.dataset.hid); break;
     case 'hist-img': if ($('#shmenu')) closeModal(); shareImage(b.dataset.hid); break;
     case 'hist-sharemenu': modal(`<h2>📤 ${T('Partager la séance', 'Share the workout')}</h2><div class="menu"><button class="btn block" data-act="hist-img" data-hid="${b.dataset.hid}">🖼️ ${T('En image (Instagram, Messenger…)', 'As an image (Instagram, Messenger…)')}</button><button class="btn block" data-act="hist-share" data-hid="${b.dataset.hid}">📝 ${T('En texte', 'As text')}</button><button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`, {id: 'shmenu'}); break;
+    case 'nutri-info': S.settings.nutriSeen = 1; save(); modal(`<div class="row between"><h2 style="margin:0">${T('Mon plan nutrition', 'My nutrition plan')}</h2><button class="btn sm" data-act="close">✕</button></div>${nutriCard(true)}`); render(); break;
+    case 'guide-off': S.settings.guideOff = 1; save(); render(); break;
+    case 'guide-hurt': S.settings.hurtSeen = 1; save(); setRoot('profile'); go('setp', {k: 'hurt'}); break;
     case 'cd-sub': { const v = b.dataset.v; if (stack[0].v !== v) { setRoot(v); S.settings.cdSub = v; render(); window.scrollTo(0, 0); } break; }
     case 'new-eq': { newEq = newEq === b.dataset.v ? '' : b.dataset.v; document.querySelectorAll('#neweq .chip').forEach(x => x.classList.toggle('on', x.dataset.v === newEq)); break; }
     case 'exm-pick': exmPick(b.dataset.n, () => { if ($('.exmbox')) { closeModal(); openExo(b.dataset.n); } }); break;
