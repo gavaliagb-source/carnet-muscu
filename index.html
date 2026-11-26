@@ -548,6 +548,7 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .cpw.cpfa.m-sad .cpfx{left:var(--tx);top:var(--ty);right:auto;margin-left:-.25em}.cpw.cpfa.m-sleep .cpfx{left:var(--zx);top:var(--zy);right:auto}.cpw.cpfa.m-sleep .cpfx.b{margin:-.5em 0 0 .7em}.cpw.cpfa.m-happy .cpfx{left:var(--s0x);top:var(--s0y);right:auto}.cpw.cpfa.m-happy .cpfx.b{left:var(--s1x);top:var(--s1y)}
 .cpw rl-pup{display:block;width:100%;height:100%;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}.cpw.gold rl-pup{filter:sepia(.9) saturate(2.4) hue-rotate(-8deg) brightness(1.08) drop-shadow(0 0 10px #facc15)}
 .hurtnote{color:var(--warm,#f59e0b)}.hurtnote.hi{color:#fb7185}.hurtnote u{text-decoration:underline}.hurtseg button{font-size:12px;padding:6px 4px}
+.cdseg{margin:0 0 12px}nav button{position:relative}.navdot{display:none;position:absolute;top:6px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--bg)}nav button.new .navdot{display:block}
 .cpw.slp .cpsq{position:relative;display:block;max-width:100%}.cpw.slp .cpsq img{display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:fill;animation:cpBr 4.8s ease-in-out infinite}.cpw.slp .cpfx{left:var(--zx);top:var(--zy);right:auto}.cpw.slp .cpfx.b{margin:-.5em 0 0 .7em}@keyframes cpBr{0%,100%{transform:scale(1,1)}50%{transform:scale(1.008,1.03)}}
 .cpw.gold img{filter:sepia(.9) saturate(2.4) hue-rotate(-8deg) brightness(1.08) drop-shadow(0 0 10px #facc15)}
 .cpw.gold::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%) -150% 0/250% 100% no-repeat;-webkit-mask:var(--cpm) center bottom/contain no-repeat;mask:var(--cpm) center bottom/contain no-repeat;animation:cpShine 3s ease-in-out infinite;pointer-events:none}
@@ -1669,7 +1670,8 @@ if (navigator.storage && navigator.storage.persist) navigator.storage.persist().
 var DV = 0, PC = {}; // cache gardé d'un affichage à l'autre tant que les données ne changent pas (DV monte à chaque sauvegarde)
 const pcSig = () => DV + '|' + S.history.length + '|' + (S.body || []).length + '|' + LOC() + '|' + dkey(new Date()) + '|' + (S.settings.unit || '');
 var RC = {}; // petit cache remis à zéro à chaque affichage et à chaque sauvegarde (évite de recalculer 50 fois la même chose)
-const ROOT_TABS = ['train', 'stretch', 'cardio', 'timers', 'guild', 'profile'];
+const ROOT_TABS = ['train', 'stretch', 'cardio', 'timers', 'friends', 'guild', 'profile'];
+const tabOf = v => v === 'timers' ? 'cardio' : v; // Intervalles vit dans l'onglet Cardio
 function lastTab() { try { const t = localStorage.getItem('cm-tab'); return ROOT_TABS.includes(t) ? t : 'train'; } catch (e) { return 'train'; } }
 let stack = S.active ? [{v: 'train'}, {v: 'workout'}] : [{v: lastTab()}];
 /* Garde l'onglet et la position quand on rafraîchit la page */
@@ -7378,7 +7380,7 @@ function tmCard(t) {
     <button class="btn primary" data-act="tm-go" data-id="${t.id}">▶ ${T('Commencer', 'Start')}</button></div></div>`;
 }
 function vTimers() {
-  return `${selX ? '' : chrCard()}<div class="row between" style="margin:0 0 10px"><p class="muted" style="margin:0">${T('Minuteurs d\'intervalles : travail, repos, tempo, tabata…', 'Interval timers: work, rest, tempo, tabata…')}</p><span class="row" style="gap:6px"><button class="btn sm" data-act="pcode" data-k="t">📥 ${T('Coller', 'Paste')}</button><button class="btn sm" data-act="tm-new">＋ ${T('Créer', 'Create')}</button></span></div>
+  return `${selX ? '' : cdSeg('timers') + chrCard()}<div class="row between" style="margin:0 0 10px"><p class="muted" style="margin:0">${T('Minuteurs d\'intervalles : travail, repos, tempo, tabata…', 'Interval timers: work, rest, tempo, tabata…')}</p><span class="row" style="gap:6px"><button class="btn sm" data-act="pcode" data-k="t">📥 ${T('Coller', 'Paste')}</button><button class="btn sm" data-act="tm-new">＋ ${T('Créer', 'Create')}</button></span></div>
     ${selX && selX.k === 't' ? selHint() : ''}
     ${(S.timers || []).length ? `<p class="muted small" style="margin:0 0 6px">${T('Mes minuteurs', 'My timers')}</p><div class="sellistx" data-k="t">` + S.timers.map(tmCard).join('') + '</div>' : ''}
     ${tmPre().length ? `<p class="muted small" style="margin:14px 0 6px">${T('Minuteurs prêts', 'Ready-made timers')}</p><div class="sellistx" data-k="tp">${tmPre().map(tmCard).join('')}</div>` : ''}
@@ -7639,9 +7641,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.129.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.130.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.130.0', d: '2026-11-25', fr: ['Nouvel onglet Amis dans la barre du bas : le fil des séances de tes amis, tes demandes, tes défis et le classement, à un seul toucher (un point s\'allume quand un ami a une nouvelle séance). Cardio et Intervalles sont maintenant ensemble dans l\'onglet Cardio.'], en: ['New Friends tab in the bottom bar: your friends\' workout feed, requests, challenges and ranking, one tap away (a dot lights up when a friend has a new workout). Cardio and Intervals are now together in the Cardio tab.']},
   {v: '9.129.0', d: '2026-11-25', fr: ['Étirements refaits : chaque exercice peut être tenu (secondes) ou en répétitions, avec des séries, chaque côté, des consignes et un lien vidéo. L\'éditeur est plus simple (boutons + et −), et le lecteur montre les répétitions avec un bouton « Fait », les consignes et la vidéo.', 'Nouveau bouton IA dans Étirements : copie une demande pour ChatGPT, Gemini ou Claude (tes douleurs incluses), puis colle sa réponse. N\'importe quelle routine de mobilité ou de rééducation écrite par une IA est reconnue, même collée par erreur dans Entraînement.', 'Tes photos et vidéos : dans la fiche d\'un exercice, ajoute ta propre photo (elle remplace l\'animation, pour toi seulement) et un lien YouTube. Un exercice créé par toi peut avoir un type : machine, poids du corps, haltères, étirement…'], en: ['Stretching rebuilt: each exercise can be held (seconds) or done in reps, with sets, each side, instructions and a video link. The editor is simpler (+ and − buttons), and the player shows reps with a “Done” button, the instructions and the video.', 'New AI button in Stretching: copy a request for ChatGPT, Gemini or Claude (your pain areas included), then paste its answer. Any mobility or rehab routine written by an AI is recognized, even if pasted by mistake in Workout.', 'Your photos and videos: in an exercise\'s info page, add your own photo (it replaces the animation, for you only) and a YouTube link. An exercise you create can have a type: machine, bodyweight, dumbbells, stretch…']},
   {v: '9.128.0', d: '2026-11-25', fr: ['Nouveau : Réglages → Douleurs et blessures. Dis où tu as mal (dos, genoux, épaules…) : la séance générée évite ces zones, chaque exercice qui les sollicite est signalé pendant ta séance avec un bouton pour le remplacer, et tout ce que tu copies pour l\'IA lui demande d\'adapter ton programme.', 'IA : elle propose maintenant l\'augmentation de charge pour chaque exercice (INC:5), et l\'appli l\'enregistre quand tu colles sa réponse.'], en: ['New: Settings → Pain and injuries. Say where it hurts (back, knees, shoulders…): the generated workout avoids those areas, each exercise that involves them is flagged during your workout with a button to replace it, and everything you copy for the AI asks it to adapt your program.', 'AI: it now suggests the weight increase for each exercise (INC:5), and the app saves it when you paste its answer.']},
   {v: '9.127.0', d: '2026-11-25', fr: ['Amis : quand un ami commence sa séance, tu reçois une notification (appli Android, même fermée). Tu peux couper ça dans Réglages → Notifications.', 'Compagnons : une bannière à gagner pour chaque créature amenée au rang Meilleur ami, et la bannière « Meilleur ami de la nature » quand tu les as toutes. Le nom de ton compagnon est maintenant définitif.', 'Appli Android : rappels d\'entraînement et vibrations qui marchent vraiment (avec la nouvelle version de l\'appli).', 'Plus de minuteur de repos après la toute dernière série de la séance. Le calculateur de disques ne bloque plus avec une charge énorme.'], en: ['Friends: when a friend starts a workout, you get a notification (Android app, even closed). You can turn it off in Settings → Notifications.', 'Companions: a banner to win for each creature brought to Best friend, and the “Nature\'s best friend” banner when you have them all. Your companion\'s name is now permanent.', 'Android app: workout reminders and vibration that really work (with the new app version).', 'No more rest timer after the very last set of the workout. The plate calculator no longer freezes with a huge weight.']},
@@ -8922,9 +8925,10 @@ function cardioLiveCard() {
     ${CL_GPSK.includes(clK) ? `<button class="btn sm block" data-act="cl-gpsopt" style="margin-top:10px;${clGpsOn ? 'border-color:var(--accent);color:var(--accent)' : ''}">${clGpsOn ? T('GPS dehors : activé (distance et allure)', 'Outdoor GPS: on (distance and pace)') : T('GPS dehors : désactivé (intérieur)', 'Outdoor GPS: off (indoors)')}</button>` : `<p class="muted small" style="margin:10px 0 0">${T('Pas de GPS pour cette activité : durée, pouls et calories.', 'No GPS for this activity: time, heart rate and calories.')}</p>`}
     <button class="btn primary block" data-act="cl-start" style="margin-top:12px">${T('Démarrer', 'Start')}</button></div>`;
 }
+const cdSeg = v => `<div class="seg cdseg"><button class="${v === 'cardio' ? 'on' : ''}" data-act="cd-sub" data-v="cardio">Cardio</button><button class="${v === 'timers' ? 'on' : ''}" data-act="cd-sub" data-v="timers">${T('Intervalles', 'Intervals')}</button></div>`;
 function vCardio() {
   const _m = ME();
-  return `${_m.h && _m.age && _m.sex ? '' : meLine()}${cardioLiveCard()}
+  return `${cdSeg('cardio')}${_m.h && _m.age && _m.sex ? '' : meLine()}${cardioLiveCard()}
     <div class="card"><h3 style="margin:0 0 10px;display:flex;align-items:center;gap:8px">${IC('heartp', '👣', 20)} ${T('Convertisseur', 'Converter')}</h3>
       <div class="cvkinds">${CV_KINDS.map(([k, emo, n, ik]) => `<button class="cvk ${cv.k === k ? 'on' : ''}" data-act="cv-kind" data-k="${k}"><span>${IC(ik, emo, 26)}</span>${T(n[0], n[1])}</button>`).join('')}</div>
       <div id="cvin">${cvInputs()}</div>
@@ -9278,7 +9282,7 @@ async function bgSync() {
 function liveAct(a) { if (a === 'add30' && timerEnd > Date.now()) fakeAct('timer-add'); else if (a === 'skip' && timerEnd) fakeAct('timer-stop'); }
 function launchAct(v) {
   if (!v || !S.settings.onboarded) return;
-  if (v === 'friends') { closeAll(); setRoot('profile'); go('friends'); return; }
+  if (v === 'friends') { closeAll(); setRoot('friends'); render(); return; }
   if (v === 'raid') { closeAll(); S.settings.gTab = 'raid'; setRoot(GAME() ? 'guild' : 'profile'); render(); if (GAME()) go('graid'); return; }
   if (S.active) { if (cur().v !== 'workout') openWorkout(); return; }
   if (v !== 'open' && S.routines.some(r => r.id === v)) startWorkout(v);
@@ -11677,6 +11681,7 @@ function vFriends() {
       ${BLK().length ? `<p class="muted small" style="margin:14px 0 6px">${T('Personnes bloquées', 'Blocked people')}</p>${BLK().map(x => `<div class="row between small" style="margin-top:6px"><span>${esc(x.n || '?')}</span><button class="btn sm" data-act="usr-unblk" data-u="${esc(x.u)}">${T('Débloquer', 'Unblock')}</button></div>`).join('')}` : ''}
       <button class="btn block" data-act="fr-stop" style="margin-top:12px;color:var(--bad)">${T('Arrêter le partage', 'Stop sharing')}</button></details>` : ''}`;
 }
+function frNewN() { const fr = S.settings.fr || {}; if (!(fr.list || []).length) return 0; const seen = fr.seen || ''; return frFeed().filter(x => !x.f.me && x.s.d > seen).length; }
 function friendsCard() {
   const fr = S.settings.fr || {}, n = (fr.list || []).length;
   const feed = n ? frFeed().filter(x => !x.f.me) : [], seen = fr.seen || '', nNew = feed.filter(x => x.s.d > seen).length;
@@ -11904,7 +11909,9 @@ function render() {
   $('#back').style.visibility = stack.length > 1 ? 'visible' : 'hidden';
   $('#hdr').innerHTML = headerRight(c.v);
   $('#app').innerHTML = html;
-  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === stack[0].v));
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tabOf(stack[0].v)));
+  try { const nb = document.querySelector('nav [data-tab="friends"]'); if (nb) nb.classList.toggle('new', frNewN() > 0 && stack[0].v !== 'friends'); } catch (e) {}
+  if (stack[0].v === 'cardio' || stack[0].v === 'timers') S.settings.cdSub = stack[0].v;
   try { if (ROOT_TABS.includes(stack[0].v)) localStorage.setItem('cm-tab', stack[0].v); } catch (e) {}
   afterRender(c);
   try { iconize($('#app')); iconize($('#hdr')); } catch (e) {}
@@ -12142,7 +12149,7 @@ const iconsOn = () => true;
 const ic = (k, sz = 20) => `<svg class="ico" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICP[k] || ''}</svg>`;
 const IC = (k, emo, sz) => iconsOn() ? ic(k, sz) : emo;
 function renderChrome() {
-  const nav = $('#nav'); if (nav) nav.innerHTML = `<button data-tab="train"><span class="ic">${IC('dumbbell', '🏋️', 22)}</span>${GAME() ? T('Muscu', 'Workout') : T('Entraînement', 'Workout')}</button><button data-tab="stretch"><span class="ic">${IC('yoga', '🧘', 22)}</span>${T('Étirements', 'Stretch')}</button><button data-tab="cardio"><span class="ic">${IC('heartp', '❤️', 22)}</span>Cardio</button><button data-tab="timers"><span class="ic">${IC('timer', '⏱', 22)}</span>${T('Intervalles', 'Intervals')}</button>${GAME() ? `<button data-tab="guild"><span class="ic">${IC('swords', '⚔️', 22)}</span>${T('Guilde', 'Guild')}</button>` : ''}<button data-tab="profile"><span class="ic">${IC('user', '👤', 22)}</span>${T('Profil', 'Profile')}</button>`;
+  const nav = $('#nav'); if (nav) nav.innerHTML = `<button data-tab="train"><span class="ic">${IC('dumbbell', '🏋️', 22)}</span>${GAME() ? T('Muscu', 'Workout') : T('Entraînement', 'Workout')}</button><button data-tab="stretch"><span class="ic">${IC('yoga', '🧘', 22)}</span>${T('Étirements', 'Stretch')}</button><button data-tab="cardio"><span class="ic">${IC('heartp', '❤️', 22)}</span>Cardio</button><button data-tab="friends"><span class="ic">${IC('users', '👥', 22)}</span>${T('Amis', 'Friends')}<i class="navdot"></i></button>${GAME() ? `<button data-tab="guild"><span class="ic">${IC('swords', '⚔️', 22)}</span>${T('Guilde', 'Guild')}</button>` : ''}<button data-tab="profile"><span class="ic">${IC('user', '👤', 22)}</span>${T('Profil', 'Profile')}</button>`;
   const bk = $('#back'); if (bk) bk.innerHTML = IC('back', '←', 22);
 }
 
@@ -12163,7 +12170,7 @@ setInterval(() => { if (swp && Date.now() - (swp.lt || swp.t) > 2500) swp = null
    prêtes : rien à construire, donc pas d'accroc. Le vrai onglet est construit une fois l'animation finie. */
 const TABH = {}, GH = {};   // TABH[onglet] = {h: HTML figé, dv: version des données}
 let ghost = null, snapT = null;
-function swTabs() { return ['train', 'stretch', 'cardio', 'timers', ...(GAME() ? ['guild'] : []), 'profile']; }
+function swTabs() { return ['train', 'stretch', stack[0] && stack[0].v === 'timers' ? 'timers' : 'cardio', 'friends', ...(GAME() ? ['guild'] : []), 'profile']; }
 const snapOk = v => TABH[v] && TABH[v].dv === DV;
 /* Copie de l'onglet affiché (avec ses images déjà chargées) */
 function tabSnap() {
@@ -12316,7 +12323,7 @@ document.addEventListener('click', e => {
   const gs = e.target.closest('[data-gsec]');
   if (gs && e.target.closest('.gstrip')) { const sec = gs.dataset.gsec, gq = ['q', 'd', 'b'].includes(sec); S.settings.gTab = {myguild: 'raid', season: 'rank', coll: 'coll', arm: 'coll'}[sec] || 'day'; S.settings.gOpen = S.settings.gOpen || {}; if (gq && S.settings.gOpen.today === false) { S.settings.gOpen.today = true; save(); } if (sec !== 'status' && !gq) { S.settings.gOpen[sec] = true; save(); } navAnim = false; setRoot('guild'); render(); window.scrollTo(0, 0); setTimeout(() => { const t = sec === 'status' ? document.getElementById('gstatus') : gq ? document.querySelector('#app [data-gq="' + sec + '"]') : document.querySelector('#app [data-gid="' + sec + '"]'); if (t && (gq || sec === 'status')) { t.classList.remove('gflash'); void t.offsetWidth; t.classList.add('gflash'); } if (t) { const hh = (document.querySelector('header') || {}).offsetHeight || 60, r = t.getBoundingClientRect(); window.scrollTo(0, sec === 'status' ? 0 : Math.max(0, scrollY + r.top - (gq ? Math.max(hh + 12, (innerHeight - r.height) / 2) : hh + 12))); } }, 80); return; }
   const n = e.target.closest('[data-tab]');
-  if (n) { const ti = ROOT_TABS.indexOf(n.dataset.tab), fi = ROOT_TABS.indexOf(stack[0].v); navAnim = false; const t0 = n.dataset.tab, same = stack.length === 1 && stack[0].v === t0; if (stack.length === 1) TABY[stack[0].v] = Math.round(scrollY); setRoot(t0); render(); const y0 = same ? 0 : (TABY[t0] || 0); window.scrollTo(0, y0); if (y0) setTimeout(() => window.scrollTo(0, y0), 60); return; } // onglets du bas : affichage net immédiat, sans fondu
+  if (n) { const ti = ROOT_TABS.indexOf(n.dataset.tab), fi = ROOT_TABS.indexOf(stack[0].v); navAnim = false; let t0 = n.dataset.tab; if (t0 === 'cardio' && tabOf(stack[0].v) !== 'cardio' && S.settings.cdSub === 'timers') t0 = 'timers'; const same = stack.length === 1 && stack[0].v === t0; if (stack.length === 1) TABY[stack[0].v] = Math.round(scrollY); setRoot(t0); render(); const y0 = same ? 0 : (TABY[t0] || 0); window.scrollTo(0, y0); if (y0) setTimeout(() => window.scrollTo(0, y0), 60); return; } // onglets du bas : affichage net immédiat, sans fondu
   const b = e.target.closest('[data-act]'); if (!b) return;
   const act = b.dataset.act, rid = b.dataset.rid, r = S.routines.find(x => x.id === rid);
   const ei = +b.dataset.e, si = +b.dataset.s;
@@ -12347,7 +12354,7 @@ document.addEventListener('click', e => {
     case 'reo-del': b.closest('.reo').remove(); break;
     case 'reo-done': { const idx = [...document.querySelectorAll('#reolist .reo')].map(x => +x.dataset.i); const arr = idx.map(i => reo.list[i]); const cb = reo.onDone; closeModal(); cb(arr); break; }
     case 'fix-import': { const bad = new Set(brokenImports()); hTomb([...bad].map(x => x.id)); S.history = S.history.filter(x => !bad.has(x)); save(); closeAll(); render(); toast(`🧹 ${bad.size} séances retirées — choisis ton fichier CSV Hevy`); $('#fileIn').click(); break; }
-    case 'go': if (b.dataset.v === 'settings' && b.closest('.nag, .card') && !cloudOn() && !cbOn() && /Activer|Turn on/.test(b.textContent)) { go('settings'); go('setp', {k: 'cloud'}); break; } go(b.dataset.v, {n: b.dataset.n, rid: b.dataset.rid}); break;
+    case 'go': if (b.dataset.v === 'friends') { closeAll(); setRoot('friends'); render(); window.scrollTo(0, 0); break; } if (b.dataset.v === 'settings' && b.closest('.nag, .card') && !cloudOn() && !cbOn() && /Activer|Turn on/.test(b.textContent)) { go('settings'); go('setp', {k: 'cloud'}); break; } go(b.dataset.v, {n: b.dataset.n, rid: b.dataset.rid}); break;
     case 'setp': go('setp', {k: b.dataset.k, hl: b.dataset.hl || ''}); break;
     case 'start-empty': startEmpty(); break;
     case 'gen-open': openGen(); break;
@@ -13009,6 +13016,7 @@ document.addEventListener('click', e => {
     case 'hist-edit': openEditor(b.dataset.hid); break;
     case 'hist-img': if ($('#shmenu')) closeModal(); shareImage(b.dataset.hid); break;
     case 'hist-sharemenu': modal(`<h2>📤 ${T('Partager la séance', 'Share the workout')}</h2><div class="menu"><button class="btn block" data-act="hist-img" data-hid="${b.dataset.hid}">🖼️ ${T('En image (Instagram, Messenger…)', 'As an image (Instagram, Messenger…)')}</button><button class="btn block" data-act="hist-share" data-hid="${b.dataset.hid}">📝 ${T('En texte', 'As text')}</button><button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`, {id: 'shmenu'}); break;
+    case 'cd-sub': { const v = b.dataset.v; if (stack[0].v !== v) { setRoot(v); S.settings.cdSub = v; render(); window.scrollTo(0, 0); } break; }
     case 'new-eq': { newEq = newEq === b.dataset.v ? '' : b.dataset.v; document.querySelectorAll('#neweq .chip').forEach(x => x.classList.toggle('on', x.dataset.v === newEq)); break; }
     case 'exm-pick': exmPick(b.dataset.n, () => { if ($('.exmbox')) { closeModal(); openExo(b.dataset.n); } }); break;
     case 'exm-rm': exmPut(norm(b.dataset.n), null).then(() => { closeModal(); openExo(b.dataset.n); render(); }); break;
