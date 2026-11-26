@@ -34,9 +34,10 @@ class PhoneWearListener : WearableListenerService() {
         else if (a != "hello" && a != "st") RLWearPlugin.queue(this, j)
         if (a == "import" && (p == null || !RLWearPlugin.fg)) notify(true)
         else if (!RLWearPlugin.fg && a == "start") notify(false)
+        else if (!RLWearPlugin.fg && a == "clstart") notify(false, true)
     }
 
-    private fun notify(done: Boolean) {
+    private fun notify(done: Boolean, cardio: Boolean = false) {
         try {
             val en = RLWearPlugin.lang(this) == "en"
             val nm = getSystemService(NotificationManager::class.java)
@@ -45,8 +46,8 @@ class PhoneWearListener : WearableListenerService() {
             val pi = PendingIntent.getActivity(this, 2, i, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
             val n = NotificationCompat.Builder(this, "rl_watch")
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(if (done) (if (en) "Watch workout ready" else "Séance de la montre prête") else (if (en) "Workout started on your watch" else "Séance lancée sur la montre"))
-                .setContentText(if (done) (if (en) "Tap to add it to Runelift" else "Touche pour l'ajouter à Runelift") else (if (en) "Tap to sync with Runelift" else "Touche pour synchroniser avec Runelift"))
+                .setContentTitle(if (done) (if (en) "Watch workout ready" else "Séance de la montre prête") else if (cardio) (if (en) "Cardio started on your watch" else "Cardio lancé sur la montre") else (if (en) "Workout started on your watch" else "Séance lancée sur la montre"))
+                .setContentText(if (done) (if (en) "Tap to add it to Runelift" else "Touche pour l'ajouter à Runelift") else if (cardio) (if (en) "Tap to start the timer and GPS in Runelift" else "Touche pour lancer le chrono et le GPS dans Runelift") else (if (en) "Tap to sync with Runelift" else "Touche pour synchroniser avec Runelift"))
                 .setContentIntent(pi)
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

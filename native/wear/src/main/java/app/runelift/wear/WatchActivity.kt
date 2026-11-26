@@ -398,6 +398,8 @@ class WatchActivity : Activity() {
     /* ---------- Hors séance : routines ---------- */
     private fun idle() {
         add(tv("Runelift", 17f, ACC, true), 0f)
+        // Cardio : lancé d'ici, le téléphone garde le chrono, le GPS et les calories ; la montre donne le pouls
+        add(pill(WS.t("Cardio", "Cardio"), CARD, Color.WHITE, 15f, 9f) { v -> v.performHapticFeedback(HapticFeedbackConstants.CONFIRM); detail = "#cardio"; scroll.scrollTo(0, 0); paint() }, 8f)
         val rts = WS.routines()
         if (rts == null || rts.length() == 0) {
             add(tv(WS.t("Ouvre Runelift sur ton téléphone pour voir tes routines.", "Open Runelift on your phone to see your routines."), 13f, MUTED), 8f)
@@ -423,7 +425,23 @@ class WatchActivity : Activity() {
         }
     }
 
+    private val CL_KINDS = listOf(
+        Triple("run", 1, listOf("Course dehors", "Outdoor run")), Triple("walk", 1, listOf("Marche dehors", "Outdoor walk")), Triple("bike", 1, listOf("Vélo dehors", "Outdoor bike")),
+        Triple("run", 0, listOf("Tapis : course", "Treadmill run")), Triple("walk", 0, listOf("Tapis : marche", "Treadmill walk")), Triple("bike", 0, listOf("Vélo stationnaire", "Stationary bike")),
+        Triple("ell", 0, listOf("Elliptique", "Elliptical")), Triple("stair", 0, listOf("Escaliers", "Stairs")), Triple("row", 0, listOf("Rameur", "Rowing")), Triple("rope", 0, listOf("Corde à sauter", "Jump rope")))
+    private fun cardioPick() {
+        add(tv(WS.t("Cardio", "Cardio"), 15f, Color.WHITE, true), 0f)
+        add(tv(WS.t("Ton téléphone garde le chrono, le GPS et les calories. Ta montre donne le pouls.", "Your phone keeps the timer, GPS and calories. Your watch gives the heart rate."), 11f, MUTED), 4f)
+        for (k in CL_KINDS) add(pill(WS.t(k.third[0], k.third[1]), CARD, Color.WHITE, 13f, 8f) { v ->
+            v.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+            WS.send(this, JSONObject().put("a", "clstart").put("k", k.first).put("gps", k.second).put("t", System.currentTimeMillis()))
+            (v as TextView).text = WS.t("Démarrage… ouvre Runelift sur le téléphone si rien ne se passe", "Starting… open Runelift on your phone if nothing happens")
+        }, 6f)
+        add(pill(WS.t("‹ Retour", "‹ Back"), CARD, Color.WHITE, 13f, 7f) { detail = null; paint() }, 12f, false)
+    }
+
     private fun routineDetail(id: String) {
+        if (id == "#cardio") { cardioPick(); return }
         val rts = WS.routines() ?: run { detail = null; idle(); return }
         var r: JSONObject? = null
         for (i in 0 until rts.length()) if (rts.optJSONObject(i)?.optString("id") == id) r = rts.optJSONObject(i)

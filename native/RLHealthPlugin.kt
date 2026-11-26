@@ -6,6 +6,7 @@ import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.SleepSessionRecord
@@ -49,7 +50,10 @@ class RLHealthPlugin : Plugin() {
     private val pSleep = HealthPermission.getReadPermission(SleepSessionRecord::class)
     private val pRhr = HealthPermission.getReadPermission(RestingHeartRateRecord::class)
     private val pHrv = HealthPermission.getReadPermission(HeartRateVariabilityRmssdRecord::class)
-    private val perms = setOf(pWorkout, pKcal, pWeight, pHr, pHrW, pTcal, pSteps, pSleep, pRhr, pHrv)
+    private val pExR = HealthPermission.getReadPermission(ExerciseSessionRecord::class)
+    private val pDist = HealthPermission.getReadPermission(DistanceRecord::class)
+    private val pAcalR = HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class)
+    private val perms = setOf(pWorkout, pKcal, pWeight, pHr, pHrW, pTcal, pSteps, pSleep, pRhr, pHrv, pExR, pDist, pAcalR)
 
     private fun sdk() = HealthConnectClient.getSdkStatus(context)
     private fun client() = HealthConnectClient.getOrCreate(context)
@@ -73,6 +77,8 @@ class RLHealthPlugin : Plugin() {
         if (pSleep in g) a.put("sleep")
         if (pRhr in g) a.put("rhr")
         if (pHrv in g) a.put("hrv")
+        if (pExR in g) a.put("exr")
+        if (pDist in g) a.put("dist")
         return a
     }
 
@@ -81,7 +87,7 @@ class RLHealthPlugin : Plugin() {
         val s = sdk()
         val r = JSObject()
         r.put("available", s == HealthConnectClient.SDK_AVAILABLE)
-        r.put("ver", 5) // 3 = + pouls et calories totales, 4 = + pas, 5 = + sommeil, pouls au repos, VFC
+        r.put("ver", 6) // 6 = + séances des autres applis (Samsung Health, Garmin…), distance et calories actives // 3 = + pouls et calories totales, 4 = + pas, 5 = + sommeil, pouls au repos, VFC
         r.put("reason", when (s) {
             HealthConnectClient.SDK_AVAILABLE -> "ok"
             HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> "update"
@@ -227,6 +233,30 @@ class RLHealthPlugin : Plugin() {
             if (pRhr in g) for (r in c.readRecords(ReadRecordsRequest(RestingHeartRateRecord::class, tr, pageSize = 200)).records) rh.put(JSObject().put("t", r.time.toString()).put("bpm", r.beatsPerMinute))
             if (pHrv in g) for (r in c.readRecords(ReadRecordsRequest(HeartRateVariabilityRmssdRecord::class, tr, pageSize = 1000)).records) hv.put(JSObject().put("t", r.time.toString()).put("ms", r.heartRateVariabilityMillis))
             resolve(JSObject().put("sleep", sl).put("rhr", rh).put("hrv", hv))
+        }
+    }
+
+    /* Séances enregistrées par les autres applis (Samsung Health, Garmin Connect, Fitbit…) : type, heure, distance, calories actives, pouls moyen */
+    @PluginMethod
+    fun readExercise(call: PluginCall) {
+        if (sdk() != HealthConnectClient.SDK_AVAILABLE) { call.reject("unavailable"); return }
+        val start = Instant.parse(call.getString("start") ?: run { call.reject("start"); return })
+        val end = Instant.parse(call.getString("end") ?: run { call.reject("end"); return })
+        call.safe {
+            val c = client(); val g = c.permissionController.getGrantedPermissions()
+            if (pExR !in g) { reject("no_permission"); return@safe }
+            val a = JSArray()
+            for (r in c.readRecords(ReadRecordsRequest(ExerciseSessionRecord::class, TimeRangeFilter.between(start, end), pageSize = 100)).records) {
+                if (r.metadata.dataOrigin.packageName == context.packageName) continue
+                val tr = TimeRangeFilter.between(r.startTime, r.endTime)
+                var m = 0.0; var kc = 0.0; var bpm = 0L
+                try { if (pDist in g) m = c.aggregate(AggregateRequest(setOf(DistanceRecord.DISTANCE_TOTAL), tr))[DistanceRecord.DISTANCE_TOTAL]?.inMeters ?: 0.0 } catch (e: Exception) {}
+                try { if (pAcalR in g) kc = c.aggregate(AggregateRequest(setOf(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL), tr))[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories ?: 0.0 } catch (e: Exception) {}
+                try { if (pHr in g) bpm = c.aggregate(AggregateRequest(setOf(HeartRateRecord.BPM_AVG), tr))[HeartRateRecord.BPM_AVG] ?: 0L } catch (e: Exception) {}
+                a.put(JSObject().put("id", r.metadata.id).put("ty", r.exerciseType).put("ti", r.title ?: "").put("s", r.startTime.toString()).put("e", r.endTime.toString())
+                    .put("src", r.metadata.dataOrigin.packageName).put("m", m).put("kc", kc).put("bpm", bpm))
+            }
+            resolve(JSObject().put("items", a))
         }
     }
 
