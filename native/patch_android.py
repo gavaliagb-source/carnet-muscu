@@ -15,6 +15,7 @@ PERMS = ['WRITE_EXERCISE', 'WRITE_ACTIVE_CALORIES_BURNED', 'READ_WEIGHT', 'READ_
 def man(s):
     ps = ''.join(f'    <uses-permission android:name="android.permission.health.{p}" />\n' for p in PERMS)
     ps += '    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n'
+    ps += '    <uses-permission android:name="android.permission.VIBRATE" />\n'
     ps += '    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n'
     ps += '    <queries>\n        <package android:name="com.google.android.apps.healthdata" />\n    </queries>\n'
     s = s.replace('</manifest>', ps + '</manifest>', 1)

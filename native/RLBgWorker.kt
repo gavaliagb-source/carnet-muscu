@@ -18,6 +18,38 @@ class RLBgWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
     companion object {
         const val NID_BASE = 3100
         fun cfg(ctx: Context): JSONObject? = try { RLLivePlugin.prefs(ctx).getString("bg", null)?.let { JSONObject(it) } } catch (e: Exception) { null }
+
+        fun remindPost(ctx: Context, title: String, body: String) {
+            RLLivePlugin.channels(ctx)
+            val b = NotificationCompat.Builder(ctx, RLLivePlugin.CH_REMIND)
+                .setSmallIcon(R.drawable.ic_stat_rl).setContentTitle(title).setContentText(body)
+                .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+                .setContentIntent(RLLivePlugin.openIntent(ctx, "open", 32)).setAutoCancel(true)
+            try { NotificationManagerCompat.from(ctx).notify(NID_BASE + 2, b.build()) } catch (e: SecurityException) {}
+        }
+
+        private fun ymd(c: java.util.Calendar) = String.format("%04d-%02d-%02d", c.get(java.util.Calendar.YEAR), c.get(java.util.Calendar.MONTH) + 1, c.get(java.util.Calendar.DAY_OF_MONTH))
+
+        /* Rappel d'entraînement : au plus un par jour, après l'heure choisie, jamais si tu t'es entraîné aujourd'hui */
+        fun remindCheck(ctx: Context) {
+            val p = RLLivePlugin.prefs(ctx)
+            val r = try { JSONObject(p.getString("remind", "{}") ?: "{}") } catch (e: Exception) { return }
+            if (!r.optBoolean("on", false) || RLLivePlugin.fg) return
+            val now = java.util.Calendar.getInstance(); val dk = ymd(now)
+            if (p.getString("remShown", "") == dk) return
+            val h = now.get(java.util.Calendar.HOUR_OF_DAY)
+            if (h < r.optInt("hour", 17) || h >= 23) return
+            val lastS = r.optString("last", "")
+            val lastMs = try { if (lastS.isEmpty()) 0L else java.time.Instant.parse(lastS).toEpochMilli() } catch (e: Exception) { 0L }
+            if (lastMs > 0) { val lc = java.util.Calendar.getInstance().apply { timeInMillis = lastMs }; if (ymd(lc) == dk) return }
+            var title: String? = null
+            val planned = r.optJSONObject("days")?.optString(dk, "") ?: ""
+            if (r.optBoolean("plan", true) && planned.isNotEmpty()) title = r.optString("tPlan", "#").replace("#", planned)
+            else if (lastMs > 0) { val gap = ((System.currentTimeMillis() - lastMs) / 86_400_000L).toInt(); if (gap >= r.optInt("gap", 3)) title = r.optString("tGap", "#").replace("#", gap.toString()) }
+            if (title == null) return
+            remindPost(ctx, title, r.optString("body", ""))
+            p.edit().putString("remShown", dk).apply()
+        }
     }
 
     private val ctx get() = applicationContext
@@ -38,6 +70,7 @@ class RLBgWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
 
     override fun doWork(): Result {
         val p = RLLivePlugin.prefs(ctx)
+        try { remindCheck(ctx) } catch (e: Exception) {}
         val c = cfg(ctx) ?: return Result.success()
         try {
             // Économie de lectures Firestore : rien la nuit (minuit à 7 h), les fiches des amis au plus une fois par heure
@@ -83,6 +116,13 @@ class RLBgWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
                         "cheer" -> (if (fr) "Encouragement" else "Cheer") to (if (fr) "$n t'encourage" else "$n cheered you on")
                         "ch" -> (if (fr) "Nouveau défi" else "New challenge") to (if (fr) "$n te lance un défi" else "$n challenged you")
                         "cm" -> (if (fr) "Commentaire" else "Comment") to (if (fr) "$n a commenté ta séance" else "$n commented on your workout")
+                        "go" -> {
+                            // un ami commence sa séance : seulement si c'est récent (moins de 3 h)
+                            val t = try { java.time.Instant.parse(str(f, "t")).toEpochMilli() } catch (e: Exception) { 0L }
+                            val rn = str(f, "rn").take(40)
+                            if (System.currentTimeMillis() - t > 3 * 3600_000L) null
+                            else (if (fr) "Séance commencée" else "Workout started") to (if (fr) (if (rn.isEmpty()) "$n commence sa séance" else "$n commence sa séance : $rn") else (if (rn.isEmpty()) "$n is starting a workout" else "$n is starting a workout: $rn"))
+                        }
                         else -> null
                     }
                     if (msg != null) notes.add(msg)

@@ -41,6 +41,7 @@ class RLLivePlugin : Plugin() {
         const val CH_LIVE = "rl_live"
         const val CH_END = "rl_rest_end"
         const val CH_SOCIAL = "rl_social"
+        const val CH_REMIND = "rl_remind"
 
         fun prefs(ctx: Context) = ctx.getSharedPreferences(P, Context.MODE_PRIVATE)
 
@@ -54,6 +55,9 @@ class RLLivePlugin : Plugin() {
             })
             nm.createNotificationChannel(NotificationChannel(CH_END, if (fr) "Fin du repos" else "Rest finished", NotificationManager.IMPORTANCE_HIGH).apply {
                 enableVibration(true); vibrationPattern = longArrayOf(0, 300, 150, 300); setShowBadge(false)
+            })
+            nm.createNotificationChannel(NotificationChannel(CH_REMIND, if (fr) "Rappels d'entraînement" else "Workout reminders", NotificationManager.IMPORTANCE_DEFAULT).apply {
+                description = if (fr) "Jours sans séance et séances prévues" else "Days off and planned workouts"
             })
             nm.createNotificationChannel(NotificationChannel(CH_SOCIAL, if (fr) "Amis" else "Friends", NotificationManager.IMPORTANCE_DEFAULT).apply {
                 description = if (fr) "Séances de tes amis, demandes d'ami, défis et encouragements" else "Friends' workouts, friend requests, challenges and cheers"
@@ -125,12 +129,15 @@ class RLLivePlugin : Plugin() {
             instance?.notifyListeners("launch", JSObject().put("start", v), true) // appli déjà ouverte
         }
 
-        fun schedule(ctx: Context, on: Boolean) {
+        /* La vérification de fond tourne si les nouvelles des amis OU les rappels sont actifs (les rappels marchent aussi sans réseau) */
+        fun schedule(ctx: Context) {
             val wm = WorkManager.getInstance(ctx)
-            if (!on) { wm.cancelUniqueWork("rl_bg"); return }
-            val c = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
-            val req = PeriodicWorkRequestBuilder<RLBgWorker>(15, TimeUnit.MINUTES).setConstraints(c).build()
-            wm.enqueueUniquePeriodicWork("rl_bg", ExistingPeriodicWorkPolicy.KEEP, req)
+            val p = prefs(ctx)
+            val rem = try { JSONObject(p.getString("remind", "{}") ?: "{}").optBoolean("on", false) } catch (e: Exception) { false }
+            if (!p.contains("bg") && !rem) { wm.cancelUniqueWork("rl_bg"); return }
+            val req = PeriodicWorkRequestBuilder<RLBgWorker>(15, TimeUnit.MINUTES).build()
+            wm.enqueueUniquePeriodicWork("rl_bg2", ExistingPeriodicWorkPolicy.KEEP, req)
+            wm.cancelUniqueWork("rl_bg") // ancienne tâche (exigeait le réseau)
         }
     }
 
@@ -233,7 +240,22 @@ class RLLivePlugin : Plugin() {
             p.putString("bg", d.toString()).putString("lang", d.optString("lang", "fr")).remove("bgRt")
         } else p.remove("bg")
         p.apply()
-        schedule(context, on)
+        schedule(context)
+        call.resolve()
+    }
+
+    /* Rappels d'entraînement : {on, gap, plan, hour, last, days:{aaaa-mm-jj: routine}, tGap, tPlan, body} */
+    @PluginMethod
+    fun remind(call: PluginCall) {
+        prefs(context).edit().putString("remind", call.data.toString()).apply()
+        schedule(context)
+        call.resolve()
+    }
+
+    @PluginMethod
+    fun remindTest(call: PluginCall) {
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return call.reject("blocked")
+        RLBgWorker.remindPost(context, call.getString("title") ?: "Runelift", call.getString("body") ?: "")
         call.resolve()
     }
 
