@@ -548,7 +548,7 @@ body.fold .foldmain [id^="wex"]{cursor:pointer}
 .cpw.cpfa.m-sad .cpfx{left:var(--tx);top:var(--ty);right:auto;margin-left:-.25em}.cpw.cpfa.m-sleep .cpfx{left:var(--zx);top:var(--zy);right:auto}.cpw.cpfa.m-sleep .cpfx.b{margin:-.5em 0 0 .7em}.cpw.cpfa.m-happy .cpfx{left:var(--s0x);top:var(--s0y);right:auto}.cpw.cpfa.m-happy .cpfx.b{left:var(--s1x);top:var(--s1y)}
 .cpw rl-pup{display:block;width:100%;height:100%;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}.cpw.gold rl-pup{filter:sepia(.9) saturate(2.4) hue-rotate(-8deg) brightness(1.08) drop-shadow(0 0 10px #facc15)}
 .hurtnote{color:var(--warm,#f59e0b)}.hurtnote.hi{color:#fb7185}.hurtnote u{text-decoration:underline}.hurtseg button{font-size:12px;padding:6px 4px}
-.cdseg{margin:0 0 12px}.nkcal{margin:8px 0 8px}.nkcal b{font-size:30px;font-weight:900}.nbar{display:flex;height:10px;border-radius:6px;overflow:hidden;gap:2px}.nbar i{display:block}.nmac{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}.nmac span{flex:1;min-width:90px;display:flex;flex-direction:column;font-size:12px;color:var(--muted)}.nmac span i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}.nmac b{color:var(--text);font-size:17px}
+.cdseg{margin:0 0 12px}.recwk{display:flex;gap:6px;height:46px;align-items:flex-end;margin-top:12px}.recwk span{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;justify-content:flex-end}.recwk i{display:block;width:100%;max-width:22px;border-radius:4px}.recwk small{font-size:10px;color:var(--muted)}.nkcal{margin:8px 0 8px}.nkcal b{font-size:30px;font-weight:900}.nbar{display:flex;height:10px;border-radius:6px;overflow:hidden;gap:2px}.nbar i{display:block}.nmac{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}.nmac span{flex:1;min-width:90px;display:flex;flex-direction:column;font-size:12px;color:var(--muted)}.nmac span i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}.nmac b{color:var(--text);font-size:17px}
 .guide .gbar{height:6px;border-radius:4px;background:var(--line);margin:10px 0 6px;overflow:hidden}.guide .gbar i{display:block;height:100%;background:var(--accent)}.grow{display:flex;align-items:center;gap:10px;width:100%;padding:10px 2px;border:0;border-top:1px solid var(--line);background:none;color:inherit;font:inherit}.grow.ok{opacity:.55}.gck{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:#111}.grow.ok .gck{background:var(--accent);border-color:var(--accent)}nav button{position:relative}.navdot{display:none;position:absolute;top:6px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--bg)}nav button.new .navdot{display:block}
 .cpw.slp .cpsq{position:relative;display:block;max-width:100%}.cpw.slp .cpsq img{display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:fill;animation:cpBr 4.8s ease-in-out infinite}.cpw.slp .cpfx{left:var(--zx);top:var(--zy);right:auto}.cpw.slp .cpfx.b{margin:-.5em 0 0 .7em}@keyframes cpBr{0%,100%{transform:scale(1,1)}50%{transform:scale(1.008,1.03)}}
 .cpw.gold img{filter:sepia(.9) saturate(2.4) hue-rotate(-8deg) brightness(1.08) drop-shadow(0 0 10px #facc15)}
@@ -2498,9 +2498,11 @@ function genBuild() {
   if (pool.length < 10) { const X = n => { if (!isEN()) return n; const en = EXN_EN[n] || n, L = libEntry(n); if (L && en !== n) { S.links = S.links || {}; S.links[norm(en)] = L.id; } return en; };
     GEN_POOL.forEach(n => { const nm = X(n); if (libEntry(nm) && !pool.some(k => libId(k) === libId(nm))) { pool.push(nm); known[nm] = null; } }); }
   const score = m => { const f = rec[m] || 0; return f > .35 ? -1 : (1 - f) * (1 - f) * (.6 + 1 / (1 + (sets7[m] || 0) / 5)); };
-  const n = genSt.min <= 30 ? 4 : genSt.min <= 45 ? 5 : genSt.min <= 60 ? 6 : 8, lv = expLv(), nSets = lv === 'beg' ? 2 : 3, cov = {}, picks = [];
+  let rsc = null; try { const q = recScore(); rsc = q ? q.sc : null; } catch (e) {}
+  genSt.light = !!genSt.lightAsk || (rsc != null && rsc < 50);
+  const n = Math.max(3, (genSt.min <= 30 ? 4 : genSt.min <= 45 ? 5 : genSt.min <= 60 ? 6 : 8) - (genSt.light ? 1 : 0)), lv = expLv(), nSets = Math.max(2, (lv === 'beg' ? 2 : 3) - (genSt.light ? 1 : 0)), cov = {}, picks = [];
   const rnd = k => { const x = Math.sin((genSt.seed + 1) * 9973 + k * 131) * 43758.5453; return x - Math.floor(x); };
-  const R = ({force: ['3-6', '6-10', '8-12'], fat: ['8-12', '12-15', '15-20'], muscle: ['6-10', '8-12', '10-15']})[S.settings.obj] || ['6-10', '8-12', '10-15'];
+  const R = genSt.light ? ['10-12', '12-15', '12-15'] : ({force: ['3-6', '6-10', '8-12'], fat: ['8-12', '12-15', '15-20'], muscle: ['6-10', '8-12', '10-15']})[S.settings.obj] || ['6-10', '8-12', '10-15'];
   for (let i = 0; i < n; i++) {
     let best = null, bv = 0;
     pool.forEach((name, k) => { if (picks.some(x => x.name === name || libId(x.name) === libId(name))) return; const L = libEntry(name); if (!L || !L.p.length) return;
@@ -2514,14 +2516,16 @@ function genBuild() {
     best.L.p.forEach(m => cov[m] = (cov[m] || 0) + 1); best.L.s.forEach(m => cov[m] = (cov[m] || 0) + .4); picks.push(best);
   }
   picks.sort((a, b) => (b.comp ? 1 : 0) - (a.comp ? 1 : 0));
-  genSt.list = picks.map((x, i) => { const src = known[x.name]; return {e: src ? {...src, ss: undefined} : ex(x.name, x.comp && lv === 'adv' ? 4 : nSets, x.comp ? (i === 0 ? R[0] : R[1]) : R[2]), mus: x.L.p}; });
+  genSt.list = picks.map((x, i) => { const src = known[x.name]; const e = src ? {...src, ss: undefined} : ex(x.name, x.comp && lv === 'adv' ? 4 : nSets, x.comp ? (i === 0 ? R[0] : R[1]) : R[2]);
+    if (genSt.light) { e.sets = Math.max(2, (+e.sets || 3) - 1); e.reps = x.comp ? R[1] : R[2]; delete e.sl; delete e.fplan; e.note = T('Séance légère : garde 3 reps en réserve', 'Light session: keep 3 reps in reserve'); }
+    return {e, mus: x.L.p}; });
   genSt.tired = Object.keys(rec).filter(m => rec[m] > .35);
 }
 function openGen(keep) {
   if (!keep) genSt.seed = 0; genBuild(); closeAll();
   const L = genSt.list, seg = [30, 45, 60, 90].map(m => `<button class="${genSt.min === m ? 'on' : ''}" data-act="gen-min" data-m="${m}">${m} min</button>`).join('');
   modal(`<div class="row between"><h2 style="margin:0">✨ ${T('Séance générée', 'Generated workout')}</h2><button class="btn sm" data-act="close">✕</button></div>
-    <p class="muted small" style="margin:8px 0">${T('Choisie pour toi selon tes muscles reposés et ce que tu as moins travaillé cette semaine.', 'Picked for you from your rested muscles and what you trained less this week.')}</p>
+    <p class="muted small" style="margin:8px 0">${T('Choisie pour toi selon tes muscles reposés et ce que tu as moins travaillé cette semaine.', 'Picked for you from your rested muscles and what you trained less this week.')}${genSt.light ? ' <b style="color:#f5c542">' + T('Version légère : moins de séries, charges plus légères, sans aller à l\'échec.', 'Light version: fewer sets, lighter weights, no training to failure.') + '</b>' : ''}</p>
     <div class="seg" style="margin-bottom:10px">${seg}</div>
     ${L.length ? L.map(x => `<div class="row between" style="padding:8px 0;border-bottom:1px solid var(--line);gap:8px"><span style="min-width:0"><b>${esc(x.e.name)}</b><br><span class="muted small">${x.mus.map(musN).join(', ')}</span></span><span class="muted small" style="white-space:nowrap">${x.e.sets} × ${esc(String(x.e.reps || ''))}</span></div>`).join('') : `<p class="center muted" style="margin:18px 0">${T('Tous tes muscles sont encore fatigués. Une journée de repos ou des étirements seraient mieux aujourd\'hui.', 'All your muscles are still tired. A rest day or some stretching would be better today.')}</p>`}
     ${hurtOn() ? `<p class="muted small" style="margin:10px 0 0">${ic('alert', 13)} ${T('Adaptée à tes douleurs', 'Adapted to your pain')}${CLN()} ${esc(HURT_Z.filter(([z]) => +hurtMap()[z] >= 2).map(([z]) => hurtZN(z)).join(', ') || T('gênes légères seulement', 'mild discomfort only'))}</p>` : ''}
@@ -7686,9 +7690,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.131.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.132.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.132.0', d: '2026-11-25', fr: ['Récupération plus poussée : tes 7 derniers matins en barres, ta moyenne de la semaine, une alerte quand ton sommeil est court 3 nuits de suite, et un bouton pour la séance du jour selon ta forme. Quand la récupération est faible, la séance générée devient une version légère (moins de séries, 3 reps en réserve), avec des étirements doux en option.'], en: ['Deeper recovery: your last 7 mornings as bars, your week average, an alert when your sleep has been short for 3 nights, and a button for today\'s workout matched to your energy. When recovery is low, the generated workout becomes a light version (fewer sets, 3 reps in reserve), with gentle stretching as an option.']},
   {v: '9.131.0', d: '2026-11-25', fr: ['Nouveau : ton plan nutrition. Selon ton poids, ta taille, ton âge, ton objectif et tes séances par semaine : les calories par jour, les protéines, les glucides et les lipides, et l\'eau. Dans ton Profil et dans Corps et progrès.', 'Nouveau guide « Bien démarrer » pour les nouveaux : infos, poids, douleurs, première séance, plan nutrition et un ami, coché au fur et à mesure.'], en: ['New: your nutrition plan. From your weight, height, age, goal and workouts per week: daily calories, protein, carbs and fat, and water. In your Profile and in Body & progress.', 'New “Get started” guide for newcomers: info, weight, pain, first workout, nutrition plan and a friend, checked off as you go.']},
   {v: '9.130.0', d: '2026-11-25', fr: ['Nouvel onglet Amis dans la barre du bas : le fil des séances de tes amis, tes demandes, tes défis et le classement, à un seul toucher (un point s\'allume quand un ami a une nouvelle séance). Cardio et Intervalles sont maintenant ensemble dans l\'onglet Cardio.'], en: ['New Friends tab in the bottom bar: your friends\' workout feed, requests, challenges and ranking, one tap away (a dot lights up when a friend has a new workout). Cardio and Intervals are now together in the Cardio tab.']},
   {v: '9.129.0', d: '2026-11-25', fr: ['Étirements refaits : chaque exercice peut être tenu (secondes) ou en répétitions, avec des séries, chaque côté, des consignes et un lien vidéo. L\'éditeur est plus simple (boutons + et −), et le lecteur montre les répétitions avec un bouton « Fait », les consignes et la vidéo.', 'Nouveau bouton IA dans Étirements : copie une demande pour ChatGPT, Gemini ou Claude (tes douleurs incluses), puis colle sa réponse. N\'importe quelle routine de mobilité ou de rééducation écrite par une IA est reconnue, même collée par erreur dans Entraînement.', 'Tes photos et vidéos : dans la fiche d\'un exercice, ajoute ta propre photo (elle remplace l\'animation, pour toi seulement) et un lien YouTube. Un exercice créé par toi peut avoir un type : machine, poids du corps, haltères, étirement…'], en: ['Stretching rebuilt: each exercise can be held (seconds) or done in reps, with sets, each side, instructions and a video link. The editor is simpler (+ and − buttons), and the player shows reps with a “Done” button, the instructions and the video.', 'New AI button in Stretching: copy a request for ChatGPT, Gemini or Claude (your pain areas included), then paste its answer. Any mobility or rehab routine written by an AI is recognized, even if pasted by mistake in Workout.', 'Your photos and videos: in an exercise\'s info page, add your own photo (it replaces the animation, for you only) and a YouTube link. An exercise you create can have a type: machine, bodyweight, dumbbells, stretch…']},
@@ -9474,7 +9479,18 @@ function recCard() {
   if (x.hrv) d.push(`${T('VFC', 'HRV')} ${x.hrv} ms${r.bH ? ` (${x.hrv >= r.bH ? '+' : ''}${Math.round((x.hrv / r.bH - 1) * 100)} %)` : ''}`);
   return `<div class="card recc" style="--rc:${c}"><div class="row" style="gap:14px;align-items:center"><div class="recring" style="--p:${r.sc}"><b>${r.sc}</b><small>%</small></div>
     <div style="flex:1;min-width:0"><div class="row between"><span class="small muted">${T('Récupération', 'Recovery')}</span>${ib(T('Récupération', 'Recovery'), T('Calculée chaque matin avec les données de ta montre dans Health Connect : ta nuit de sommeil (8 h = parfait), ton pouls au repos et ta variabilité cardiaque (VFC) comparés à ta moyenne des 2 dernières semaines, et la charge de ta séance d\'hier. Il faut environ 3 nuits avant que le pouls et la VFC comptent.', 'Worked out each morning from your watch data in Health Connect: last night\'s sleep (8 h = perfect), your resting pulse and heart rate variability (HRV) compared with your average of the last 2 weeks, and yesterday\'s workout load. It takes about 3 nights before pulse and HRV count.'))}</div>
-    <b style="color:var(--rc)">${lab}</b><div class="small">${tip}</div>${d.length ? `<div class="small muted" style="margin-top:2px">${d.join(' · ')}</div>` : ''}</div></div></div>`;
+    <b style="color:var(--rc)">${lab}</b><div class="small">${tip}</div>${d.length ? `<div class="small muted" style="margin-top:2px">${d.join(' · ')}</div>` : ''}</div></div>${recMore(r)}</div>`;
+}
+/* Plus loin : tendance des 7 derniers matins, dette de sommeil, et quoi faire aujourd'hui */
+function recMore(r) {
+  const days = [...Array(7)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); const k = dkey(d), q = recScore(k); return {k, v: q ? q.sc : null, l: OB_DAY3()[(d.getDay() + 6) % 7].slice(0, 1)}; });
+  const R = S.rec || {}, sl3 = [0, 1, 2].map(i => { const d = new Date(); d.setDate(d.getDate() - i); return (R[dkey(d)] || {}).sl || 0; }).filter(v => v > 0);
+  const debt = sl3.length === 3 && sl3.reduce((t, v) => t + v, 0) / 3 < 390;
+  const known = days.filter(x => x.v != null), avg = known.length >= 3 ? Math.round(known.reduce((t, x) => t + x.v, 0) / known.length) : null;
+  const bars = known.length >= 2 ? `<div class="recwk">${days.map(x => `<span title="${x.v ?? ''}"><i style="height:${x.v == null ? 4 : Math.max(8, x.v)}%;background:${x.v == null ? 'var(--line)' : x.v >= 75 ? 'var(--ok)' : x.v >= 50 ? '#f5c542' : 'var(--bad)'}"></i><small>${x.l}</small></span>`).join('')}</div>` : '';
+  const act = S.active ? '' : r.sc < 50 ? `<div class="row" style="gap:8px;margin-top:10px"><button class="btn sm" style="flex:1" data-act="gen-open" data-light="1">${T('Séance légère', 'Light workout')}</button><button class="btn sm" style="flex:1" data-act="rec-stretch">${T('Étirements doux', 'Gentle stretching')}</button></div>`
+    : r.sc < 75 ? `<button class="btn sm block" style="margin-top:10px" data-act="gen-open">${T('Séance adaptée à ma forme', 'Workout matched to my energy')}</button>` : '';
+  return `${bars}${avg != null ? `<p class="small muted" style="margin:6px 0 0">${T(`Moyenne de la semaine : ${avg} %`, `Week average: ${avg}%`)}${debt ? ' · ' + T('ton sommeil est court depuis 3 nuits : vise 30 à 60 min de plus ce soir.', 'your sleep has been short for 3 nights: aim for 30 to 60 more minutes tonight.') : ''}</p>` : debt ? `<p class="small muted" style="margin:6px 0 0">${T('Ton sommeil est court depuis 3 nuits : vise 30 à 60 min de plus ce soir.', 'Your sleep has been short for 3 nights: aim for 30 to 60 more minutes tonight.')}</p>` : ''}${act}`;
 }
 setTimeout(() => recFetch(false), 6000);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(() => recFetch(false), 3000); });
@@ -12403,7 +12419,7 @@ document.addEventListener('click', e => {
     case 'go': if (b.dataset.v === 'friends') { closeAll(); setRoot('friends'); render(); window.scrollTo(0, 0); break; } if (b.dataset.v === 'settings' && b.closest('.nag, .card') && !cloudOn() && !cbOn() && /Activer|Turn on/.test(b.textContent)) { go('settings'); go('setp', {k: 'cloud'}); break; } go(b.dataset.v, {n: b.dataset.n, rid: b.dataset.rid}); break;
     case 'setp': go('setp', {k: b.dataset.k, hl: b.dataset.hl || ''}); break;
     case 'start-empty': startEmpty(); break;
-    case 'gen-open': openGen(); break;
+    case 'gen-open': genSt.lightAsk = b.dataset.light === '1'; openGen(); break;
     case 'gen-min': genSt.min = +b.dataset.m; openGen(true); break;
     case 'gen-other': genSt.seed++; openGen(true); break;
     case 'gen-go': genStart(); break;
@@ -13062,6 +13078,7 @@ document.addEventListener('click', e => {
     case 'hist-edit': openEditor(b.dataset.hid); break;
     case 'hist-img': if ($('#shmenu')) closeModal(); shareImage(b.dataset.hid); break;
     case 'hist-sharemenu': modal(`<h2>📤 ${T('Partager la séance', 'Share the workout')}</h2><div class="menu"><button class="btn block" data-act="hist-img" data-hid="${b.dataset.hid}">🖼️ ${T('En image (Instagram, Messenger…)', 'As an image (Instagram, Messenger…)')}</button><button class="btn block" data-act="hist-share" data-hid="${b.dataset.hid}">📝 ${T('En texte', 'As text')}</button><button class="btn block" data-act="close">${T('Annuler', 'Cancel')}</button></div>`, {id: 'shmenu'}); break;
+    case 'rec-stretch': closeAll(); setRoot('stretch'); render(); startStretch('p_full'); break;
     case 'nutri-info': S.settings.nutriSeen = 1; save(); modal(`<div class="row between"><h2 style="margin:0">${T('Mon plan nutrition', 'My nutrition plan')}</h2><button class="btn sm" data-act="close">✕</button></div>${nutriCard(true)}`); render(); break;
     case 'guide-off': S.settings.guideOff = 1; save(); render(); break;
     case 'guide-hurt': S.settings.hurtSeen = 1; save(); setRoot('profile'); go('setp', {k: 'hurt'}); break;
