@@ -2239,7 +2239,18 @@ function startWorkout(rid) {
   const r = S.routines.find(x => x.id === rid); if (!r) return;
   S.active = {routineId: r.id, routineName: r.name, start: new Date().toISOString(),
     exercises: r.exercises.map(e => { const sets = mkSetsFromRoutine(e, lastFor(e.name)); return {name: e.name, orig: e.name, n0: sets.length, n0w: sets.filter(s => s.t !== 'W').length, ss: e.ss, rest: e.rest, note: '', target: {...e}, sets}; })};
-  save(); openWorkout(); try { if (frOn()) frQueue(false); } catch (e) {}
+  save(); openWorkout(); try { if (frOn()) frQueue(false); } catch (e) {} setTimeout(frGo, 2500);
+}
+/* Mes amis sont prévenus que je commence une séance (un petit message dans leur boîte, lu par leur téléphone même appli fermée) */
+async function frGo() {
+  try {
+    const a = S.active; if (!a || S.settings.goShare === false || typeof firebase === 'undefined') return;
+    const fr = FRS(); if (!fr.fb) return; const u = firebase.auth().currentUser; if (!u) return;
+    if (frGo.k === a.start) return; frGo.k = a.start;
+    const L = (fr.list || []).filter(f => fbIs(f.c) && !isBlk(f.c.slice(3))).slice(0, 30); if (!L.length) return;
+    const o = {from: u.uid, type: 'go', name: myNm(), rn: String(a.routineName || '').slice(0, 40), t: new Date().toISOString()}, db = fbDb(), b = db.batch();
+    L.forEach(f => b.set(db.collection('inbox').doc(f.c.slice(3)).collection('m').doc(), o)); await b.commit();
+  } catch (e) {}
 }
 function openWorkout() { stack = S.active && S.active.cl ? [{v: 'cardio'}, {v: 'clive'}] : [{v: 'train'}, {v: 'workout'}]; render(); window.scrollTo(0, 0); setTimeout(scrollCur, 30); hSync(); }
 /* Exercice en cours = premier exercice avec une série non cochée */
@@ -3179,8 +3190,18 @@ function setSon() {
       (isIOS ? T('iPhone : la vibration demande iOS 18 ou plus récent, et « Retour haptique système » activé (Réglages → Sons et vibrations). ', 'iPhone: vibration needs iOS 18 or newer, with “System Haptics” on (Settings → Sounds & Haptics). ') : '') + T('Rien senti? Le cell ne doit pas être en mode <b>Muet</b> : mets-le en mode Vibreur ou Son. Vérifie aussi Réglages → Sons et vibrations → Intensité des vibrations → « Retour tactile ».', 'Felt nothing? The phone must not be on <b>Mute</b>: use Vibrate or Sound mode. Also check Settings → Sounds and vibration → Vibration intensity → “Touch feedback”.')) +
     (GAME() ? sGrp(T('Jeu', 'Game'), sTog('sfx', S.settings.sfx !== false, T('Sons du jeu', 'Game sounds'), T('Attaques et boss', 'Attacks and bosses'))) : '');
 }
+const natRemind = () => { const L = LV(); return !!(L && typeof L.remind === 'function'); };
 function setNotifs() {
-  const n = S.settings.notif === true, r = S.settings.remind === true;
+  const n = S.settings.notif === true, r = S.settings.remind === true, nat = !!LV(), nr = natRemind();
+  const friends = sGrp(T('Amis', 'Friends'), sTog('goShare', S.settings.goShare !== false, T('Prévenir mes amis quand je commence une séance', 'Tell my friends when I start a workout'), T('Ils reçoivent une notification avec le nom de ta routine.', 'They get a notification with your routine name.')));
+  if (nat) return sGrp(T('Pendant la séance', 'During the workout'), sInfo(T('Fin du repos', 'End of rest'), '', T('Dans l\'appli Android, la fin du repos sonne et vibre avec la notification de séance sur l\'écran verrouillé (Réglages → Téléphone Android).', 'In the Android app, the end of rest rings and vibrates with the workout notification on the lock screen (Settings → Android phone).'))) +
+    (nr ? sGrp(T('Rappels d\'entraînement', 'Workout reminders'), sTog('remind', r, T('M\'envoyer des rappels', 'Send me reminders'), T('Jours sans séance et séances prévues', 'Days off and planned workouts')) +
+      (r ? sSel('remindGap', T('Me rappeler après', 'Remind me after'), [2, 3, 4, 5, 7].map(d => [d, d + ' ' + T('jours sans séance', 'days without a workout')]), +S.settings.remindGap || 3) +
+        sTog('remindPlan', S.settings.remindPlan !== false, T('Les jours prévus dans mon horaire', 'On days planned in my schedule')) +
+        sSel('remindHour', T('Pas avant', 'Not before'), [6, 8, 10, 12, 14, 15, 16, 17, 18, 19, 20].map(h => [h, h + ' h']), S.settings.remindHour == null ? 17 : +S.settings.remindHour) +
+        sBtn('remind-test', T('Tester le rappel', 'Test the reminder'), {nochev: true}) : ''),
+      r ? T('Le téléphone vérifie environ toutes les 15 minutes, même appli fermée, et t\'envoie au plus un rappel par jour. Si tu t\'es entraîné aujourd\'hui, aucun rappel.', 'The phone checks about every 15 minutes, even with the app closed, and sends at most one reminder a day. If you trained today, no reminder.') : '')
+      : sGrp(T('Rappels d\'entraînement', 'Workout reminders'), sInfo(T('Mise à jour de l\'appli nécessaire', 'App update needed'), '', T('Installe la dernière version de l\'appli Runelift pour recevoir les rappels.', 'Install the latest Runelift app to get reminders.')))) + friends;
   return sGrp(T('Pendant la séance', 'During the workout'), sTog('notif', n, T('Notifications de fin de repos', 'End-of-rest notifications'), T('Fin du repos et prochaine série, sur ton téléphone et ta montre.', 'End of rest and next set, on your phone and watch.')) +
       (n ? sTog('notifStart', S.settings.notifStart !== false, T('Aussi au début du repos', 'Also at the start of rest'), T('Silencieuse, avec l\'heure de fin', 'Silent, with the end time')) +
         sBtn('test-notif', T('Tester la notification', 'Test the notification'), {sub: T('Éteins l\'écran : elle arrive dans 8 s', 'Turn the screen off: it arrives in 8 s'), nochev: true}) : '')) +
@@ -3196,7 +3217,7 @@ function setNotifs() {
         sSel('remindHour', T('Pas avant', 'Not before'), [6, 8, 10, 12, 14, 15, 16, 17, 18, 19, 20].map(h => [h, h + ' h']), S.settings.remindHour == null ? 17 : +S.settings.remindHour) +
         sBtn('remind-test', T('Tester le rappel', 'Test the reminder'), {nochev: true}) : ''),
       r ? T('C\'est le téléphone qui choisit le moment exact, environ une fois par jour, même quand l\'appli est fermée. Ça demande que l\'appli soit installée. Si tu t\'es entraîné aujourd\'hui, aucun rappel.', 'The phone picks the exact time, about once a day, even when the app is closed. The app must be installed. If you trained today, no reminder.') : '') +
-    (r && !notifOn() ? sWarn(T('Active aussi « Notifications de fin de repos » plus haut, sinon les rappels ne peuvent pas s\'afficher.', 'Also turn on “End-of-rest notifications” above, or reminders can\'t show.')) : '');
+    (r && !notifOn() ? sWarn(T('Active aussi « Notifications de fin de repos » plus haut, sinon les rappels ne peuvent pas s\'afficher.', 'Also turn on “End-of-rest notifications” above, or reminders can\'t show.')) : '') + friends;
 }
 function setPhone() {
   const st = phoneSt || {};
@@ -3950,7 +3971,7 @@ function openPlates(w, exName) {
   const bar = S.settings.bar != null ? S.settings.bar : (U() === 'kg' ? 20 : 45);
   const bars = U() === 'kg' ? [20, 15, 10, 0] : [45, 35, 25, 15, 0];
   modal(`<div class="row between"><h2>🧮 Calculateur de disques</h2><button class="btn sm" data-act="close">✕</button></div>
-    <div class="grid2"><div><label>Charge totale (${U()})</label><input id="pltw" inputmode="decimal" value="${esc(w || '')}"></div>
+    <div class="grid2"><div><label>Charge totale (${U()})</label><input id="pltw" inputmode="decimal" maxlength="7" value="${esc(w || '')}"></div>
     <div><label>Barre</label><select id="pltb">${bars.map(b => `<option value="${b}" ${b === bar ? 'selected' : ''}>${b ? b + ' ' + U() : 'Aucune (machine)'}</option>`).join('')}</select></div></div>
     <label>${T('Où vont les disques?', 'Where do plates go?')}</label><div class="seg" id="pltsd"><button class="btn ${pltSides() === 2 ? 'primary' : ''}" data-act="plt-sides" data-n="2">⇆ ${T('2 côtés', '2 sides')}</button><button class="btn ${pltSides() === 1 ? 'primary' : ''}" data-act="plt-sides" data-n="1">→ ${T('1 seul côté', '1 side only')}</button></div>
     <p class="muted small" style="margin:6px 0 0">${T('« 1 seul côté » : machines à mollets, T-bar, presse à un chargement…', '“1 side only”: calf machines, T-bar, single-load press…')}${pltEx ? ' ' + T('Retenu pour cet exercice.', 'Remembered for this exercise.') : ''}</p>
@@ -3960,6 +3981,8 @@ function openPlates(w, exName) {
 function renderPlates() {
   const t = parseFloat(($('#pltw').value || '').replace(',', '.')), bar = +$('#pltb').value, box = $('#pltres');
   if (!(t > 0)) { box.innerHTML = '<p class="muted small">Entre une charge.</p>'; return; }
+  const tmax = U() === 'kg' ? 700 : 1500;
+  if (t > tmax) { box.innerHTML = `<p class="muted small">${T('Maximum', 'Maximum')} ${tmax} ${U()}.</p>`; return; }
   const sides = pltSides(), {out, rest, under} = platesFor(t, bar, sides);
   const big = PLATES[U()][0];
   box.innerHTML = under ? `<p class="muted">C'est moins que la barre (${bar} ${U()}).</p>` :
@@ -6254,7 +6277,7 @@ function compInfo() {
     ${compReady(k.L) ? `<button class="btn block chbtn" style="--cc:#eab308;margin-bottom:12px" data-act="comp-choose">${T('Un nouvel œuf t\'attend : choisis ton compagnon', 'A new egg is waiting: choose your companion')}</button>` : ''}
     ${others.length ? `<label class="small muted">${T('Mes compagnons', 'My companions')}</label><div class="cpown">${others.map(s => { const o = compOfSp(s); return `<div class="cpo" style="--cc:${o.col}"><img src="${o.img}" alt=""><span style="flex:1;min-width:0"><b>${esc(o.name)}</b><br><span class="small muted">${ic('heart', 11)} ${esc(T(BOND[bondLv(o.h)][1][0], BOND[bondLv(o.h)][1][1]))} · ${o.h}</span></span><button class="btn sm" data-act="comp-act" data-k="${s}">${T('Le prendre', 'Take along')}</button></div>`; }).join('')}</div>
       <p class="small muted" style="margin:6px 0 12px">${T('Seul ton compagnon actif gagne des cœurs. Chacun garde les siens quand tu changes.', 'Only your active companion earns hearts. Each one keeps its own when you switch.')}</p>` : ''}
-    <label class="small muted">${T('Son nom', 'Its name')}</label><div class="row" style="gap:8px;margin-top:4px"><input id="compnm" maxlength="20" value="${esc(me.n || '')}" placeholder="${esc(k.base)}"><button class="btn primary" data-act="comp-name">OK</button></div>
+    <label class="small muted">${T('Son nom', 'Its name')}</label>${me.n && !S.settings.lab ? `<div style="margin-top:4px;font-weight:700;font-size:17px">${esc(me.n)}</div>` : `<div class="row" style="gap:8px;margin-top:4px"><input id="compnm" maxlength="20" value="${esc(me.n || '')}" placeholder="${esc(k.base)}"><button class="btn primary" data-act="comp-name">OK</button></div><p class="small muted" style="margin:4px 0 0">${T('Choisis bien : son nom sera définitif.', 'Choose carefully: its name will be permanent.')}</p>`}
     <button class="btn block" data-act="close" style="margin-top:12px">${T('Fermer', 'Close')}</button>`);
 }
 function compOfSp(sp) { const c = compSt(), a = c.act; c.act = sp; try { return compOf(); } finally { c.act = a; } }
@@ -6889,11 +6912,13 @@ async function remindSync() {
       tGap: T('Ça fait # jours sans entraînement', '# days without training'), tPlan: T('Séance prévue aujourd\'hui : #', 'Workout planned today: #'),
       body: T('La Guilde t\'attend, aventurier. Ta quête du jour est prête.', 'The Guild awaits, adventurer. Your daily quest is ready.'),
       ra: notifOn() && !LV() ? raBrief() : null, tRa: T('Plus que # avant la fin du raid', 'Only # left in the raid'), bRa: T('Tu as # points d\'énergie à dépenser contre %.', 'You have # energy points to spend on %.'), d1: T('1 jour', '1 day'), d2: T('2 jours', '2 days')};
+    if (natRemind()) { LV().remind({...plan, on: S.settings.remind === true, ra: null}).catch(() => {}); return; }
     const c = await caches.open('carnet-remind'); await c.put('./__remind.json', new Response(JSON.stringify(plan), {headers: {'Content-Type': 'application/json'}}));
     if ((on || plan.ra) && 'serviceWorker' in navigator) { const reg = await navigator.serviceWorker.ready; if (reg.periodicSync) { try { await reg.periodicSync.register('carnet-remind', {minInterval: 6 * 3600e3}); } catch (e) {} } }
   } catch (e) {}
 }
 async function remindTest() {
+  if (natRemind()) { LV().remindTest({title: T('Séance prévue aujourd\'hui : Push A', 'Workout planned today: Push A'), body: T('La Guilde t\'attend, aventurier. Ta quête du jour est prête.', 'The Guild awaits, adventurer. Your daily quest is ready.')}).then(() => toast(T('Rappel envoyé', 'Reminder sent')), () => toast(T('⚠️ Notifications bloquées pour Runelift', '⚠️ Notifications blocked for Runelift'))); return; }
   if (!notifOn()) { toast(T('⚠️ Active d\'abord les notifications', '⚠️ Turn on notifications first')); return; }
   try { const reg = await navigator.serviceWorker.ready; await reg.showNotification(T('Séance prévue aujourd\'hui : Push A', 'Workout planned today: Push A'), {body: T('La Guilde t\'attend, aventurier. Ta quête du jour est prête.', 'The Guild awaits, adventurer. Your daily quest is ready.'), tag: 'carnet-remind', icon: 'icon-192.png', badge: 'icon-192.png', data: {go: 'today'}}); } catch (e) { toast(T('Notification impossible ici', 'Notification not possible here')); }
 }
@@ -7442,9 +7467,10 @@ function doImport() {
 
 
 /* ===================== Nouveautés (à mettre à jour à chaque version) ===================== */
-const APP_VERSION = '9.126.5'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
+const APP_VERSION = '9.127.0'; // ⚠️ Mettre aussi le même numéro dans version.json (sinon pas de mise à jour automatique)
 /* Notes de mise à jour : UNE seule entrée par jour. Si une entrée existe déjà pour aujourd'hui, mets-la à jour (v = dernière version, ajoute/réécris les puces) au lieu d'en ajouter une nouvelle. */
 const CHANGELOG = [
+  {v: '9.127.0', d: '2026-11-25', fr: ['Amis : quand un ami commence sa séance, tu reçois une notification (appli Android, même fermée). Tu peux couper ça dans Réglages → Notifications.', 'Compagnons : une bannière à gagner pour chaque créature amenée au rang Meilleur ami, et la bannière « Meilleur ami de la nature » quand tu les as toutes. Le nom de ton compagnon est maintenant définitif.', 'Appli Android : rappels d\'entraînement et vibrations qui marchent vraiment (avec la nouvelle version de l\'appli).', 'Plus de minuteur de repos après la toute dernière série de la séance. Le calculateur de disques ne bloque plus avec une charge énorme.'], en: ['Friends: when a friend starts a workout, you get a notification (Android app, even closed). You can turn it off in Settings → Notifications.', 'Companions: a banner to win for each creature brought to Best friend, and the “Nature\'s best friend” banner when you have them all. Your companion\'s name is now permanent.', 'Android app: workout reminders and vibration that really work (with the new app version).', 'No more rest timer after the very last set of the workout. The plate calculator no longer freezes with a huge weight.']},
   {v: '9.126.0', d: '2026-11-24', fr: ['Nouveau : les compagnons arrivent. À ton premier niveau 5, ton œuf éclot et tu choisis ton compagnon parmi 10 créatures. Il grandit avec votre lien (cœurs gagnés en t\'entraînant, en battant des records, en finissant tes quêtes), prend 4 formes et dort couché quand tu te reposes. Il ne perd jamais rien si tu t\'absentes.'], en: ['New: companions are here. At your first level 5 your egg hatches and you choose your companion among 10 creatures. It grows with your bond (hearts earned by training, beating records, finishing quests), takes 4 forms and sleeps lying down when you rest. It never loses anything if you take a break.']},
   {v: '9.123.2', d: '2026-11-23', fr: ['Fin de séance : une fois le coffre ouvert, le bouton devient « Coffre ouvert · revoir le butin » au lieu de « Ouvrir ton coffre ».'], en: ['End of workout: once the chest is opened, the button becomes “Chest opened · see the loot” instead of “Open your chest”.']},
   {v: '9.123.1', d: '2026-11-23', fr: ['Copier la séance d\'un ami (« Faire cette séance », en direct ou enregistrée comme routine) garde maintenant sa fourchette de reps (ex. 8-12) au lieu d\'un seul chiffre. Ton ami doit avoir cette version pour que ses séances la partagent.'], en: ['Copying a friend\'s workout (“Do this workout”, live or saved as a routine) now keeps their rep range (e.g. 8-12) instead of a single number. Your friend needs this version for their workouts to share it.']},
@@ -10727,6 +10753,8 @@ const COS = {
 function cosReq(r) { // {ok, why}
   if (r.all) { const q = r.all.map(cosReq); return {ok: q.every(x => x.ok), why: q.map(x => x.why).join(' + '), how: q.map(x => x.how).filter(Boolean).join(' ')}; }
   if (r.mb != null) { const nm = BOSSES[r.mb] || ['?', '?']; return {ok: mbWon(r.mb), why: T(`Bats ${nm[0].replace(/^./, c => c.toLowerCase())}`, `Defeat ${nm[1].replace(/^The/, 'the')}`), how: T('Bats ce boss du mois (Guilde → Quêtes) : il revient une fois par an.', 'Defeat this monthly boss (Guild → Quests): it comes back once a year.')}; }
+  if (r.cp) { const o = ((S.comp || {}).own || {})[r.cp], nm = COMP[r.cp] ? COMP[r.cp].s : ['?', '?']; return {ok: !!o && (+o.h || 0) >= STAGE_H[3], why: T(`${nm[0]} au rang Meilleur ami`, `${nm[1]} at Best friend`), how: T('Amène ce compagnon jusqu\'à sa forme ultime (250 cœurs) : séances, quêtes, cardio, étirements et caresses lui donnent des cœurs.', 'Bring this companion to its ultimate form (250 hearts): workouts, quests, cardio, stretching and pets give it hearts.')}; }
+  if (r.cpa) { const own = (S.comp || {}).own || {}, L = Object.keys(COMP).filter(k => COMP[k].ok), n = L.filter(k => own[k]).length; return {ok: L.length > 0 && n >= L.length, why: T(`Toutes les créatures (${n}/${L.length})`, `All creatures (${n}/${L.length})`), how: T('Fais éclore toutes les créatures : chaque compagnon qui devient Meilleur ami te donne un nouvel œuf.', 'Hatch every creature: each companion that becomes Best friend gives you a new egg.')}; }
   if (r.rb != null) { const nm = RAID_BOSS[r.rb] || ['?', '?']; return {ok: !!(S.raidLoot || {})['b' + r.rb], why: T(`Bats ${nm[0]} au raid`, `Defeat ${nm[1]} in a raid`), how: T('Bats ce boss de raid avec ta guilde ou tes amis, en faisant au moins la moitié de ta part. Ta guilde gagne aussi la bannière.', 'Defeat this raid boss with your guild or friends, doing at least half of your share. Your guild gets the banner too.')}; }
   if (r.gl) return {ok: (+S.gpeak || 0) >= r.gl, why: T(`Guilde niv. ${r.gl}`, `Guild lv. ${r.gl}`), how: T('Monte le niveau de ta guilde avec tes amis (Guilde → Ma guilde). Tu gardes la récompense même si tu changes de guilde.', 'Level up your guild with your friends (Guild → My guild). You keep the reward even if you change guilds.')};
   if (r.l) return {ok: myLvl() >= r.l, why: `${T('Niv.', 'Lv.')} ${r.l}`, how: T(`Atteins le niveau ${r.l} en gagnant de l'XP (séances, séries, records, quêtes…).`, `Reach level ${r.l} by earning XP (workouts, sets, records, quests…).`)};
@@ -10763,6 +10791,9 @@ const MB_BN = [['Forge du Golem', 'Golem forge'], ['Marais de la Liche', 'Lich s
 const mbWon = i => Object.keys(S.bossLog || {}).some(mk => (+mk.slice(0, 4) * 12 + +mk.slice(5, 7) - 1) % BOSSES.length === i);
 Object.keys(MB_ART).forEach(i => { BN_ART['mb' + i] = 1; COS.banner.push({id: 'mb' + i, n: MB_BN[i], r: {mb: +i}, rar: 2}); });
 Object.keys(RB_ART).forEach(i => { BN_ART['rb' + i] = 1; COS.banner.push({id: 'rb' + i, n: RB_BN[i], r: {rb: +i}, rar: 3}); });
+/* Bannières des compagnons : une par créature amenée à sa forme ultime (Meilleur ami), et une pour toutes les créatures réunies */
+Object.keys(COMP).filter(k => COMP[k].ok).forEach(k => { BN_ART['cp' + k] = 1; COS.banner.push({id: 'cp' + k, n: [COMP[k].s[0] + ' : meilleur ami', COMP[k].s[1] + ': best friend'], r: {cp: k}, rar: 3}); });
+BN_ART.cpall = 1; COS.banner.push({id: 'cpall', n: ['Meilleur ami de la nature', 'Nature\'s best friend'], r: {cpa: 1}, rar: 4});
 
 (function () { const st = document.createElement('style'); st.textContent = Object.keys(BN_ART).map(k => `.bn-${k}{background:linear-gradient(90deg,#00000090 0,#00000030 28%,#0000 50%),url(ban/bn-${k}.webp) center 60%/cover no-repeat,#0b0f1a!important}`).join('\n'); document.head.appendChild(st); })();
 const BANNERS = Object.keys(BN_ART);
@@ -12434,7 +12465,7 @@ document.addEventListener('click', e => {
     case 'lab-evo': { const z = compFake(labSel.sp, labSel.bl < 0 ? 0 : labSel.bl, 'happy'), a = z.st <= 0 ? compFake(labSel.sp, -1, 'happy') : compFake(labSel.sp, SBL[z.st - 1], 'happy'); compEvolve(a, {...z, fake: 1}); break; }
     case 'lab-off': S.settings.lab = false; save(); closeModal(); render(); break;
     case 'comp-evo': if (window._cpEvo) { const [a, z] = window._cpEvo; window._cpEvo = null; b.remove(); compEvolve(a, z); } break;
-    case 'comp-name': { const c = compSt(), me = c.own[c.act]; if (!me) break; const v = ($('#compnm').value || '').trim().slice(0, 20); if (v) me.n = v; else delete me.n; save(); closeModal(); render(); toast(T('Nom enregistré', 'Name saved')); break; }
+    case 'comp-name': { const c = compSt(), me = c.own[c.act]; if (!me || !$('#compnm') || (me.n && !S.settings.lab)) break; const v = ($('#compnm').value || '').trim().slice(0, 20); if (!v) break; if (!confirm(T(`Appeler ton compagnon « ${v} »? Ce nom sera définitif.`, `Name your companion "${v}"? This name will be permanent.`))) break; me.n = v; save(); closeModal(); render(); toast(T('Nom enregistré', 'Name saved')); break; }
     case 'cls-info': { const hu = hunter(), s = classStyle();
       modal(`<h2>${clsIc(hu.cls)} ${esc(clsName(hu.cls))}</h2><p class="muted">${esc(clsDesc(hu.cls))}</p>
         <p class="small" style="margin:12px 0 6px"><b>${T('Les classes', 'The classes')}</b></p>
@@ -12685,7 +12716,9 @@ document.addEventListener('click', e => {
       if (s.done) {
         const grp = e.ss ? A.exercises.map((x, i) => x.ss === e.ss ? i : -1).filter(i => i >= 0) : [];
         const inSS = grp.length > 1 && ei !== grp[grp.length - 1];
-        if (inSS) { if (+S.settings.restSS > 0) startTimer(+S.settings.restSS); }
+        const allDn = A.exercises.every(x => (x.sets || []).every(st => st.done)); // toute dernière série : séance finie, pas de minuteur
+        if (allDn) { if (timerEnd) fakeAct('timer-stop'); }
+        else if (inSS) { if (+S.settings.restSS > 0) startTimer(+S.settings.restSS); }
         else if (+e.rest !== -1 && !isCardio(e)) startTimer(s.t === 'W' ? (+S.settings.restWarm > 0 ? +S.settings.restWarm : 45) : s.t === 'D' && +S.settings.restDrop > 0 ? +S.settings.restDrop : (+e.rest > 0 ? +e.rest : (+S.settings.rest || 150)));
       }
       break;
@@ -12898,7 +12931,7 @@ document.addEventListener('input', e => {
     if (t.dataset.set === 'fontScale') applyTheme();
     if (t.dataset.set === 'name') { try { if (frOn()) frQueue(false); } catch (e) {} }
     if (t.dataset.set === 'lockOn' || t.dataset.set === 'bgNotif') setTimeout(() => { lockSync(); bgSync(); }, 0);
-    if (/^remind/.test(t.dataset.set)) { if (t.dataset.set === 'remind' && t.checked && !notifOn()) askNotif().then(ok => { if (ok) { S.settings.notif = true; save(); } remindSync(); render(); }); setTimeout(remindSync, 0); if (t.dataset.set === 'remind') setTimeout(render, 0); }
+    if (/^remind/.test(t.dataset.set)) { if (t.dataset.set === 'remind' && t.checked && !notifOn() && !natRemind()) askNotif().then(ok => { if (ok) { S.settings.notif = true; save(); } remindSync(); render(); }); setTimeout(remindSync, 0); if (t.dataset.set === 'remind') setTimeout(render, 0); }
     save();
     if (t.dataset.set === 'lang') { setTimeout(() => location.reload(), 150); return; }
   }
@@ -13218,6 +13251,7 @@ function fbInboxMsg(m, me) {
   if (!isFr && !['req', 'add', 'acc'].includes(m.type)) return; // encouragements et défis : seulement entre amis
   if (m.type === 'gi') { if (m.gid.length !== 6 || (S.guild && S.guild.id === m.gid)) return; if (notifAdd({type: 'gi', key: 'gi:' + from + ':' + m.gid, uid: from, name: m.name, gid: m.gid, gn: m.gn})) { toast(T(`🛡️ ${m.name} t'invite dans la guilde « ${m.gn} »`, `🛡️ ${m.name} invites you to the guild "${m.gn}"`)); const n = NOTIFS().find(x => x.key === 'gi:' + from + ':' + m.gid); if (n) giShow(n); } return; }
   if (m.type === 'cheer') { cheerShow(m); notifAdd({type: 'cheer', name: m.name, e: m.e || '🔥', uid: from}); return; }
+  if (m.type === 'go') { if (Date.now() - new Date(m.t || 0) < 3 * 3600e3 && !S.active) { const rn = sStr(m.rn, 40); toast(rn ? T(`${m.name} commence sa séance : ${rn}`, `${m.name} is starting a workout: ${rn}`) : T(`${m.name} commence sa séance`, `${m.name} is starting a workout`)); } return; }
   if (m.type === 'add' || m.type === 'req') {
     if (isFr) { if (m.type === 'req') fbDb().collection('inbox').doc(from).collection('m').add({from: me, type: 'acc', name: (S.settings.name || '').trim(), h: myH(), t: new Date().toISOString()}).catch(() => {}); return; }
     if ((fr.reqOut || []).some(r => r.uid === from)) { fr.reqIn = (fr.reqIn || []).concat([{uid: from, name: m.name, h: m.h || '', t: m.t, ...(m.ref ? {ref: 1} : {})}]); frReqAccept(from); return; } // demande croisée : amis direct
